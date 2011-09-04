@@ -1,0 +1,16 @@
+eval `dbus-launch --sh-syntax --exit-with-session`
+
+xrdb ~/.Xresources &
+xautolock -locker slimlock &
+
+# Keyboard stuff
+xmodmap -e "clear Lock" -e "keysym Caps_Lock = Escape" # Caps Lock -> Esc
+xmodmap -e "remove mod1 = Alt_R" -e "keysym Alt_R = Multi_key" # Right Alt -> Compose
+
+DEFAULT=openbox-session
+
+if [[ $1 ]]; then
+    exec $1
+else
+    exec $DEFAULT
+fi
