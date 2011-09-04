@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openbox_menu xmlns="http://openbox.org/3.4/menu">
+	<menu id="root-menu" label="Openbox 3">
+		<separator label="Applications"/>
+		<menu execute="/home/home/bin/xdg-menu.py applications Accessories" id="accessories" label="Accessories"/>
+		<menu execute="/home/home/bin/xdg-menu.py applications Games" id="games" label="Games"/>
+		<menu execute="/home/home/bin/xdg-menu.py applications Graphics" id="graphics" label="Graphics"/>
+		<menu execute="/home/home/bin/xdg-menu.py applications Internet" id="internet" label="Internet"/>
+		<menu execute="/home/home/bin/xdg-menu.py applications Office" id="office" label="Office"/>
+		<menu execute="/home/home/bin/xdg-menu.py applications Other" id="other" label="Other"/>
+		<menu execute="/home/home/bin/xdg-menu.py applications Development" id="programming" label="Programming"/>
+		<menu execute="/home/home/bin/xdg-menu.py applications Multimedia" id="multimedia" label="Sound &amp; Video"/>
+		<menu execute="/home/home/bin/xdg-menu.py applications System" id="system" label="System Tools"/>
+		<separator label="Places"/>
+		<menu id="root-menu-87402" label="Home">
+			<item label="Home">
+				<action name="Execute">
+					<execute>
+						thunar
+					</execute>
+				</action>
+			</item>
+			<separator/>
+			<item label="code">
+				<action name="Execute">
+					<execute>
+						thunar ~/code
+					</execute>
+				</action>
+			</item>
+			<item label="Downloads">
+				<action name="Execute">
+					<execute>
+						thunar ~/Downloads
+					</execute>
+				</action>
+			</item>
+			<item label="Music">
+				<action name="Execute">
+					<execute>
+						thunar ~/Music
+					</execute>
+				</action>
+			</item>
+			<item label="Videos">
+				<action name="Execute">
+					<execute>
+						thunar ~/Videos
+					</execute>
+				</action>
+			</item>
+			<item label="stuff">
+				<action name="Execute">
+					<execute>
+						thunar ~/stuff
+					</execute>
+				</action>
+			</item>
+		</menu>
+		<item label="Filesystem">
+			<action name="Execute">
+				<execute>
+					thunar /
+				</execute>
+			</action>
+		</item>
+		<separator label="System"/>
+		<menu id="root-menu-69812" label="Preferences">
+			<item label="Appearance">
+				<action name="Execute">
+					<execute>
+						lxappearance
+					</execute>
+				</action>
+			</item>
+			<item label="Qt Configuration">
+				<action name="Execute">
+					<execute>
+						qtconfig
+					</execute>
+				</action>
+			</item>
+			<item label="Wallpaper">
+				<action name="Execute">
+					<execute>
+						nitrogen
+					</execute>
+				</action>
+			</item>
+			<item label="Menu Items">
+				<action name="Execute">
+					<execute>
+						gmenu-simple-editor
+					</execute>
+				</action>
+			</item>
+		</menu>
+		<menu id="openbox" label="Openbox">
+			<item label="Configure Openbox">
+				<action name="Execute">
+					<execute>
+						obconf
+					</execute>
+				</action>
+			</item>
+			<item label="Configure Menu">
+				<action name="Execute">
+					<execute>
+						obmenu
+					</execute>
+				</action>
+			</item>
+			<item label="Configure Keybindings">
+				<action name="Execute">
+					<execute>
+						obkey
+					</execute>
+				</action>
+			</item>
+			<separator/>
+			<item label="Edit rc.xml">
+				<action name="Execute">
+					<execute>
+						gvim ~/.config/openbox/rc.xml
+					</execute>
+				</action>
+			</item>
+			<item label="Edit menu.xml">
+				<action name="Execute">
+					<execute>
+						gvim ~/.config/openbox/menu.xml
+					</execute>
+				</action>
+			</item>
+			<item label="Edit autostart.sh">
+				<action name="Execute">
+					<execute>
+						gvim ~/.config/openbox/autostart.sh
+					</execute>
+				</action>
+			</item>
+			<separator/>
+			<item label="Reload">
+				<action name="Reconfigure"/>
+			</item>
+			<item label="Restart">
+				<action name="Restart"/>
+			</item>
+			<item label="Exit">
+				<action name="Exit"/>
+			</item>
+		</menu>
+		<separator/>
+		<item label="Exit">
+			<action name="Exit">
+				<execute>
+					/home/home/bin/cb-logout.py
+				</execute>
+			</action>
+		</item>
+	</menu>
+</openbox_menu>
