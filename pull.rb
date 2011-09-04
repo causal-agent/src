@@ -24,4 +24,5 @@ dotfiles.each do |a, b|
 end
 
 system('git add .')
-exec('git commit -a')
+system('git commit -a')
+system('git push')
