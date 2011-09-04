@@ -1,0 +1,6 @@
+require 'ripl/multi_line'
+require 'ripl/rocket'
+require 'ripl/color_error'
+require 'ripl/color_result'
+require 'ripl/auto_indent'
+require 'ripl/short_errors'
