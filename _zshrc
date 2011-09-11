@@ -36,6 +36,7 @@ bindkey "\e[H" beginning-of-line
 bindkey "\e[F" end-of-line
 
 setopt autopushd
+setopt interactive_comments
 
 source /etc/profile.d/autojump.zsh
 
