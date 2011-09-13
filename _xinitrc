@@ -1,7 +1,7 @@
 eval `dbus-launch --sh-syntax --exit-with-session`
 
 xrdb ~/.Xresources &
-xautolock -locker slimlock &
+xautolock -locker slimlock -time 30 &
 
 # Keyboard stuff
 xmodmap -e "clear Lock" -e "keysym Caps_Lock = Escape" # Caps Lock -> Esc
