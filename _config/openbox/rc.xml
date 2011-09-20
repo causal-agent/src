@@ -395,11 +395,14 @@
         <action name="FocusToBottom"/>
         <action name="Unfocus"/>
       </mousebind>
-      <mousebind action="Click" button="Up">
+      <!--<mousebind action="Click" button="Up">
         <action name="Shade"/>
         <action name="FocusToBottom"/>
         <action name="Unfocus"/>
         <action name="Lower"/>
+    </mousebind>-->
+      <mousebind action="Click" button="Up">
+          <action name="ToggleAlwaysOnTop"/>
       </mousebind>
       <mousebind action="Click" button="Down">
         <action name="Unshade"/>
