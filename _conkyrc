@@ -57,6 +57,6 @@ ${color lightgrey}read${color white}$alignr${diskio_read}/s ${diskiograph_read 9
 ${color lightgrey}write${color white}$alignr${diskio_write}/s ${diskiograph_write 9,105}
 $hr
 ${color lightgrey}eth0${color white}$alignr${addr eth0}
-$alignr${texeci 3600 wget -O - http://ip.tupeux.com | tail}
+$alignr${texeci 3600 curl da.gd/ip}
 ${color lightgrey}down${color white}$alignr${downspeed eth0}/s ${downspeedgraph eth0 9,70} $totaldown
 ${color lightgrey}up${color white}$alignr${upspeed eth0}/s ${upspeedgraph eth0 9,70} $totalup
