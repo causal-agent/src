@@ -1,4 +1,4 @@
-eval `dbus-launch --sh-syntax --exit-with-session`
+#eval `dbus-launch --sh-syntax --exit-with-session`
 
 xrdb ~/.Xresources &
 xautolock -locker slimlock -time 30 &
@@ -10,7 +10,7 @@ xmodmap -e "remove mod1 = Alt_R" -e "keysym Alt_R = Multi_key" # Right Alt -> Co
 DEFAULT=openbox-session
 
 if [[ $1 ]]; then
-    exec $1
+    exec ck-launch-session dbus-launch $1
 else
-    exec $DEFAULT
+    exec ck-launch-session dbus-launch $DEFAULT
 fi
