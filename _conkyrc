@@ -37,7 +37,7 @@ format_human_readable yes
 short_units yes
 
 TEXT
-${color white}$alignc$nodename $machine $kernel
+${color white}$nodename $alignr $machine $kernel
 ${color lightgrey}up${color white} $uptime_short $alignr $user_number ${color lightgrey}users${color white}
 ${color lightgrey}updates${color white}$alignr${texeci 3600 /home/curtis/bin/updates.sh} 
 $hr
