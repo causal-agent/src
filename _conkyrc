@@ -39,7 +39,7 @@ short_units yes
 TEXT
 ${color white}$nodename $alignr $kernel
 ${color lightgrey}up${color white} $uptime_short $alignr $user_number ${color lightgrey}users${color white}
-${color lightgrey}updates${color white}$alignr${texeci 3600 /home/home/bin/updates.sh} 
+${color lightgrey}updates${color white}$alignr${texeci 300 /home/home/bin/updates.sh} 
 $hr
 ${color lightgrey}processes${color white}$alignr${running_processes}/${processes}
 $alignc${cpugraph 18,200}
