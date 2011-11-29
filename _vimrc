@@ -51,8 +51,7 @@ set guifont=Monospace\ 9
 set spell
 "set fdm=syntax " fold by syntax
 
-highlight OverLength ctermbg=darkred ctermfg=white guibg=#592929
-match OverLength /\%81v.\+/
+set cc=80 " Highlight column 80
 
 nnoremap ' `
 nnoremap ` '
@@ -69,7 +68,6 @@ runtime macros/matchit.vim " smarter %
 nmap <silent> <leader>n :silent :nohlsearch<CR>
 
 " Show trailing whitespace with ,s
-set listchars=tab:>-,trail:·,eol:$
 nmap <silent> <leader>s :set nolist!<CR>
 
 set shortmess=atI
