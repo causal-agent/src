@@ -32,7 +32,7 @@ augroup END
 
 set autoindent
 set smartindent
-colorscheme twilight
+colorscheme Tomorrow-Night
 set nu
 
 " 4-space indents
