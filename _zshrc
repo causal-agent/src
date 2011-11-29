@@ -176,7 +176,7 @@ ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=yellow,bold'
 
 #source .zsh-syntax-highlighting-filetypes/zsh-syntax-highlighting-filetypes.zsh
 
-eval $(dircolors -b ~/stuff/LS_COLORS/LS_COLORS)
+#eval $(dircolors -b ~/stuff/LS_COLORS/LS_COLORS)
 
 pacman -Qu > /dev/null && [ ! -f /var/lib/pacman/db.lck ] && sudo pacman -Syu
 echo -n
