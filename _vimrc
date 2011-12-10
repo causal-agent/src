@@ -96,3 +96,5 @@ command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis | wincmd
 " Show trailing whitespace and hard tabs
 set list
 set listchars=tab:»·,trail:·
+
+set smarttab
