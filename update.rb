@@ -23,6 +23,7 @@ dotfiles.each do |a, b|
   puts "#{b} -> #{a}"
 end
 
+system('git diff')
 system('git add .')
 system('git commit')
 system('git push')

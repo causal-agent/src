@@ -34,11 +34,11 @@ ColorPalette9=#555557575353
 ColorCursor=#d7d7dadad8d8
 ScrollingOnOutput=FALSE
 ScrollingLines=100000
-BackgroundMode=TERMINAL_BACKGROUND_TRANSPARENT
 BackgroundDarkness=0.850000
 ShortcutsNoMenukey=TRUE
 TitleMode=TERMINAL_TITLE_REPLACE
 Term=xterm-256color
 ColorForeground=#d7d7dadad8d8
 ColorSelection=#47474c4c5252
+BackgroundMode=TERMINAL_BACKGROUND_TRANSPARENT
 
