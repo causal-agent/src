@@ -142,22 +142,23 @@ alias irb='ripl'
 
 function prompt_char {
 	#[ -e ".git" ] && echo '+' && return
-	git branch &> /dev/null && echo '+' && return
+	#git branch &> /dev/null && echo '+' && return
 	#[ -e ".hg" ] && echo '☿' && return
-	hg root &> /dev/null && echo '☿' && return
+	#hg root &> /dev/null && echo '☿' && return
 	#echo '$'
 	echo '%(!.#.$)'
 }
 
 function git_branch {
 	#[ -e ".git" ] && echo ':'${"$(cat .git/HEAD)"##*/}
+    #git branch &> /dev/null && echo -e '\033[32m:\033[33m'${"$(git branch)"##* } && return
 }
 
-#setopt PROMPT_SUBST
-function chpwd {
-    PROMPT="%{$terminfo[bold]$fg[green]%}[%{$fg[blue]%}%30<..<%~$(git_branch)%{$fg[green]%}]$(prompt_char)%{$terminfo[sgr0]$reset_color%} "
-}
-chpwd
+#setopt prompt_subst
+#function chpwd {
+PROMPT="%{$terminfo[bold]$fg[green]%}[%{$fg[blue]%}%30<..<%~$(git_branch)%{$fg[green]%}]$(prompt_char)%{$terminfo[sgr0]$reset_color%} "
+#}
+#chpwd
 RPROMPT="%(?..%{$terminfo[bold]$fg[green]%}[%{$fg[red]%}%?%{$fg[green]%}]%{$terminfo[sgr0]%})"
 
 source ~/.zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
