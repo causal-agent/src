@@ -98,3 +98,5 @@ set list
 set listchars=tab:»·,trail:·
 
 set smarttab
+
+command W :w " I often accidentally type :W when I mean :w

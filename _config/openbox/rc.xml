@@ -90,14 +90,14 @@
       <slant>Normal</slant>
       <!-- 'italic' or 'normal' -->
     </font>
-    <font place="OnScreenDisplay">
-      <name>sans</name>
-      <size>9</size>
-      <!-- font size in points -->
-      <weight>bold</weight>
-      <!-- 'bold' or 'normal' -->
-      <slant>normal</slant>
-      <!-- 'italic' or 'normal' -->
+    <font place="ActiveOnScreenDisplay">
+      <name/>
+    </font>
+    <font place="InactiveOnScreenDisplay">
+      <name>Sans</name>
+      <size>8</size>
+      <weight/>
+      <slant/>
     </font>
   </theme>
   <desktops>
@@ -402,7 +402,7 @@
         <action name="Lower"/>
     </mousebind>-->
       <mousebind action="Click" button="Up">
-          <action name="ToggleAlwaysOnTop"/>
+        <action name="ToggleAlwaysOnTop"/>
       </mousebind>
       <mousebind action="Click" button="Down">
         <action name="Unshade"/>
