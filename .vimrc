@@ -99,6 +99,7 @@ nmap <silent> <leader>b :BuffergatorToggle<CR>
 
 nmap <silent> <leader>gs :Gstatus<CR>
 nmap <silent> <leader>gc :Gcommit<CR>
+nmap <silent> <leader>gp :Git push<CR>
 
 " Custom commands
 command! W :w
