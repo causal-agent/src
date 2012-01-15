@@ -80,8 +80,10 @@ let g:buffergator_suppress_keymaps=1
 nnoremap ' `
 nnoremap ` '
 
-nmap <silent> <leader>n :silent :nohlsearch<CR> " Clear search highlights
-nmap <silent> <leader>s :set list!<CR> " Toggle visible whitespace
+" Clear search highlights
+nmap <silent> <leader>n :silent :nohlsearch<CR>
+" Toggle visible whitespace
+nmap <silent> <leader>s :set list!<CR>
 
 nmap <leader>p "+p
 nmap <leader>P "+P
@@ -90,7 +92,8 @@ nmap <leader>Y "+Y
 nmap <leader>d "+d
 nmap <leader>D "+D
 
-imap <silent> <S-tab> <C-v><tab> " Insert hard tab
+" Insert hard tab
+imap <silent> <S-tab> <C-v><tab>
 
 nmap Q gq
 
