@@ -140,6 +140,10 @@ alias m='make -j4'
 alias killlall='killall'
 alias irb='ripl'
 
+function gvim {
+    [ "$@" ] && =gvim --remote-silent $@ || =gvim
+}
+
 function prompt_char {
 	#[ -e ".git" ] && echo '+' && return
 	#git branch &> /dev/null && echo '+' && return
