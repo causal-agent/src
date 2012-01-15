@@ -25,3 +25,6 @@
 [submodule "bundle/gist-vim"]
 	path = bundle/gist-vim
 	url = https://github.com/mattn/gist-vim.git
+[submodule "bundle/ooc.vim"]
+	path = bundle/ooc.vim
+	url = git://github.com/programble/ooc.vim.git
