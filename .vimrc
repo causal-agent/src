@@ -97,5 +97,8 @@ nmap Q gq
 nmap <silent> <leader>t :NERDTreeToggle<CR>
 nmap <silent> <leader>b :BuffergatorToggle<CR>
 
+nmap <silent> <leader>gs :Gstatus<CR>
+nmap <silent> <leader>gc :Gcommit<CR>
+
 " Custom commands
 command! W :w
