@@ -42,7 +42,7 @@ if has('mouse')
 endif
 
 " GUI options
-set guioptions-=tT " Disable tear-off menus and toolbar
+set guioptions-=rLtT " Disable tear-off menus, toolbar, scrollbars
 set guifont=Monospace\ 9
 set browsedir=buffer " Open dialog starts in working directory
 
