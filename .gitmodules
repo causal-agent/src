@@ -28,3 +28,6 @@
 [submodule "bundle/ooc.vim"]
 	path = bundle/ooc.vim
 	url = git://github.com/programble/ooc.vim.git
+[submodule "bundle/quicktask"]
+	path = bundle/quicktask
+	url = https://github.com/aaronbieber/quicktask.git
