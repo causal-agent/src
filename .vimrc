@@ -29,6 +29,8 @@ set smarttab
 set hlsearch
 set list
 set listchars=tab:»·,trail:·
+set foldmethod=syntax
+set foldlevel=1000
 
 set laststatus=2 " Always show statusline
 set statusline=%<%f\ %h%m%r%{fugitive#statusline()}%=%-14.(%l,%c%V%)\ %P
