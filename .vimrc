@@ -97,7 +97,7 @@ imap <silent> <S-tab> <C-v><tab>
 
 nmap Q gq
 
-nmap <silent> <leader>t :NERDTreeToggle<CR>
+"nmap <silent> <leader>t :NERDTreeToggle<CR>
 nmap <silent> <leader>b :BuffergatorToggle<CR>
 
 nmap <silent> <leader>gs :Gstatus<CR>
