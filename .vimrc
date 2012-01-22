@@ -45,6 +45,7 @@ endif
 set guioptions-=rLtT " Disable tear-off menus, toolbar, scrollbars
 set guifont=Monospace\ 9
 set browsedir=buffer " Open dialog starts in working directory
+let g:Powerline_symbols = 'fancy'
 
 " Jump to the last cursor position when opening
 autocmd BufReadPost *
