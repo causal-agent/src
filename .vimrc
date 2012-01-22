@@ -110,5 +110,7 @@ nmap <silent> <leader>gs :Gstatus<CR>
 nmap <silent> <leader>gc :Gcommit<CR>
 nmap <silent> <leader>gp :Git push<CR>
 
+nnoremap <leader>u :GundoToggle<CR>
+
 " Custom commands
 command! W :w
