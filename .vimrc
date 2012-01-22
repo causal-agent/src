@@ -66,7 +66,7 @@ autocmd FileType cpp setlocal sw=4
 " Better tab-complete when opening
 set wildmenu
 set wildmode=list:longest
-set wildignore=*.o,*.d,*~,*/.git/*,*/.hg/*,*/.svn/*
+set wildignore=*.o,*.d,*~
 
 " Smarter %
 runtime macros/matchit.vim
