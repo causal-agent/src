@@ -114,5 +114,3 @@ nnoremap <leader>u :GundoToggle<CR>
 
 " Custom commands
 command! W :w
-
-let g:Powerline_loaded=1
