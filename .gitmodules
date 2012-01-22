@@ -31,3 +31,6 @@
 [submodule "bundle/quicktask"]
 	path = bundle/quicktask
 	url = https://github.com/aaronbieber/quicktask.git
+[submodule "bundle/vim-powerline"]
+	path = bundle/vim-powerline
+	url = https://github.com/Lokaltog/vim-powerline.git
