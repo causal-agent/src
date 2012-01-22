@@ -75,6 +75,11 @@ runtime macros/matchit.vim
 autocmd InsertEnter * setlocal nolist
 autocmd InsertLeave * setlocal list
 
+" Syntastic options
+let g:syntastic_check_on_open=1
+let g:syntastic_enable_signs=0
+let g:syntastic_auto_loc_list=1
+
 " Custom maps
 let g:buffergator_suppress_keymaps=1
 
