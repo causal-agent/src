@@ -103,8 +103,8 @@ imap <silent> <S-tab> <C-v><tab>
 
 nmap Q gq
 
-"nmap <silent> <leader>t :NERDTreeToggle<CR>
-nmap <silent> <leader>b :BuffergatorToggle<CR>
+nmap <silent> <leader>b :CtrlPBuffer<CR>
+nmap <silent> <leader>e :CtrlP<CR>
 
 nmap <silent> <leader>gs :Gstatus<CR>
 nmap <silent> <leader>gc :Gcommit<CR>
