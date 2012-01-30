@@ -64,6 +64,7 @@ filetype plugin indent on
 " Indentation exceptions
 autocmd FileType c setlocal sw=4
 autocmd FileType cpp setlocal sw=4
+autocmd FileType lua setlocal sw=4
 
 " Better tab-complete when opening
 set wildmenu
