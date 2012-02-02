@@ -50,10 +50,8 @@ set browsedir=buffer " Open dialog starts in working directory
 let g:Powerline_symbols = 'fancy'
 
 " Jump to the last cursor position when opening
-autocmd BufReadPost *
-      \ if line("'\"") > 1 && line("'\"") <= line("$") |
-      \   exe "normal! g`\"" |
-      \ endif
+au BufReadPost * if &filetype !~ '^git\c' && line("'\"") > 0 && line("'\"") <= line("$")
+    \| exe "normal! g`\"" | endif
 
 " Default to 2-space indents, 4-character tabs
 set expandtab
@@ -82,6 +80,9 @@ autocmd InsertLeave * setlocal list
 let g:syntastic_check_on_open=1
 let g:syntastic_enable_signs=0
 let g:syntastic_auto_loc_list=2
+
+" Itchy options
+let g:itchy_startup = 1
 
 " Custom maps
 let g:buffergator_suppress_keymaps=1
@@ -117,3 +118,4 @@ nnoremap <leader>u :GundoToggle<CR>
 
 " Custom commands
 command! W :w
+
