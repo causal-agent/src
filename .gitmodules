@@ -52,6 +52,3 @@
 [submodule "bundle/vim-markdown"]
 	path = bundle/vim-markdown
 	url = https://github.com/tpope/vim-markdown.git
-[submodule "bundle/vim-showmarks"]
-	path = bundle/vim-showmarks
-	url = https://github.com/garbas/vim-showmarks.git
