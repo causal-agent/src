@@ -92,6 +92,7 @@ nnoremap ` '
 
 " Clear search highlights
 nmap <silent> <leader>n :silent :nohlsearch<CR>
+
 " Toggle visible whitespace
 nmap <silent> <leader>s :set list!<CR>
 
@@ -115,6 +116,17 @@ nmap <silent> <leader>gc :Gcommit<CR>
 nmap <silent> <leader>gp :Git push<CR>
 
 nnoremap <leader>u :GundoToggle<CR>
+
+" Toggle relative/absolute numbers
+function! NumberToggle()
+  if(&relativenumber == 1)
+    set number
+  else
+    set relativenumber
+  endif
+endfunc
+
+nnoremap <silent> <C-n> :call NumberToggle()<cr>
 
 " Custom commands
 command! W :w
