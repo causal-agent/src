@@ -1,3 +1,5 @@
+set nocp " No child-porn here :P
+
 " Load pathogen
 runtime bundle/vim-pathogen/autoload/pathogen.vim
 call pathogen#infect()
