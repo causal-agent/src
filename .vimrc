@@ -66,6 +66,12 @@ autocmd FileType c setlocal sw=4
 autocmd FileType cpp setlocal sw=4
 autocmd FileType lua setlocal sw=4
 
+" C/C++ indent options
+" :0  Align case with switch
+" l1  Indent case bodies with braces to case
+" g0  Align "public:" and friends to class
+set cinoptions=:0,l1,g0
+
 " Better tab-complete when opening
 set wildmenu
 set wildmode=list:longest
