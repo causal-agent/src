@@ -101,8 +101,9 @@ nnoremap ` '
 " Clear search highlights
 nmap <silent> <leader>n :silent :nohlsearch<CR>
 
-" Toggle visible whitespace
 nmap <silent> <leader>s :set list!<CR>
+
+nmap <silent> <leader>z :set spell!<CR>
 
 nmap <leader>p "+p
 nmap <leader>P "+P
