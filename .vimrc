@@ -59,6 +59,7 @@ au BufReadPost * if &filetype !~ '^git\c' && line("'\"") > 0 && line("'\"") <= l
 set expandtab
 set shiftwidth=2
 set tabstop=4
+set shiftround
 filetype plugin indent on
 
 " Indentation exceptions
