@@ -113,6 +113,8 @@ nmap <leader>Y "+Y
 nmap <leader>d "+d
 nmap <leader>D "+D
 
+nmap Y y$
+
 " Insert hard tab
 imap <silent> <S-tab> <C-v><tab>
 
