@@ -135,10 +135,12 @@ alias gsh='git show'
 alias gmv='git mv'
 alias grm='git rm'
 alias gi='git init'
+alias glg="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative --color"
 alias mc='make clean'
 alias m='make -j4'
 alias killlall='killall'
 alias irb='ripl'
+alias l='ls'
 
 function gvim {
     [ "$@" ] && =gvim --remote-silent $@ || =gvim
