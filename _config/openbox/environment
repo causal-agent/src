@@ -1,4 +1,0 @@
-export DESKTOP_ENV="OPENBOX"
-export BROWSER=chromium
-export XDG_DATA_DIRS=/home/home/.local/share:$XDG_DATA_DIRS:/home/home/.local/share
-export GNOME_DESKTOP_SESSION_ID="openbox"
