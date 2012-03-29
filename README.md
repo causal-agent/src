@@ -2,6 +2,7 @@
 
 My horrible configurations for:
 
+ * Awesome
  * IRB/RIPL
- * ZSH
  * Xinit
+ * ZSH
