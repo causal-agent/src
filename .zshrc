@@ -142,29 +142,11 @@ alias killlall='killall'
 alias irb='ripl'
 alias l='ls'
 
-function gvim {
-    [ "$@" ] && =gvim --remote-silent $@ || =gvim
-}
-
 function prompt_char {
-	#[ -e ".git" ] && echo '+' && return
-	#git branch &> /dev/null && echo '+' && return
-	#[ -e ".hg" ] && echo '☿' && return
-	#hg root &> /dev/null && echo '☿' && return
-	#echo '$'
 	echo '%(!.#.$)'
 }
 
-function git_branch {
-	#[ -e ".git" ] && echo ':'${"$(cat .git/HEAD)"##*/}
-    #git branch &> /dev/null && echo -e '\033[32m:\033[33m'${"$(git branch)"##* } && return
-}
-
-#setopt prompt_subst
-#function chpwd {
-PROMPT="%{$terminfo[bold]$fg[green]%}[%{$fg[blue]%}%30<..<%~$(git_branch)%{$fg[green]%}]$(prompt_char)%{$terminfo[sgr0]$reset_color%} "
-#}
-#chpwd
+PROMPT="%{$terminfo[bold]$fg[green]%}[%{$fg[blue]%}%30<..<%~%{$fg[green]%}]%(!.#.$)%{$terminfo[sgr0]$reset_color%} "
 RPROMPT="%(?..%{$terminfo[bold]$fg[green]%}[%{$fg[red]%}%?%{$fg[green]%}]%{$terminfo[sgr0]%})"
 
 source ~/.zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -180,10 +162,6 @@ ZSH_HIGHLIGHT_STYLES[path]='none'
 ZSH_HIGHLIGHT_STYLES[history-expansion]='fg=blue,bold'
 ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]='fg=yellow,bold'
 ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=yellow,bold'
-
-#source .zsh-syntax-highlighting-filetypes/zsh-syntax-highlighting-filetypes.zsh
-
-#eval $(dircolors -b ~/stuff/LS_COLORS/LS_COLORS)
 
 pacman -Qu > /dev/null && [ ! -f /var/lib/pacman/db.lck ] && sudo pacman -Syu
 echo -n
