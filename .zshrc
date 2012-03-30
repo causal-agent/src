@@ -142,11 +142,14 @@ alias killlall='killall'
 alias irb='ripl'
 alias l='ls'
 
-function prompt_char {
-	echo '%(!.#.$)'
+setopt PROMPT_SUBST
+
+function prompt_task {
+  COUNT=$(task count -longterm)
+  [ "$COUNT" -gt 0 ] && echo "[%{$fg[red]%}$COUNT%{$fg[green]%}]"
 }
 
-PROMPT="%{$terminfo[bold]$fg[green]%}[%{$fg[blue]%}%30<..<%~%{$fg[green]%}]%(!.#.$)%{$terminfo[sgr0]$reset_color%} "
+PROMPT="%{$terminfo[bold]$fg[green]%}[%{$fg[blue]%}%30<..<%~%{$fg[green]%}]\$(prompt_task)%(!.#.$)%{$terminfo[sgr0]$reset_color%} "
 RPROMPT="%(?..%{$terminfo[bold]$fg[green]%}[%{$fg[red]%}%?%{$fg[green]%}]%{$terminfo[sgr0]%})"
 
 source ~/.zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
