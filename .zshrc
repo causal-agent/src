@@ -141,6 +141,7 @@ alias m='make -j4'
 alias killlall='killall'
 alias irb='ripl'
 alias l='ls'
+alias t='task'
 
 setopt PROMPT_SUBST
 
