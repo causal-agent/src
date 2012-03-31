@@ -149,7 +149,7 @@ function prompt_task {
   [ "$COUNT" -gt 0 ] && echo "[%{$fg[red]%}$COUNT%{$fg[green]%}]"
 }
 
-PROMPT="%{$terminfo[bold]$fg[green]%}[%{$fg[blue]%}%30<..<%~%{$fg[green]%}]\$(prompt_task)%(!.#.$)%{$terminfo[sgr0]$reset_color%} "
+PROMPT="%{$terminfo[bold]$fg[green]%}\$(prompt_task)[%{$fg[blue]%}%30<..<%~%{$fg[green]%}]%(!.#.$)%{$terminfo[sgr0]$reset_color%} "
 RPROMPT="%(?..%{$terminfo[bold]$fg[green]%}[%{$fg[red]%}%?%{$fg[green]%}]%{$terminfo[sgr0]%})"
 
 source ~/.zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
