@@ -146,7 +146,7 @@ alias t='task'
 setopt PROMPT_SUBST
 
 function prompt_task {
-  COUNT=$(task count -longterm)
+  COUNT=$(task count -longterm status.isnt:completed)
   [ "$COUNT" -gt 0 ] && echo "[%{$fg[red]%}$COUNT%{$fg[green]%}]"
 }
 
