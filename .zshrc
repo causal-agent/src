@@ -64,9 +64,9 @@ function clyde {
 function pacman {
 	case $1 in
 		-S | -S[^si]* | -R* | -U*)
-			/usr/bin/sudo /usr/bin/pacman "$@" ;;
+			/usr/bin/sudo /usr/bin/pacman-color "$@" ;;
 		*)
-			/usr/bin/pacman "$@" ;;
+			/usr/bin/pacman-color "$@" ;;
 	esac
 }
 
