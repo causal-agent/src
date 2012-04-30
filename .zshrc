@@ -167,5 +167,5 @@ ZSH_HIGHLIGHT_STYLES[history-expansion]='fg=blue,bold'
 ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]='fg=yellow,bold'
 ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=yellow,bold'
 
-pacman -Qu > /dev/null && [ ! -f /var/lib/pacman/db.lck ] && sudo pacman -Syu
+pacman -Qu > /dev/null && [ ! -f /var/lib/pacman/db.lck ] && sudo pacman-color -Syu
 echo -n
