@@ -3,6 +3,8 @@ export BROWSER=chromium
 xrdb ~/.Xresources &
 xautolock -locker slimlock -time 30 &
 start-pulseaudio-x11 &
+gnome-keyring-daemon &
+
 mpd &
 mpdscribble &
 mpDris2 &
