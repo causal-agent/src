@@ -64,3 +64,6 @@
 [submodule "bundle/vim-smartinput"]
 	path = bundle/vim-smartinput
 	url = https://github.com/kana/vim-smartinput.git
+[submodule "bundle/webapi-vim"]
+	path = bundle/webapi-vim
+	url = https://github.com/mattn/webapi-vim.git
