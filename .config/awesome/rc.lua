@@ -211,12 +211,6 @@ clientkeys = awful.util.table.join(
     awful.key({ modkey }, "o", awful.client.movetoscreen),
 
     -- This is where I got too lazy to rewrite the default
-    awful.key({ modkey,           }, "n",
-        function (c)
-            -- The client currently has the input focus, so it cannot be
-            -- minimized, since minimized clients can't have the focus.
-            c.minimized = true
-        end),
     awful.key({ modkey,           }, "m",
         function (c)
             c.maximized_horizontal = not c.maximized_horizontal
