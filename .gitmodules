@@ -19,9 +19,6 @@
 [submodule "bundle/nerdtree"]
 	path = bundle/nerdtree
 	url = https://github.com/scrooloose/nerdtree.git
-[submodule "bundle/vim-buffergator"]
-	path = bundle/vim-buffergator
-	url = https://github.com/jeetsukumaran/vim-buffergator.git
 [submodule "bundle/gist-vim"]
 	path = bundle/gist-vim
 	url = https://github.com/mattn/gist-vim.git
