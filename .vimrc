@@ -66,6 +66,7 @@ filetype plugin indent on
 autocmd FileType c setlocal sw=4
 autocmd FileType cpp setlocal sw=4
 autocmd FileType lua setlocal sw=4
+autocmd FileType markdown setlocal tw=72
 
 " C/C++ indent options
 " :0  Align case with switch
