@@ -143,6 +143,12 @@ alias irb='ripl'
 alias l='ls'
 alias t='task'
 
+function gfrop {
+git fetch
+git rebase origin/master
+git push origin master
+}
+
 setopt PROMPT_SUBST
 
 function prompt_task {
