@@ -1,0 +1,2 @@
+export rvm_path="/home/home/.rvm"
+rvm_make_flags="-j4"

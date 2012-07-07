@@ -175,3 +175,6 @@ ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=yellow,bold'
 
 pacman -Qu > /dev/null && [ ! -f /var/lib/pacman/db.lck ] && sudo pacman-color -Syu
 echo -n
+
+PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"
