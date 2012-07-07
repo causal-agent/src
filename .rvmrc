@@ -1,0 +1,2 @@
+export rvm_path="/home/curtis/.rvm"
+rvm_make_flags="-j4"
