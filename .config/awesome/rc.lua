@@ -95,6 +95,7 @@ taglist = {
 }
 
 wibox = {
+    separator = widget({ type = "textbox" }),
     promptbox = awful.widget.prompt({ layout = awful.widget.layout.horizontal.leftright }),
     clock = awful.widget.textclock({ align = "right" }, "%a %b %d, %I:%M %p"),
     systray = widget({ type = "systray" }),
@@ -111,6 +112,7 @@ wibox = {
     },
 }
 
+wibox.separator.text = " "
 wibox.clockicon.image = wibox.icons.clock
 
 vicious.register(wibox.mpd, vicious.widgets.mpd, function (widget, args)
@@ -127,7 +129,7 @@ vicious.register(wibox.mpd, vicious.widgets.mpd, function (widget, args)
 end, 5)
 
 for s = 1, screen.count() do
-    wibox[s] = awful.wibox({ position = "top", screen = s})
+    wibox[s] = awful.wibox({ position = "top", screen = s, height = 16 })
     wibox[s].widgets = {
         {
             taglist.create(s),
@@ -137,6 +139,7 @@ for s = 1, screen.count() do
         s == 1 and wibox.systray or nil,
         wibox.clock,
         wibox.clockicon,
+        wibox.separator,
         wibox.mpd,
         wibox.mpdicon,
         layout = awful.widget.layout.horizontal.rightleft
