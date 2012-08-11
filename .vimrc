@@ -63,9 +63,7 @@ set shiftround
 filetype plugin indent on
 
 " Indentation exceptions
-autocmd FileType c setlocal sw=4
-autocmd FileType cpp setlocal sw=4
-autocmd FileType lua setlocal sw=4
+autocmd FileType c,cpp,lua setlocal sw=4
 autocmd FileType markdown setlocal tw=72
 
 " C/C++ indent options
