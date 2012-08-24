@@ -3,7 +3,7 @@ require("awful.autofocus")
 require("awful.rules")
 require("beautiful")
 require("naughty")
-require("vicious")
+vicious = require("vicious")
 
 home = os.getenv("HOME")
 awesome_home = home .. "/.config/awesome"
@@ -126,7 +126,7 @@ vicious.register(wibox.mpd, vicious.widgets.mpd, function (widget, args)
         wibox.mpdicon.image = wibox.icons.play
     end
     return args["{Artist}"] .. " - " .. args["{Title}"]
-end, 5)
+end)
 
 for s = 1, screen.count() do
     wibox[s] = awful.wibox({ position = "top", screen = s, height = 16 })
