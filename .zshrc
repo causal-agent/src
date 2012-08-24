@@ -43,7 +43,7 @@ source /etc/profile.d/autojump.zsh
 autoload colors zsh/terminfo
 colors
 
-source /etc/profile.d/pkgfile-hook.sh
+#source /etc/profile.d/pkgfile-hook.sh
 
 PATH=$PATH:~/bin
 export EDITOR=vim
