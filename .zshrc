@@ -131,5 +131,5 @@ export PATH=$PATH:$HOME/.rvm/bin
 [ -s "$HOME/.rvm/scripts/rvm" ] && source "$HOME/.rvm/scripts/rvm"
 
 # Update all the time!
-pacman -Qu > /dev/null && [ ! -f /var/lib/pacman/db.lck ] && sudo $PACMAN -Syu
+/usr/bin/pacman -Qu > /dev/null && [ ! -f /var/lib/pacman/db.lck ] && sudo $PACMAN -Syu
 true
