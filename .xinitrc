@@ -10,6 +10,8 @@ mpd &
 mpdscribble &
 mpDris2 &
 
+dropboxd &
+
 # Keyboard stuff
 xmodmap -e "clear Lock" -e "keysym Caps_Lock = Escape" # Caps Lock -> Esc
 xmodmap -e "remove mod1 = Alt_R" -e "keysym Alt_R = Multi_key" # Right Alt -> Compose
