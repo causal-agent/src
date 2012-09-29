@@ -46,7 +46,8 @@ if has('mouse')
 endif
 
 " GUI options
-set guioptions-=mrLtT " Disable tear-off menus, toolbar, scrollbars
+set guioptions-=mrLtT " Disable menus, toolbar, scrollbars
+set guioptions+=c " Disable GUI dialogs
 set guifont=Monospace\ 9
 set browsedir=buffer " Open dialog starts in working directory
 let g:Powerline_symbols = 'fancy'
