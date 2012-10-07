@@ -4,7 +4,6 @@ xrdb ~/.Xresources &
 xautolock -locker slimlock -time 30 &
 unclutter -idle 3 -noevents &
 start-pulseaudio-x11 &
-gnome-keyring-daemon &
 
 mpd &
 mpdscribble &
