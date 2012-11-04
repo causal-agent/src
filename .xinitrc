@@ -18,4 +18,4 @@ xmodmap -e "remove mod1 = Alt_L" -e "remove mod4 = Super_L" -e "add mod1 = Super
 
 SESSION=openbox-session
 [ $1 ] && SESSION=$1
-exec ck-launch-session dbus-launch $SESSION
+exec dbus-launch $SESSION
