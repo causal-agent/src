@@ -52,6 +52,8 @@ ZSH_HIGHLIGHT_STYLES[history-expansion]='fg=blue,bold'
 ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]='fg=yellow,bold'
 ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=yellow,bold'
 
+source ~/.zsh/z/z.sh
+
 # Environment
 
 export EDITOR=vim
