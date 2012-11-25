@@ -1,0 +1,25 @@
+include "%L" # Include system defaults for locale
+
+<Multi_key> <O> <O>             : "∞"
+
+# (Select) Greek letters
+<Multi_key> <o> <less>          : "α"
+<Multi_key> <bar> <b>           : "β"
+<Multi_key> <v> <bar>           : "γ"
+<Multi_key> <underscore> <bar>  : "Γ"
+<Multi_key> <d> <d>             : "δ"
+<Multi_key> <D> <D>             : "Δ"
+<Multi_key> <o> <minus>         : "θ"
+<Multi_key> <O> <minus>         : "Θ"
+<Multi_key> <slash> <l>         : "λ"
+<Multi_key> <slash> <L>         : "Λ"
+<Multi_key> <p> <i>             : "π"
+<Multi_key> <P> <I>             : "Π"
+<Multi_key> <bar> <o>           : "ρ"
+<Multi_key> <equal> <less>      : "Σ"
+<Multi_key> <o> <bar>           : "φ"
+<Multi_key> <O> <bar>           : "Φ"
+<Multi_key> <u> <bar>           : "ψ"
+<Multi_key> <U> <bar>           : "Ψ"
+<Multi_key> <w> <w>             : "ω"
+<Multi_key> <o> <h> <m>         : "Ω"
