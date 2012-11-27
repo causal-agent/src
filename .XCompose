@@ -3,8 +3,8 @@ include "%L" # Include system defaults for locale
 <Multi_key> <O> <O>             : "∞"
 
 # (Select) Greek letters
-<Multi_key> <o> <less>          : "α"
-<Multi_key> <bar> <b>           : "β"
+<Multi_key> <a> <a>             : "α"
+<Multi_key> <b> <b>             : "β"
 <Multi_key> <v> <bar>           : "γ"
 <Multi_key> <underscore> <bar>  : "Γ"
 <Multi_key> <d> <d>             : "δ"
