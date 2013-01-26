@@ -1,20 +1,21 @@
-require("awful")
+local awful = require("awful")
+awful.rules = require("awful.rules")
 require("awful.autofocus")
-require("awful.rules")
-require("beautiful")
-require("naughty")
-vicious = require("vicious")
+local wibox = require("wibox")
+local beautiful = require("beautiful")
+local naughty = require("naughty")
+local vicious = require("vicious")
 
 home = os.getenv("HOME")
 awesome_home = home .. "/.config/awesome"
-terminal = "terminal"
+terminal = "xfce4-terminal"
 editor = "gvim"
 
 modkey = "Mod4"
 
 -- Theming
 beautiful.init(awesome_home .. "/themes/current/theme.lua")
-naughty.config.default_preset.timeout = 3
+--naughty.config.default_preset.timeout = 3
 
 -- Layouts and tags
 layouts = {
@@ -63,7 +64,7 @@ end
 -- Handle runtime errors after startup
 do
     local in_error = false
-    awesome.add_signal("debug::error", function (err)
+    awesome.connect_signal("debug::error", function (err)
         -- Make sure we don't go into an endless error loop
         if in_error then return end
         in_error = true
@@ -78,7 +79,8 @@ end
 
 -- Wibox
 function icon(i)
-    return image(awesome_home .. "/icons/" .. i .. ".png")
+    --return wibox.image(awesome_home .. "/icons/" .. i .. ".png")
+    return awesome_home .. "/icons/" .. i .. ".png"
 end
 
 taglist = {
@@ -90,19 +92,20 @@ taglist = {
                   awful.button({ }, 4, awful.tag.viewnext),
                   awful.button({ }, 5, awful.tag.viewprev)),
     create = function (s)
-        return awful.widget.taglist(s, awful.widget.taglist.label.all, taglist.buttons)
+        return awful.widget.taglist(s, awful.widget.taglist.filter.all, taglist.buttons)
     end
 }
 
-wibox = {
-    separator = widget({ type = "textbox" }),
-    promptbox = awful.widget.prompt({ layout = awful.widget.layout.horizontal.leftright }),
-    clock = awful.widget.textclock({ align = "right" }, "%a %b %d, %I:%M %p"),
-    systray = widget({ type = "systray" }),
-    mpd = widget({ type = "textbox" }),
+mywibox = {
+    separator = wibox.widget.textbox(),
+    --promptbox = awful.widget.prompt({ layout = awful.widget.layout.horizontal.leftright }),
+    promptbox = awful.widget.prompt(),
+    clock = awful.widget.textclock("%a %b %d, %I:%M %p"),
+    systray = wibox.widget.systray(),
+    mpd = wibox.widget.textbox(),
 
-    clockicon = widget({ type = "imagebox" }),
-    mpdicon = widget({ type = "imagebox" }),
+    clockicon = wibox.widget.imagebox(),
+    mpdicon = wibox.widget.imagebox(),
 
     icons = {
         play = icon("play"),
@@ -112,37 +115,37 @@ wibox = {
     },
 }
 
-wibox.separator.text = " "
-wibox.clockicon.image = wibox.icons.clock
+mywibox.separator:set_text(" ")
+mywibox.clockicon:set_image(mywibox.icons.clock)
 
-vicious.register(wibox.mpd, vicious.widgets.mpd, function (widget, args)
+vicious.register(mywibox.mpd, vicious.widgets.mpd, function (widget, args)
     if args["{state}"] == "Stop" then
-        wibox.mpdicon.image = wibox.icons.stop
+        mywibox.mpdicon:set_image(mywibox.icons.stop)
         return ""
     end
     if args["{state}"] == "Pause" then
-        wibox.mpdicon.image = wibox.icons.pause
+        mywibox.mpdicon:set_image(mywibox.icons.pause)
     else
-        wibox.mpdicon.image = wibox.icons.play
+        mywibox.mpdicon:set_image(mywibox.icons.play)
     end
     return args["{Artist}"] .. " - " .. args["{Title}"]
 end)
 
 for s = 1, screen.count() do
-    wibox[s] = awful.wibox({ position = "top", screen = s, height = 16 })
-    wibox[s].widgets = {
+    mywibox[s] = awful.wibox({ position = "top", screen = s, height = 16 })
+    mywibox[s].widgets = {
         {
             taglist.create(s),
-            wibox.promptbox,
-            layout = awful.widget.layout.horizontal.leftright
+            mywibox.promptbox,
+            --layout = awful.widget.layout.horizontal.leftright
         },
         s == 1 and wibox.systray or nil,
-        wibox.clock,
-        wibox.clockicon,
-        wibox.separator,
-        wibox.mpd,
-        wibox.mpdicon,
-        layout = awful.widget.layout.horizontal.rightleft
+        mywibox.clock,
+        mywibox.clockicon,
+        mywibox.separator,
+        mywibox.mpd,
+        mywibox.mpdicon,
+        --layout = awful.widget.layout.horizontal.rightleft
     }
 end
 
@@ -296,12 +299,12 @@ awful.rules.rules = {
 
 -- {{{ Signals
 -- Signal function to execute when a new client appears.
-client.add_signal("manage", function (c, startup)
+client.connect_signal("manage", function (c, startup)
     -- Add a titlebar
     -- awful.titlebar.add(c, { modkey = modkey })
 
     -- Enable sloppy focus
-    c:add_signal("mouse::enter", function(c)
+    c:connect_signal("mouse::enter", function(c)
         if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
             and awful.client.focus.filter(c) then
             client.focus = c
@@ -321,8 +324,8 @@ client.add_signal("manage", function (c, startup)
     end
 end)
 
-client.add_signal("focus", function(c) c.border_color = beautiful.border_focus end)
-client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
+client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
 
 awful.util.spawn(awesome_home .. "/autostart.sh")
