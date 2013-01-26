@@ -1,10 +1,42 @@
+-- Standard awesome library
+local gears = require("gears")
 local awful = require("awful")
 awful.rules = require("awful.rules")
 require("awful.autofocus")
+-- Widget and layout library
 local wibox = require("wibox")
+-- Theme handling library
 local beautiful = require("beautiful")
+-- Notification library
 local naughty = require("naughty")
+local menubar = require("menubar")
+
 local vicious = require("vicious")
+
+-- {{{ Error handling
+-- Check if awesome encountered an error during startup and fell back to
+-- another config (This code will only ever execute for the fallback config)
+if awesome.startup_errors then
+    naughty.notify({ preset = naughty.config.presets.critical,
+                     title = "Oops, there were errors during startup!",
+                     text = awesome.startup_errors })
+end
+
+-- Handle runtime errors after startup
+do
+    local in_error = false
+    awesome.connect_signal("debug::error", function (err)
+        -- Make sure we don't go into an endless error loop
+        if in_error then return end
+        in_error = true
+
+        naughty.notify({ preset = naughty.config.presets.critical,
+                         title = "Oops, an error happened!",
+                         text = err })
+        in_error = false
+    end)
+end
+-- }}}
 
 home = os.getenv("HOME")
 awesome_home = home .. "/.config/awesome"
@@ -15,9 +47,7 @@ modkey = "Mod4"
 
 -- Theming
 beautiful.init(awesome_home .. "/themes/current/theme.lua")
---naughty.config.default_preset.timeout = 3
 
--- Layouts and tags
 layouts = {
     awful.layout.suit.tile,
     awful.layout.suit.tile.left,
@@ -52,101 +82,80 @@ awful.util.spawn = function (s)
   oldspawn(s, false)
 end
 
--- {{{ Error handling
--- Check if awesome encountered an error during startup and fell back to
--- another config (This code will only ever execute for the fallback config)
-if awesome.startup_errors then
-    naughty.notify({ preset = naughty.config.presets.critical,
-                     title = "Oops, there were errors during startup!",
-                     text = awesome.startup_errors })
-end
+-- wibox junk
+mywibox = {}
+mypromptbox = {}
+mytaglist = {}
+mytaglist.buttons = awful.util.table.join(
+                    awful.button({ }, 1, awful.tag.viewonly),
+                    awful.button({ modkey }, 1, awful.client.movetotag),
+                    awful.button({ }, 3, awful.tag.viewtoggle),
+                    awful.button({ modkey }, 3, awful.client.toggletag),
+                    awful.button({ }, 4, function(t) awful.tag.viewnext(awful.tag.getscreen(t)) end),
+                    awful.button({ }, 5, function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end)
+                    )
 
--- Handle runtime errors after startup
-do
-    local in_error = false
-    awesome.connect_signal("debug::error", function (err)
-        -- Make sure we don't go into an endless error loop
-        if in_error then return end
-        in_error = true
+myseparator = wibox.widget.textbox()
+myseparator:set_text(" ")
 
-        naughty.notify({ preset = naughty.config.presets.critical,
-                         title = "Oops, an error happened!",
-                         text = err })
-        in_error = false
-    end)
-end
--- }}}
+myclock = awful.widget.textclock("%a %b %d, %I:%M %p")
 
--- Wibox
+mysystray = wibox.widget.systray()
+
+mympd = wibox.widget.textbox()
+
 function icon(i)
-    --return wibox.image(awesome_home .. "/icons/" .. i .. ".png")
     return awesome_home .. "/icons/" .. i .. ".png"
 end
 
-taglist = {
-    buttons = awful.util.table.join(
-                  awful.button({ }, 1, awful.tag.viewonly),
-                  awful.button({ modkey }, 1, awful.client.movetotag),
-                  awful.button({ }, 3, awful.tag.viewtoggle),
-                  awful.button({ modkey }, 3, awful.client.toggletag),
-                  awful.button({ }, 4, awful.tag.viewnext),
-                  awful.button({ }, 5, awful.tag.viewprev)),
-    create = function (s)
-        return awful.widget.taglist(s, awful.widget.taglist.filter.all, taglist.buttons)
-    end
+myicons = {
+    play = icon("play"),
+    pause = icon("pause"),
+    stop = icon("stop"),
+    clock = icon("clock"),
 }
 
-mywibox = {
-    separator = wibox.widget.textbox(),
-    --promptbox = awful.widget.prompt({ layout = awful.widget.layout.horizontal.leftright }),
-    promptbox = awful.widget.prompt(),
-    clock = awful.widget.textclock("%a %b %d, %I:%M %p"),
-    systray = wibox.widget.systray(),
-    mpd = wibox.widget.textbox(),
+myclockicon = wibox.widget.imagebox()
+myclockicon:set_image(myicons.clock)
 
-    clockicon = wibox.widget.imagebox(),
-    mpdicon = wibox.widget.imagebox(),
+mympdicon = wibox.widget.imagebox()
+mympdicon:set_image(myicons.stop)
 
-    icons = {
-        play = icon("play"),
-        pause = icon("pause"),
-        stop = icon("stop"),
-        clock = icon("clock"),
-    },
-}
-
-mywibox.separator:set_text(" ")
-mywibox.clockicon:set_image(mywibox.icons.clock)
-
-vicious.register(mywibox.mpd, vicious.widgets.mpd, function (widget, args)
+vicious.register(mympd, vicious.widgets.mpd, function (widget, args)
     if args["{state}"] == "Stop" then
-        mywibox.mpdicon:set_image(mywibox.icons.stop)
+        mympdicon:set_image(myicons.stop)
         return ""
     end
     if args["{state}"] == "Pause" then
-        mywibox.mpdicon:set_image(mywibox.icons.pause)
+        mympdicon:set_image(myicons.pause)
     else
-        mywibox.mpdicon:set_image(mywibox.icons.play)
+        mympdicon:set_image(myicons.play)
     end
     return args["{Artist}"] .. " - " .. args["{Title}"]
 end)
 
 for s = 1, screen.count() do
-    mywibox[s] = awful.wibox({ position = "top", screen = s, height = 16 })
-    mywibox[s].widgets = {
-        {
-            taglist.create(s),
-            mywibox.promptbox,
-            --layout = awful.widget.layout.horizontal.leftright
-        },
-        s == 1 and wibox.systray or nil,
-        mywibox.clock,
-        mywibox.clockicon,
-        mywibox.separator,
-        mywibox.mpd,
-        mywibox.mpdicon,
-        --layout = awful.widget.layout.horizontal.rightleft
-    }
+    mypromptbox[s] = awful.widget.prompt()
+    mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
+    mywibox[s] = awful.wibox({ position = "top", screen = s, height = 16})
+ 
+    local left_layout = wibox.layout.fixed.horizontal()
+    left_layout:add(mytaglist[s])
+    left_layout:add(mypromptbox[s])
+
+    local right_layout = wibox.layout.fixed.horizontal()
+    right_layout:add(mympdicon)
+    right_layout:add(mympd)
+    right_layout:add(myseparator)
+    right_layout:add(myclockicon)
+    right_layout:add(myclock)
+    if s == 1 then right_layout:add(mysystray) end
+
+    local layout = wibox.layout.align.horizontal()
+    layout:set_left(left_layout)
+    layout:set_right(right_layout)
+
+    mywibox[s]:set_widget(layout)
 end
 
 -- Bindings
@@ -186,10 +195,10 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey, "Shift" }, "space", function () awful.layout.inc(layouts, -1) end),
 
     -- Prompts
-    awful.key({ modkey }, "r", function () wibox.promptbox:run() end),
+    awful.key({ modkey }, "r", function () mypromptbox[mouse.screen]:run() end),
     awful.key({ modkey }, "x", function ()
         awful.prompt.run({ prompt = "Lua: " },
-            wibox.promptbox.widget,
+            mypromptbox[mouse.screen].widget,
             awful.util.eval, nil,
             awful.util.getdir("cache") .. "/history_eval")
         end),
