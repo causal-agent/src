@@ -35,7 +35,7 @@ bindkey "\e[F" end-of-line
 autoload colors zsh/terminfo
 colors
 
-PROMPT="%{$terminfo[bold]$fg[green]%}[%{$fg[blue]%}%30<..<%~%{$fg[green]%}]%(!.#.$)%{$terminfo[sgr0]$reset_color%} "
+PROMPT=$'%{$terminfo[bold]$fg[green]%}[%{$fg[blue]%}%30<..<%~$(gitprompt)%{$fg[green]%}]%(!.#.$)%{$terminfo[sgr0]$reset_color%} '
 RPROMPT="%(?..%{$terminfo[bold]$fg[green]%}[%{$fg[red]%}%?%{$fg[green]%}]%{$terminfo[sgr0]%})"
 
 # Libs and stuff
@@ -57,6 +57,9 @@ ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=yellow,bold'
 source ~/.zsh/z/z.sh
 
 source /usr/share/chruby/chruby.sh
+chruby 1.9
+
+source ~/.zsh/gitprompt.zsh
 
 # Environment
 
