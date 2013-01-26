@@ -38,6 +38,8 @@ colors
 PROMPT="%{$terminfo[bold]$fg[green]%}[%{$fg[blue]%}%30<..<%~%{$fg[green]%}]%(!.#.$)%{$terminfo[sgr0]$reset_color%} "
 RPROMPT="%(?..%{$terminfo[bold]$fg[green]%}[%{$fg[red]%}%?%{$fg[green]%}]%{$terminfo[sgr0]%})"
 
+# Libs and stuff
+
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 ZSH_HIGHLIGHT_STYLES[command]='bold'
 ZSH_HIGHLIGHT_STYLES[builtin]='none'
@@ -53,6 +55,8 @@ ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]='fg=yellow,bold'
 ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=yellow,bold'
 
 source ~/.zsh/z/z.sh
+
+source /usr/share/chruby/chruby.sh
 
 # Environment
 
@@ -127,8 +131,6 @@ alias gs='git status -sb'
 alias gsh='git show'
 alias gt='git tag'
 alias gu='git pull'
-
-source /usr/share/chruby/chruby.sh
 
 # Update all the time!
 /usr/bin/pacman -Qu > /dev/null && [ ! -f /var/lib/pacman/db.lck ] && sudo $PACMAN -Syu
