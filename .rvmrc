@@ -1,3 +1,0 @@
-export rvm_path="/home/home/.rvm"
-rvm_make_flags="-j4"
-rvm_project_rvmrc_default=1
