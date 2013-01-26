@@ -128,9 +128,7 @@ alias gsh='git show'
 alias gt='git tag'
 alias gu='git pull'
 
-# RVM insists on being last
-export PATH=$PATH:$HOME/.rvm/bin
-[ -s "$HOME/.rvm/scripts/rvm" ] && source "$HOME/.rvm/scripts/rvm"
+source /usr/share/chruby/chruby.sh
 
 # Update all the time!
 /usr/bin/pacman -Qu > /dev/null && [ ! -f /var/lib/pacman/db.lck ] && sudo $PACMAN -Syu
