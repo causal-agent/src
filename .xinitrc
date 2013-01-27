@@ -16,6 +16,6 @@ xmodmap -e "clear Lock" -e "keysym Caps_Lock = Escape" # Caps Lock -> Esc
 xmodmap -e "remove mod1 = Alt_R" -e "keysym Alt_R = Multi_key" # Right Alt -> Compose
 xmodmap -e "remove mod1 = Alt_L" -e "remove mod4 = Super_L" -e "add mod1 = Super_L" -e "add mod4 = Alt_L" # Swap Super and Alt
 
-SESSION=openbox-session
+SESSION=awesome
 [ $1 ] && SESSION=$1
 exec dbus-launch $SESSION
