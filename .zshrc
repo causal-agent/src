@@ -57,7 +57,7 @@ ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=yellow,bold'
 source ~/.zsh/z/z.sh
 
 source /usr/share/chruby/chruby.sh
-chruby 1.9
+chruby 2.0
 
 source ~/.zsh/gitprompt.zsh
 
