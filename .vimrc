@@ -38,6 +38,7 @@ set foldmethod=syntax
 set foldlevel=1000
 
 set laststatus=2 " Always show statusline
+set noshowmode
 set statusline=%<%f\ %h%m%r%{fugitive#statusline()}%=%-14.(%l,%c%V%)\ %P
 
 syntax on
