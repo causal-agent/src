@@ -1,8 +1,11 @@
-set nocp " No child-porn here :P
+set nocp
 
 " Load pathogen
 runtime bundle/vim-pathogen/autoload/pathogen.vim
 call pathogen#infect()
+
+" Load powerline
+set rtp+=~/.vim/bundle/powerline/powerline/bindings/vim
 
 " Remap leader to ,
 noremap \ ,
@@ -50,7 +53,6 @@ set guioptions-=mrLtT " Disable menus, toolbar, scrollbars
 set guioptions+=c " Disable GUI dialogs
 set guifont=Monospace\ 9
 set browsedir=buffer " Open dialog starts in working directory
-let g:Powerline_symbols = 'fancy'
 
 " Jump to the last cursor position when opening
 au BufReadPost * if &filetype !~ '^git\c' && line("'\"") > 0 && line("'\"") <= line("$")
