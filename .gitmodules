@@ -67,3 +67,6 @@
 [submodule "bundle/powerline"]
 	path = bundle/powerline
 	url = https://github.com/Lokaltog/powerline.git
+[submodule "bundle/paredit.vim"]
+	path = bundle/paredit.vim
+	url = https://github.com/vim-scripts/paredit.vim.git
