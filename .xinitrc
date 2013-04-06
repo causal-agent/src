@@ -5,6 +5,7 @@ xautolock -locker slimlock -time 30 &
 unclutter -idle 3 -noevents &
 start-pulseaudio-x11 &
 xsetroot -cursor_name left_ptr &
+nitrogen --restore &
 
 mpd &
 mpdscribble &
