@@ -70,14 +70,12 @@ export PATH=$PATH:~/bin
 
 # Functions and aliases
 
-PACMAN=pacman-color
-
 function pacman {
   case $1 in
     -S | -S[^si]* | -R* | -U*)
-      sudo $PACMAN "$@" ;;
+      sudo /usr/bin/pacman "$@" ;;
     *)
-      $PACMAN "$@" ;;
+      /usr/bin/pacman "$@" ;;
   esac
 }
 
@@ -136,5 +134,5 @@ alias gt='git tag'
 alias gu='git pull'
 
 # Update all the time!
-/usr/bin/pacman -Qu > /dev/null && [ ! -f /var/lib/pacman/db.lck ] && sudo $PACMAN -Syu
+/usr/bin/pacman -Qu > /dev/null && [ ! -f /var/lib/pacman/db.lck ] && pacman -Syu
 true
