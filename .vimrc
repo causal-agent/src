@@ -42,7 +42,9 @@ set noshowmode
 set statusline=%<%f\ %h%m%r%{fugitive#statusline()}%=%-14.(%l,%c%V%)\ %P
 
 syntax on
-colorscheme Tomorrow-Night
+set background=dark
+"let base16colorspace=256
+colorscheme base16-default
 
 " Enable mouse in terminals
 if has('mouse')
