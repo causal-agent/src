@@ -22,15 +22,9 @@
 [submodule "bundle/ooc.vim"]
 	path = bundle/ooc.vim
 	url = git://github.com/programble/ooc.vim.git
-[submodule "bundle/quicktask"]
-	path = bundle/quicktask
-	url = https://github.com/aaronbieber/quicktask.git
 [submodule "bundle/syntastic"]
 	path = bundle/syntastic
 	url = https://github.com/scrooloose/syntastic.git
-[submodule "bundle/jellybeans.vim"]
-	path = bundle/jellybeans.vim
-	url = https://github.com/nanotech/jellybeans.vim.git
 [submodule "bundle/gundo.vim"]
 	path = bundle/gundo.vim
 	url = http://github.com/sjl/gundo.vim.git
@@ -43,12 +37,6 @@
 [submodule "bundle/itchy.vim"]
 	path = bundle/itchy.vim
 	url = git://github.com/programble/itchy.vim.git
-[submodule "bundle/vim-colors-solarized"]
-	path = bundle/vim-colors-solarized
-	url = https://github.com/altercation/vim-colors-solarized.git
-[submodule "bundle/badwolf"]
-	path = bundle/badwolf
-	url = https://github.com/sjl/badwolf.git
 [submodule "bundle/webapi-vim"]
 	path = bundle/webapi-vim
 	url = https://github.com/mattn/webapi-vim.git
@@ -64,9 +52,6 @@
 [submodule "bundle/powerline"]
 	path = bundle/powerline
 	url = https://github.com/Lokaltog/powerline.git
-[submodule "bundle/paredit.vim"]
-	path = bundle/paredit.vim
-	url = https://github.com/vim-scripts/paredit.vim.git
 [submodule "bundle/vim-commentary"]
 	path = bundle/vim-commentary
 	url = https://github.com/tpope/vim-commentary.git
