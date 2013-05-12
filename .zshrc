@@ -134,5 +134,5 @@ alias gt='git tag'
 alias gu='git pull'
 
 # Update all the time!
-/usr/bin/pacman -Qu > /dev/null && [ ! -f /var/lib/pacman/db.lck ] && pacman -Syu
+[ -f /usr/bin/pacman ] && /usr/bin/pacman -Qu > /dev/null && [ ! -f /var/lib/pacman/db.lck ] && pacman -Syu
 true
