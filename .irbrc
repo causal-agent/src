@@ -1,2 +1,4 @@
 $:.unshift 'lib'
 $: << '.'
+
+require 'pp'
