@@ -99,12 +99,11 @@ let g:syntastic_auto_loc_list=2
 nnoremap ' `
 nnoremap ` '
 
-" Clear search highlights
-nmap <silent> <leader>n :silent :nohlsearch<CR>
+nmap <leader>n :nohlsearch<CR>
 
-nmap <silent> <leader>s :set list!<CR>
+nmap <leader>s :set list!<CR>
 
-nmap <silent> <leader>z :set spell!<CR>
+nmap <leader>z :set spell!<CR>
 
 nmap <leader>p "+p
 nmap <leader>P "+P
@@ -116,18 +115,22 @@ nmap <leader>D "+D
 nmap Y y$
 
 " Insert hard tab
-imap <silent> <S-tab> <C-v><tab>
+imap <S-tab> <C-v><tab>
 
 nmap Q gq
 
-nmap <silent> <leader>b :CtrlPBuffer<CR>
-nmap <silent> <leader>e :CtrlP<CR>
+nmap <leader>b :CtrlPBuffer<CR>
+nmap <leader>e :CtrlP<CR>
 
-nmap <silent> <leader>gs :Gstatus<CR>
-nmap <silent> <leader>gc :Gcommit<CR>
-nmap <silent> <leader>gp :Git push<CR>
+nmap <leader>gs :Gstatus<CR>
+nmap <leader>gc :Gcommit<CR>
+nmap <leader>gp :Git push<CR>
 
-nnoremap <leader>u :GundoToggle<CR>
+nmap <leader>gg :GitGutterToggle<CR>
+nmap <leader>gh <Plug>GitGutterNextHunk
+nmap <leader>gH <Plug>GitGutterPrevHunk
+
+nmap <leader>u :GundoToggle<CR>
 
 " Toggle relative/absolute numbers
 function! NumberToggle()
@@ -138,7 +141,7 @@ function! NumberToggle()
   endif
 endfunc
 
-nnoremap <silent> <C-n> :call NumberToggle()<cr>
+nmap <C-n> :call NumberToggle()<CR>
 
 " Custom commands
 command! W :w
