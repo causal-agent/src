@@ -23,9 +23,9 @@ set ignorecase
 set smartcase
 set autoindent
 set smartindent
-set nu
+set number
 set spell
-set cc=80
+set colorcolumn=80
 set title
 set shortmess=atI
 set visualbell t_vb=
