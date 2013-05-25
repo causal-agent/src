@@ -78,6 +78,9 @@ autocmd FileType markdown setlocal tw=72
 " g0  Align "public:" and friends to class
 set cinoptions=:0,l1,g0
 
+" Indent Compojure correctly
+autocmd FileType clojure set lispwords+=GET,POST,PUT,DELETE
+
 " Better tab-complete when opening
 set wildmenu
 set wildmode=list:longest
