@@ -36,8 +36,6 @@ mpd_music_dir = "~/Music"
 #
 #mpd_crossfade_time = "5"
 #
-#mpd_communication_mode = "notifications" (polling/notifications)
-#
 ##### music visualizer #####
 ##
 ## Note: In order to make music visualizer work you'll
@@ -80,16 +78,16 @@ visualizer_output_name = "My FIFO"
 ## Keep in mind that sane values start with >=10.
 ##
 #
-visualizer_sync_interval = "30"
+#visualizer_sync_interval = "30"
 #
 ##
 ## Note: To enable spectrum frequency visualization
 ## you need to compile ncmpcpp with fftw3 support.
 ##
 #
-visualizer_type = "wave" (spectrum/wave)
+#visualizer_type = "wave" (spectrum/wave)
 #
-visualizer_look = "◆│"
+#visualizer_look = "◆│"
 #
 ##### system encoding #####
 ##
@@ -129,7 +127,7 @@ visualizer_look = "◆│"
 ## %A - album artist
 ## %t - title
 ## %b - album
-## %y - year
+## %y - date
 ## %n - track number (01/12 -> 01)
 ## %N - full track info (01/12 -> 01/12)
 ## %g - genre
@@ -137,6 +135,7 @@ visualizer_look = "◆│"
 ## %p - performer
 ## %d - disc
 ## %C - comment
+## %P - priority
 ## $R - begin right alignment
 ##
 ## you can also put them in { } and then it will be displayed
@@ -179,6 +178,17 @@ visualizer_look = "◆│"
 #tag_editor_album_format = "{(%y) }%b"
 #
 ##
+## Note: Below variables are used for sorting songs in browser.
+## The sort mode determines how songs are sorted, and can be used
+## in combination with a sort format to specify a custom sorting format.
+## Possible values for browser_sort_mode are "name", "mtime" and "format".
+##
+#
+#browser_sort_mode = "name"
+#
+#browser_sort_format = "{%a - }{%t}|{%f} {(%l)}"
+#
+##
 ## Note: Below variables are for alternative version of user's interface.
 ## Their syntax supports all tags and colors listed above plus some extra
 ## markers used for text attributes. They are followed by character '$'.
@@ -213,6 +223,8 @@ visualizer_look = "◆│"
 #selected_item_prefix = "$6"
 #
 #selected_item_suffix = "$9"
+#
+#modified_item_prefix = "$3> $9"
 #
 ## colors are not supported for below variable
 #
@@ -267,25 +279,27 @@ visualizer_look = "◆│"
 ##
 #execute_on_song_change = ""
 #
-#playlist_show_remaining_time = "yes"
+playlist_show_remaining_time = "no"
 #
-#playlist_shorten_total_times = "no"
+playlist_shorten_total_times = "yes"
 #
 #playlist_separate_albums = "no"
 #
-#playlist_display_mode = "classic" (classic/columns)
+playlist_display_mode = "columns" #(classic/columns)
 #
-#browser_display_mode = "classic" (classic/columns)
+browser_display_mode = "columns" #(classic/columns)
 #
-#search_engine_display_mode = "classic" (classic/columns)
+search_engine_display_mode = "columns" #(classic/columns)
 #
-#playlist_editor_display_mode = "classic" (classic/columns)
+playlist_editor_display_mode = "columns" #(classic/columns)
 #
 #discard_colors_if_item_is_selected = "yes"
 #
 #incremental_seeking = "yes"
 #
 #seek_time = "1"
+#
+#volume_change_step = "1"
 #
 #autocenter_mode = "no"
 #
@@ -297,17 +311,17 @@ visualizer_look = "◆│"
 ##
 #progressbar_look = "=>"
 #
+#progressbar_boldness = "yes"
+#
 #default_place_to_search_in = "database" (database/playlist)
 #
-user_interface = "alternative" (classic/alternative)
+user_interface = "alternative" #(classic/alternative)
 #
-media_library_left_column = "A" (possible values: a,y,g,c,p, legend above)
+media_library_left_column = "A" #(possible values: a,y,g,c,p, legend above)
 #
 #default_find_mode = "wrapped" (wrapped/normal)
 #
 #default_space_mode = "add" (add/select)
-#
-#default_tag_editor_left_col = "albums" (albums/dirs)
 #
 #default_tag_editor_pattern = "%n - %t"
 #
@@ -323,13 +337,15 @@ media_library_left_column = "A" (possible values: a,y,g,c,p, legend above)
 #
 #cyclic_scrolling = "no"
 #
-lines_scrolled = "2"
+#lines_scrolled = "2"
 #
 #follow_now_playing_lyrics = "no"
 #
 #fetch_lyrics_for_current_song_in_background = "no"
 #
 #store_lyrics_in_song_dir = "no"
+#
+#generate_win32_compatible_filenames = "yes"
 #
 ##
 ## Note: If you set this variable, ncmpcpp will try to
@@ -388,40 +404,38 @@ lines_scrolled = "2"
 #
 #jump_to_now_playing_song_at_start = "yes"
 #
-#ask_before_clearing_main_playlist = "no"
+ask_before_clearing_main_playlist = "yes"
 #
 #clock_display_seconds = "no"
 #
 #display_volume_level = "yes"
 #
-#display_bitrate = "no"
+display_bitrate = "yes"
 #
-display_remaining_time = "no"
+#display_remaining_time = "yes"
 #
-#regular_expressions = "basic" (basic/extended)
+#regular_expressions = "none" (none/basic/extended)
 #
 ##
 ## Note: If below is enabled, ncmpcpp will ignore leading
 ## "The" word while sorting items in browser, tags in
 ## media library, etc.
 ##
-#ignore_leading_the = "no"
+ignore_leading_the = "yes"
 #
 #block_search_constraints_change_if_items_found = "yes"
 #
 #mouse_support = "yes"
 #
-mouse_list_scroll_whole_page = "no"
+#mouse_list_scroll_whole_page = "yes"
 #
 #empty_tag_marker = "<empty>"
 #
+#tags_separator = " | "
+#
 #tag_editor_extended_numeration = "no"
 #
-#media_library_display_date = "yes"
-#
-#media_library_display_empty_tag = "yes"
-#
-#media_library_disable_two_column_mode = "no"
+#media_library_sort_by_mtime = "no"
 #
 #enable_window_title = "yes"
 #
@@ -438,16 +452,6 @@ mouse_list_scroll_whole_page = "no"
 ##
 #
 search_engine_default_search_mode = "2"
-#
-##
-## Note: Below variables can allow you to physically
-## remove files and directories from your hdd using
-## ncmpcpp's browser screen.
-##
-#
-#allow_physical_files_deletion = "no"
-#
-#allow_physical_directories_deletion = "no"
 #
 #external_editor = ""
 #
@@ -477,13 +481,15 @@ search_engine_default_search_mode = "2"
 #
 #progressbar_color = "default"
 #
+#progressbar_elapsed_color = "default"
+#
 #statusbar_color = "default"
 #
 #alternative_ui_separator_color = "black"
 #
 #active_column_color = "red"
 #
-visualizer_color = "green"
+#visualizer_color = "yellow"
 #
 #window_border_color = "green"
 #
