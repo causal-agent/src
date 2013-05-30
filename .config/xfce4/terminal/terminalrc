@@ -27,3 +27,5 @@ ColorCursor=#dd00dd00dd00
 ColorForeground=#dd00dd00dd00
 ColorBackground=#115511551155
 ColorPalette=#115511551155;#aacc44114422;#9900aa995599;#ff44bbff7755;#66aa99ffbb55;#aaaa775599ff;#7755bb55aaaa;#dd00dd00dd00;#550055005500;#aacc44114422;#9900aa995599;#ff44bbff7755;#66aa99ffbb55;#aaaa775599ff;#7755bb55aaaa;#ff55ff55ff55
+ShortcutsNoMnemonics=TRUE
+
