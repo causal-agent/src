@@ -71,6 +71,12 @@ export PATH=$PATH:~/bin
 
 # Functions and aliases
 
+function game {
+  killall unclutter
+  $@
+  unclutter -idle 3 -noevents & disown
+}
+
 function pacman {
   case $1 in
     -S | -S[^si]* | -R* | -U*)
