@@ -266,7 +266,7 @@ visualizer_output_name = "My FIFO"
 ##   not available.
 ##
 #
-#song_columns_list_format = "(7f)[green]{l} (25)[cyan]{a} (40)[]{t|f} (30)[red]{b}"
+song_columns_list_format = "(7f)[green]{l} (25)[cyan]{a} (40)[]{t|f:Title} (30)[red]{b}"
 #
 ##### various settings #####
 #
@@ -329,7 +329,7 @@ media_library_left_column = "A" #(possible values: a,y,g,c,p, legend above)
 #
 #statusbar_visibility = "yes"
 #
-#titles_visibility = "yes"
+titles_visibility = "no"
 #
 #header_text_scrolling = "yes"
 #
@@ -404,7 +404,7 @@ media_library_left_column = "A" #(possible values: a,y,g,c,p, legend above)
 #
 #jump_to_now_playing_song_at_start = "yes"
 #
-ask_before_clearing_main_playlist = "yes"
+ask_before_clearing_main_playlist = "no"
 #
 #clock_display_seconds = "no"
 #
