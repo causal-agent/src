@@ -1,0 +1,20 @@
+[user]
+	name = June McEnroe
+	email = programble@gmail.com
+[core]
+	editor = vim
+	excludesfile = /home/home/.gitignore.global
+	autocrlf = input
+[sendemail]
+	smtpencryption = tls
+	smtpserver = smtp.gmail.com
+	smtpuser = programble@gmail.com
+	smtpserverport = 587
+[merge]
+	tool = vimdiff
+[color]
+	ui = true
+[push]
+	default = simple
+[include]
+	path = .gitconfig.private
