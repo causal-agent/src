@@ -72,9 +72,7 @@ export PATH=$PATH:~/bin
 # Functions and aliases
 
 function game {
-  killall unclutter
-  $@
-  unclutter -idle 3 -noevents & disown
+  xinit =$1 ${@:2} -- :1 vt6
 }
 
 function pacman {
