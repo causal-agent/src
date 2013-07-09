@@ -71,6 +71,10 @@ export PATH=$PATH:~/bin
 
 # Functions and aliases
 
+function title {
+  echo -en "\033]0;$1\a"
+}
+
 function game {
   xinit =$1 ${@:2} -- :1 vt6
 }
