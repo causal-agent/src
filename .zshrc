@@ -60,6 +60,8 @@ source /usr/share/chruby/chruby.sh
 source /usr/share/chruby/auto.sh
 chruby ruby-2.0.0-p195
 
+[[ -s /home/home/.nvm/nvm.sh ]] && . /home/home/.nvm/nvm.sh
+
 source ~/.zsh/gitprompt.zsh
 
 # Environment
