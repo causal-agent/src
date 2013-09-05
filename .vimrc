@@ -43,8 +43,9 @@ set statusline=%<%f\ %h%m%r%{fugitive#statusline()}%=%-14.(%l,%c%V%)\ %P
 
 syntax on
 set background=dark
-"let base16colorspace=256
-colorscheme base16-default
+if has('gui_running')
+  colorscheme base16-default
+endif
 
 " Enable mouse in terminals
 if has('mouse')
