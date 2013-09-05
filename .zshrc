@@ -120,10 +120,12 @@ alias Syu='pacman -Syu'
 alias Ss='pacman -Ss'
 alias p='pacman'
 
-compdef hub=git
-alias git=hub
-alias g=hub
+if which hub &> /dev/null; then
+  compdef hub=git
+  alias git=hub
+fi
 
+alias g=git
 alias ga='git add'
 alias gb='git branch'
 alias gc='git commit'
