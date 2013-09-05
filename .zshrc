@@ -81,15 +81,6 @@ function game {
   xinit =$1 ${@:2} -- :1 vt6
 }
 
-function pacman {
-  case $1 in
-    -S | -S[^si]* | -R* | -U*)
-      sudo /usr/bin/pacman "$@" ;;
-    *)
-      /usr/bin/pacman "$@" ;;
-  esac
-}
-
 function mkcd {
   mkdir $@
   if [ "$1" = "-p" ]; then
@@ -114,11 +105,6 @@ alias ll='ls'
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias rm='rm -vI'
-
-alias S='pacman -S'
-alias Syu='pacman -Syu'
-alias Ss='pacman -Ss'
-alias p='pacman'
 
 if which hub &> /dev/null; then
   compdef hub=git
@@ -145,6 +131,3 @@ alias gs='git status -sb'
 alias gsh='git show'
 alias gt='git tag'
 alias gu='git pull'
-
-[ -f /usr/bin/pacman ] && /usr/bin/pacman -Qu > /dev/null && echo "$(/usr/bin/pacman -Qu | wc -l) updates"
-true
