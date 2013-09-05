@@ -58,7 +58,7 @@ source ~/.zsh/z/z.sh
 
 source /usr/share/chruby/chruby.sh
 source /usr/share/chruby/auto.sh
-chruby ruby-2.0.0-p195
+chruby ruby-2.0.0
 
 [[ -s /home/curtis/.nvm/nvm.sh ]] && . /home/curtis/.nvm/nvm.sh
 
