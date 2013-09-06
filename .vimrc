@@ -52,6 +52,13 @@ if has('mouse')
   set mouse=a
 endif
 
+" Less clutter in terminals
+if !has('gui_running')
+  set nospell
+  set nocursorline
+  set colorcolumn=
+endif
+
 " GUI options
 set guioptions-=mrLtT " Disable menus, toolbar, scrollbars
 set guioptions+=c " Disable GUI dialogs
