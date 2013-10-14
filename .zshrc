@@ -62,6 +62,8 @@ chruby ruby-2.0.0
 
 [[ -s /home/curtis/.nvm/nvm.sh ]] && . /home/curtis/.nvm/nvm.sh
 
+[ -f /usr/local/heroku ] && export PATH="/usr/local/heroku/bin:$PATH"
+
 source ~/.zsh/gitprompt.zsh
 
 # Environment
