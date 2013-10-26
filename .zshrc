@@ -92,6 +92,10 @@ function mkcd {
   fi
 }
 
+function home.programble.me {
+  ssh -R 8071:localhost:$1 quartz
+}
+
 function reload {
   source ~/.zshrc
   reset
