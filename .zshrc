@@ -112,6 +112,8 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias rm='rm -vI'
 
+alias gvim='gvim 2> /dev/null'
+
 if which hub &> /dev/null; then
   compdef hub=git
   alias git=hub
