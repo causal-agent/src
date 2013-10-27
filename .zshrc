@@ -66,6 +66,8 @@ chruby ruby-2.0.0
 
 source ~/.zsh/gitprompt.zsh
 
+source ~/.zsh/title.zsh
+
 # Environment
 
 export EDITOR=vim
@@ -74,10 +76,6 @@ export PATH=$PATH:~/bin
 [ "$TERM" = "xterm" ] && export TERM=xterm-256color
 
 # Functions and aliases
-
-function title {
-  echo -en "\033]0;$1\a"
-}
 
 function game {
   xinit =$1 ${@:2} -- :1 vt6
