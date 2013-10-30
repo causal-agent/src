@@ -35,7 +35,8 @@ bindkey "\e[F" end-of-line
 autoload colors zsh/terminfo
 colors
 
-PROMPT=$'%{$terminfo[bold]$fg[green]%}[%{$fg[blue]%}%30<..<%~$(gitprompt)%{$fg[green]%}]%(!.#.$)%{$terminfo[sgr0]$reset_color%} '
+[ "$SSH_CLIENT" ] && PROMPT_HOST="%{$fg[magenta]%}%m:"
+PROMPT=$'%{$terminfo[bold]$fg[green]%}[$PROMPT_HOST%{$fg[blue]%}%30<..<%~$(gitprompt)%{$fg[green]%}]%(!.#.$)%{$terminfo[sgr0]$reset_color%} '
 RPROMPT="%(?..%{$terminfo[bold]$fg[green]%}[%{$fg[red]%}%?%{$fg[green]%}]%{$terminfo[sgr0]%})"
 
 # Libs and stuff
