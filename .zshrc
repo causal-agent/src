@@ -1,45 +1,26 @@
-zstyle ':completion:*' completer _complete _ignored _correct _approximate
+HISTFILE=~/.histfile
+HISTSIZE=5000
+SAVEHIST=5000
+setopt appendhistory autocd extendedglob nomatch notify autopushd
+setopt interactive_comments prompt_subst
+unsetopt beep
+bindkey -v
+
+# Completion
+zstyle ':completion:*' completer _expand _complete _ignored _correct _approximate _prefix
 zstyle ':completion:*' max-errors 2
 zstyle :compinstall filename '/home/home/.zshrc'
 
 autoload -Uz compinit
 compinit
 
-HISTFILE=~/.histfile
-HISTSIZE=5000
-SAVEHIST=5000
-setopt appendhistory autocd nomatch notify autopushd interactive_comments
-setopt prompt_subst
-unsetopt beep extendedglob
-
-bindkey -e
-bindkey "\e[1~" beginning-of-line
-bindkey "\e[4~" end-of-line
-bindkey "\e[5~" beginning-of-history
-bindkey "\e[6~" end-of-history
-bindkey "\e[3~" delete-char
-bindkey "\e[2~" quoted-insert
-bindkey "\e[5C" forward-word
-bindkey "\eOc" emacs-forward-word
-bindkey "\e[5D" backward-word
-bindkey "\eOd" emacs-backward-word
-bindkey "\e\e[C" forward-word
-bindkey "\e\e[D" backward-word
-bindkey "\e[8~" end-of-line
-bindkey "\e[7~" beginning-of-line
-bindkey "\eOH" beginning-of-line
-bindkey "\eOF" end-of-line
-bindkey "\e[H" beginning-of-line
-bindkey "\e[F" end-of-line
-
+# Colors
 autoload colors zsh/terminfo
 colors
 
-[ "$SSH_CLIENT" ] && PROMPT_HOST="%{$fg[magenta]%}%m:"
-PROMPT=$'%{$terminfo[bold]$fg[green]%}[$PROMPT_HOST%{$fg[blue]%}%30<..<%~$(gitprompt)%{$fg[green]%}]%(!.#.$)%{$terminfo[sgr0]$reset_color%} '
-RPROMPT="%(?..%{$terminfo[bold]$fg[green]%}[%{$fg[red]%}%?%{$fg[green]%}]%{$terminfo[sgr0]%})"
+[[ -n "$COLORTERM" ]] && export TERM='xterm-256color'
 
-# Libs and stuff
+# Libs
 
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 ZSH_HIGHLIGHT_STYLES[command]='bold'
@@ -57,87 +38,28 @@ ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=yellow,bold'
 
 source ~/.zsh/z/z.sh
 
-if [ -d /usr/share/chruby ]; then
+if [[ -d /usr/share/chruby ]]; then
   source /usr/share/chruby/chruby.sh
   source /usr/share/chruby/auto.sh
-  chruby ruby-2.0.0
+  chruby 'ruby-2.0.0'
 fi
 
-[[ -s /home/home/.nvm/nvm.sh ]] && . /home/home/.nvm/nvm.sh
+[[ -s ~/.nvm/nvm.sh ]] && source ~/.nvm/nvm.sh
 
-[ -f /usr/local/heroku ] && export PATH="/usr/local/heroku/bin:$PATH"
+[[ -f /usr/local/heroku ]] && export PATH="/usr/local/heroku/bin:$PATH"
 
 source ~/.zsh/gitprompt.zsh
-
 source ~/.zsh/title.zsh
+
+source ~/.zsh/aliases.zsh
 
 # Environment
 
-export EDITOR=vim
-export PATH=$PATH:~/bin
+EDITOR=vim
 
-[ "$TERM" = "xterm" ] && export TERM=xterm-256color
+# Prompt
 
-# Functions and aliases
-
-function game {
-  xinit =$1 ${@:2} -- :1 vt6
-}
-
-function mkcd {
-  mkdir $@
-  if [ "$1" = "-p" ]; then
-    cd $2
-  else
-    cd $1
-  fi
-}
-
-function home.programble.me {
-  ssh -R 8071:localhost:$1 quartz
-}
-
-function reload {
-  source ~/.zshrc
-  reset
-}
-
-alias sprunge='curl -F "sprunge=<-" http://sprunge.us'
-
-alias killlall='killall'
-alias irb='ripl'
-alias l='ls'
-alias ll='ls'
-
-alias ls='ls --color=auto'
-alias grep='grep --color=auto'
-alias rm='rm -vI'
-
-alias gvim='gvim 2> /dev/null'
-
-if which hub &> /dev/null; then
-  compdef hub=git
-  alias git=hub
-fi
-
-alias g=git
-alias ga='git add'
-alias gb='git branch'
-alias gc='git commit'
-alias gcl='git clone'
-alias gco='git checkout'
-alias gd='git diff'
-alias gi='git init'
-alias gl='git log'
-alias glg="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative --color"
-alias gm='git merge'
-alias gmv='git mv'
-alias gp='git push'
-alias gpom='git pull origin master'
-alias gr='git remote'
-alias grm='git rm'
-alias gs='git status -sb'
-alias gsh='git show'
-alias gst='git stash'
-alias gt='git tag'
-alias gu='git pull'
+unset _prompt_host
+[[ -n "$SSH_CLIENT" ]] && _prompt_host='%{$fg[magenta]%}%m:'
+PROMPT=$'%{$terminfo[bold]$fg[green]%}[$PROMPT_HOST%{$fg[blue]%}%30<..<%~$(gitprompt)%{$fg[green]%}]%(!.#.$)%{$terminfo[sgr0]$reset_color%} '
+RPROMPT="%(?..%{$terminfo[bold]$fg[green]%}[%{$fg[red]%}%?%{$fg[green]%}]%{$terminfo[sgr0]%})"
