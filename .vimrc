@@ -4,9 +4,6 @@ set nocp
 runtime bundle/vim-pathogen/autoload/pathogen.vim
 call pathogen#infect()
 
-" Load powerline
-set rtp+=~/.vim/bundle/powerline/powerline/bindings/vim
-
 " Remap leader to ,
 noremap \ ,
 let mapleader = ","
