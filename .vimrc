@@ -38,10 +38,6 @@ set laststatus=2 " Always show statusline
 set noshowmode
 set statusline=%<%f\ %h%m%r%{fugitive#statusline()}%=%-14.(%l,%c%V%)\ %P
 
-" Airline config
-let g:airline_left_sep = ''
-let g:airline_right_sep = ''
-
 syntax on
 set background=dark
 if has('gui_running')
@@ -102,12 +98,21 @@ runtime macros/matchit.vim
 autocmd InsertEnter * setlocal nolist
 autocmd InsertLeave * setlocal list
 
+" Airline config
+let g:airline_left_sep = ''
+let g:airline_right_sep = ''
+
 " Syntastic options
 let g:syntastic_check_on_open=1
 let g:syntastic_enable_signs=0
 let g:syntastic_auto_loc_list=2
 
-let g:gitgutter_eager = 0
+" Signify
+let g:signify_vcs_list = ['git']
+let g:signify_sign_overwrite = 1
+let g:signify_sign_change = '~'
+
+let g:airline#extensions#hunks#non_zero_only = 1
 
 " Custom maps
 nnoremap ' `
