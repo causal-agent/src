@@ -1,6 +1,6 @@
 function reload {
   source ~/.zshrc
-  reset
+  rehash
 }
 
 function mkcd {
