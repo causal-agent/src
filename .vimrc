@@ -38,6 +38,10 @@ set laststatus=2 " Always show statusline
 set noshowmode
 set statusline=%<%f\ %h%m%r%{fugitive#statusline()}%=%-14.(%l,%c%V%)\ %P
 
+" Airline config
+let g:airline_left_sep = ''
+let g:airline_right_sep = ''
+
 syntax on
 set background=dark
 if has('gui_running')
