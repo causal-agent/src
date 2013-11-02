@@ -23,18 +23,20 @@ colors
 # Libs
 
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-ZSH_HIGHLIGHT_STYLES[command]='bold'
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
 ZSH_HIGHLIGHT_STYLES[builtin]='none'
+ZSH_HIGHLIGHT_STYLES[command]='bold'
+ZSH_HIGHLIGHT_STYLES[precommand]='fg=yellow,bold'
 ZSH_HIGHLIGHT_STYLES[alias]='fg=magenta,bold'
 ZSH_HIGHLIGHT_STYLES[function]='fg=magenta,bold'
-ZSH_HIGHLIGHT_STYLES[back-quoted-argument]='fg=yellow,bold'
 ZSH_HIGHLIGHT_STYLES[single-hyphen-option]='bold'
 ZSH_HIGHLIGHT_STYLES[double-hyphen-option]='bold'
 ZSH_HIGHLIGHT_STYLES[globbing]='fg=blue,bold'
 ZSH_HIGHLIGHT_STYLES[path]='none'
 ZSH_HIGHLIGHT_STYLES[history-expansion]='fg=blue,bold'
-ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]='fg=yellow,bold'
-ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=yellow,bold'
+ZSH_HIGHLIGHT_STYLES[back-quoted-argument]='fg=cyan,bold'
+ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]='fg=cyan,bold'
+ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=cyan,bold'
 
 source ~/.zsh/z/z.sh
 
