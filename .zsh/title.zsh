@@ -20,7 +20,7 @@ unset _title_host
 [[ -n "$SSH_CLIENT" ]] && _title_host='%m:'
 
 function _title_precmd {
-  [[ -z "$_title_custom" ]] && _title '$_title_host%1~$(gitprompt nocolor)'
+  [[ -z "$_title_custom" ]] && _title '$_title_host%1~'
 }
 
 typeset -ga preexec_functions
