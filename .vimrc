@@ -39,10 +39,7 @@ set noshowmode
 set statusline=%<%f\ %h%m%r%{fugitive#statusline()}%=%-14.(%l,%c%V%)\ %P
 
 syntax on
-set background=dark
-if has('gui_running')
-  colorscheme base16-default
-endif
+colorscheme jellybeans
 
 " Enable mouse in terminals
 if has('mouse')
@@ -52,8 +49,6 @@ endif
 " Less clutter in terminals
 if !has('gui_running')
   set nospell
-  set nocursorline
-  set colorcolumn=
 endif
 
 " GUI options
