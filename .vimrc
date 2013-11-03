@@ -137,6 +137,8 @@ nmap Q gq
 
 nmap <leader>b :CtrlPBuffer<CR>
 nmap <leader>e :CtrlP<CR>
+nmap <leader>t :CtrlPBufTag<CR>
+nmap <leader>l :CtrlPLine<CR>
 
 nmap <leader>gs :Gstatus<CR>
 nmap <leader>gc :Gcommit<CR>
