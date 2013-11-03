@@ -114,6 +114,8 @@ let g:signify_sign_change = '~'
 
 let g:airline#extensions#hunks#non_zero_only = 1
 
+let g:airline#extensions#whitespace#enabled = 0
+
 " Custom maps
 nnoremap ' `
 nnoremap ` '
