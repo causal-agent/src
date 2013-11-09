@@ -144,6 +144,8 @@ nmap <leader>gs :Gstatus<CR>
 nmap <leader>gc :Gcommit<CR>
 nmap <leader>gp :Git push<CR>
 
+vnoremap <silent> <Enter> :EasyAlign<Enter>
+
 " Toggle relative/absolute numbers
 function! NumberToggle()
   if(&relativenumber == 1)
