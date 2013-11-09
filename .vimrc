@@ -144,12 +144,6 @@ nmap <leader>gs :Gstatus<CR>
 nmap <leader>gc :Gcommit<CR>
 nmap <leader>gp :Git push<CR>
 
-nmap <leader>gg :GitGutterToggle<CR>
-nmap <leader>gh <Plug>GitGutterNextHunk
-nmap <leader>gH <Plug>GitGutterPrevHunk
-
-nmap <leader>u :GundoToggle<CR>
-
 " Toggle relative/absolute numbers
 function! NumberToggle()
   if(&relativenumber == 1)
