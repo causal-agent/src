@@ -118,8 +118,9 @@ endfunc
 
 nmap <C-n> :call NumberToggle()<CR>
 
-" Custom commands
 command! W :w
+
+" Plugins
 
 call plug#begin('~/.vim/plugged')
 
