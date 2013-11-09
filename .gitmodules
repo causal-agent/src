@@ -52,3 +52,6 @@
 [submodule "bundle/jellybeans.vim"]
 	path = bundle/jellybeans.vim
 	url = https://github.com/programble/jellybeans.vim
+[submodule "bundle/vim-easy-align"]
+	path = bundle/vim-easy-align
+	url = https://github.com/junegunn/vim-easy-align.git
