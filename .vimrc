@@ -165,6 +165,7 @@ Plug 'sickill/vim-pasta'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-markdown'
 Plug 'tpope/vim-ragtag'
+Plug 'tpope/vim-surround'
 
 call plug#end()
 
