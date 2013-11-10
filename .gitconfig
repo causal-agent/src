@@ -18,3 +18,5 @@
 	default = simple
 [include]
 	path = .gitconfig.private
+[github]
+	user = programble
