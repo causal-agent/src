@@ -1,5 +1,14 @@
 # Dotfiles
 
-My horribly organized configurations
+My configuration files.
 
-System-wide configurations are in `etc/`.
+## Configurations
+
+* VIM
+* zsh
+* Git
+* irb
+* ripl
+* MPD
+* ncmpcpp
+* X Compose Key
