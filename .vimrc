@@ -25,6 +25,7 @@ set listchars=tab:»·,trail:·
 set foldmethod=syntax
 set foldlevel=1000
 set laststatus=2
+set scrolloff=1
 syntax on
 
 " Enable mouse in terminals
