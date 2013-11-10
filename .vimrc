@@ -157,7 +157,7 @@ Plug 'junegunn/vim-easy-align'
 vnoremap <silent> <Enter> :EasyAlign<Enter>
 
 Plug 'Raynes/refheap.vim'
-Plug 'Townk/vim-autoclose'
+Plug 'jiangmiao/auto-pairs'
 Plug 'majutsushi/tagbar'
 Plug 'mattn/gist-vim'
 Plug 'mattn/webapi-vim'
