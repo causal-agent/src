@@ -130,8 +130,6 @@ nmap Y y$
 " Insert hard tab
 imap <S-tab> <C-v><tab>
 
-nmap Q gq
-
 " Toggle relative/absolute numbers
 function! NumberToggle()
   if(&relativenumber == 1)
