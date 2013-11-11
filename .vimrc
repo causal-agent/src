@@ -1,27 +1,5 @@
 set nocompatible
 
-call plug#begin('~/.vim/plugged')
-  Plug 'Raynes/refheap.vim'
-  Plug 'bling/vim-airline'
-  Plug 'jiangmiao/auto-pairs'
-  Plug 'junegunn/vim-easy-align'
-  Plug 'kien/ctrlp.vim'
-  Plug 'majutsushi/tagbar'
-  Plug 'mattn/gist-vim'
-  Plug 'mattn/webapi-vim'
-  Plug 'mhinz/vim-signify'
-  Plug 'programble/itchy.vim'
-  Plug 'programble/jellybeans.vim'
-  Plug 'scrooloose/syntastic'
-  Plug 'sickill/vim-pasta'
-  Plug 'tpope/vim-commentary'
-  Plug 'tpope/vim-endwise'
-  Plug 'tpope/vim-fugitive'
-  Plug 'tpope/vim-markdown'
-  Plug 'tpope/vim-ragtag'
-  Plug 'tpope/vim-surround'
-call plug#end()
-
 set backspace=indent,eol,start
 set hidden
 set backup
@@ -47,10 +25,8 @@ set listchars=tab:»·,trail:·
 set foldmethod=syntax
 set foldlevel=1000
 set laststatus=2
-set noshowmode
 set scrolloff=1
 syntax on
-colorscheme jellybeans
 
 " Enable mouse in terminals
 if has('mouse')
@@ -143,32 +119,55 @@ nmap <C-n> :call NumberToggle()<CR>
 
 command! W :w
 
-" Airline
+" Plugins
+
+call plug#begin('~/.vim/plugged')
+
+Plug 'bling/vim-airline'
+set noshowmode
 let g:airline_left_sep = ''
 let g:airline_right_sep = ''
 let g:airline#extensions#hunks#non_zero_only = 1
 let g:airline#extensions#whitespace#enabled = 0
 
-" Syntastic
+Plug 'scrooloose/syntastic'
 let g:syntastic_check_on_open=1
 let g:syntastic_enable_signs=0
 let g:syntastic_auto_loc_list=2
 
-" Signify
+Plug 'mhinz/vim-signify'
 let g:signify_vcs_list = ['git']
 let g:signify_sign_overwrite = 1
 let g:signify_sign_change = '~'
 
-" CtrlP
+Plug 'kien/ctrlp.vim'
 nmap <leader>b :CtrlPBuffer<CR>
 nmap <leader>e :CtrlP<CR>
 nmap <leader>t :CtrlPBufTag<CR>
 nmap <leader>l :CtrlPLine<CR>
 
-" Fugitive
+Plug 'tpope/vim-fugitive'
 nmap <leader>gs :Gstatus<CR>
 nmap <leader>gc :Gcommit<CR>
 nmap <leader>gp :Git push<CR>
 
-" Easy Align
+Plug 'junegunn/vim-easy-align'
 vnoremap <silent> <Enter> :EasyAlign<Enter>
+
+Plug 'Raynes/refheap.vim'
+Plug 'jiangmiao/auto-pairs'
+Plug 'majutsushi/tagbar'
+Plug 'mattn/gist-vim'
+Plug 'mattn/webapi-vim'
+Plug 'programble/itchy.vim'
+Plug 'programble/jellybeans.vim'
+Plug 'sickill/vim-pasta'
+Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-endwise'
+Plug 'tpope/vim-markdown'
+Plug 'tpope/vim-ragtag'
+Plug 'tpope/vim-surround'
+
+call plug#end()
+
+colorscheme jellybeans
