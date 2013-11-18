@@ -1,5 +1,5 @@
 function _title {
-  print -Pn "\033]0;$@\a"
+  [[ "$TERM" =~ "xterm" ]] && print -Pn "\033]0;$@\a"
 }
 
 function title {
