@@ -16,7 +16,6 @@ function home.programble.me {
   ssh -R 8071:localhost:$1 quartz
 }
 
-
 alias killlall='killall'
 alias irb='ripl'
 alias l='ls'
@@ -56,3 +55,6 @@ alias gsh='git show'
 alias gst='git stash'
 alias gt='git tag'
 alias gu='git pull'
+
+alias hu='heroku'
+alias gphu='git push heroku master'
