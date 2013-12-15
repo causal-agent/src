@@ -2,7 +2,7 @@ HISTFILE=~/.histfile
 HISTSIZE=5000
 SAVEHIST=5000
 setopt appendhistory autocd extendedglob nomatch notify autopushd
-setopt interactive_comments prompt_subst
+setopt interactive_comments prompt_subst hist_ignore_dups
 unsetopt beep
 bindkey -v
 
