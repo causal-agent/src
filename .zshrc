@@ -22,6 +22,8 @@ colors
 
 # Libs
 
+[[ -f /etc/zsh_command_not_found ]] && source /etc/zsh_command_not_found
+
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
 ZSH_HIGHLIGHT_STYLES[builtin]='none'
