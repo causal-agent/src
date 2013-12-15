@@ -62,6 +62,6 @@ EDITOR=vim
 # Prompt
 
 unset _prompt_host
-[[ -n "$SSH_CLIENT" ]] && _prompt_host="%{$fg[magenta]%}%m:"
-PROMPT=$'%{$terminfo[bold]$fg[green]%}[$_prompt_host%{$fg[blue]%}%30<…<%~$(gitprompt)%{$fg[green]%}]%(!.#.$)%{$terminfo[sgr0]$reset_color%} '
-RPROMPT="%(?..%{$terminfo[bold]$fg[green]%}[%{$fg[red]%}%?%{$fg[green]%}]%{$terminfo[sgr0]%})"
+[[ -n "$SSH_CLIENT" ]] && _prompt_host="%{$fg[magenta]%}%m"
+PROMPT=$'%{$terminfo[bold]%}$_prompt_host%{$fg[green]%}»%{$terminfo[sgr0]$reset_color%} '
+RPROMPT=$'%{$terminfo[bold]%}%(?..%{$fg[red]%}%? )%{$fg[blue]%}%30<…<%~$(gitprompt)%{$terminfo[sgr0]%}'
