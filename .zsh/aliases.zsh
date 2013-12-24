@@ -27,6 +27,8 @@ alias rm='rm -vI'
 
 alias gvim='gvim 2> /dev/null'
 
+alias b='bundle exec'
+
 alias sprunge='curl -F "sprunge=<-" http://sprunge.us'
 
 if which hub &> /dev/null; then
