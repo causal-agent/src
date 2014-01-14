@@ -42,9 +42,9 @@ ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=cyan,bold'
 
 source ~/.zsh/z/z.sh
 
-if [[ -d /usr/share/chruby ]]; then
-  source /usr/share/chruby/chruby.sh
-  source /usr/share/chruby/auto.sh
+if [[ -d /usr/local/share/chruby ]]; then
+  source /usr/local/share/chruby/chruby.sh
+  source /usr/local/share/chruby/auto.sh
   chruby 'ruby-2.0.0'
 fi
 
