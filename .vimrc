@@ -156,6 +156,7 @@ vnoremap <silent> <Enter> :EasyAlign<Enter>
 Plug 'Raynes/refheap.vim'
 Plug 'digitaltoad/vim-jade'
 Plug 'jiangmiao/auto-pairs'
+Plug 'kchmck/vim-coffee-script'
 Plug 'majutsushi/tagbar'
 Plug 'mattn/gist-vim'
 Plug 'mattn/webapi-vim'
