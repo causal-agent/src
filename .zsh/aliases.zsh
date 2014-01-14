@@ -28,6 +28,7 @@ alias rm='rm -vI'
 alias gvim='gvim 2> /dev/null'
 
 alias b='bundle exec'
+alias .env='export $(cat .env)'
 
 alias sprunge='curl -F "sprunge=<-" http://sprunge.us'
 
