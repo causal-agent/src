@@ -1,0 +1,3 @@
+#!/bin/bash
+
+scrot $@ -e 'scp -q $f ec2.cmcenroe.me:www/ss; mv $f ~/Pictures/screenshots; echo -n "http://ec2.cmcenroe.me/ss/$n" | xclip -selection clipboard; notify-send -i up "Screenshot uploaded" "$n"'
