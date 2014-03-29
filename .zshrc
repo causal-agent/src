@@ -45,7 +45,7 @@ source ~/.zsh/z/z.sh
 if [[ -d /usr/local/share/chruby ]]; then
   source /usr/local/share/chruby/chruby.sh
   source /usr/local/share/chruby/auto.sh
-  chruby 'ruby-2.0.0'
+  chruby ruby
 fi
 
 [[ -s ~/.nvm/nvm.sh ]] && source ~/.nvm/nvm.sh
