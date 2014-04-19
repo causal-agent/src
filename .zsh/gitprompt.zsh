@@ -21,7 +21,7 @@ function _gitprompt_update {
         _git_status='ahead'
       elif [[ $arr[2] =~ 'diverged' ]]; then
         _git_status='diverged'
-      else
+      elif [[ $arr[2] =~ 'behind' ]]; then
         _git_status='behind'
       fi
     fi
