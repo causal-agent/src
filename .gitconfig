@@ -20,3 +20,5 @@
 	path = .gitconfig.private
 [github]
 	user = programble
+[help]
+	autocorrect = 1
