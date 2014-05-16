@@ -1,3 +1,11 @@
+# Detect platform
+if [[ "$(uname)" == "Darwin" ]]; then
+  function osx { true }
+else
+  function osx { false }
+fi
+
+# Basic zsh config
 HISTFILE=~/.histfile
 HISTSIZE=5000
 SAVEHIST=5000
@@ -59,7 +67,9 @@ source ~/.zsh/aliases.zsh
 
 # Environment
 
-EDITOR=vim
+export EDITOR=vim
+osx && PATH=$PATH:~/bin
+osx && export CLICOLOR=1
 
 # Prompt
 
