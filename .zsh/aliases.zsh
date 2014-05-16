@@ -17,15 +17,17 @@ function tunnel {
 }
 
 alias killlall='killall'
-alias irb='ripl'
+which ripl &> /dev/null && alias irb='ripl'
 alias l='ls'
 alias ll='ls'
 
-alias ls='ls --color=auto'
-alias grep='grep --color=auto'
-alias rm='rm -vI'
+osx || alias ls='ls --color=auto'
+osx || alias grep='grep --color=auto'
+osx || alias rm='rm -vI'
+osx && alias rm='rm -v'
 
-alias gvim='gvim 2> /dev/null'
+osx || alias gvim='gvim 2> /dev/null'
+osx && alias gvim='mvim'
 
 alias b='bundle exec'
 alias .env='export $(cat .env)'
