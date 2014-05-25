@@ -14,7 +14,8 @@
 
 ### Back cover
 
-> 13  
+> 13
+
 > alien8 recordings
 
 ### Gatefold right
