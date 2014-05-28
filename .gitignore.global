@@ -2,3 +2,4 @@
 *.swp
 *.swo
 .pult
+.DS_store
