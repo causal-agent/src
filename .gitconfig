@@ -3,7 +3,7 @@
 	email = programble@gmail.com
 [core]
 	editor = vim
-	excludesfile = /home/curtis/.gitignore.global
+	excludesfile = ~/.gitignore.global
 	autocrlf = input
 [sendemail]
 	smtpencryption = tls
