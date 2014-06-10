@@ -269,6 +269,11 @@ Plug 'pangloss/vim-javascript'
 Plug 'tpope/vim-markdown'
 Plug 'tpope/vim-ragtag'
 
+Plug 'Raimondi/delimitMate'
+let delimitMate_expand_cr = 1
+let delimitMate_expand_space = 1
+let delimitMate_jump_expansion = 1
+
 call plug#end()
 
 colorscheme jellybeans
