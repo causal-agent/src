@@ -274,6 +274,9 @@ let delimitMate_expand_cr = 1
 let delimitMate_expand_space = 1
 let delimitMate_jump_expansion = 1
 
+Plug 'nathanaelkane/vim-indent-guides'
+let g:indent_guides_start_level = 2
+
 call plug#end()
 
 colorscheme jellybeans
