@@ -81,6 +81,9 @@ set laststatus=2
 " Always show one line above or below the cursor.
 set scrolloff=1
 
+" Ctrl-A and Ctrl-X work on hex and single letters
+set nrformats=alpha,hex
+
 " Enable syntax highlighting.
 syntax on
 
