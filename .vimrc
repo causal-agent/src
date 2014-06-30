@@ -274,6 +274,8 @@ Plug 'terryma/vim-multiple-cursors'
 Plug 'tpope/vim-speeddating'
 " File-related commands.
 Plug 'tpope/vim-eunuch'
+" Highlight color values with their color in CSS.
+Plug 'ap/vim-css-color'
 
 " Language support.
 Plug 'digitaltoad/vim-jade'
