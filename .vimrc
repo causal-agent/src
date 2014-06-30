@@ -245,6 +245,16 @@ nmap <leader>gp :Git push<CR>
 Plug 'junegunn/vim-easy-align'
 vnoremap <silent> <Enter> :EasyAlign<Enter>
 
+" Auto-close braces, parens, quotes, etc.
+Plug 'Raimondi/delimitMate'
+let delimitMate_expand_cr = 1
+let delimitMate_expand_space = 1
+let delimitMate_jump_expansion = 1
+
+" Indent guides by alternating background colour.
+Plug 'nathanaelkane/vim-indent-guides'
+let g:indent_guides_start_level = 2
+
 " Pastebin.
 Plug 'Raynes/refheap.vim'
 " Show nearest tag in statusline.
@@ -263,6 +273,10 @@ Plug 'sickill/vim-pasta'
 Plug 'tpope/vim-commentary'
 " Surround text objects.
 Plug 'tpope/vim-surround'
+" Sublime-style multiple cursors.
+Plug 'terryma/vim-multiple-cursors'
+" Increment, decrement dates and roman numerals with C-a, C-x.
+Plug 'tpope/vim-speeddating'
 
 " Language support.
 Plug 'digitaltoad/vim-jade'
@@ -271,16 +285,6 @@ Plug 'kchmck/vim-coffee-script'
 Plug 'pangloss/vim-javascript'
 Plug 'tpope/vim-markdown'
 Plug 'tpope/vim-ragtag'
-
-Plug 'Raimondi/delimitMate'
-let delimitMate_expand_cr = 1
-let delimitMate_expand_space = 1
-let delimitMate_jump_expansion = 1
-
-Plug 'nathanaelkane/vim-indent-guides'
-let g:indent_guides_start_level = 2
-
-Plug 'terryma/vim-multiple-cursors'
 
 call plug#end()
 
