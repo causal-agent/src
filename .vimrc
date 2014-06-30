@@ -268,10 +268,12 @@ Plug 'sickill/vim-pasta'
 Plug 'tpope/vim-commentary'
 " Surround text objects.
 Plug 'tpope/vim-surround'
-" Sublime-style multiple cursors.
+" Sublime-style multiple cursors. (C-n)
 Plug 'terryma/vim-multiple-cursors'
 " Increment, decrement dates and roman numerals with C-a, C-x.
 Plug 'tpope/vim-speeddating'
+" File-related commands.
+Plug 'tpope/vim-eunuch'
 
 " Language support.
 Plug 'digitaltoad/vim-jade'
