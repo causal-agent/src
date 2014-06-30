@@ -251,22 +251,16 @@ let delimitMate_expand_cr = 1
 let delimitMate_expand_space = 1
 let delimitMate_jump_expansion = 1
 
-" Indent guides by alternating background colour.
+" Indent guides by alternating background colour. (<leader>ig)
 Plug 'nathanaelkane/vim-indent-guides'
 let g:indent_guides_start_level = 2
 
-" Pastebin.
-Plug 'Raynes/refheap.vim'
-" Show nearest tag in statusline.
-Plug 'majutsushi/tagbar'
-" Pastebin.
-Plug 'mattn/gist-vim'
-" Required by gist.
-Plug 'mattn/webapi-vim'
-" Scratch buffers.
-Plug 'programble/itchy.vim'
 " Colorscheme.
 Plug 'programble/jellybeans.vim'
+" Show nearest tag in statusline.
+Plug 'majutsushi/tagbar'
+" Scratch buffers.
+Plug 'programble/itchy.vim'
 " Better paste indentation.
 Plug 'sickill/vim-pasta'
 " Commenting.
