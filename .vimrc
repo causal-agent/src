@@ -255,8 +255,9 @@ let delimitMate_jump_expansion = 1
 Plug 'nathanaelkane/vim-indent-guides'
 let g:indent_guides_start_level = 2
 
-" Colorscheme.
+" Colorschemes.
 Plug 'programble/jellybeans.vim'
+Plug 'programble/vim-hybrid'
 " Show nearest tag in statusline.
 Plug 'majutsushi/tagbar'
 " Scratch buffers.
@@ -282,4 +283,5 @@ Plug 'tpope/vim-ragtag'
 
 call plug#end()
 
-colorscheme jellybeans
+colorscheme hybrid
+let g:airline_theme = 'tomorrow'
