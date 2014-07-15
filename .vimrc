@@ -276,6 +276,8 @@ Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-eunuch'
 " Highlight color values with their color in CSS.
 Plug 'ap/vim-css-color'
+" Swap two selections.
+Plug 'tommcdo/vim-exchange'
 
 " Language support.
 Plug 'digitaltoad/vim-jade'
