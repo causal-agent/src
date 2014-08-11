@@ -16,6 +16,8 @@ function tunnel {
   ssh -R 8022:localhost:$1 ec2.cmcenroe.me
 }
 
+alias randpasswd='openssl rand -base64 12'
+
 alias killlall='killall'
 which ripl &> /dev/null && alias irb='ripl'
 alias l='ls'
