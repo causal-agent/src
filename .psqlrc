@@ -1,7 +1,9 @@
 \set QUIET
+\timing on
+\set FETCH_COUNT 100
 \pset linestyle unicode
-\pset border 2
+\pset border 1
 \pset null ¤
 \pset format wrapped
-\timing on
+\pset expanded auto
 \unset QUIET
