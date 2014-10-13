@@ -13,7 +13,7 @@ function mkcd {
 }
 
 function tunnel {
-  ssh -R 8022:localhost:$1 ec2.cmcenroe.me
+  ssh -R 8022:localhost:$1 do.asdf.pw
 }
 
 alias randpasswd='openssl rand -base64 12'
