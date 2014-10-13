@@ -8,9 +8,6 @@ set backspace=indent,eol,start
 " without saving first.
 set hidden
 
-" Create backup files before saving (file.txt is backed up to file.txt~).
-set backup
-
 " Keep 50 lines of : command history and search patterns.
 set history=50
 
