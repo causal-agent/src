@@ -68,7 +68,7 @@ source ~/.zsh/aliases.zsh
 # Environment
 
 export EDITOR=vim
-osx && PATH=$PATH:~/bin
+osx && PATH=$PATH:~/.bin
 osx && export CLICOLOR=1
 
 # Prompt
