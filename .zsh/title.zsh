@@ -13,7 +13,7 @@ function title {
 }
 
 function _title_preexec {
-  [[ -z "$_title_custom" ]] && _title "$1"
+  [[ -z "$_title_custom" ]] && _title "$_title_host%1~: $1"
 }
 
 unset _title_host
