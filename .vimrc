@@ -185,14 +185,7 @@ nmap Y y$
 imap <S-tab> <C-v><tab>
 
 " Toggle relative/absolute line numbers.
-function! NumberToggle()
-  if(&relativenumber == 1)
-    set norelativenumber
-  else
-    set relativenumber
-  endif
-endfunc
-nmap <C-n> :call NumberToggle()<CR>
+nmap <C-n> :set relativenumber!<CR>
 
 " Common typos.
 command! W :w
