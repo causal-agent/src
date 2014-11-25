@@ -252,6 +252,10 @@ let delimitMate_jump_expansion = 1
 Plug 'nathanaelkane/vim-indent-guides'
 let g:indent_guides_start_level = 2
 
+" Distraction-free editing
+Plug 'junegunn/goyo.vim'
+nmap <leader>G :Goyo<CR>
+
 " Colorschemes.
 Plug 'programble/jellybeans.vim'
 Plug 'programble/vim-hybrid'
