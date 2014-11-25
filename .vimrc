@@ -252,6 +252,7 @@ nmap <leader>G :Goyo<CR>
 " Colorschemes.
 Plug 'programble/jellybeans.vim'
 Plug 'programble/vim-hybrid'
+Plug 'morhetz/gruvbox'
 " Show nearest tag in statusline.
 Plug 'majutsushi/tagbar'
 " Scratch buffers.
@@ -281,5 +282,12 @@ Plug 'tpope/vim-ragtag'
 
 call plug#end()
 
-colorscheme hybrid
+set background=dark
+let g:gruvbox_termcolors = 16
+let g:gruvbox_italic = 0
+let g:gruvbox_invert_selection = 0
+let g:gruvbox_sign_column = 'dark0'
+let g:gruvbox_vert_split = 'dark0'
+set fillchars+=vert:│
+colorscheme gruvbox
 let g:airline_theme = 'tomorrow'
