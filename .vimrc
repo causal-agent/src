@@ -107,7 +107,7 @@ set guioptions-=T
 set guioptions+=c
 
 " Use a font.
-set guifont=Monospace\ 9
+set guifont=ProFont:h11
 
 " Jump to the last cursor position when opening a file.
 au BufReadPost * if &filetype !~ '^git\c' && line("'\"") > 0 && line("'\"") <= line("$")
