@@ -1,3 +1,4 @@
 exclude:
   - README.md
   - vim-plug.sh
+  - com.googlecode.iterm2.plist
