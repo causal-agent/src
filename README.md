@@ -8,7 +8,5 @@ My configuration files.
 * zsh
 * Git
 * irb
-* ripl
-* MPD
-* ncmpcpp
-* X Compose Key
+* psql
+* iTerm 2
