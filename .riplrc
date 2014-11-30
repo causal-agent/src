@@ -1,1 +1,0 @@
-%w[multi_line rocket color_error color_result auto_indent short_errors].map {|r| require "ripl/#{r}" }
