@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<root>
+  <devicevendordef>
+    <vendorname>LEOPOLD</vendorname>
+    <vendorid>0x0853</vendorid>
+  </devicevendordef>
+
+  <deviceproductdef>
+    <productname>FC660C</productname>
+    <productid>0x0134</productid>
+  </deviceproductdef>
+
+  <item>
+    <name>Leopold Media Control</name>
+    <identifier>private.leopold_media_control</identifier>
+    <device_only>DeviceVendor::LEOPOLD, DeviceProduct::FC660C</device_only>
+
+    <appendix>Rebind Ctrl+Help to Volume Up</appendix>
+    <autogen>__KeyToKey__ KeyCode::HELP, ModifierFlag::CONTROL_R, ConsumerKeyCode::VOLUME_UP</autogen>
+
+    <appendix>Rebind Ctrl+Delete to Volume Down</appendix>
+    <autogen>__KeyToKey__ KeyCode::FORWARD_DELETE, ModifierFlag::CONTROL_R, ConsumerKeyCode::VOLUME_DOWN</autogen>
+
+    <appendix>Rebind Help to Play/Pause</appendix>
+    <autogen>__KeyToKey__ KeyCode::HELP, ConsumerKeyCode::MUSIC_PLAY</autogen>
+
+    <appendix>Rebind Delete to Next</appendix>
+    <autogen>__KeyToKey__ KeyCode::FORWARD_DELETE, ConsumerKeyCode::MUSIC_NEXT</autogen>
+  </item>
+
+  <item>
+    <name>Back/Forward Mouse Buttons to Space Switching</name>
+    <identifier>private.bfmb_spaces</identifier>
+    <device_only>DeviceVendor::LOGITECH, DeviceProduct::LOGITECH_UNIFYING_0xc52b</device_only>
+
+    <appendix>Button 4 to Control+L</appendix>
+    <autogen>__KeyToKey__ PointingButton::BUTTON4, KeyCode::L, ModifierFlag::CONTROL_L</autogen>
+
+    <appendix>Button 5 to Control+H</appendix>
+    <autogen>__KeyToKey__ PointingButton::BUTTON5, KeyCode::H, ModifierFlag::CONTROL_L</autogen>
+  </item>
+</root>
