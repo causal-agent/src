@@ -16,6 +16,10 @@ function tunnel {
   ssh -R 8022:localhost:$1 do.asdf.pw
 }
 
+function vman {
+  vim -c "SuperMan $*" || echo "No manual entry for $*"
+}
+
 alias randpasswd='openssl rand -base64 12'
 
 alias killlall='killall'
