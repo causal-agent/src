@@ -251,7 +251,10 @@ let g:indent_guides_start_level = 2
 
 " Distraction-free editing
 Plug 'junegunn/goyo.vim'
+Plug 'junegunn/limelight.vim'
 nmap <leader>G :Goyo<CR>
+autocmd User GoyoEnter Limelight
+autocmd User GoyoLeave Limelight!
 
 " Colorschemes.
 Plug 'programble/jellybeans.vim'
