@@ -287,6 +287,8 @@ Plug 'pangloss/vim-javascript'
 Plug 'tpope/vim-markdown'
 Plug 'tpope/vim-ragtag'
 
+Plug 'Z1MM32M4N/vim-superman'
+
 call plug#end()
 
 set background=dark
