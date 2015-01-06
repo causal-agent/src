@@ -38,8 +38,8 @@ set number
 " Perform spell-checking on strings and comments.
 set spell
 
-" Highlight the 80th column.
-set colorcolumn=80
+" Highlight the 80th, 100th and 120th columns.
+set colorcolumn=80,100,120
 
 " Set the window title with the current file name, status and directory.
 set title
