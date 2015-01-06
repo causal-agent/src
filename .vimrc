@@ -161,6 +161,10 @@ let mapleader = ","
 nnoremap ' `
 nnoremap ` '
 
+" Swap 0 and ^ (0 now moves to the first non-whitespace character).
+nnoremap 0 ^
+nnoremap ^ 0
+
 " Clear search result highlighting.
 nmap <leader>n :nohlsearch<CR>
 
