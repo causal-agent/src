@@ -1,4 +1,5 @@
 exclude:
+  - .DS_Store
   - README.md
   - vim-plug.sh
   - com.googlecode.iterm2.plist
