@@ -20,7 +20,7 @@ function vman {
   vim -c "SuperMan $*" || echo "No manual entry for $*"
 }
 
-alias randpasswd='openssl rand -base64 12'
+alias randpasswd='openssl rand -base64 21 | tr +/ -_'
 
 alias killlall='killall'
 which ripl &> /dev/null && alias irb='ripl'
