@@ -289,6 +289,8 @@ Plug 'tpope/vim-ragtag'
 
 Plug 'Z1MM32M4N/vim-superman'
 
+Plug 'kshenoy/vim-signature'
+
 call plug#end()
 
 set background=dark
