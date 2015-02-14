@@ -1,4 +1,0 @@
-$:.unshift 'lib'
-$: << '.'
-
-require 'pp'

@@ -4,9 +4,9 @@ My configuration files.
 
 ## Configurations
 
-* VIM
-* zsh
-* Git
-* irb
-* psql
-* iTerm 2
+- vim
+- zsh
+- git
+- psql
+- iTerm 2
+- Karabiner
