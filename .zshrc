@@ -1,79 +1,104 @@
-# Detect platform
-if [[ "$(uname)" == "Darwin" ]]; then
-  function osx { true }
-else
-  function osx { false }
-fi
+# Save 5000 lines of history, writing after each command, ignoring duplicates.
+HISTFILE=~/.history
+HISTSIZE=SAVEHIST=5000
+setopt inc_append_history hist_ignore_dups
 
-# Basic zsh config
-HISTFILE=~/.histfile
-HISTSIZE=5000
-SAVEHIST=5000
-setopt appendhistory autocd extendedglob nomatch notify autopushd
-setopt interactive_comments prompt_subst hist_ignore_dups
+# Error if glob does not match.
+setopt nomatch
+
+# Allow comments in interactive shell.
+setopt interactive_comments
+
+# No.
 unsetopt beep
+
+# Vim line editing.
 bindkey -v
 
-# Completion
-zstyle ':completion:*' completer _expand _complete _ignored _correct _approximate _prefix
-zstyle ':completion:*' max-errors 2
-zstyle :compinstall filename '/home/home/.zshrc'
+# Initialize completion.
+autoload -Uz compinit && compinit
 
-autoload -Uz compinit
-compinit
+# Prompt with single character on the left, normally green, magenta over SSH,
+# red after a failed command. Directory and git branch on the right.
+setopt prompt_subst
+autoload colors && colors
+[[ -n "$SSH_CLIENT" ]] && _prompt_ssh_color="$fg[magenta]"
+_prompt_git_branch() {
+  [[ -f .git/HEAD ]] || return 0
+  local head
+  read head < .git/HEAD
+  case "$head" in
+    ref:*)
+      echo ":${head##*/}"
+      ;;
+    *)
+      echo ":${head:0:7}"
+      ;;
+  esac
+}
+PROMPT='%{%(?.$fg[green]$_prompt_ssh_color.$fg[red])%}»%{$reset_color%} '
+RPROMPT='%{$fg[blue]%}%30<…<%~%{$fg[yellow]%}$(_prompt_git_branch)%{$reset_color%}'
 
-# Colors
-autoload colors zsh/terminfo
-colors
+# Set title to directory name at prompt, prefixed with hostname over SSH. Add
+# current command to title while running.
+_title() {
+  [[ "$TERM" =~ 'xterm' ]] && print -Pn "\e]0;$@\a"
+}
+[[ -n "$SSH_CLIENT" ]] && _title_host='%m:'
+_title_preexec() { _title "$_title_host%1~: $1" }
+_title_precmd() { _title "$_title_host%1~" }
+typeset -ga preexec_functions
+typeset -ga precmd_functions
+preexec_functions+=_title_preexec
+precmd_functions+=_title_precmd
 
-[[ -n "$COLORTERM" ]] && export TERM='xterm-256color'
-
-# Libs
-
-[[ -f /etc/zsh_command_not_found ]] && source /etc/zsh_command_not_found
-
-source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
-ZSH_HIGHLIGHT_STYLES[builtin]='none'
-ZSH_HIGHLIGHT_STYLES[command]='bold'
-ZSH_HIGHLIGHT_STYLES[precommand]='fg=yellow,bold'
-ZSH_HIGHLIGHT_STYLES[alias]='fg=magenta,bold'
-ZSH_HIGHLIGHT_STYLES[function]='fg=magenta,bold'
-ZSH_HIGHLIGHT_STYLES[single-hyphen-option]='bold'
-ZSH_HIGHLIGHT_STYLES[double-hyphen-option]='bold'
-ZSH_HIGHLIGHT_STYLES[globbing]='fg=blue,bold'
-ZSH_HIGHLIGHT_STYLES[path]='none'
-ZSH_HIGHLIGHT_STYLES[history-expansion]='fg=blue,bold'
-ZSH_HIGHLIGHT_STYLES[back-quoted-argument]='fg=cyan,bold'
-ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]='fg=cyan,bold'
-ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=cyan,bold'
-
-source ~/.zsh/z/z.sh
-
-if [[ -d /usr/local/share/chruby ]]; then
-  source /usr/local/share/chruby/chruby.sh
-  source /usr/local/share/chruby/auto.sh
-  chruby ruby
-fi
-
-[[ -s ~/.nvm/nvm.sh ]] && source ~/.nvm/nvm.sh
-
-[[ -f /usr/local/heroku ]] && export PATH="/usr/local/heroku/bin:$PATH"
-
-source ~/.zsh/gitprompt.zsh
-source ~/.zsh/title.zsh
-
-source ~/.zsh/aliases.zsh
-
-# Environment
-
+# General environment setup.
+PATH=$PATH:~/.bin
 export EDITOR=vim
-osx && PATH=$PATH:~/.bin
-osx && export CLICOLOR=1
+export CLICOLOR=1 # color ls output on OS X
 
-# Prompt
+# Detect OS X for conditional aliases.
+[[ "$OSTYPE" =~ 'darwin' ]] && alias osx=true || alias osx=false
 
-unset _prompt_host
-[[ -n "$SSH_CLIENT" ]] && _prompt_host="%{$fg[magenta]%}%m"
-PROMPT=$'%{$terminfo[bold]%}$_prompt_host%{$fg[green]%}»%{$terminfo[sgr0]$reset_color%} '
-RPROMPT=$'%{$terminfo[bold]%}%(?..%{$fg[red]%}%? )%{$fg[blue]%}%30<…<%~$(gitprompt)%{$terminfo[sgr0]%}'
+# Color output on Linux.
+osx || alias ls='ls --color'
+osx || alias grep='grep --color'
+
+# Verbose output from rm with confirmation on Linux.
+osx || alias rm='rm -vI'
+osx && alias rm='rm -v'
+
+# Suppress output from Linux gvim, alias gvim to MacVim.
+osx || alias gvim='gvim 2> /dev/null'
+osx && alias gvim=mvim
+
+alias g=git
+alias ga='git add'
+alias gb='git branch'
+alias gc='git commit'
+alias gca='git commit --amend'
+alias gcl='git clone'
+alias gco='git checkout'
+alias gd='git diff'
+alias gi='git init'
+alias gl='git log'
+alias glg="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative --color"
+alias gm='git merge'
+alias gmv='git mv'
+alias gp='git push'
+alias gr='git rebase'
+alias grc='git rebase --continue'
+alias grs='git rebase --skip'
+alias gra='git rebase --abort'
+alias grm='git rm'
+alias gs='git status -sb'
+alias gsh='git show'
+alias gst='git stash'
+alias gt='git tag'
+alias gu='git pull'
+alias gf='git fetch'
+alias gbl='git blame'
+
+alias hu=heroku
+
+[[ -f ~/.nvm/nvm.sh ]] && source ~/.nvm/nvm.sh
