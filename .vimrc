@@ -47,7 +47,14 @@ let mapleader=","
 " Clear search results.
 nmap <leader>n :nohlsearch<CR>
 
-colorscheme hybrid
-
 " Set GUI font and disable GUI features.
 set guifont=ProFont:h11 guioptions=c
+
+" Configure gruvbox colorscheme.
+set background=dark
+let g:gruvbox_termcolors = 16
+let g:gruvbox_italic = 0
+let g:gruvbox_invert_selection = 0
+let g:gruvbox_sign_column = 'dark0'
+let g:gruvbox_vert_split = 'dark0'
+colorscheme gruvbox
