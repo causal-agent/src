@@ -102,3 +102,6 @@ alias gbl='git blame'
 alias hu=heroku
 
 [[ -f ~/.nvm/nvm.sh ]] && source ~/.nvm/nvm.sh
+
+# Prevent red first prompt.
+true
