@@ -27,6 +27,9 @@ set shortmess=atI
 " Disable audible bell.
 set visualbell t_vb=
 
+" Prevent delay when returning to norml mode in terminal vim.
+set timeoutlen=0
+
 " Show hard tabs and trailing whitespace
 set list listchars=tab:»·,trail:·
 
