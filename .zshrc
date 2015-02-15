@@ -29,7 +29,7 @@ _prompt_git_branch() {
   read head < .git/HEAD
   case "$head" in
     ref:*)
-      echo ":${head##*/}"
+      echo ":${head#*/*/}"
       ;;
     *)
       echo ":${head:0:7}"
