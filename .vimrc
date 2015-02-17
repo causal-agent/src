@@ -28,7 +28,7 @@ set shortmess=atI
 set visualbell t_vb=
 
 " Prevent delay when returning to norml mode in terminal vim.
-set timeoutlen=0
+set ttimeoutlen=0
 
 " Show hard tabs and trailing whitespace
 set list listchars=tab:»·,trail:·
@@ -45,7 +45,7 @@ set wildmenu wildmode=list:longest
 
 " Swap , and \ for leader.
 noremap \ ,
-let mapleader=","
+let mapleader = ','
 
 " Clear search results.
 nmap <leader>n :nohlsearch<CR>
