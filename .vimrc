@@ -9,6 +9,9 @@ set hidden
 " Show cursor position and incomplete commands, always show status line.
 set ruler showcmd laststatus=2
 
+" Always show one extra line at the top or bottom of the window.
+set scrolloff=1
+
 " Search incrementally with smart case sensitivity, highlight all matches.
 set incsearch ignorecase smartcase hlsearch
 
