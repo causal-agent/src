@@ -72,6 +72,9 @@ osx && alias rm='rm -v'
 osx || alias gvim='gvim 2> /dev/null'
 osx && alias gvim=mvim
 
+tn() { [ -n "$1" ] && tmux new -s "$1" || tmux new }
+ta() { [ -n "$1" ] && tmux attach -t "$1" || tmux attach }
+
 alias g=git
 alias ga='git add'
 alias gb='git branch'
