@@ -10,3 +10,15 @@ My configuration files.
 - psql
 - iTerm 2
 - Karabiner
+
+## Install
+
+```
+./install.sh
+```
+
+## Import
+
+```
+./import .config
+```
