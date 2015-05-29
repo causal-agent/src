@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # Create symlinks in ~ for files in the current directory.
 

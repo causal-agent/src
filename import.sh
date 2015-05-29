@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # Import a file from ~ and replace it with a symlink.
 
