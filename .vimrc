@@ -64,3 +64,5 @@ let g:gruvbox_invert_selection = 0
 let g:gruvbox_sign_column = 'dark0'
 let g:gruvbox_vert_split = 'dark0'
 colorscheme gruvbox
+
+execute pathogen#infect()
