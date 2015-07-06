@@ -17,5 +17,6 @@ dest_path="$PWD/$1"
 [ -f "$dest_path" ] && error "$dest_path already exists"
 [ -f "$source_path" ] || error "$source_path does not exist"
 
+mkdir -p "$(dirname "$dest_path")"
 mv "$source_path" "$dest_path"
 ln -s "$dest_path" "$source_path"
