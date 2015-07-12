@@ -459,7 +459,7 @@
 	<key>LoadPrefsFromCustomFolder</key>
 	<true/>
 	<key>MaxVertically</key>
-	<false/>
+	<true/>
 	<key>NSNavLastRootDirectory</key>
 	<string>~/Code/dotfiles</string>
 	<key>NSNavPanelExpandedSizeForOpenMode</key>
@@ -492,7 +492,7 @@
 	<key>NSWindow Frame Preferences</key>
 	<string>290 262 924 485 0 0 1440 877 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>487 316 570 376 0 0 1440 877 </string>
+	<string>474 350 570 376 0 0 1440 877 </string>
 	<key>NeverWarnAboutShortLivedSessions_3518C480-09C0-47C0-863F-A01193518920</key>
 	<true/>
 	<key>New Bookmarks</key>
