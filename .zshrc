@@ -106,5 +106,10 @@ alias hu=heroku
 
 [[ -f ~/.nvm/nvm.sh ]] && source ~/.nvm/nvm.sh
 
+if [[ -d /usr/local/share/chruby ]]; then
+  source /usr/local/share/chruby/chruby.sh
+  chruby ruby
+fi
+
 # Prevent red first prompt.
 true
