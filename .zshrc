@@ -36,8 +36,12 @@ _prompt_git_branch() {
       ;;
   esac
 }
-PROMPT='%{%(?.$fg[green]$_prompt_ssh_color.$fg[red])%}»%{$reset_color%} '
+PROMPT='
+%{%(?.$fg[green]$_prompt_ssh_color.$fg[red])%}»%{$reset_color%} '
 RPROMPT='%{$fg[blue]%}%-50<…<%~%{$fg[yellow]%}$(_prompt_git_branch)%{$reset_color%}'
+
+# Place first prompt at bottom of window.
+tput cup "$(($LINES - 2))"
 
 # Set title to directory name at prompt, prefixed with hostname over SSH. Add
 # current command to title while running.
