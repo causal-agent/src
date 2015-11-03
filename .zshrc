@@ -36,9 +36,11 @@ _prompt_git_branch() {
       ;;
   esac
 }
-PROMPT='
-%{%(?.$fg[green]$_prompt_ssh_color.$fg[red])%}»%{$reset_color%} '
+PROMPT='%{%(?.$fg[green]$_prompt_ssh_color.$fg[red])%}»%{$reset_color%} '
 RPROMPT='%{$fg[blue]%}%-50<…<%~%{$fg[yellow]%}$(_prompt_git_branch)%{$reset_color%}'
+
+# Print a newline before every prompt after the first one.
+_newline_precmd() { print -n "$_newline"; _newline="\n" }
 
 # Set title to directory name at prompt, prefixed with hostname over SSH. Add
 # current command to title while running.
@@ -48,10 +50,11 @@ _title() {
 [[ -n "$SSH_CLIENT" ]] && _title_host='%m:'
 _title_preexec() { _title "$_title_host%1~: $1" }
 _title_precmd() { _title "$_title_host%1~" }
+
 typeset -ga preexec_functions
 typeset -ga precmd_functions
-preexec_functions+=_title_preexec
-precmd_functions+=_title_precmd
+preexec_functions+=(_title_preexec)
+precmd_functions+=(_newline_precmd _title_precmd)
 
 # General environment setup.
 PATH=$PATH:~/.bin
