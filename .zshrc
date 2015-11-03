@@ -40,7 +40,7 @@ PROMPT='%{%(?.$fg[green]$_prompt_ssh_color.$fg[red])%}»%{$reset_color%} '
 RPROMPT='%{$fg[blue]%}%-50<…<%~%{$fg[yellow]%}$(_prompt_git_branch)%{$reset_color%}'
 
 # Print a newline before every prompt after the first one.
-_newline_precmd() { print -n "$_newline"; _newline="\n" }
+_newline_precmd() { _newline_precmd() { echo } }
 
 # Set title to directory name at prompt, prefixed with hostname over SSH. Add
 # current command to title while running.
