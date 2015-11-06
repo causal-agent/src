@@ -13,14 +13,27 @@ My configuration files.
 
 ## Install
 
+Create symlinks in ~ for files in the current directory.
+
 ```
 ./install.sh
 ```
 
 ## Import
 
+Import a file from ~ and replace it with a symlink.
+
 ```
-./import .config
+./import.sh .config
+```
+
+## Prune
+
+Remove symbolic links in ~ to files that no longer exist in the current
+directory.
+
+```
+./prune.sh
 ```
 
 ## License
