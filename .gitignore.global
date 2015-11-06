@@ -1,6 +1,4 @@
 *~
-*.swp
-*.swo
-.pult
-.pultrc
+.*.sw?
 *.DS_store
+.pult*

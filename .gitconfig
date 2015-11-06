@@ -5,20 +5,18 @@
 	editor = vim
 	excludesfile = ~/.gitignore.global
 	autocrlf = input
+[push]
+	default = simple
+[help]
+	autocorrect = 1
+[color]
+	ui = true
 [sendemail]
 	smtpencryption = tls
 	smtpserver = smtp.gmail.com
 	smtpuser = programble@gmail.com
 	smtpserverport = 587
-[merge]
-	tool = vimdiff
-[color]
-	ui = true
-[push]
-	default = simple
-[include]
-	path = .gitconfig.private
 [github]
 	user = programble
-[help]
-	autocorrect = 1
+[include]
+	path = .gitconfig.private
