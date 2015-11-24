@@ -19,7 +19,7 @@ set incsearch ignorecase smartcase hlsearch
 set autoindent smartindent smarttab
 
 " Show line numbers, highlight current line and fixed columns.
-set number cursorline colorcolumn=80,100,120
+set number cursorline colorcolumn=80,100
 
 " Set window title.
 set title
