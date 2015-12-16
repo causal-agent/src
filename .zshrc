@@ -15,14 +15,23 @@ unsetopt beep
 # Vim line editing.
 bindkey -v
 
-# Initialize completion.
+# Initialize completion and colors.
 autoload -Uz compinit && compinit
-
-# Prompt with single character on the left, normally green, magenta over SSH,
-# red after a failed command. Directory and git branch on the right.
-setopt prompt_subst
 autoload colors && colors
+
+# Color prompt magenta over SSH.
 [[ -n "$SSH_CLIENT" ]] && _prompt_ssh_color="$fg[magenta]"
+
+# Color prompt yellow in vi normal mode.
+function zle-line-init zle-keymap-select {
+  _prompt_vi_color=
+  [[ "$KEYMAP" == "vicmd" ]] && _prompt_vi_color="$fg[yellow]"
+  zle reset-prompt
+}
+zle -N zle-line-init
+zle -N zle-keymap-select
+
+# Show git branch or commit in right prompt.
 _prompt_git_branch() {
   [[ -f .git/HEAD ]] || return 0
   local head
@@ -36,7 +45,10 @@ _prompt_git_branch() {
       ;;
   esac
 }
-PROMPT='%{%(?.$fg[green]$_prompt_ssh_color.$fg[red])%}»%{$reset_color%} '
+
+# Single colored character prompt, directory and git branch in right prompt.
+setopt prompt_subst
+PROMPT='%{%(?.$fg[green]$_prompt_ssh_color.$fg[red])$_prompt_vi_color%}»%{$reset_color%} '
 RPROMPT='%{$fg[blue]%}%-50<…<%~%{$fg[yellow]%}$(_prompt_git_branch)%{$reset_color%}'
 
 # Print a newline before every prompt after the first one.
