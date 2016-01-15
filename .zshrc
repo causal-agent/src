@@ -12,8 +12,9 @@ setopt interactive_comments
 # No.
 unsetopt beep
 
-# Vim line editing.
+# Vim line editing, eliminate escape key delay.
 bindkey -v
+KEYTIMEOUT=1
 
 # Initialize completion and colors.
 autoload -Uz compinit && compinit
