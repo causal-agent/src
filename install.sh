@@ -9,7 +9,7 @@ error() {
   exit 1
 }
 
-paths=$(find $PWD -type f -not \( -path '*/.git/*' -o -path '*/Library/*' -o -name '.*.sw?' -o -name '.gitignore' -o -name 'README.md' -o -name '*.sh' -o -name '*.plist' \))
+paths=$(find $PWD -type f -not \( -path '*/.git/*' -o -path '*/Library/*' -o -name '.*.sw?' -o -name 'README.md' -o -name '*.sh' -o -name '*.plist' \))
 
 for source_path in $paths; do
   rel_path="${source_path#$PWD/}"
