@@ -99,7 +99,7 @@ alias gca='git commit --amend'
 alias gcl='git clone'
 alias gco='git checkout'
 alias gd='git diff'
-alias gl="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative --color"
+alias gl='git log --graph --pretty=log'
 alias gm='git merge'
 alias gmv='git mv'
 alias gp='git push'

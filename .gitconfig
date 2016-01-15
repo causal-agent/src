@@ -13,6 +13,8 @@
 	autocorrect = 1
 [color]
 	ui = true
+[pretty]
+	log = %Cred%h %Creset%s%C(yellow)%d %Cgreen(%ar) %Cblue<%an>
 [sendemail]
 	smtpencryption = tls
 	smtpserver = smtp.gmail.com
