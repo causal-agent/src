@@ -3,24 +3,7 @@
 	email = programble@gmail.com
 [core]
 	editor = vim
-	excludesfile = ~/.gitignore.global
-	autocrlf = input
-[push]
-	default = simple
 [rebase]
 	autosquash = true
-[help]
-	autocorrect = 1
-[color]
-	ui = true
 [pretty]
 	log = %Cred%h %Creset%s%C(yellow)%d %Cgreen(%ar) %Cblue<%an>
-[sendemail]
-	smtpencryption = tls
-	smtpserver = smtp.gmail.com
-	smtpuser = programble@gmail.com
-	smtpserverport = 587
-[github]
-	user = programble
-[include]
-	path = .gitconfig.private
