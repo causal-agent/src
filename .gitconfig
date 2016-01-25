@@ -3,6 +3,8 @@
 	email = programble@gmail.com
 [core]
 	editor = vim
+[push]
+	default = simple
 [rebase]
 	autosquash = true
 [pretty]
