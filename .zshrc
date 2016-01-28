@@ -16,7 +16,7 @@ export EDITOR=vim
 [[ "$OSTYPE" =~ 'darwin' ]] && alias osx=true || alias osx=false
 osx && export CLICOLOR=1 || alias ls='ls --color' grep='grep --color'
 osx || alias rm='rm -I'
-osx && alias gvim=mvim || alias gvim='gvim 2> /dev/null'
+osx && alias gvim=mvim
 
 alias gcl='git clone'
 alias gs='git status -sb'
