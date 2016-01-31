@@ -492,7 +492,7 @@
 	<key>NSWindow Frame Preferences</key>
 	<string>290 262 924 485 0 0 1440 900 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>162 95 570 376 0 0 1440 900 </string>
+	<string>703 312 570 376 0 0 1440 900 </string>
 	<key>NeverWarnAboutShortLivedSessions_3518C480-09C0-47C0-863F-A01193518920</key>
 	<true/>
 	<key>New Bookmarks</key>
@@ -703,7 +703,7 @@
 			<key>Columns</key>
 			<integer>80</integer>
 			<key>Command</key>
-			<string>login -fpq home</string>
+			<string>login -fpql home</string>
 			<key>Cursor Color</key>
 			<dict>
 				<key>Blue Component</key>
@@ -1245,7 +1245,7 @@
 	<key>NoSyncTimeOfLastPromo</key>
 	<real>458338471.43057001</real>
 	<key>NoSyncTimeOfLastPromoDownload</key>
-	<real>467170218.40429801</real>
+	<real>475891087.18196201</real>
 	<key>OnlyWhenMoreTabs</key>
 	<true/>
 	<key>OpenArrangementAtStartup</key>
@@ -1310,7 +1310,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2015-10-21T21:24:58Z</date>
+	<date>2016-01-30T23:58:07Z</date>
 	<key>SavePasteHistory</key>
 	<false/>
 	<key>Secure Input</key>
