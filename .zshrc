@@ -11,7 +11,8 @@ bindkey -v
 KEYTIMEOUT=1
 
 PATH=$PATH:~/.bin
-export EDITOR=vim
+export EDITOR=vim GIT_EDITOR=vim
+type nvim > /dev/null && EDITOR=nvim GIT_EDITOR=nvim && alias vim=nvim
 
 [[ "$OSTYPE" =~ 'darwin' ]] && alias osx=true || alias osx=false
 osx && export CLICOLOR=1 || alias ls='ls --color' grep='grep --color'
