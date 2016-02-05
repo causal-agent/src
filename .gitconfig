@@ -1,8 +1,6 @@
 [user]
 	name = June McEnroe
 	email = programble@gmail.com
-[core]
-	editor = vim
 [push]
 	default = simple
 [rebase]
