@@ -5,11 +5,15 @@ My configuration files.
 ## Configurations
 
 - vim
+- [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
 - zsh
+- ssh
 - git
+- tmux
 - psql
-- iTerm 2
-- Karabiner
+- [iTerm 2.9](https://www.iterm2.com/downloads.html)
+- [Karabiner](https://pqrs.org/osx/karabiner/)
+  ([Seil](https://pqrs.org/osx/karabiner/seil.html.en))
 
 ## Install
 
