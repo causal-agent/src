@@ -505,7 +505,7 @@
 	<key>NSWindow Frame Preferences</key>
 	<string>290 291 606 456 0 0 1440 900 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>155 98 570 377 0 0 1440 900 </string>
+	<string>656 467 570 377 0 0 1440 900 </string>
 	<key>NeverWarnAboutShortLivedSessions_3518C480-09C0-47C0-863F-A01193518920</key>
 	<true/>
 	<key>New Bookmarks</key>
@@ -765,7 +765,7 @@
 			<key>Blinking Cursor</key>
 			<false/>
 			<key>Blur</key>
-			<true/>
+			<false/>
 			<key>Blur Radius</key>
 			<real>7.9939279556274414</real>
 			<key>Bold Color</key>
@@ -1331,7 +1331,7 @@
 			<key>Thin Strokes</key>
 			<integer>1</integer>
 			<key>Transparency</key>
-			<real>0.045245468616485596</real>
+			<real>0.0</real>
 			<key>Triggers</key>
 			<array/>
 			<key>Unlimited Scrollback</key>
