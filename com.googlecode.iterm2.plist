@@ -500,12 +500,14 @@
 		<key>TB Is Shown</key>
 		<integer>1</integer>
 	</dict>
+	<key>NSWindow Frame NSColorPanel</key>
+	<string>26 280 224 289 0 0 1440 900 </string>
 	<key>NSWindow Frame NSFontPanel</key>
 	<string>659 256 445 206 0 0 1440 877 </string>
 	<key>NSWindow Frame Preferences</key>
 	<string>290 291 606 456 0 0 1440 900 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>656 467 570 377 0 0 1440 900 </string>
+	<string>155 98 570 377 0 0 1440 900 </string>
 	<key>NeverWarnAboutShortLivedSessions_3518C480-09C0-47C0-863F-A01193518920</key>
 	<true/>
 	<key>New Bookmarks</key>
@@ -625,13 +627,13 @@
 				<key>Alpha Component</key>
 				<real>1</real>
 				<key>Blue Component</key>
-				<real>0.64313725490196083</real>
+				<real>0.64313727617263794</real>
 				<key>Color Space</key>
 				<string>Calibrated</string>
 				<key>Green Component</key>
-				<real>0.83137254901960789</real>
+				<real>0.83137255907058716</real>
 				<key>Red Component</key>
-				<real>0.90980392156862744</real>
+				<real>0.90980392694473267</real>
 			</dict>
 			<key>Ansi 2 Color</key>
 			<dict>
@@ -773,13 +775,13 @@
 				<key>Alpha Component</key>
 				<real>1</real>
 				<key>Blue Component</key>
-				<real>0.38039215686274508</real>
+				<real>0.72941176470588232</real>
 				<key>Color Space</key>
 				<string>Calibrated</string>
 				<key>Green Component</key>
-				<real>0.4392156862745098</real>
+				<real>0.92941176470588238</real>
 				<key>Red Component</key>
-				<real>0.50196078431372548</real>
+				<real>0.97254901960784312</real>
 			</dict>
 			<key>Character Encoding</key>
 			<integer>4</integer>
