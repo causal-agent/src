@@ -17,6 +17,9 @@ noremap \ ,
 let mapleader = ','
 nmap <leader>n :nohlsearch<CR>
 
+map <ScrollWheelUp> <C-Y>
+map <ScrollWheelDown> <C-E>
+
 set background=dark
 let $NVIM_TUI_ENABLE_TRUE_COLOR = 1
 let g:gruvbox_italic = 0
