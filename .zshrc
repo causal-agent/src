@@ -54,7 +54,7 @@ _prompt_git() {
   esac
 }
 PROMPT='%{%(?.$fg[green]$_prompt_ssh.$fg[red])%}»%{$reset_color%} '
-RPROMPT='%{$fg[blue]%}%-50<…<%~%{$fg[yellow]%}$(_prompt_git)%{$reset_color%}'
+RPROMPT='%{$fg[blue]%}%50<…<%~%{$fg[yellow]%}$(_prompt_git)%{$reset_color%}'
 
 typeset -ga preexec_functions precmd_functions
 
