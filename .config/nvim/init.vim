@@ -17,6 +17,7 @@ noremap \ ,
 let mapleader = ','
 nmap <leader>n :nohlsearch<CR>
 
+set splitbelow splitright
 map <ScrollWheelUp> <C-Y>
 map <ScrollWheelDown> <C-E>
 
