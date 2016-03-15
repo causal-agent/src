@@ -13,9 +13,7 @@ set list listchars=tab:»·,trail:·
 syntax on
 filetype plugin indent on
 
-noremap \ ,
-let mapleader = ','
-nmap <leader>n :nohlsearch<CR>
+nmap <leader><leader> :nohlsearch<CR>
 
 set splitbelow splitright
 map <ScrollWheelUp> <C-Y>
