@@ -1,8 +1,6 @@
 [user]
 	name = Curtis McEnroe
 	email = programble@gmail.com
-[push]
-	default = simple
 [rebase]
 	autosquash = true
 [pretty]
