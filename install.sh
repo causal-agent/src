@@ -2,23 +2,35 @@
 
 # Create symlinks in ~ for files in the current directory.
 
-set -e
+set -o errexit -o nounset -o pipefail
 
 error() {
   echo "$1"
   exit 1
 }
 
-paths=$(find $PWD -type f -not \( -path '*/.git/*' -o -path '*/Library/*' -o -name '.*.sw?' -o -name 'README.md' -o -name '*.sh' -o -name '*.plist' \))
+link() {
+  local source_path="$PWD/$1"
+  local dest_path="$HOME/$1"
 
-for source_path in $paths; do
-  rel_path="${source_path#$PWD/}"
-  dest_path="$HOME/$rel_path"
-
-  [ -h "$dest_path" ] && continue
+  [ -h "$dest_path" ] && return
   [ -e "$dest_path" ] && error "$dest_path exists"
 
   mkdir -p "$(dirname $dest_path)"
   ln -s "$source_path" "$dest_path"
-  echo "$rel_path"
-done
+  echo "$1"
+}
+
+link .config/git/config
+link .config/git/ignore
+link .config/nvim/autoload/pathogen.vim
+link .config/nvim/colors/gruvbox.vim
+link .config/nvim/init.vim
+link .gnupg/gpg-agent.conf
+link .psqlrc
+link .ssh/config
+link .tmux.conf
+link .vim/autoload/pathogen.vim
+link .vim/colors/gruvbox.vim
+link .vimrc
+link .zshrc

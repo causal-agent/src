@@ -2,7 +2,7 @@
 
 # Remove symbolic links in ~ to files that no longer exist.
 
-set -e
+set -o errexit -o nounset -o pipefail
 
 paths=$(find -L ~ -type l -lname "$PWD/*")
 
