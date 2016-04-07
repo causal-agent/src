@@ -9,6 +9,7 @@ My configuration files.
 - zsh
 - ssh
 - git
+- gpg-agent
 - tmux
 - psql
 - [iTerm 2.9](https://www.iterm2.com/downloads.html)
