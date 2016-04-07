@@ -1,6 +1,8 @@
 [user]
 	name = Curtis McEnroe
 	email = programble@gmail.com
+[commit]
+	gpgSign = true
 [rebase]
 	autosquash = true
 [pretty]
