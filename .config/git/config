@@ -7,3 +7,5 @@
 	autosquash = true
 [pretty]
 	log = %Cred%h %Creset%s%C(yellow)%d %Cgreen(%ar) %Cblue<%an>
+[include]
+	path = ./override
