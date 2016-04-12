@@ -18,7 +18,6 @@ export GPG_TTY=$TTY
 [[ "$OSTYPE" =~ 'darwin|bsd' ]] && alias bsd=true || alias bsd=false
 bsd && export CLICOLOR=1 || alias ls='ls --color' grep='grep --color'
 bsd || alias rm='rm -I'
-bsd && alias gvim=mvim
 
 alias gcl='git clone'
 alias gs='git status -sb'
