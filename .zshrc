@@ -15,10 +15,10 @@ export EDITOR=vim GIT_EDITOR=vim
 type nvim > /dev/null && EDITOR=nvim GIT_EDITOR=nvim && alias vim=nvim
 export GPG_TTY=$TTY
 
-[[ "$OSTYPE" =~ 'darwin' ]] && alias osx=true || alias osx=false
-osx && export CLICOLOR=1 || alias ls='ls --color' grep='grep --color'
-osx || alias rm='rm -I'
-osx && alias gvim=mvim
+[[ "$OSTYPE" =~ 'darwin|bsd' ]] && alias bsd=true || alias bsd=false
+bsd && export CLICOLOR=1 || alias ls='ls --color' grep='grep --color'
+bsd || alias rm='rm -I'
+bsd && alias gvim=mvim
 
 alias gcl='git clone'
 alias gs='git status -sb'
