@@ -10,8 +10,6 @@ set ruler showcmd
 set scrolloff=1
 set number cursorline colorcolumn=80,100
 set list listchars=tab:»·,trail:·
-syntax on
-filetype plugin indent on
 
 nmap <leader><leader> :nohlsearch<CR>
 
