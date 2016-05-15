@@ -21,8 +21,7 @@ set background=dark
 let $NVIM_TUI_ENABLE_TRUE_COLOR = 1
 let g:gruvbox_italic = 0
 let g:gruvbox_invert_selection = 0
-let g:gruvbox_sign_column = 'dark0'
-let g:gruvbox_vert_split = 'dark0'
+let g:gruvbox_vert_split = 'bg0'
 colorscheme gruvbox
 
 execute pathogen#infect()
