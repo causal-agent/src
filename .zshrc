@@ -11,7 +11,7 @@ bindkey -v
 KEYTIMEOUT=1
 
 PATH=$PATH:~/.bin
-export EDITOR=vim GIT_EDITOR=vim
+export PAGER=less EDITOR=vim GIT_EDITOR=vim
 type nvim > /dev/null && EDITOR=nvim GIT_EDITOR=nvim && alias vim=nvim
 export GPG_TTY=$TTY
 
