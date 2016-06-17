@@ -5,4 +5,5 @@
 \pset border 1
 \pset null ¤
 \pset expanded auto
+\setenv PAGER more
 \unset QUIET
