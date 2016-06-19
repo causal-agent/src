@@ -4,6 +4,7 @@ set wildmode=list:longest
 
 set ignorecase smartcase
 set tabstop=4 expandtab shiftwidth=2 shiftround smartindent
+set undofile
 
 set title
 set ruler showcmd
