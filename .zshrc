@@ -45,9 +45,10 @@ alias gl='git log --graph --pretty=log'
 setopt prompt_subst
 [[ -n "$SSH_CLIENT" ]] && _prompt_ssh="$fg[magenta]"
 _prompt_git() {
-  [[ -f .git/HEAD ]] || return 0
-  local head
-  read head < .git/HEAD
+  local dotgit=.git head
+  [[ -d "$dotgit" ]] || dotgit=../.git
+  [[ -d "$dotgit" ]] || return 0
+  read head < "$dotgit/HEAD"
   case "$head" in
     ref:*) echo ":${head#*/*/}";;
     *) echo ":${head:0:7}";;
