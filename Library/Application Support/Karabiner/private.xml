@@ -34,6 +34,24 @@
       KeyCode::BACKSLASH,
     </autogen>
 
+    <appendix>Swap square brackets and braces</appendix>
+    <autogen>__KeyToKey__
+      KeyCode::BRACKET_LEFT, ModifierFlag::NONE,
+      KeyCode::BRACKET_LEFT, ModifierFlag::SHIFT_L
+    </autogen>
+    <autogen>__KeyToKey__
+      KeyCode::BRACKET_LEFT, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT | ModifierFlag::NONE,
+      KeyCode::BRACKET_LEFT,
+    </autogen>
+    <autogen>__KeyToKey__
+      KeyCode::BRACKET_RIGHT, ModifierFlag::NONE,
+      KeyCode::BRACKET_RIGHT, ModifierFlag::SHIFT_L
+    </autogen>
+    <autogen>__KeyToKey__
+      KeyCode::BRACKET_RIGHT, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT | ModifierFlag::NONE,
+      KeyCode::BRACKET_RIGHT,
+    </autogen>
+
     <appendix>Swap numbers and symbols</appendix>
     <autogen>__KeyToKey__ KeyCode::KEY_1, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT, KeyCode::KEY_1</autogen>
     <autogen>__KeyToKey__ KeyCode::KEY_2, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT, KeyCode::KEY_2</autogen>
