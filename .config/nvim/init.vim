@@ -25,4 +25,6 @@ let g:gruvbox_invert_selection = 0
 let g:gruvbox_vert_split = 'bg0'
 colorscheme gruvbox
 
+autocmd BufNewFile,BufRead *.asm,*.mac setf nasm
+
 execute pathogen#infect()
