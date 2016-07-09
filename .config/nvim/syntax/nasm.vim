@@ -79,15 +79,15 @@ syn match   nasmLabelError	"\<\~\s*\(\k*\s*:\|\$\=\.\k*\)"
 " Constants:
 syn match   nasmStringError	+["']+
 syn match   nasmString		+\("[^"]\{-}"\|'[^']\{-}'\)+
-syn match   nasmBinNumber	"\<[0-1]\+b\>"
-syn match   nasmBinNumber	"\<\~[0-1]\+b\>"lc=1
-syn match   nasmOctNumber	"\<\o\+q\>"
-syn match   nasmOctNumber	"\<\~\o\+q\>"lc=1
-syn match   nasmDecNumber	"\<\d\+\>"
-syn match   nasmDecNumber	"\<\~\d\+\>"lc=1
-syn match   nasmHexNumber	"\<\(\d\x*h\|0x\x\+\|\$\d\x*\)\>"
-syn match   nasmHexNumber	"\<\~\(\d\x*h\|0x\x\+\|\$\d\x*\)\>"lc=1
-syn match   nasmFltNumber	"\<\d\+\.\d*\(e[+-]\=\d\+\)\=\>"
+syn match   nasmBinNumber	"\<[0-1_]\+b\>"
+syn match   nasmBinNumber	"\<\~[0-1_]\+b\>"lc=1
+syn match   nasmOctNumber	"\<\(\o\|_\)\+q\>"
+syn match   nasmOctNumber	"\<\~\(\o\|_\)\+q\>"lc=1
+syn match   nasmDecNumber	"\<\(\d\|_\)\+\>"
+syn match   nasmDecNumber	"\<\~\(\d\|_\)\+\>"lc=1
+syn match   nasmHexNumber	"\<\(\d\(\x\|_\)*h\|0x\(\x\|_\)\+\|\$\d\(\x\|_\)*\)\>"
+syn match   nasmHexNumber	"\<\~\(\d\(\x\|_\)*h\|0x\(\x\|_\)\+\|\$\d\(\x\|_\)*\)\>"lc=1
+syn match   nasmFltNumber	"\<\(\d\|_\)\+\.\(\d\|_\)*\(e[+-]\=\d\+\)\=\>"
 syn keyword nasmFltNumber	Inf Infinity Indefinite NaN SNaN QNaN
 syn match   nasmNumberError	"\<\~\s*\d\+\.\d*\(e[+-]\=\d\+\)\=\>"
 
