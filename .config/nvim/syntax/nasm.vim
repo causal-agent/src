@@ -77,8 +77,8 @@ syn match   nasmLabelError	"\<\~\s*\(\k*\s*:\|\$\=\.\k*\)"
 
 
 " Constants:
-syn match   nasmStringError	+["']+
-syn match   nasmString		+\("[^"]\{-}"\|'[^']\{-}'\)+
+syn match   nasmStringError	+["'`]+
+syn match   nasmString		+\("[^"]\{-}"\|'[^']\{-}'\|`[^"]\{-}`\)+
 syn match   nasmBinNumber	"\<[0-1_]\+b\>"
 syn match   nasmBinNumber	"\<\~[0-1_]\+b\>"lc=1
 syn match   nasmOctNumber	"\<\(\o\|_\)\+q\>"
