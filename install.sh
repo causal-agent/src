@@ -28,6 +28,7 @@ link .config/nvim/colors/gruvbox.vim
 link .config/nvim/init.vim
 link .config/nvim/syntax/nasm.vim
 link .gnupg/gpg-agent.conf
+link .inputrc
 link .psqlrc
 link .ssh/config
 link .tmux.conf
