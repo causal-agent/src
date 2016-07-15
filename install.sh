@@ -32,7 +32,4 @@ link .inputrc
 link .psqlrc
 link .ssh/config
 link .tmux.conf
-link .vim/autoload/pathogen.vim
-link .vim/colors/gruvbox.vim
-link .vimrc
 link .zshrc

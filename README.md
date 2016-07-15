@@ -14,7 +14,6 @@ My configuration files.
 - readline
 - ssh
 - tmux
-- vim
 - zsh
 
 ## Install
