@@ -99,7 +99,7 @@ let s:gb.gray_245    = ['#928374', 245]     " 146-131-116
 let s:gb.gray_244    = ['#928374', 244]     " 146-131-116
 
 let s:gb.light0_hard = ['#f9f5d7', 230]     " 249-245-215
-let s:gb.light0      = ['#fdf4c1', 229]     " 253-244-193
+let s:gb.light0      = ['#fbf1c7', 229]     " 253-244-193
 let s:gb.light0_soft = ['#f2e5bc', 228]     " 242-229-188
 let s:gb.light1      = ['#ebdbb2', 223]     " 235-219-178
 let s:gb.light2      = ['#d5c4a1', 250]     " 213-196-161
@@ -278,6 +278,10 @@ if exists('g:gruvbox_hls_cursor')
 endif
 
 let s:number_column = s:bg4
+if exists('g:gruvbox_number_column')
+  let s:number_column = get(s:gb, g:gruvbox_number_column)
+endif
+
 let s:sign_column = s:bg1
 
 if exists('g:gitgutter_override_sign_column_highlight') &&
@@ -391,10 +395,15 @@ endfunction
 " memoize common hi groups
 call s:HL('GruvboxFg0', s:fg0)
 call s:HL('GruvboxFg1', s:fg1)
+call s:HL('GruvboxFg2', s:fg2)
 call s:HL('GruvboxFg3', s:fg3)
 call s:HL('GruvboxFg4', s:fg4)
 call s:HL('GruvboxGray', s:gray)
+call s:HL('GruvboxBg0', s:bg0)
+call s:HL('GruvboxBg1', s:bg1)
 call s:HL('GruvboxBg2', s:bg2)
+call s:HL('GruvboxBg3', s:bg3)
+call s:HL('GruvboxBg4', s:bg4)
 
 call s:HL('GruvboxRed', s:red)
 call s:HL('GruvboxRedBold', s:red, s:none, s:bold)
@@ -403,9 +412,9 @@ call s:HL('GruvboxGreenBold', s:green, s:none, s:bold)
 call s:HL('GruvboxYellow', s:yellow)
 call s:HL('GruvboxYellowBold', s:yellow, s:none, s:bold)
 call s:HL('GruvboxBlue', s:blue)
-" call s:HL('GruvboxBlueBold', s:blue, s:none, s:bold)
+call s:HL('GruvboxBlueBold', s:blue, s:none, s:bold)
 call s:HL('GruvboxPurple', s:purple)
-" call s:HL('GruvboxPurpleBold', s:purple, s:none, s:bold)
+call s:HL('GruvboxPurpleBold', s:purple, s:none, s:bold)
 call s:HL('GruvboxAqua', s:aqua)
 call s:HL('GruvboxAquaBold', s:aqua, s:none, s:bold)
 call s:HL('GruvboxOrange', s:orange)
@@ -469,8 +478,8 @@ hi! link SpecialKey GruvboxBg2
 call s:HL('Visual',    s:none,  s:bg3, s:invert_selection)
 hi! link VisualNOS Visual
 
-call s:HL('Search',    s:bg0, s:yellow)
-call s:HL('IncSearch', s:bg0, s:hls_cursor)
+call s:HL('Search',    s:yellow, s:bg0, s:inverse)
+call s:HL('IncSearch', s:hls_cursor, s:bg0, s:inverse)
 
 call s:HL('Underlined', s:blue, s:none, s:underline)
 
@@ -490,7 +499,7 @@ hi! link Directory GruvboxGreenBold
 hi! link Title GruvboxGreenBold
 
 " Error messages on the command line
-call s:HL('ErrorMsg',   s:vim_bg, s:red, s:bold)
+call s:HL('ErrorMsg',   s:bg0, s:red, s:bold)
 " More prompt: -- More --
 hi! link MoreMsg GruvboxYellowBold
 " Current mode message: -- INSERT --
@@ -742,12 +751,8 @@ hi! link SyntasticWarningSign GruvboxYellowSign
 
 " }}}
 " Signature: {{{
-
+hi! link SignatureMarkText   GruvboxBlueSign
 hi! link SignatureMarkerText GruvboxPurpleSign
-hi! link SignatureMarkText GruvboxBlueSign
-
-let g:SignatureMarkerTextHL='"SignatureMarkerText"'
-let g:SignatureMarkTextHL='"SignatureMarkText"'
 
 " }}}
 " ShowMarks: {{{
@@ -792,6 +797,14 @@ let g:vimshell_escape_colors = [
   \ s:bg0[0], s:red[0], s:green[0], s:orange[0],
   \ s:blue[0], s:purple[0], s:aqua[0], s:fg0[0]
   \ ]
+
+" }}}
+" BufTabLine: {{{
+
+call s:HL('BufTabLineCurrent', s:bg0, s:fg4)
+call s:HL('BufTabLineActive', s:fg4, s:bg2)
+call s:HL('BufTabLineHidden', s:bg4, s:bg1)
+call s:HL('BufTabLineFill', s:bg0, s:bg0)
 
 " }}}
 
@@ -1024,6 +1037,21 @@ hi! link javascriptDocTags GruvboxFg4
 hi! link javascriptDocNotation GruvboxFg4
 hi! link javascriptDocParamType GruvboxFg4
 hi! link javascriptDocNamedParamType GruvboxFg4
+
+" }}}
+" TypeScript: {{{
+
+hi! link typeScriptReserved GruvboxAqua
+hi! link typeScriptLabel GruvboxAqua
+hi! link typeScriptIdentifier GruvboxOrange
+hi! link typeScriptBraces GruvboxFg1
+hi! link typeScriptEndColons GruvboxFg1
+hi! link typeScriptDOMObjects GruvboxFg1
+hi! link typeScriptAjaxMethods GruvboxFg1
+hi! link typeScriptLogicSymbols GruvboxFg1
+hi! link typeScriptDocSeeTag Comment
+hi! link typeScriptDocParam Comment
+hi! link typeScriptDocTags vimCommentTitle
 
 " }}}
 " CoffeeScript: {{{
