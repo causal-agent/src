@@ -20,26 +20,26 @@ My configuration files.
 
 Create symlinks in ~ for files in the current directory.
 
-```
-./install.sh
-```
+    ./install.sh
 
 ## Import
 
 Import a file from ~ and replace it with a symlink.
 
-```
-./import.sh .config
-```
+    ./import.sh .dotrc
 
 ## Prune
 
 Remove symbolic links in ~ to files that no longer exist in the current
 directory.
 
-```
-./prune.sh
-```
+    ./prune.sh
+
+## Vendor
+
+Pull latest versions of vendored files.
+
+    ./vendor.sh
 
 ## License
 
