@@ -9,7 +9,7 @@ set undofile
 set title
 set ruler showcmd
 set scrolloff=1
-set number cursorline colorcolumn=80,100
+set number colorcolumn=80,100
 set list listchars=tab:»·,trail:·
 
 nmap <leader><leader> :nohlsearch<CR>
