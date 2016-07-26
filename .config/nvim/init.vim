@@ -19,11 +19,12 @@ map <ScrollWheelUp> <C-Y>
 map <ScrollWheelDown> <C-E>
 
 execute 'set background=' . ($ITERM_PROFILE != '' ? $ITERM_PROFILE : 'dark')
-let $NVIM_TUI_ENABLE_TRUE_COLOR = 1
-let g:gruvbox_contrast_dark = 'hard'
-let g:gruvbox_invert_selection = 0
-let g:gruvbox_vert_split = 'bg0'
-colorscheme gruvbox
+"let $NVIM_TUI_ENABLE_TRUE_COLOR = 1
+"let g:gruvbox_contrast_dark = 'hard'
+"let g:gruvbox_invert_selection = 0
+"let g:gruvbox_vert_split = 'bg0'
+"colorscheme gruvbox
+colorscheme subtle
 
 autocmd BufNewFile,BufRead *.asm,*.mac setf nasm
 
