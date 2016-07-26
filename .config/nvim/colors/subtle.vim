@@ -19,11 +19,11 @@ hi StatusLine cterm=NONE ctermbg=Black ctermfg=LightGray
 hi StatusLineNC cterm=NONE ctermbg=Black ctermfg=DarkGray
 hi Visual ctermbg=DarkGray ctermfg=NONE
 
-hi Comment ctermfg=DarkYellow
+hi Comment ctermfg=LightBlue
 
 hi Constant ctermfg=NONE
-hi String ctermfg=LightBlue
-hi Character ctermfg=LightBlue
+hi String ctermfg=DarkCyan
+hi link Character String
 
 hi Identifier cterm=NONE ctermfg=NONE
 
@@ -37,13 +37,13 @@ hi Type ctermfg=NONE
 hi StorageClass ctermfg=LightGray
 
 hi Special ctermfg=LightGray
-hi SpecialComment ctermfg=DarkYellow
+hi link SpecialComment Comment
 
 hi Underlined ctermfg=NONE
 
 hi Error ctermbg=NONE ctermfg=LightRed
 
-hi Todo ctermbg=NONE ctermfg=Yellow
+hi Todo ctermbg=NONE ctermfg=DarkBlue
 
 hi SpecialKey ctermfg=DarkGray
 
