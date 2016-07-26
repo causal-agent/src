@@ -23,6 +23,7 @@ link() {
 
 link .config/git/config
 link .config/git/ignore
+link .config/htop/htoprc
 link .config/nvim/autoload/pathogen.vim
 link .config/nvim/colors/gruvbox.vim
 link .config/nvim/init.vim

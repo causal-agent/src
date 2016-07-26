@@ -6,6 +6,7 @@ My configuration files.
 
 - git
 - gpg-agent
+- htop
 - [iTerm 2.9](https://www.iterm2.com/downloads.html)
 - [Karabiner](https://pqrs.org/osx/karabiner/)
   ([Seil](https://pqrs.org/osx/karabiner/seil.html.en))
