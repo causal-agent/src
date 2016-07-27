@@ -30,8 +30,8 @@ hi Identifier cterm=NONE ctermfg=NONE
 hi Statement ctermfg=LightGray
 
 hi PreProc ctermfg=LightGray
-hi Macro ctermfg=LightMagenta
-hi PreCondit ctermfg=LightRed
+hi Macro ctermfg=DarkYellow
+hi link PreCondit Macro
 
 hi Type ctermfg=NONE
 hi StorageClass ctermfg=LightGray
