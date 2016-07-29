@@ -35,6 +35,8 @@ hi link PreCondit Macro
 
 hi Type ctermfg=NONE
 hi StorageClass ctermfg=LightGray
+hi link Structure StorageClass
+hi link Typedef Structure
 
 hi Special ctermfg=LightGray
 hi SpecialComment ctermfg=LightBlue
