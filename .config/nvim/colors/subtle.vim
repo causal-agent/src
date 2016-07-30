@@ -29,7 +29,7 @@ hi Identifier cterm=NONE ctermfg=NONE
 
 hi Statement ctermfg=LightGray
 
-hi PreProc ctermfg=LightGray
+hi PreProc ctermfg=DarkGreen
 hi Macro ctermfg=DarkYellow
 hi link PreCondit Macro
 
