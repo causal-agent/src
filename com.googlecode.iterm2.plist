@@ -431,7 +431,7 @@
 	<key>HiddenAdvancedFontRendering</key>
 	<false/>
 	<key>HideActivityIndicator</key>
-	<false/>
+	<true/>
 	<key>HideMenuBarInFullscreen</key>
 	<true/>
 	<key>HideScrollbar</key>
@@ -518,11 +518,13 @@
 		<integer>1</integer>
 	</dict>
 	<key>NSWindow Frame Preferences</key>
-	<string>768 1621 606 456 -228 900 1920 1177 </string>
+	<string>516 421 606 456 0 0 1440 877 </string>
 	<key>NSWindow Frame SUUpdateAlert</key>
 	<string>410 364 620 392 0 0 1440 877 </string>
+	<key>NSWindow Frame SharedPreferences</key>
+	<string>230 1494 796 473 -228 900 1920 1177 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>527 1312 570 427 -228 900 1920 1177 </string>
+	<string>450 1365 570 427 -228 900 1920 1177 </string>
 	<key>NeverWarnAboutShortLivedSessions_3518C480-09C0-47C0-863F-A01193518920</key>
 	<true/>
 	<key>New Bookmarks</key>
@@ -2363,11 +2365,11 @@
 	<key>SUFeedAlternateAppNameKey</key>
 	<string>iTerm</string>
 	<key>SUFeedURL</key>
-	<string>https://iterm2.com/appcasts/testing3.xml?shard=83</string>
+	<string>https://iterm2.com/appcasts/testing.xml?shard=83</string>
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2016-07-13T19:20:43Z</date>
+	<date>2016-07-28T13:46:39Z</date>
 	<key>SavePasteHistory</key>
 	<false/>
 	<key>Secure Input</key>
@@ -2378,6 +2380,8 @@
 	<false/>
 	<key>ShowFullScreenTabBar</key>
 	<true/>
+	<key>ShowNewOutputIndicator</key>
+	<false/>
 	<key>ShowPaneTitles</key>
 	<true/>
 	<key>SmartPlacement</key>
@@ -2440,7 +2444,7 @@
 	<key>findRegex_iTerm</key>
 	<false/>
 	<key>iTerm Version</key>
-	<string>3.0.3</string>
+	<string>3.0.5</string>
 	<key>kCPKSelectionViewPreferredModeKey</key>
 	<integer>0</integer>
 	<key>kCPKSelectionViewShowHSBTextFieldsKey</key>
