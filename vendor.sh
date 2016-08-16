@@ -9,5 +9,4 @@ pull() {
   echo "$1"
 }
 
-pull {.config/nvim,morhetz/gruvbox/master}/colors/gruvbox.vim
 pull {.config/nvim,tpope/vim-pathogen/master}/autoload/pathogen.vim
