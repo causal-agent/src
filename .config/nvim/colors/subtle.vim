@@ -51,3 +51,4 @@ hi Todo ctermbg=NONE ctermfg=LightBlue
 hi SpecialKey ctermfg=DarkGray
 
 hi link rustModPath Identifier
+hi link rubyDefine Structure
