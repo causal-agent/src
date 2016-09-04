@@ -43,7 +43,7 @@ alias gd='git diff'
 alias gl='git log --graph --pretty=log'
 
 setopt prompt_subst
-[[ -n "$SSH_CLIENT" ]] && _prompt_ssh="$fg[magenta]"
+[[ -n "$SSH_CLIENT" ]] && _prompt_ssh='%F{magenta}'
 _prompt_git() {
   local dotgit=.git head
   [[ -d "$dotgit" ]] || dotgit=../.git
@@ -54,8 +54,8 @@ _prompt_git() {
     *) echo ":${head:0:7}";;
   esac
 }
-PROMPT='%{%(?.$fg[green]$_prompt_ssh.$fg[red])%}»%{$reset_color%} '
-RPROMPT='%{$fg[blue]%}%50<…<%~%{$fg[yellow]%}$(_prompt_git)%{$reset_color%}'
+PROMPT="%(?.%F{green}$_prompt_ssh.%F{red})»%f "
+RPROMPT='%F{blue}%50<…<%~%F{yellow}$(_prompt_git)%f'
 
 typeset -ga preexec_functions precmd_functions
 
