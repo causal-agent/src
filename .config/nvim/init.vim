@@ -15,7 +15,7 @@ set list listchars=tab:»·,trail:·
 
 nmap <leader><leader> :nohlsearch<CR>
 
-colorscheme subtle
+colorscheme lame
 
 autocmd BufNewFile,BufRead *.asm,*.mac setf nasm
 

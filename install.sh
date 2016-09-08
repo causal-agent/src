@@ -25,7 +25,7 @@ link .config/git/config
 link .config/git/ignore
 link .config/htop/htoprc
 link .config/nvim/autoload/pathogen.vim
-link .config/nvim/colors/subtle.vim
+link .config/nvim/colors/lame.vim
 link .config/nvim/init.vim
 link .config/nvim/syntax/nasm.vim
 link .gnupg/gpg-agent.conf
