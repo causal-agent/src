@@ -58,6 +58,7 @@ int main(int argc, char **argv) {
     for (;;) {
         offset += len;
         len = fread(buf, 1, sizeof(buf), file);
+        if (!len) break;
 
         if ((flags & FLAG_SKIP) && len == sizeof(buf)) {
             static bool skip = false;
