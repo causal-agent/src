@@ -74,9 +74,8 @@ int main(int argc, char **argv)
         }
 
         if (flags & ASCII) {
-            // TODO: Fix alignment with group.
             for (i = n; i < cols; ++i)
-                printf("   ");
+                printf((group && !(i % group)) ? "    " : "   ");
             printf(" ");
             for (i = 0; i < n; ++i)
                 printf("%c", isprint(buf[i]) ? buf[i] : '.');
