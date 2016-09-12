@@ -2,24 +2,28 @@
 exec cc -Weverything -Wno-vla -o ~/.bin/xx $0
 #endif
 
+#include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 enum {
-    OFFSETS = 1,
+    ASCII = 1,
+    OFFSETS = 2,
 };
 
 int main(int argc, char **argv)
 {
     size_t cols = 16;
     size_t group = 8;
-    uint8_t flags = OFFSETS;
+    uint8_t flags = ASCII | OFFSETS;
     char *path = NULL;
 
-    while (getopt(argc, argv, "c:g:o") > 0)
-        if (optopt == 'c') {
+    while (getopt(argc, argv, "ac:g:o") > 0)
+        if (optopt == 'a') {
+            flags ^= ASCII;
+        } else if (optopt == 'c') {
             cols = (size_t) strtol(optarg, NULL, 10);
             if (!cols) return EXIT_FAILURE;
         } else if (optopt == 'g') {
@@ -46,6 +50,14 @@ int main(int argc, char **argv)
         for (i = 0; i < n; ++i) {
             if (group && i && !(i % group)) printf(" ");
             printf("%02x ", buf[i]);
+        }
+
+        if (flags & ASCII) {
+            for (i = n; i < cols; ++i)
+                printf("   ");
+            printf(" ");
+            for (i = 0; i < n; ++i)
+                printf("%c", isprint(buf[i]) ? buf[i] : '.');
         }
 
         printf("\n");
