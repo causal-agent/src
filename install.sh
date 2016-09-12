@@ -21,6 +21,7 @@ link() {
   echo "$1"
 }
 
+link .bin/xx.c
 link .config/git/config
 link .config/git/ignore
 link .config/htop/htoprc
