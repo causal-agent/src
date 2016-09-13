@@ -1,5 +1,5 @@
 #if 0
-exec ${CC:-cc} -Weverything -Wno-vla $CFLAGS -o $(dirname $0)/xx $0
+exec clang -Weverything -Wno-vla $@ -o $(dirname $0)/xx $0
 #endif
 
 #include <ctype.h>
