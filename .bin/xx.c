@@ -27,20 +27,21 @@ int main(int argc, char **argv) {
     uint8_t flags = FLAG_ASCII | FLAG_OFFSET;
     char *path = NULL;
 
-    while (getopt(argc, argv, "ac:fg:hk") > 0) {
-        if (optopt == 'a')
+    int opt;
+    while ((opt = getopt(argc, argv, "ac:fg:hk")) > 0) {
+        if (opt == 'a')
             flags ^= FLAG_ASCII;
-        else if (optopt == 'c')
+        else if (opt == 'c')
             cols = (size_t) strtol(optarg, NULL, 10);
-        else if (optopt == 'f')
+        else if (opt == 'f')
             flags ^= FLAG_OFFSET;
-        else if (optopt == 'g')
+        else if (opt == 'g')
             group = (size_t) strtol(optarg, NULL, 10);
-        else if (optopt == 'k')
+        else if (opt == 'k')
             flags ^= FLAG_SKIP;
         else {
             printf("usage: xx [-afk] [-c N] [-g N] [FILE]\n");
-            return (optopt == 'h') ? EXIT_SUCCESS : EXIT_FAILURE;
+            return (opt == 'h') ? EXIT_SUCCESS : EXIT_FAILURE;
         }
     }
     if (!cols) return EXIT_FAILURE;
