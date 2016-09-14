@@ -21,6 +21,7 @@ link() {
   echo "$1"
 }
 
+link .bin/manpager
 link .bin/xx.c
 link .config/git/config
 link .config/git/ignore
