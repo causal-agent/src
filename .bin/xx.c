@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
         else if (opt == 'k')
             flags ^= FLAG_SKIP;
         else {
-            printf("usage: xx [-afk] [-c N] [-g N] [FILE]\n");
+            fprintf(stderr, "usage: xx [-afk] [-c N] [-g N] [FILE]\n");
             return (opt == 'h') ? EXIT_SUCCESS : EXIT_FAILURE;
         }
     }
