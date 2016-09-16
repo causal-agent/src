@@ -3,6 +3,7 @@ exec clang -Weverything -Wno-vla $@ -o $(dirname $0)/xx $0
 #endif
 
 #include <ctype.h>
+#include <err.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -50,10 +51,7 @@ int main(int argc, char **argv) {
         path = argv[optind];
 
     FILE *file = path ? fopen(path, "r") : stdin;
-    if (!file) {
-        perror(path);
-        return EX_NOINPUT;
-    }
+    if (!file) err(EX_NOINPUT, "%s", path);
 
     uint8_t buf[cols];
     size_t offset = 0, len = 0, i;
@@ -92,9 +90,6 @@ int main(int argc, char **argv) {
         if (len < sizeof(buf)) break;
     }
 
-    if (ferror(file)) {
-        perror(path);
-        return EX_IOERR;
-    }
+    if (ferror(file)) err(EX_IOERR, "%s", path);
     return EX_OK;
 }
