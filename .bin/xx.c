@@ -7,6 +7,7 @@ exec clang -Weverything -Wno-vla $@ -o $(dirname $0)/xx $0
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sysexits.h>
 #include <unistd.h>
 
 static bool zero(const uint8_t *buf, size_t len) {
@@ -41,17 +42,17 @@ int main(int argc, char **argv) {
             flags ^= FLAG_SKIP;
         else {
             fprintf(stderr, "usage: xx [-afk] [-c N] [-g N] [FILE]\n");
-            return (opt == 'h') ? EXIT_SUCCESS : EXIT_FAILURE;
+            return (opt == 'h') ? EX_OK : EX_USAGE;
         }
     }
-    if (!cols) return EXIT_FAILURE;
+    if (!cols) return EX_USAGE;
     if (argc > optind)
         path = argv[optind];
 
     FILE *file = path ? fopen(path, "r") : stdin;
     if (!file) {
         perror(path);
-        return EXIT_FAILURE;
+        return EX_NOINPUT;
     }
 
     uint8_t buf[cols];
@@ -93,7 +94,7 @@ int main(int argc, char **argv) {
 
     if (ferror(file)) {
         perror(path);
-        return EXIT_FAILURE;
+        return EX_IOERR;
     }
-    return EXIT_SUCCESS;
+    return EX_OK;
 }
