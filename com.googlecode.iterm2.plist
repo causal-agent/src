@@ -522,9 +522,9 @@
 	<key>NSWindow Frame SUUpdateAlert</key>
 	<string>410 364 620 392 0 0 1440 877 </string>
 	<key>NSWindow Frame SharedPreferences</key>
-	<string>229 1344 796 473 -228 900 1920 1177 </string>
+	<string>229 1266 796 473 -228 900 1920 1177 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>92 1118 1277 763 -228 900 1920 1177 </string>
+	<string>323 1363 570 427 -228 900 1920 1177 </string>
 	<key>NeverWarnAboutShortLivedSessions_3518C480-09C0-47C0-863F-A01193518920</key>
 	<true/>
 	<key>New Bookmarks</key>
@@ -1654,7 +1654,7 @@
 			<key>Columns</key>
 			<integer>80</integer>
 			<key>Command</key>
-			<string>ssh tux.local</string>
+			<string>/usr/local/bin/ssh tux.local</string>
 			<key>Cursor Color</key>
 			<dict>
 				<key>Blue Component</key>
