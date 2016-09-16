@@ -32,11 +32,11 @@ int main(int argc, char **argv) {
         if (opt == 'a')
             flags ^= FLAG_ASCII;
         else if (opt == 'c')
-            cols = (size_t) strtol(optarg, NULL, 10);
+            cols = strtoul(optarg, NULL, 10);
         else if (opt == 'f')
             flags ^= FLAG_OFFSET;
         else if (opt == 'g')
-            group = (size_t) strtol(optarg, NULL, 10);
+            group = strtoul(optarg, NULL, 10);
         else if (opt == 'k')
             flags ^= FLAG_SKIP;
         else {
