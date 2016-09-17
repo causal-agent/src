@@ -22,6 +22,7 @@ link() {
 }
 
 link .bin/manpager
+link .bin/pbd.c
 link .bin/xx.c
 link .config/git/config
 link .config/git/ignore
