@@ -1,8 +1,7 @@
 #if 0
-exec clang -Weverything $@ -o $(dirname $0)/pbd $0
+exec clang -Weverything -Wno-missing-prototypes $@ -o $(dirname $0)/pbd $0
 #endif
 
-#include <arpa/inet.h>
 #include <err.h>
 #include <netinet/in.h>
 #include <stdint.h>
@@ -11,6 +10,22 @@ exec clang -Weverything $@ -o $(dirname $0)/pbd $0
 #include <sys/socket.h>
 #include <sysexits.h>
 #include <unistd.h>
+
+void spawn(const char *cmd, int child_fd, int parent_fd) {
+    pid_t pid = fork();
+    if (pid < 0) err(EX_OSERR, "fork");
+
+    if (pid) {
+        if (waitpid(pid, NULL, 0) < 0)
+            err(EX_OSERR, "waitpid");
+        // TODO: Check child status.
+    } else {
+        if (dup2(parent_fd, child_fd) < 0)
+            err(EX_OSERR, "dup2");
+        if (execlp(cmd, cmd) < 0)
+            err(EX_OSERR, "execlp");
+    }
+}
 
 int main() {
     int server = socket(PF_INET, SOCK_STREAM, 0);
@@ -32,39 +47,13 @@ int main() {
         int client = accept(server, NULL, NULL);
         if (client < 0) err(EX_OSERR, "accept");
 
-        pid_t pid_paste = fork();
-        if (pid_paste < 0) err(EX_OSERR, "fork");
-
-        if (pid_paste) {
-            if (waitpid(pid_paste, NULL, 0) < 0)
-                warn("waitpid");
-            // TODO: Check child status.
-        } else {
-            if (dup2(client, STDOUT_FILENO) < 0)
-                err(EX_OSERR, "dup2");
-            if (execlp("pbpaste", "pbpaste") < 0)
-                err(EX_OSERR, "execlp");
-        }
+        spawn("pbpaste", STDOUT_FILENO, client);
 
         uint8_t x;
         ssize_t peek = recv(client, &x, 1, MSG_PEEK);
         if (peek < 0) err(EX_IOERR, "recv");
 
-        if (peek) {
-            pid_t pid_copy = fork();
-            if (pid_copy < 0) err(EX_OSERR, "fork");
-
-            if (pid_copy) {
-                if (waitpid(pid_copy, NULL, 0) < 0)
-                    warn("waitpid");
-                // TODO: Check child status.
-            } else {
-                if (dup2(client, STDIN_FILENO) < 0)
-                    err(EX_OSERR, "dup2");
-                if (execlp("pbcopy", "pbcopy") < 0)
-                    err(EX_OSERR, "execlp");
-            }
-        }
+        if (peek) spawn("pbcopy", STDIN_FILENO, client);
 
         if (close(client) < 0) warn("close");
     }
