@@ -1,5 +1,5 @@
 #if 0
-exec clang -Weverything -Wno-missing-prototypes $@ -o $(dirname $0)/pbd $0
+exec clang -Weverything $@ -o $(dirname $0)/pbd $0
 #endif
 
 #include <err.h>
@@ -11,14 +11,16 @@ exec clang -Weverything -Wno-missing-prototypes $@ -o $(dirname $0)/pbd $0
 #include <sysexits.h>
 #include <unistd.h>
 
-void spawn(const char *cmd, int child_fd, int parent_fd) {
+static void spawn(const char *cmd, int child_fd, int parent_fd) {
     pid_t pid = fork();
     if (pid < 0) err(EX_OSERR, "fork");
 
     if (pid) {
-        if (waitpid(pid, NULL, 0) < 0)
+        int status;
+        if (waitpid(pid, &status, 0) < 0)
             err(EX_OSERR, "waitpid");
-        // TODO: Check child status.
+        if (status)
+            warnx("child %s status %d", cmd, status);
     } else {
         if (dup2(parent_fd, child_fd) < 0)
             err(EX_OSERR, "dup2");
@@ -49,12 +51,13 @@ int main() {
 
         spawn("pbpaste", STDOUT_FILENO, client);
 
-        uint8_t x;
-        ssize_t peek = recv(client, &x, 1, MSG_PEEK);
+        uint8_t p;
+        ssize_t peek = recv(client, &p, 1, MSG_PEEK);
         if (peek < 0) err(EX_IOERR, "recv");
 
         if (peek) spawn("pbcopy", STDIN_FILENO, client);
 
-        if (close(client) < 0) warn("close");
+        if (close(client) < 0)
+            err(EX_IOERR, "close");
     }
 }
