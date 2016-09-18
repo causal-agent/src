@@ -8,6 +8,7 @@ exec clang -Weverything $@ -o $(dirname $0)/pbd $0
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <sysexits.h>
 #include <unistd.h>
 
@@ -17,19 +18,23 @@ static void spawn(const char *cmd, int child_fd, int parent_fd) {
 
     if (pid) {
         int status;
-        if (waitpid(pid, &status, 0) < 0)
-            err(EX_OSERR, "waitpid");
+        pid_t wait = waitpid(pid, &status, 0);
+        if (wait < 0) err(EX_OSERR, "waitpid");
+
         if (status)
             warnx("child %s status %d", cmd, status);
     } else {
-        if (dup2(parent_fd, child_fd) < 0)
-            err(EX_OSERR, "dup2");
-        if (execlp(cmd, cmd) < 0)
-            err(EX_OSERR, "execlp");
+        int fd = dup2(parent_fd, child_fd);
+        if (fd < 0) err(EX_OSERR, "dup2");
+
+        int error = execlp(cmd, cmd);
+        if (error) err(EX_OSERR, "execlp");
     }
 }
 
 int main() {
+    int error;
+
     int server = socket(PF_INET, SOCK_STREAM, 0);
     if (server < 0) err(EX_OSERR, "socket");
 
@@ -39,11 +44,11 @@ int main() {
         .sin_addr = { .s_addr = htonl(0x7f000001) },
     };
 
-    if (bind(server, (struct sockaddr *) &addr, sizeof(addr)) < 0)
-        err(EX_OSERR, "bind");
+    error = bind(server, (struct sockaddr *) &addr, sizeof(addr));
+    if (error) err(EX_OSERR, "bind");
 
-    if (listen(server, 1) < 0)
-        err(EX_OSERR, "listen");
+    error = listen(server, 1);
+    if (error) err(EX_OSERR, "listen");
 
     for (;;) {
         int client = accept(server, NULL, NULL);
@@ -57,7 +62,7 @@ int main() {
 
         if (peek) spawn("pbcopy", STDIN_FILENO, client);
 
-        if (close(client) < 0)
-            err(EX_IOERR, "close");
+        error = close(client);
+        if (error) err(EX_IOERR, "close");
     }
 }
