@@ -18,5 +18,6 @@ nmap <leader><leader> :nohlsearch<CR>
 colorscheme lame
 
 autocmd BufNewFile,BufRead *.asm,*.mac setf nasm
+autocmd FileType c setlocal shiftwidth=4
 
 execute pathogen#infect()
