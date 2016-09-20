@@ -20,7 +20,6 @@ export CLICOLOR=1
 [[ "$OSTYPE" = 'linux-gnu' ]] &&
   alias ls='ls --color' grep='grep --color' rm='rm -I'
 
-alias gcl='git clone'
 alias gs='git status -sb'
 alias ga='git add'
 alias gc='git commit'
