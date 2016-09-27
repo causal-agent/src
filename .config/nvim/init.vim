@@ -4,7 +4,7 @@ set wildmode=list:longest
 set splitbelow splitright
 
 set ignorecase smartcase
-set tabstop=4 expandtab shiftwidth=2 shiftround smartindent
+set tabstop=4 expandtab shiftwidth=4 shiftround smartindent
 set undofile
 
 set title
@@ -18,6 +18,6 @@ nmap <leader><leader> :nohlsearch<CR>
 colorscheme lame
 
 autocmd BufNewFile,BufRead *.asm,*.mac setf nasm
-autocmd FileType c setlocal shiftwidth=4
+autocmd FileType ruby setlocal shiftwidth=2
 
 execute pathogen#infect()
