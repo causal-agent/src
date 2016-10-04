@@ -97,6 +97,21 @@ static bool stack_op(char op) {
     return true;
 }
 
+static void process(const char *input) {
+    while (*input) {
+        if (stack_op(*input)) {
+            input++;
+        } else {
+            char *rest;
+            int64_t val = strtoll(input, &rest, stack.radix);
+            if (rest != input) {
+                input = rest;
+                push(val);
+            } else input++;
+        }
+    }
+}
+
 static char *prompt(EditLine *el __attribute((unused))) {
     static char p[4096];
     if (stack.len == 0) return "[] ";
@@ -113,7 +128,13 @@ static char *prompt(EditLine *el __attribute((unused))) {
     return p;
 }
 
-int main(int argc __attribute((unused)), char *argv[]) {
+int main(int argc, char *argv[]) {
+    if (argc > 1) {
+        for (int i = 1; i < argc; ++i)
+            process(argv[i]);
+        return EX_OK;
+    }
+
     EditLine *el = el_init(argv[0], stdin, stdout, stderr);
     el_set(el, EL_PROMPT, prompt);
     el_set(el, EL_SIGNAL, true);
@@ -123,19 +144,7 @@ int main(int argc __attribute((unused)), char *argv[]) {
         const char *line = el_gets(el, &count);
         if (count < 0) err(EX_IOERR, "el_gets");
         if (!line) break;
-
-        while (*line) {
-            if (stack_op(*line)) {
-                line++;
-            } else {
-                char *rest;
-                int64_t val = strtoll(line, &rest, stack.radix);
-                if (rest != line) {
-                    line = rest;
-                    push(val);
-                } else line++;
-            }
-        }
+        process(line);
     }
 
     el_end(el);
