@@ -12,6 +12,25 @@ exec cc -Wall -Wextra $@ -ledit -o $(dirname $0)/rpn $0
 #include <stdlib.h>
 #include <sysexits.h>
 
+static char *fmt(int radix, int64_t val) {
+    static char buf[65];
+    if (radix == 2) {
+        uint64_t u = val;
+        int i = sizeof(buf);
+        do {
+            buf[--i] = '0' + (u & 1);
+        } while (u >>= 1);
+        return &buf[i];
+    } else if (radix == 8) {
+        snprintf(buf, sizeof(buf), "%llo", val);
+    } else if (radix == 10) {
+        snprintf(buf, sizeof(buf), "%lld", val);
+    } else if (radix == 16) {
+        snprintf(buf, sizeof(buf), "%llx", val);
+    } else abort();
+    return buf;
+}
+
 static struct {
     int64_t data[1024];
     size_t len;
@@ -28,7 +47,7 @@ static int64_t pop(void) {
     return stack.data[--stack.len];
 }
 
-static bool stack_op(char op) {
+static void stack_op(char op) {
     int64_t a, b;
     switch (op) {
         case '$': pop();
@@ -46,11 +65,14 @@ static bool stack_op(char op) {
         break; case '^': a = pop(); push(pop() ^ a);
         break; case '<': a = pop(); push(pop() << a);
         break; case '>': a = pop(); push(pop() >> a);
-        break; case '.': a = pop(); printf("%lld\n", a);
+        break; case '.': a = pop(); printf("%s\n", fmt(stack.radix, a));
         break; case ',': a = pop(); printf("%c\n", (char) a);
-        break; default: return false;
+        break; case 'b': stack.radix = 2;
+        break; case 'o': stack.radix = 8;
+        break; case 'd': stack.radix = 10;
+        break; case 'x': stack.radix = 16;
+        break;
     }
-    return true;
 }
 
 static char *prompt(EditLine *el __attribute((unused))) {
@@ -59,7 +81,7 @@ static char *prompt(EditLine *el __attribute((unused))) {
 
     size_t q = 0;
     for (size_t i = 0; i < stack.len; ++i) {
-        q += (size_t) snprintf(&p[q], sizeof(p) - 3 - q, " %lld", stack.data[i]);
+        q += (size_t) snprintf(&p[q], sizeof(p) - 2 - q, " %s", fmt(stack.radix, stack.data[i]));
     }
     p[0] = '[';
     p[q] = ']';
@@ -80,12 +102,8 @@ int main(int argc __attribute((unused)), char *argv[]) {
         if (!line) break;
 
         while (*line) {
-            char *rest;
-            int64_t val = strtoll(line, &rest, stack.radix);
-
-        while (*line) {
             if (isdigit(*line))
-                push(strtoll(line, (char **) &line, 0)); // XXX: ???
+                push(strtoll(line, (char **) &line, stack.radix)); // XXX: ???
             else
                 stack_op(*line++);
         }
