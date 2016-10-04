@@ -3,47 +3,45 @@ exec cc -Wall -Wextra $@ -ledit -o $(dirname $0)/rpn $0
 #endif
 
 #include <assert.h>
-#include <ctype.h>
 #include <err.h>
 #include <histedit.h>
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sysexits.h>
 
-static char *fmt(int radix, int64_t val) {
+static char *fmt(int radix, long val) {
     static char buf[65];
     if (radix == 2) {
-        uint64_t u = val;
+        unsigned long u = val;
         int i = sizeof(buf);
         do {
             buf[--i] = '0' + (u & 1);
         } while (u >>= 1);
         return &buf[i];
     } else if (radix == 8) {
-        snprintf(buf, sizeof(buf), "%llo", val);
+        snprintf(buf, sizeof(buf), "%lo", val);
     } else if (radix == 10) {
-        snprintf(buf, sizeof(buf), "%lld", val);
+        snprintf(buf, sizeof(buf), "%ld", val);
     } else if (radix == 16) {
-        snprintf(buf, sizeof(buf), "%llx", val);
+        snprintf(buf, sizeof(buf), "%lx", val);
     } else abort();
     return buf;
 }
 
 static struct {
-    int64_t data[1024];
+    long data[1024];
     size_t len;
     int radix;
     char op;
 } stack = { .radix = 10 };
 
-static void push(int64_t val) {
+static void push(long val) {
     stack.data[stack.len++] = val;
     assert(stack.len < sizeof(stack.data));
 }
 
-static int64_t pop(void) {
+static long pop(void) {
     if (stack.len == 0) return 0;
     return stack.data[--stack.len];
 }
@@ -66,7 +64,7 @@ static bool stack_op(char op) {
         return true;
     }
 
-    int64_t a, b;
+    long a, b;
     switch (op) {
         case '@': case '\'': case '"': stack.op = op;
         break; case 'b': stack.radix = 2;
@@ -87,8 +85,8 @@ static bool stack_op(char op) {
         break; case '&': a = pop(); push(pop() & a);
         break; case '|': a = pop(); push(pop() | a);
         break; case '^': a = pop(); push(pop() ^ a);
-        break; case '<': a = pop(); push(pop() << a);
-        break; case '>': a = pop(); push(pop() >> a);
+        break; case '<': a = pop(); push((unsigned long) pop() << a);
+        break; case '>': a = pop(); push((unsigned long) pop() >> a);
         break; case '.': a = pop(); printf("%s\n", fmt(stack.radix, a));
         break; case ',': a = pop(); printf("%c\n", (char) a);
         break; case ' ':
@@ -103,7 +101,7 @@ static void process(const char *input) {
             input++;
         } else {
             char *rest;
-            int64_t val = strtoll(input, &rest, stack.radix);
+            long val = strtol(input, &rest, stack.radix);
             if (rest != input) {
                 input = rest;
                 push(val);
