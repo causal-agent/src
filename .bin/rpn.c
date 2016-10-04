@@ -35,6 +35,7 @@ static struct {
     int64_t data[1024];
     size_t len;
     int radix;
+    char op;
 } stack = { .radix = 10 };
 
 static void push(int64_t val) {
@@ -48,6 +49,19 @@ static int64_t pop(void) {
 }
 
 static bool stack_op(char op) {
+    if (stack.op == '\'') {
+        push(op);
+        stack.op = 0;
+        return true;
+    }
+    if (stack.op == '"') {
+        if (op == '"')
+            stack.op = 0;
+        else
+            push(op);
+        return true;
+    }
+
     int64_t a, b;
     switch (op) {
         case '$': pop();
@@ -71,6 +85,7 @@ static bool stack_op(char op) {
         break; case 'o': stack.radix = 8;
         break; case 'd': stack.radix = 10;
         break; case 'x': stack.radix = 16;
+        break; case '\'': case '"': stack.op = op;
         break; default: return false;
     }
     return true;
