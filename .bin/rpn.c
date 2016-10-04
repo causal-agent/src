@@ -49,9 +49,15 @@ static int64_t pop(void) {
 }
 
 static bool stack_op(char op) {
-    if (stack.op == '\'') {
-        push(op);
+    if (stack.op == '@') {
         stack.op = 0;
+        while (stack.len > 1)
+            stack_op(op);
+        return true;
+    }
+    if (stack.op == '\'') {
+        stack.op = 0;
+        push(op);
         return true;
     }
     if (stack.op == '"') {
@@ -62,9 +68,14 @@ static bool stack_op(char op) {
 
     int64_t a, b;
     switch (op) {
-        case '$': pop();
-        break; case '\\': a = pop(); b = pop(); push(a); push(b);
+        case '@': case '\'': case '"': stack.op = op;
+        break; case 'b': stack.radix = 2;
+        break; case 'o': stack.radix = 8;
+        break; case 'd': stack.radix = 10;
+        break; case 'x': stack.radix = 16;
+        break; case ';': a = pop();
         break; case ':': a = pop(); push(a); push(a);
+        break; case '\\': a = pop(); b = pop(); push(a); push(b);
         break; case '_': a = pop(); push(-a);
         break; case '+': a = pop(); push(pop() + a);
         break; case '-': a = pop(); push(pop() - a);
@@ -80,11 +91,6 @@ static bool stack_op(char op) {
         break; case '>': a = pop(); push(pop() >> a);
         break; case '.': a = pop(); printf("%s\n", fmt(stack.radix, a));
         break; case ',': a = pop(); printf("%c\n", (char) a);
-        break; case 'b': stack.radix = 2;
-        break; case 'o': stack.radix = 8;
-        break; case 'd': stack.radix = 10;
-        break; case 'x': stack.radix = 16;
-        break; case '\'': case '"': stack.op = op;
         break; default: return false;
     }
     return true;
