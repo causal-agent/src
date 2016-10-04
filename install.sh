@@ -25,6 +25,7 @@ link .bin/manpager
 link .bin/pbcopy
 link .bin/pbd.c
 link .bin/pbpaste
+link .bin/rpn.c
 link .bin/xx.c
 link .config/git/config
 link .config/git/ignore
