@@ -47,7 +47,7 @@ static int64_t pop(void) {
     return stack.data[--stack.len];
 }
 
-static void stack_op(char op) {
+static bool stack_op(char op) {
     int64_t a, b;
     switch (op) {
         case '$': pop();
@@ -71,8 +71,9 @@ static void stack_op(char op) {
         break; case 'o': stack.radix = 8;
         break; case 'd': stack.radix = 10;
         break; case 'x': stack.radix = 16;
-        break;
+        break; default: return false;
     }
+    return true;
 }
 
 static char *prompt(EditLine *el __attribute((unused))) {
@@ -94,6 +95,7 @@ static char *prompt(EditLine *el __attribute((unused))) {
 int main(int argc __attribute((unused)), char *argv[]) {
     EditLine *el = el_init(argv[0], stdin, stdout, stderr);
     el_set(el, EL_PROMPT, prompt);
+    el_set(el, EL_SIGNAL, true);
 
     for (;;) {
         int count;
@@ -102,13 +104,18 @@ int main(int argc __attribute((unused)), char *argv[]) {
         if (!line) break;
 
         while (*line) {
-            if (isdigit(*line))
-                push(strtoll(line, (char **) &line, stack.radix)); // XXX: ???
-            else
-                stack_op(*line++);
+            if (stack_op(*line)) {
+                line++;
+            } else {
+                char *rest;
+                int64_t val = strtoll(line, &rest, stack.radix);
+                if (rest != line) {
+                    line = rest;
+                    push(val);
+                } else line++;
+            }
         }
     }
-    putchar('\n');
 
     el_end(el);
     return EX_OK;
