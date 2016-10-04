@@ -55,10 +55,8 @@ static bool stack_op(char op) {
         return true;
     }
     if (stack.op == '"') {
-        if (op == '"')
-            stack.op = 0;
-        else
-            push(op);
+        if (op == '"') stack.op = 0;
+        else push(op);
         return true;
     }
 
@@ -73,6 +71,7 @@ static bool stack_op(char op) {
         break; case '*': a = pop(); push(pop() * a);
         break; case '/': a = pop(); push(pop() / a);
         break; case '%': a = pop(); push(pop() % a);
+        break; case '!': a = pop(); push(!a);
         break; case '~': a = pop(); push(~a);
         break; case '&': a = pop(); push(pop() & a);
         break; case '|': a = pop(); push(pop() | a);
