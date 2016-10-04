@@ -91,6 +91,7 @@ static bool stack_op(char op) {
         break; case '>': a = pop(); push(pop() >> a);
         break; case '.': a = pop(); printf("%s\n", fmt(stack.radix, a));
         break; case ',': a = pop(); printf("%c\n", (char) a);
+        break; case ' ':
         break; default: return false;
     }
     return true;
