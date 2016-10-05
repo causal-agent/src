@@ -87,78 +87,56 @@ static bool stack_op(char op) {
             a = pop();
         } break;
         case ':': {
-            a = pop();
-            push(a);
-            push(a);
+            a = pop(); push(a); push(a);
         } break;
         case '\\': {
-            a = pop();
-            b = pop();
-            push(a);
-            push(b);
+            a = pop(); b = pop(); push(a); push(b);
         } break;
         case '_': {
-            a = pop();
-            push(-a);
+            a = pop(); push(-a);
         } break;
         case '+': {
-            a = pop();
-            push(pop() + a);
+            a = pop(); push(pop() + a);
         } break;
         case '-': {
-            a = pop();
-            push(pop() - a);
+            a = pop(); push(pop() - a);
         } break;
         case '*': {
-            a = pop();
-            push(pop() * a);
+            a = pop(); push(pop() * a);
         } break;
         case '/': {
-            a = pop();
-            push(pop() / a);
+            a = pop(); push(pop() / a);
         } break;
         case '%': {
-            a = pop();
-            push(pop() % a);
+            a = pop(); push(pop() % a);
         } break;
         case '!': {
-            a = pop();
-            push(!a);
+            a = pop(); push(!a);
         } break;
         case '&': {
-            a = pop();
-            push(pop() & a);
+            a = pop(); push(pop() & a);
         } break;
         case '|': {
-            a = pop(); 
-            push(pop() | a);
+            a = pop(); push(pop() | a);
         } break;
         case '^': {
-            a = pop(); 
-            push(pop() ^ a);
+            a = pop(); push(pop() ^ a);
         } break;
         case '<': {
-            a = pop();
-            push((unsigned long) pop() << a);
+            a = pop(); push((unsigned long) pop() << a);
         } break;
         case '>': {
-            a = pop();
-            push((unsigned long) pop() >> a);
+            a = pop(); push((unsigned long) pop() >> a);
         } break;
         case '.': {
-            a = pop();
-            printf("%s\n", fmt(stack.radix, a));
+            a = pop(); printf("%s\n", fmt(stack.radix, a));
         } break;
         case ',': {
-            a = pop();
-            printf("%c\n", (char) a);
+            a = pop(); printf("%c\n", (char) a);
         } break;
-        case ' ': {
-            // do nothing
+        case ' ': { // do nothing
         } break;
-        default: {
-            return false;
-        } break;
+        default: return false;
     }
     return true;
 }
