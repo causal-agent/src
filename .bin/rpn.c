@@ -86,56 +86,54 @@ static bool stack_op(char op) {
         case ';': {
             a = pop();
         } break;
-        case ':': {
-            a = pop(); push(a); push(a);
-        } break;
+        case ':': a = pop(); push(a); push(a);
+        break;
         case '\\': {
             a = pop(); b = pop(); push(a); push(b);
-        } break;
+        break;
         case '_': {
             a = pop(); push(-a);
-        } break;
+        break;
         case '+': {
             a = pop(); push(pop() + a);
-        } break;
+        break;
         case '-': {
             a = pop(); push(pop() - a);
-        } break;
+        break;
         case '*': {
             a = pop(); push(pop() * a);
-        } break;
+        break;
         case '/': {
             a = pop(); push(pop() / a);
-        } break;
+        break;
         case '%': {
             a = pop(); push(pop() % a);
-        } break;
+        break;
         case '!': {
             a = pop(); push(!a);
-        } break;
+        break;
         case '&': {
             a = pop(); push(pop() & a);
-        } break;
+        break;
         case '|': {
             a = pop(); push(pop() | a);
-        } break;
+        break;
         case '^': {
             a = pop(); push(pop() ^ a);
-        } break;
+        break;
         case '<': {
             a = pop(); push((unsigned long) pop() << a);
-        } break;
+        break;
         case '>': {
             a = pop(); push((unsigned long) pop() >> a);
-        } break;
+        break;
         case '.': {
             a = pop(); printf("%s\n", fmt(stack.radix, a));
-        } break;
+        break;
         case ',': {
             a = pop(); printf("%c\n", (char) a);
-        } break;
-        case ' ': { // do nothing
-        } break;
+        break;
+        case ' ': /* do nothing */ break;
         default: return false;
     }
     return true;
