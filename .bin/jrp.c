@@ -3,9 +3,8 @@ exec cc -Wall -Wextra $@ -o $(dirname $0)/jrp $0
 #endif
 
 enum op {
-    OP_PROL = 0xfc8948e789495741, // push r15; mov r15, rsp; mov rsp, rdi
-    OP_EPIL = 0x5f41fc894ce08948, // mov rax, rsp; mov rsp, r15; pop r15
-    OP_RET  = 0x90666690666666c3, // ret
+    OP_PROL = 0x90fc8948e5894855, // push ebp; mov rbp, rsp; mov rsp, rdi
+    OP_EPIL = 0xc35dec8948e08948, // mov rax, rsp; mov rsp, rbp; pop rbp; ret
     OP_CALL = 0x90666666d0ff5f58, // pop rax; pop rdi; call rax
     OP_PUSH = 0x9066660000000068, // push strict dword 0
     OP_DROP = 0x9066666608c48348, // add rsp, 8
