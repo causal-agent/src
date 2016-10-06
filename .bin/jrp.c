@@ -16,7 +16,7 @@ enum {
     OP_PROL = 0x90fc8948e5894855, // push ebp; mov rbp, rsp; mov rsp, rdi
     OP_EPIL = 0xc35dec8948e08948, // mov rax, rsp; mov rsp, rbp; pop rbp; ret
     OP_CALL = 0x90666666d0ff5f58, // pop rax; pop rdi; call rax
-    OP_PUSH = 0x9066660000000068, // push strict dword 0
+    OP_PUSH = 0x0000000068906666, // push strict dword 0
     OP_DROP = 0x9066666608c48348, // add rsp, 8
     OP_DUP  = 0x90906666662434ff, // push qword [rsp]
     OP_SWAP = 0x9066666650515859, // pop rcx; pop rax; push rcx; push rax
@@ -47,8 +47,8 @@ int main() {
 
     op *p = ops;
     *p++ = OP_PROL;
-    *p++ = OP_PUSH | (1 << 8);
-    *p++ = OP_PUSH | (2 << 8);
+    *p++ = OP_PUSH | (op)1 << 32;
+    *p++ = OP_PUSH | (op)2 << 32;
     *p++ = OP_ADD;
     *p++ = OP_DUP;
     *p++ = OP_MUL;
