@@ -21,6 +21,7 @@ link() {
   echo "$1"
 }
 
+link .bin/jrp.c
 link .bin/manpager
 link .bin/pbcopy
 link .bin/pbd.c
