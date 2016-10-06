@@ -34,6 +34,8 @@ enum {
     OP_SHR  = 0x906666242cd34859, // pop rcx; shr qword [rsp], cl
 };
 
+#define IMMED_PUSH(x) ((op)(x) << 32)
+
 int main() {
     int error;
     int page = getpagesize();
@@ -47,8 +49,8 @@ int main() {
 
     op *p = ops;
     *p++ = OP_PROL;
-    *p++ = OP_PUSH | (op)1 << 32;
-    *p++ = OP_PUSH | (op)2 << 32;
+    *p++ = OP_PUSH | IMMED_PUSH(1);
+    *p++ = OP_PUSH | IMMED_PUSH(2);
     *p++ = OP_ADD;
     *p++ = OP_DUP;
     *p++ = OP_MUL;
@@ -57,7 +59,7 @@ int main() {
     error = mprotect(ops, page, PROT_READ | PROT_EXEC);
     if (error) err(EX_OSERR, "mprotect");
 
-    fptr fn = (fptr) ops;
+    fptr fn = (fptr)ops;
     stack = fn(stack);
 
     printf("%lld\n", *stack);
