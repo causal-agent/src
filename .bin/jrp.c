@@ -17,6 +17,7 @@ enum {
     OP_EPIL = 0xc35dec8948e08948, // mov rax, rsp; mov rsp, rbp; pop rbp; ret
     OP_CALL = 0x90666666d0ff5f58, // pop rax; pop rdi; call rax
     OP_PUSH = 0x0000000068906666, // push strict dword 0
+    OP_HIGH = 0x00000000042444c7, // mov [rsp + 4], strict dword 0
     OP_DROP = 0x9066666608c48348, // add rsp, 8
     OP_DUP  = 0x90906666662434ff, // push qword [rsp]
     OP_SWAP = 0x9066666650515859, // pop rcx; pop rax; push rcx; push rax
@@ -35,6 +36,7 @@ enum {
 };
 
 #define IMMED_PUSH(x) ((op)(x) << 32)
+#define IMMED_HIGH(x) ((op)(x) & 0xffffffff00000000)
 
 int main() {
     int error;
