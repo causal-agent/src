@@ -2,6 +2,13 @@
 exec cc -Wall -Wextra $@ -o $(dirname $0)/jrp $0
 #endif
 
+#include <err.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <sys/mman.h>
+#include <sysexits.h>
+#include <unistd.h>
+
 enum op {
     OP_PROL = 0x90fc8948e5894855, // push ebp; mov rbp, rsp; mov rsp, rdi
     OP_EPIL = 0xc35dec8948e08948, // mov rax, rsp; mov rsp, rbp; pop rbp; ret
@@ -24,6 +31,35 @@ enum op {
     OP_SHR  = 0x906666242cd34859, // pop rcx; shr qword [rsp], cl
 };
 
+typedef int64_t *(*fptr)(int64_t *);
+
 int main() {
+    int error;
+    int page = getpagesize();
+
+    int64_t *stack = mmap(0, page, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, 0, 0);
+    if (stack == MAP_FAILED) err(EX_OSERR, "mmap");
+    int64_t *stack_ptr = stack + page / sizeof(int64_t);
+
+    enum op *ops = mmap(0, page, PROT_WRITE, MAP_ANON | MAP_PRIVATE, 0, 0);
+    if (ops == MAP_FAILED) err(EX_OSERR, "mmap");
+
+    enum op *p = ops;
+    *p++ = OP_PROL;
+    *p++ = OP_PUSH | (1 << 8);
+    *p++ = OP_PUSH | (2 << 8);
+    *p++ = OP_ADD;
+    *p++ = OP_DUP;
+    *p++ = OP_MUL;
+    *p++ = OP_EPIL;
+
+    error = mprotect(ops, page, PROT_READ | PROT_EXEC);
+    if (error) err(EX_OSERR, "mprotect");
+
+    fptr fn = (fptr) ops;
+    stack_ptr = fn(stack_ptr);
+
+    printf("%lld\n", *stack_ptr);
+
     return 0;
 }
