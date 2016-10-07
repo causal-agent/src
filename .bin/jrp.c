@@ -10,6 +10,7 @@ exec cc -Wall -Wextra $@ -o $(dirname $0)/jrp $0
 
 typedef unsigned long long op;
 typedef long long value;
+typedef unsigned long long uvalue;
 typedef value *(*fptr)(value *);
 
 enum {
@@ -38,6 +39,44 @@ enum {
 #define IMMED_PUSH(x) ((op)(x) << 32)
 #define IMMED_HIGH(x) ((op)(x) & 0xffffffff00000000)
 
+static void rt_print_ascii(value val) {
+    printf("%c\n", (char)val);
+}
+
+static void rt_print_bin(value val) {
+    static char buf[sizeof(value) * 8 + 1];
+    uvalue uval = val;
+    int i = sizeof(buf);
+    do {
+        buf[--i] = '0' + (uval & 1);
+    } while (uval >>= 1);
+    printf("%s\n", &buf[i]);
+}
+
+static void rt_print_oct(value val) {
+    printf("%llo\n", val);
+}
+
+static void rt_print_dec(value val) {
+    printf("%lld\n", val);
+}
+
+static void rt_print_hex(value val) {
+    printf("%llx\n", val);
+}
+
+#define JIT_PUSH(p, val) { \
+    *p++ = OP_PUSH | IMMED_PUSH(val); \
+    if (IMMED_HIGH(val)) { \
+        *p++ = OP_HIGH | IMMED_HIGH(val); \
+    } \
+}
+
+#define JIT_CALL(p, fn) { \
+    JIT_PUSH(p, fn); \
+    *p++ = OP_CALL; \
+}
+
 int main() {
     int error;
     int page = getpagesize();
@@ -51,11 +90,21 @@ int main() {
 
     op *p = ops;
     *p++ = OP_PROL;
-    *p++ = OP_PUSH | IMMED_PUSH(1);
-    *p++ = OP_PUSH | IMMED_PUSH(2);
+    JIT_PUSH(p, 7);
+    JIT_PUSH(p, 10);
+    JIT_PUSH(p, 9);
+    *p++ = OP_MUL;
     *p++ = OP_ADD;
     *p++ = OP_DUP;
-    *p++ = OP_MUL;
+    *p++ = OP_DUP;
+    *p++ = OP_DUP;
+    *p++ = OP_DUP;
+    *p++ = OP_DUP;
+    JIT_CALL(p, rt_print_ascii);
+    JIT_CALL(p, rt_print_bin);
+    JIT_CALL(p, rt_print_oct);
+    JIT_CALL(p, rt_print_dec);
+    JIT_CALL(p, rt_print_hex);
     *p++ = OP_EPIL;
 
     error = mprotect(ops, page, PROT_READ | PROT_EXEC);
