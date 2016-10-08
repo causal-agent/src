@@ -1,8 +1,9 @@
 #if 0
-exec cc -Wall -Wextra $@ -o $(dirname $0)/jrp $0
+exec cc -Wall -Wextra $@ -ledit -o $(dirname $0)/jrp $0
 #endif
 
 #include <err.h>
+#include <histedit.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -14,17 +15,21 @@ typedef long long value;
 typedef unsigned long long uvalue;
 typedef value *(*fptr)(value *);
 
-static void rt_print_ascii(value val) {
-    printf("%c\n", (char)val);
-}
-static void rt_print_bin(value val) {
+static char *fmt_bin(value val) {
     static char buf[sizeof(value) * 8 + 1];
     uvalue uval = val;
     int i = sizeof(buf);
     do {
         buf[--i] = '0' + (uval & 1);
     } while (uval >>= 1);
-    printf("%s\n", &buf[i]);
+    return &buf[i];
+}
+
+static void rt_print_ascii(value val) {
+    printf("%c\n", (char)val);
+}
+static void rt_print_bin(value val) {
+    printf("%s\n", fmt_bin(val));
 }
 static void rt_print_oct(value val) {
     printf("%llo\n", val);
@@ -40,7 +45,7 @@ enum {
     HOP_NOP  = 0x90666666, // nop
     HOP_DROP = 0x9066665f, // pop rdi
     HOP_DUP  = 0x90666657, // push rdi
-    HOP_SWAP = 0x244c8748, // xchg rdi, [rsp]
+    HOP_SWAP = 0x243c8748, // xchg rdi, [rsp]
     HOP_NEG  = 0x90dff748, // neg rdi
     HOP_ADD  = 0xc7014858, // pop rax; add rdi, rax
     HOP_QUO  = 0x90c78948, // mov rdi, rax
@@ -69,7 +74,11 @@ static int page;
 
 static int radix = 10;
 
-static value *stack;
+static struct {
+    value *base;
+    value *limit;
+    value *ptr;
+} stack;
 
 static struct {
     op *base;
@@ -102,7 +111,7 @@ static void jit_print(void) {
     jit_fop(FOP_CALL);
 }
 
-static void jit(char *src) {
+static void jit(const char *src) {
     int error;
 
     code.ptr = code.base;
@@ -152,23 +161,59 @@ static void jit(char *src) {
     error = mprotect(code.base, page, PROT_READ | PROT_EXEC);
     if (error) err(EX_OSERR, "mprotect");
 
-    stack = ((fptr)code.base)(stack);
+    stack.ptr = ((fptr)code.base)(stack.ptr);
 
     error = mprotect(code.base, page, PROT_READ | PROT_WRITE);
     if (error) err(EX_OSERR, "mprotect");
 }
 
-int main() {
+static char *prompt(EditLine *el __attribute((unused))) {
+    static char buf[4096];
+    char *bp = buf;
+    for (value *sp = stack.limit - 1; sp >= stack.ptr; --sp) {
+        switch (radix) {
+            case 2:  bp += snprintf(bp, buf - bp - 2, " %s", fmt_bin(*sp)); break;
+            case 8:  bp += snprintf(bp, buf - bp - 2, " %llo", *sp); break;
+            case 10: bp += snprintf(bp, buf - bp - 2, " %lld", *sp); break;
+            case 16: bp += snprintf(bp, buf - bp - 2, " %llx", *sp); break;
+        }
+    }
+    buf[0] = '[';
+    *bp++ = ']';
+    *bp++ = ' ';
+    *bp = 0;
+    return buf;
+}
+
+int main(int argc, char *argv[]) {
     page = getpagesize();
 
     code.base = mmap(0, page, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, 0, 0);
     if (code.base == MAP_FAILED) err(EX_OSERR, "mmap");
 
-    stack = mmap(0, page, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, 0, 0);
-    if (stack == MAP_FAILED) err(EX_OSERR, "mmap");
-    stack += page / sizeof(value) - 1;
+    stack.base = mmap(0, page, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, 0, 0);
+    if (stack.base == MAP_FAILED) err(EX_OSERR, "mmap");
+    stack.limit = stack.base + page / sizeof(value);
+    stack.ptr = stack.limit - 1;
 
-    jit("7 10 9 * + :::: , b. o. d. x.");
+    if (argc > 1) {
+        for (int i = 1; i < argc; ++i)
+            jit(argv[i]);
+        return EX_OK;
+    }
 
+    EditLine *el = el_init(argv[0], stdin, stdout, stderr);
+    el_set(el, EL_PROMPT, prompt);
+    el_set(el, EL_SIGNAL, 1);
+
+    for (;;) {
+        int count;
+        const char *line = el_gets(el, &count);
+        if (count < 0) err(EX_IOERR, "el_gets");
+        if (!line) break;
+        jit(line);
+    }
+
+    el_end(el);
     return EX_OK;
 }
