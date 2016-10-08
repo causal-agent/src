@@ -188,10 +188,10 @@ static char *prompt(EditLine *el __attribute((unused))) {
 int main(int argc, char *argv[]) {
     page = getpagesize();
 
-    code.base = mmap(0, page, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, 0, 0);
+    code.base = mmap(0, page, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     if (code.base == MAP_FAILED) err(EX_OSERR, "mmap");
 
-    stack.base = mmap(0, page, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, 0, 0);
+    stack.base = mmap(0, page, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     if (stack.base == MAP_FAILED) err(EX_OSERR, "mmap");
     stack.limit = stack.base + page / sizeof(value);
     stack.ptr = stack.limit - 1;
