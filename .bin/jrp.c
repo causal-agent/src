@@ -16,7 +16,8 @@ typedef value *(*fptr)(value *);
 enum {
     OP_PROL = 0x90fc8948e5894855, // push ebp; mov rbp, rsp; mov rsp, rdi
     OP_EPIL = 0xc35dec8948e08948, // mov rax, rsp; mov rsp, rbp; pop rbp; ret
-    OP_CALL = 0x90666666d0ff5f58, // pop rax; pop rdi; call rax
+    OP_CALL = 0x90d0ffe587485f58, // pop rax; pop rdi; xchg rsp, rbp; call rax
+    OP_RELO = 0x9090666666e58748, // xchg rsp, rbp
     OP_PUSH = 0x0000000068906666, // push strict dword 0
     OP_HIGH = 0x00000000042444c7, // mov [rsp + 4], strict dword 0
     OP_DROP = 0x9066666608c48348, // add rsp, 8
@@ -75,6 +76,7 @@ static void rt_print_hex(value val) {
 #define JIT_CALL(p, fn) { \
     JIT_PUSH(p, fn); \
     *p++ = OP_CALL; \
+    *p++ = OP_RELO; \
 }
 
 int main() {
