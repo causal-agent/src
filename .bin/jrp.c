@@ -91,39 +91,60 @@ static void jit_fop(op fop) {
     *code.ptr++ = fop;
 }
 
+static void jit_print(void) {
+    jit_fop(FOP_CRT);
+    switch (radix) {
+        case 2:  jit_fop((op)rt_print_bin); break;
+        case 8:  jit_fop((op)rt_print_oct); break;
+        case 10: jit_fop((op)rt_print_dec); break;
+        case 16: jit_fop((op)rt_print_hex); break;
+    }
+    jit_fop(FOP_CALL);
+}
+
 static void jit(char *src) {
     int error;
 
     code.ptr = code.base;
     jit_fop(FOP_PROL);
 
-    jit_fop(FOP_PUSH);
-    jit_fop(7);
-    jit_fop(FOP_PUSH);
-    jit_fop(10);
-    jit_fop(FOP_PUSH);
-    jit_fop(9);
-    jit_fop(FOP_MUL);
-    jit_hop(HOP_ADD);
-    jit_hop(HOP_DUP);
-    jit_hop(HOP_DUP);
-    jit_hop(HOP_DUP);
-    jit_hop(HOP_DUP);
-    jit_fop(FOP_CRT);
-    jit_fop((op)rt_print_ascii);
-    jit_fop(FOP_CALL);
-    jit_fop(FOP_CRT);
-    jit_fop((op)rt_print_bin);
-    jit_fop(FOP_CALL);
-    jit_fop(FOP_CRT);
-    jit_fop((op)rt_print_oct);
-    jit_fop(FOP_CALL);
-    jit_fop(FOP_CRT);
-    jit_fop((op)rt_print_dec);
-    jit_fop(FOP_CALL);
-    jit_fop(FOP_CRT);
-    jit_fop((op)rt_print_hex);
-    jit_fop(FOP_CALL);
+    while (*src) {
+        switch (*src) {
+            case ' ': break;
+            case 'b': radix = 2;  break;
+            case 'o': radix = 8;  break;
+            case 'd': radix = 10; break;
+            case 'x': radix = 16; break;
+            case ';': jit_hop(HOP_DROP); break;
+            case ':': jit_hop(HOP_DUP);  break;
+            case 92:  jit_hop(HOP_SWAP); break;
+            case '_': jit_hop(HOP_NEG);  break;
+            case '+': jit_hop(HOP_ADD);  break;
+            case '-': jit_fop(FOP_SUB);  break;
+            case '*': jit_fop(FOP_MUL);  break;
+            case '/': jit_fop(FOP_DIV); jit_hop(HOP_QUO); break;
+            case '%': jit_fop(FOP_DIV); jit_hop(HOP_REM); break;
+            case '~': jit_hop(HOP_NOT);  break;
+            case '&': jit_hop(HOP_AND);  break;
+            case '|': jit_hop(HOP_OR);   break;
+            case '^': jit_hop(HOP_XOR);  break;
+            case '<': jit_fop(FOP_SHL);  break;
+            case '>': jit_fop(FOP_SHR);  break;
+            case ',': jit_fop(FOP_CRT); jit_fop((op)rt_print_ascii); jit_fop(FOP_CALL); break;
+            case '.': jit_print(); break;
+            default: {
+                char *rest;
+                value val = strtoll(src, &rest, radix);
+                if (rest != src) {
+                    src = rest;
+                    jit_fop(FOP_PUSH);
+                    jit_fop((op)val);
+                    continue;
+                }
+            }
+        }
+        src++;
+    }
 
     jit_fop(FOP_EPIL);
     jit_fop(FOP_RET);
@@ -147,7 +168,7 @@ int main() {
     if (stack == MAP_FAILED) err(EX_OSERR, "mmap");
     stack += page / sizeof(value) - 1;
 
-    jit("7 10 9 * + :::: , b. o. d. h.");
+    jit("7 10 9 * + :::: , b. o. d. x.");
 
     return EX_OK;
 }
