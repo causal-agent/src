@@ -1,5 +1,5 @@
 #if 0
-exec cc -Wall -Wextra $@ -ledit -o $(dirname $0)/jrp $0
+exec cc -Wall -Wextra $@ $0 -ledit -o $(dirname $0)/jrp
 #endif
 
 #include <err.h>
