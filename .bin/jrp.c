@@ -52,7 +52,7 @@ enum {
     HOP_REM  = 0x90d78948, // mov rdi, rdx
     HOP_NOT  = 0x90d7f748, // not rdi
     HOP_AND  = 0xc7214858, // pop rax; and rdi, rax
-    HOP_OR   = 0xc7904858, // pop rax; or rdi, rax
+    HOP_OR   = 0xc7094858, // pop rax; or rdi, rax
     HOP_XOR  = 0xc7314858, // pop rax; xor rdi, rax
 };
 
