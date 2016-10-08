@@ -4,6 +4,7 @@ exec cc -Wall -Wextra $@ $0 -ledit -o $(dirname $0)/jrp
 
 #include <err.h>
 #include <histedit.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -100,14 +101,14 @@ static void jit_fop(op fop) {
     *code.ptr++ = fop;
 }
 
-static void jit_print(void) {
+static void jit_push(value imm) {
+    jit_fop(FOP_PUSH);
+    jit_fop((op)imm);
+}
+
+static void jit_call(void (*fn)(value)) {
     jit_fop(FOP_CRT);
-    switch (radix) {
-        case 2:  jit_fop((op)rt_print_bin); break;
-        case 8:  jit_fop((op)rt_print_oct); break;
-        case 10: jit_fop((op)rt_print_dec); break;
-        case 16: jit_fop((op)rt_print_hex); break;
-    }
+    jit_fop((op)fn);
     jit_fop(FOP_CALL);
 }
 
@@ -117,13 +118,20 @@ static void jit(const char *src) {
     code.ptr = code.base;
     jit_fop(FOP_PROL);
 
+    bool quote = false;
     while (*src) {
+        if (quote) {
+            jit_push(*src++);
+            quote = false;
+            continue;
+        }
         switch (*src) {
             case ' ': break;
-            case 'b': radix = 2;  break;
-            case 'o': radix = 8;  break;
-            case 'd': radix = 10; break;
-            case 'x': radix = 16; break;
+            case 39:  quote = true; break;
+            case 'b': radix = 2;    break;
+            case 'o': radix = 8;    break;
+            case 'd': radix = 10;   break;
+            case 'x': radix = 16;   break;
             case ';': jit_hop(HOP_DROP); break;
             case ':': jit_hop(HOP_DUP);  break;
             case 92:  jit_hop(HOP_SWAP); break;
@@ -139,15 +147,19 @@ static void jit(const char *src) {
             case '^': jit_hop(HOP_XOR);  break;
             case '<': jit_fop(FOP_SHL);  break;
             case '>': jit_fop(FOP_SHR);  break;
-            case ',': jit_fop(FOP_CRT); jit_fop((op)rt_print_ascii); jit_fop(FOP_CALL); break;
-            case '.': jit_print(); break;
+            case ',': jit_call(rt_print_ascii); break;
+            case '.': switch (radix) {
+                case 2:  jit_call(rt_print_bin); break;
+                case 8:  jit_call(rt_print_oct); break;
+                case 10: jit_call(rt_print_dec); break;
+                case 16: jit_call(rt_print_hex); break;
+            } break;
             default: {
                 char *rest;
                 value val = strtoll(src, &rest, radix);
                 if (rest != src) {
                     src = rest;
-                    jit_fop(FOP_PUSH);
-                    jit_fop((op)val);
+                    jit_push(val);
                     continue;
                 }
             }
