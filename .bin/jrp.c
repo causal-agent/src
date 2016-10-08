@@ -183,11 +183,12 @@ static char *prompt(EditLine *el __attribute((unused))) {
     static char buf[4096];
     char *bp = buf;
     for (value *sp = stack.limit - 1; sp >= stack.ptr; --sp) {
+        size_t len = sizeof(buf) - (buf - bp) - 2;
         switch (radix) {
-            case 2:  bp += snprintf(bp, buf - bp - 2, " %s", fmt_bin(*sp)); break;
-            case 8:  bp += snprintf(bp, buf - bp - 2, " %llo", *sp); break;
-            case 10: bp += snprintf(bp, buf - bp - 2, " %lld", *sp); break;
-            case 16: bp += snprintf(bp, buf - bp - 2, " %llx", *sp); break;
+            case 2:  bp += snprintf(bp, len, " %s", fmt_bin(*sp)); break;
+            case 8:  bp += snprintf(bp, len, " %llo", *sp); break;
+            case 10: bp += snprintf(bp, len, " %lld", *sp); break;
+            case 16: bp += snprintf(bp, len, " %llx", *sp); break;
         }
     }
     buf[0] = '[';
