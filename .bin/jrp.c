@@ -14,31 +14,46 @@ typedef unsigned long long uvalue;
 typedef value *(*fptr)(value *);
 
 enum {
-    OP_PROL = 0x90fc8948e5894855, // push ebp; mov rbp, rsp; mov rsp, rdi
-    OP_EPIL = 0xc35dec8948e08948, // mov rax, rsp; mov rsp, rbp; pop rbp; ret
-    OP_CALL = 0x90d0ffe587485f58, // pop rax; pop rdi; xchg rsp, rbp; call rax
-    OP_RELO = 0x9090666666e58748, // xchg rsp, rbp
-    OP_PUSH = 0x0000000068906666, // push strict dword 0
-    OP_HIGH = 0x00000000042444c7, // mov [rsp + 4], strict dword 0
-    OP_DROP = 0x9066666608c48348, // add rsp, 8
-    OP_DUP  = 0x90906666662434ff, // push qword [rsp]
-    OP_SWAP = 0x9066666650515859, // pop rcx; pop rax; push rcx; push rax
-    OP_NEG  = 0x90666666241cf748, // neg qword [rsp]
-    OP_ADD  = 0x906666240c014859, // pop rcx; add [rsp], rcx
-    OP_SUB  = 0x906666240c294859, // pop rcx; sub [rsp], rcx
-    OP_MUL  = 0x9050c1af0f485859, // pop rcx; pop rax; imul rax, rcx; push rax
-    OP_DIV  = 0x50f9f74899485859, // pop rcx; pop rax; cqo; idiv rcx; push rax
-    OP_REM  = 0x52f9f74899485859, // pop rcx; pop rax; cqo; idiv rcx; push rdx
-    OP_NOT  = 0x906666662414f748, // not qword [rsp]
-    OP_AND  = 0x906666240c214859, // pop rcx; and [rsp], rcx
-    OP_OR   = 0x906666240c904859, // pop rcx; or [rsp], rcx
-    OP_XOR  = 0x906666240c314859, // pop rcx; xor [rsp], rcx
-    OP_SHL  = 0x9066662424d34859, // pop rcx; shl qword [rsp], cl
-    OP_SHR  = 0x906666242cd34859, // pop rcx; shr qword [rsp], cl
+    HOP_NOP  = 0x90666666, // nop
+    HOP_RET  = 0x906666c3, // ret
+    HOP_DROP = 0x9066665f, // pop rdi
+    HOP_DUP  = 0x90666657, // push rdi
+    HOP_SWAP = 0x244c8748, // xchg rdi, [rsp]
+    HOP_NEG  = 0x90dff748, // neg rdi
+    HOP_ADD  = 0xc7014858, // pop rax; add rdi, rax
+    HOP_QUO  = 0x90c78948, // mov rdi, rax
+    HOP_REM  = 0x90d78948, // mov rdi, rdx
+    HOP_NOT  = 0x90d7f748, // not rdi
+    HOP_AND  = 0xc7214858, // pop rax; and rdi, rax
+    HOP_OR   = 0xc7904858, // pop rax; or rdi, rax
+    HOP_XOR  = 0xc7314858, // pop rax; xor rdi, rax
 };
 
-#define IMMED_PUSH(x) ((op)(x) << 32)
-#define IMMED_HIGH(x) ((op)(x) & 0xffffffff00000000)
+enum {
+    FOP_PROL = 0x5ffc8948e5894855, // push rbp; mov rbp, rsp; mov rsp, rdi; pop rdi
+    FOP_EPIL = 0x5dec8948e0894857, // push rdi; mov rax, rsp; mov rsp, rbp; pop rbp
+    FOP_CRT  = 0xb848906666e58748, // xchg rsp, rbp; mov rax, strict qword 0
+    FOP_CALL = 0x90665fe58748d0ff, // call rax; xchg rsp, rbp; pop rdi
+    FOP_PUSH = 0xbf48909066666657, // push rdi; mov rdi, strict qword 0
+    FOP_SUB  = 0x9066665f243c2948, // sub [rsp], rdi; pop rdi
+    FOP_MUL  = 0x906666f8af0f4858, // pop rax; imul rdi, rax
+    FOP_DIV  = 0x9066fff748994858, // pop rax; cqo; idiv rdi
+    FOP_SHL  = 0x5f2424d348f98948, // mov rcx, rdi; shl qword [rsp], cl; pop rdi
+    FOP_SHR  = 0x5f242cd348f98948, // mov rcx, rdi; shr qword [rsp], cl; pop rdi
+};
+
+#define FOP(a, b) ((op)(b) << 32 | (op)(a))
+
+#define JIT_PUSH(p, x) { \
+    *(p)++ = FOP_PUSH; \
+    *(p)++ = x; \
+}
+
+#define JIT_CALL(p, fn) { \
+    *(p)++ = FOP_CRT; \
+    *(p)++ = (op)(fn); \
+    *(p)++ = FOP_CALL; \
+}
 
 static void rt_print_ascii(value val) {
     printf("%c\n", (char)val);
@@ -66,48 +81,33 @@ static void rt_print_hex(value val) {
     printf("%llx\n", val);
 }
 
-#define JIT_PUSH(p, val) { \
-    *p++ = OP_PUSH | IMMED_PUSH(val); \
-    if (IMMED_HIGH(val)) { \
-        *p++ = OP_HIGH | IMMED_HIGH(val); \
-    } \
-}
-
-#define JIT_CALL(p, fn) { \
-    JIT_PUSH(p, fn); \
-    *p++ = OP_CALL; \
-    *p++ = OP_RELO; \
-}
-
 int main() {
     int error;
     int page = getpagesize();
 
     value *base = mmap(0, page, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, 0, 0);
     if (base == MAP_FAILED) err(EX_OSERR, "mmap");
-    value *stack = base + page / sizeof(value);
+    value *stack = base + page / sizeof(value) - 1;
 
     op *ops = mmap(0, page, PROT_WRITE, MAP_ANON | MAP_PRIVATE, 0, 0);
     if (ops == MAP_FAILED) err(EX_OSERR, "mmap");
 
     op *p = ops;
-    *p++ = OP_PROL;
+    *p++ = FOP_PROL;
     JIT_PUSH(p, 7);
     JIT_PUSH(p, 10);
     JIT_PUSH(p, 9);
-    *p++ = OP_MUL;
-    *p++ = OP_ADD;
-    *p++ = OP_DUP;
-    *p++ = OP_DUP;
-    *p++ = OP_DUP;
-    *p++ = OP_DUP;
-    *p++ = OP_DUP;
+    *p++ = FOP_MUL;
+    *p++ = FOP(HOP_ADD, HOP_DUP);
+    *p++ = FOP(HOP_DUP, HOP_DUP);
+    *p++ = FOP(HOP_DUP, HOP_NOP);
     JIT_CALL(p, rt_print_ascii);
     JIT_CALL(p, rt_print_bin);
     JIT_CALL(p, rt_print_oct);
     JIT_CALL(p, rt_print_dec);
     JIT_CALL(p, rt_print_hex);
-    *p++ = OP_EPIL;
+    *p++ = FOP_EPIL;
+    *p++ = FOP(HOP_RET, HOP_NOP);
 
     error = mprotect(ops, page, PROT_READ | PROT_EXEC);
     if (error) err(EX_OSERR, "mprotect");
