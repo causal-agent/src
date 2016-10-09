@@ -1,5 +1,5 @@
 #if 0
-exec cc -Wall -Wextra $@ $0 -ledit -o $(dirname $0)/jrp
+exec cc -Wall -Wextra -pedantic $@ $0 -ledit -o $(dirname $0)/jrp
 #endif
 
 #include <err.h>
@@ -11,220 +11,243 @@ exec cc -Wall -Wextra $@ $0 -ledit -o $(dirname $0)/jrp
 #include <sysexits.h>
 #include <unistd.h>
 
-typedef unsigned long long op;
-typedef long long value;
-typedef unsigned long long uvalue;
-typedef value *(*fptr)(value *);
+typedef unsigned long qop;
+typedef unsigned int dop;
 
-static char *fmt_bin(value val) {
-    static char buf[sizeof(value) * 8 + 1];
+typedef long qvalue;
+typedef int dvalue;
+typedef unsigned long uvalue;
+
+typedef qvalue *(*jitFn)(qvalue *);
+typedef void (*rtFn)(qvalue);
+
+static char *formatBin(qvalue val) {
+    static char buf[sizeof(qvalue) * 8 + 1];
     uvalue uval = val;
-    int i = sizeof(buf);
+    size_t i = sizeof(buf);
     do {
         buf[--i] = '0' + (uval & 1);
     } while (uval >>= 1);
     return &buf[i];
 }
 
-static void rt_print_ascii(value val) {
+static void rtPrintAscii(qvalue val) {
     printf("%c\n", (char)val);
 }
-static void rt_print_bin(value val) {
-    printf("%s\n", fmt_bin(val));
+static void rtPrintBin(qvalue val) {
+    printf("%s\n", formatBin(val));
 }
-static void rt_print_oct(value val) {
-    printf("%llo\n", val);
+static void rtPrintOct(qvalue val) {
+    printf("%lo\n", val);
 }
-static void rt_print_dec(value val) {
-    printf("%lld\n", val);
+static void rtPrintDec(qvalue val) {
+    printf("%ld\n", val);
 }
-static void rt_print_hex(value val) {
-    printf("%llx\n", val);
+static void rtPrintHex(qvalue val) {
+    printf("%lx\n", val);
 }
 
-enum {
-    HOP_NOP  = 0x90666666, // nop
-    HOP_DROP = 0x9066665f, // pop rdi
-    HOP_DUP  = 0x90666657, // push rdi
-    HOP_SWAP = 0x243c8748, // xchg rdi, [rsp]
-    HOP_NEG  = 0x90dff748, // neg rdi
-    HOP_ADD  = 0xc7014858, // pop rax; add rdi, rax
-    HOP_QUO  = 0x90c78948, // mov rdi, rax
-    HOP_REM  = 0x90d78948, // mov rdi, rdx
-    HOP_NOT  = 0x90d7f748, // not rdi
-    HOP_AND  = 0xc7214858, // pop rax; and rdi, rax
-    HOP_OR   = 0xc7094858, // pop rax; or rdi, rax
-    HOP_XOR  = 0xc7314858, // pop rax; xor rdi, rax
-};
+static const dop DOP_NOP  = 0x90666666; // nop
+static const dop DOP_PUSH = 0xc7c74857; // push rdi; mov rdi, strict dword 0
+static const dop DOP_DROP = 0x9066665f; // pop rdi
+static const dop DOP_DUP  = 0x90666657; // push rdi
+static const dop DOP_SWAP = 0x243c8748; // xchg rdi, [rsp]
+static const dop DOP_NEG  = 0x90dff748; // neg rdi
+static const dop DOP_ADD  = 0xc7014858; // pop rax; add rdi, rax
+static const dop DOP_QUO  = 0x90c78948; // mov rdi, rax
+static const dop DOP_REM  = 0x90d78948; // mov rdi, rdx
+static const dop DOP_NOT  = 0x90d7f748; // not rdi
+static const dop DOP_AND  = 0xc7214858; // pop rax; and rdi, rax
+static const dop DOP_OR   = 0xc7094858; // pop rax; or rdi, rax
+static const dop DOP_XOR  = 0xc7314858; // pop rax; xor rdi, rax
 
-enum {
-    FOP_PROL = 0x5ffc8948e5894855, // push rbp; mov rbp, rsp; mov rsp, rdi; pop rdi
-    FOP_EPIL = 0x5dec8948e0894857, // push rdi; mov rax, rsp; mov rsp, rbp; pop rbp
-    FOP_RET  = 0x90666690666666c3, // ret
-    FOP_CRT  = 0xb848906666e58748, // xchg rsp, rbp; mov rax, strict qword 0
-    FOP_CALL = 0x90665fe58748d0ff, // call rax; xchg rsp, rbp; pop rdi
-    FOP_PUSH = 0xbf48909066666657, // push rdi; mov rdi, strict qword 0
-    FOP_SUB  = 0x9066665f243c2948, // sub [rsp], rdi; pop rdi
-    FOP_MUL  = 0x906666f8af0f4858, // pop rax; imul rdi, rax
-    FOP_DIV  = 0x9066fff748994858, // pop rax; cqo; idiv rdi
-    FOP_SHL  = 0x5f2424d348f98948, // mov rcx, rdi; shl qword [rsp], cl; pop rdi
-    FOP_SHR  = 0x5f242cd348f98948, // mov rcx, rdi; shr qword [rsp], cl; pop rdi
-};
-
-static int page;
+static const qop QOP_PROL = 0x5ffc8948e5894855; // push rbp; mov rbp, rsp; mov rsp, rdi; pop rdi
+static const qop QOP_EPIL = 0x5dec8948e0894857; // push rdi; mov rax, rsp; mov rsp, rbp; pop rbp
+static const qop QOP_RET  = 0x90666690666666c3; // ret
+static const qop QOP_CRT  = 0xb848906666e58748; // xchg rsp, rbp; mov rax, strict qword 0
+static const qop QOP_CALL = 0x90665fe58748d0ff; // call rax; xchg rsp, rbp; pop rdi
+static const qop QOP_PUSH = 0xbf48909066666657; // push rdi; mov rdi, strict qword 0
+static const qop QOP_SUB  = 0x9066665f243c2948; // sub [rsp], rdi; pop rdi
+static const qop QOP_MUL  = 0x906666f8af0f4858; // pop rax; imul rdi, rax
+static const qop QOP_DIV  = 0x9066fff748994858; // pop rax; cqo; idiv rdi
+static const qop QOP_SHL  = 0x5f2424d348f98948; // mov rcx, rdi; shl qword [rsp], cl; pop rdi
+static const qop QOP_SHR  = 0x5f242cd348f98948; // mov rcx, rdi; shr qword [rsp], cl; pop rdi
 
 static int radix = 10;
 
 static struct {
-    value *base;
-    value *limit;
-    value *ptr;
-} stack;
-
-static struct {
-    op *base;
-    op *ptr;
-    op hop;
+    qop *base;
+    qop *ptr;
+    dop dop;
 } code;
 
-static void jit_hop(op hop) {
-    if (code.hop) {
-        *code.ptr++ = hop << 32 | code.hop;
-        code.hop = 0;
+static struct {
+    qvalue *base;
+    qvalue *limit;
+    qvalue *ptr;
+} stack;
+
+static void jitDop(dop op) {
+    if (code.dop) {
+        *code.ptr++ = (qop)op << 32 | code.dop;
+        code.dop = 0;
     } else {
-        code.hop = hop;
+        code.dop = op;
     }
 }
 
-static void jit_fop(op fop) {
-    if (code.hop) jit_hop(HOP_NOP);
-    *code.ptr++ = fop;
+static void jitQop(qop op) {
+    if (code.dop) jitDop(DOP_NOP);
+    *code.ptr++ = op;
 }
 
-static void jit_push(value imm) {
-    jit_fop(FOP_PUSH);
-    jit_fop((op)imm);
+static void jitPush(qvalue imm) {
+    if ((dvalue)imm == imm) {
+        jitDop(DOP_PUSH);
+        jitDop((dop)imm);
+    } else {
+        jitQop(QOP_PUSH);
+        jitQop((qop)imm);
+    }
 }
 
-static void jit_call(void (*fn)(value)) {
-    jit_fop(FOP_CRT);
-    jit_fop((op)fn);
-    jit_fop(FOP_CALL);
+static void jitCall(rtFn fn) {
+    jitQop(QOP_CRT);
+    jitQop((qop)fn);
+    jitQop(QOP_CALL);
 }
 
-static void jit(const char *src) {
-    int error;
-
+static void jitBegin(void) {
     code.ptr = code.base;
-    jit_fop(FOP_PROL);
+    jitQop(QOP_PROL);
+}
 
+static void jitEnd(void) {
+    jitQop(QOP_EPIL);
+    jitQop(QOP_RET);
+}
+
+static void jitInit(void) {
+    code.base = mmap(0, getpagesize(), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+    if (code.base == MAP_FAILED) err(EX_OSERR, "mmap");
+}
+
+static void stackInit(void) {
+    stack.base = mmap(0, getpagesize(), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+    if (stack.base == MAP_FAILED) err(EX_OSERR, "mmap");
+    stack.limit = stack.base + getpagesize() / sizeof(qvalue);
+    stack.ptr = stack.limit - 1;
+}
+
+static void jitExec(void) {
+    int error;
+    error = mprotect(code.base, getpagesize(), PROT_READ | PROT_EXEC);
+    if (error) err(EX_OSERR, "mprotect");
+    stack.ptr = ((jitFn)code.base)(stack.ptr);
+    error = mprotect(code.base, getpagesize(), PROT_READ | PROT_WRITE);
+    if (error) err(EX_OSERR, "mprotect");
+}
+
+static void jitSrc(const char *src) {
     bool quote = false;
     while (*src) {
         if (quote) {
-            jit_push(*src++);
+            jitPush(*src++);
             quote = false;
             continue;
         }
+
         switch (*src) {
             case ' ': break;
-            case 39:  quote = true; break;
-            case 'b': radix = 2;    break;
-            case 'o': radix = 8;    break;
-            case 'd': radix = 10;   break;
-            case 'x': radix = 16;   break;
-            case ';': jit_hop(HOP_DROP); break;
-            case ':': jit_hop(HOP_DUP);  break;
-            case 92:  jit_hop(HOP_SWAP); break;
-            case '_': jit_hop(HOP_NEG);  break;
-            case '+': jit_hop(HOP_ADD);  break;
-            case '-': jit_fop(FOP_SUB);  break;
-            case '*': jit_fop(FOP_MUL);  break;
-            case '/': jit_fop(FOP_DIV); jit_hop(HOP_QUO); break;
-            case '%': jit_fop(FOP_DIV); jit_hop(HOP_REM); break;
-            case '~': jit_hop(HOP_NOT);  break;
-            case '&': jit_hop(HOP_AND);  break;
-            case '|': jit_hop(HOP_OR);   break;
-            case '^': jit_hop(HOP_XOR);  break;
-            case '<': jit_fop(FOP_SHL);  break;
-            case '>': jit_fop(FOP_SHR);  break;
-            case ',': jit_call(rt_print_ascii); break;
+            case 39: quote = true; break;
+            case 'B': radix = 2;   break;
+            case 'O': radix = 8;   break;
+            case 'D': radix = 10;  break;
+            case 'X': radix = 16;  break;
+            case ';': jitDop(DOP_DROP); break;
+            case ':': jitDop(DOP_DUP);  break;
+            case 92:  jitDop(DOP_SWAP); break;
+            case '_': jitDop(DOP_NEG);  break;
+            case '+': jitDop(DOP_ADD);  break;
+            case '-': jitQop(QOP_SUB);  break;
+            case '*': jitQop(QOP_MUL);  break;
+            case '/': jitQop(QOP_DIV); jitDop(DOP_QUO); break;
+            case '%': jitQop(QOP_DIV); jitDop(DOP_REM); break;
+            case '~': jitDop(DOP_NOT);  break;
+            case '&': jitDop(DOP_AND);  break;
+            case '|': jitDop(DOP_OR);   break;
+            case '^': jitDop(DOP_XOR);  break;
+            case '<': jitQop(QOP_SHL);  break;
+            case '>': jitQop(QOP_SHR);  break;
+            case ',': jitCall(rtPrintAscii); break;
             case '.': switch (radix) {
-                case 2:  jit_call(rt_print_bin); break;
-                case 8:  jit_call(rt_print_oct); break;
-                case 10: jit_call(rt_print_dec); break;
-                case 16: jit_call(rt_print_hex); break;
+                case 2:  jitCall(rtPrintBin); break;
+                case 8:  jitCall(rtPrintOct); break;
+                case 10: jitCall(rtPrintDec); break;
+                case 16: jitCall(rtPrintHex); break;
             } break;
+
             default: {
                 char *rest;
-                value val = strtoll(src, &rest, radix);
+                qvalue val = strtol(src, &rest, radix);
                 if (rest != src) {
                     src = rest;
-                    jit_push(val);
+                    jitPush(val);
                     continue;
                 }
             }
         }
+
         src++;
     }
-
-    jit_fop(FOP_EPIL);
-    jit_fop(FOP_RET);
-
-    error = mprotect(code.base, page, PROT_READ | PROT_EXEC);
-    if (error) err(EX_OSERR, "mprotect");
-
-    stack.ptr = ((fptr)code.base)(stack.ptr);
-
-    error = mprotect(code.base, page, PROT_READ | PROT_WRITE);
-    if (error) err(EX_OSERR, "mprotect");
 }
 
 static char *prompt(EditLine *el __attribute((unused))) {
     static char buf[4096];
-    char *bp = buf;
-    for (value *sp = stack.limit - 1; sp >= stack.ptr; --sp) {
-        size_t len = sizeof(buf) - (buf - bp) - 2;
+    char *bufPtr = buf;
+    for (qvalue *stackPtr = stack.limit - 1; stackPtr >= stack.ptr; --stackPtr) {
+        size_t bufLen = sizeof(buf) - (buf - bufPtr) - 2;
         switch (radix) {
-            case 2:  bp += snprintf(bp, len, " %s", fmt_bin(*sp)); break;
-            case 8:  bp += snprintf(bp, len, " %llo", *sp); break;
-            case 10: bp += snprintf(bp, len, " %lld", *sp); break;
-            case 16: bp += snprintf(bp, len, " %llx", *sp); break;
+            case 2:  bufPtr += snprintf(bufPtr, bufLen, " %s", formatBin(*stackPtr)); break;
+            case 8:  bufPtr += snprintf(bufPtr, bufLen, " %lo", *stackPtr); break;
+            case 10: bufPtr += snprintf(bufPtr, bufLen, " %ld", *stackPtr); break;
+            case 16: bufPtr += snprintf(bufPtr, bufLen, " %lx", *stackPtr); break;
         }
     }
     buf[0] = '[';
-    *bp++ = ']';
-    *bp++ = ' ';
-    *bp = 0;
+    *bufPtr++ = ']';
+    *bufPtr++ = ' ';
+    *bufPtr = 0;
     return buf;
 }
 
 int main(int argc, char *argv[]) {
-    page = getpagesize();
-
-    code.base = mmap(0, page, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
-    if (code.base == MAP_FAILED) err(EX_OSERR, "mmap");
-
-    stack.base = mmap(0, page, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
-    if (stack.base == MAP_FAILED) err(EX_OSERR, "mmap");
-    stack.limit = stack.base + page / sizeof(value);
-    stack.ptr = stack.limit - 1;
+    jitInit();
+    stackInit();
 
     if (argc > 1) {
+        jitBegin();
         for (int i = 1; i < argc; ++i)
-            jit(argv[i]);
+            jitSrc(argv[i]);
+        jitEnd();
+        jitExec();
         return EX_OK;
     }
 
     EditLine *el = el_init(argv[0], stdin, stdout, stderr);
     el_set(el, EL_PROMPT, prompt);
-    el_set(el, EL_SIGNAL, 1);
+    el_set(el, EL_SIGNAL, true);
 
     for (;;) {
         int count;
         const char *line = el_gets(el, &count);
         if (count < 0) err(EX_IOERR, "el_gets");
         if (!line) break;
-        jit(line);
+
+        jitBegin();
+        jitSrc(line);
+        jitEnd();
+        jitExec();
     }
 
     el_end(el);
