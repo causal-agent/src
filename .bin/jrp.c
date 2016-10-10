@@ -103,8 +103,7 @@ static void jitQop(qop op) {
 
 static void jitPush(qvalue imm) {
     if ((dvalue)imm == imm) {
-        jitDop(DOP_PUSH);
-        jitDop((dop)imm);
+        jitQop(DOP_PUSH | (qop)imm << 32);
     } else {
         jitQop(QOP_PUSH);
         jitQop((qop)imm);
