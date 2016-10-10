@@ -133,10 +133,10 @@ static void jitInit(void) {
 }
 
 static void stackInit(void) {
-    stack.base = mmap(0, getpagesize(), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+    stack.base = mmap(0, 2 * getpagesize(), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     if (stack.base == MAP_FAILED) err(EX_OSERR, "mmap");
     stack.limit = stack.base + getpagesize() / sizeof(qvalue);
-    stack.ptr = stack.limit - 1;
+    stack.ptr = stack.limit;
 }
 
 static void jitExec(void) {
@@ -144,6 +144,7 @@ static void jitExec(void) {
     error = mprotect(code.base, getpagesize(), PROT_READ | PROT_EXEC);
     if (error) err(EX_OSERR, "mprotect");
     stack.ptr = ((jitFn)code.base)(stack.ptr);
+    if (stack.ptr > stack.limit) stack.ptr = stack.limit;
     error = mprotect(code.base, getpagesize(), PROT_READ | PROT_WRITE);
     if (error) err(EX_OSERR, "mprotect");
 }
@@ -215,6 +216,7 @@ static char *prompt(EditLine *el __attribute((unused))) {
         }
     }
     buf[0] = '[';
+    if (bufPtr == buf) bufPtr++;
     *bufPtr++ = ']';
     *bufPtr++ = ' ';
     *bufPtr = 0;
