@@ -63,10 +63,10 @@ static const dop DOP_XOR  = 0xc7314858; // pop rax; xor rdi, rax
 
 static const qop QOP_PROL = 0x5ffc8948e5894855; // push rbp; mov rbp, rsp; mov rsp, rdi; pop rdi
 static const qop QOP_EPIL = 0x5dec8948e0894857; // push rdi; mov rax, rsp; mov rsp, rbp; pop rbp
-static const qop QOP_RET  = 0x90666690666666c3; // ret
-static const qop QOP_CRT  = 0xb848906666e58748; // xchg rsp, rbp; mov rax, strict qword 0
+static const qop QOP_RET  = 0x90666666906666c3; // ret
+static const qop QOP_CRT  = 0xb848906690e58748; // xchg rsp, rbp; mov rax, strict qword 0
 static const qop QOP_CALL = 0x90665fe58748d0ff; // call rax; xchg rsp, rbp; pop rdi
-static const qop QOP_PUSH = 0xbf48909066666657; // push rdi; mov rdi, strict qword 0
+static const qop QOP_PUSH = 0xbf48906690666657; // push rdi; mov rdi, strict qword 0
 static const qop QOP_SUB  = 0x9066665f243c2948; // sub [rsp], rdi; pop rdi
 static const qop QOP_MUL  = 0x906666f8af0f4858; // pop rax; imul rdi, rax
 static const qop QOP_DIV  = 0x9066fff748994858; // pop rax; cqo; idiv rdi
