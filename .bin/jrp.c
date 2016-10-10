@@ -206,7 +206,7 @@ static char *prompt(EditLine *el __attribute((unused))) {
     static char buf[4096];
     char *bufPtr = buf;
     for (qvalue *stackPtr = stack.limit - 1; stackPtr >= stack.ptr; --stackPtr) {
-        size_t bufLen = sizeof(buf) - (buf - bufPtr) - 2;
+        size_t bufLen = sizeof(buf) - (bufPtr - buf) - 2;
         switch (radix) {
             case 2:  bufPtr += snprintf(bufPtr, bufLen, " %s", formatBin(*stackPtr)); break;
             case 8:  bufPtr += snprintf(bufPtr, bufLen, " %lo", *stackPtr); break;
