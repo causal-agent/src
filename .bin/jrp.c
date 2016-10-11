@@ -202,6 +202,12 @@ static void jitSrc(const char *src) {
     }
 }
 
+static void jitDump(const char *path, FILE *file) {
+    size_t nitems = code.ptr - code.base;
+    size_t written = fwrite(code.base, sizeof(qop), nitems, file);
+    if (written < nitems) err(EX_IOERR, "%s", path);
+}
+
 static char *prompt(EditLine *el __attribute((unused))) {
     static char buf[4096];
     char *bufPtr = buf;
@@ -223,6 +229,13 @@ static char *prompt(EditLine *el __attribute((unused))) {
 }
 
 int main(int argc, char *argv[]) {
+    FILE *file = NULL;
+    char *path = getenv("JRP_DUMP");
+    if (path) {
+        file = fopen(path, "w");
+        if (!file) err(EX_CANTCREAT, "%s", path);
+    }
+
     jitInit();
     stackInit();
 
@@ -231,6 +244,7 @@ int main(int argc, char *argv[]) {
         for (int i = 1; i < argc; ++i)
             jitSrc(argv[i]);
         jitEnd();
+        if (file) jitDump(path, file);
         jitExec();
         return EX_OK;
     }
@@ -248,6 +262,7 @@ int main(int argc, char *argv[]) {
         jitBegin();
         jitSrc(line);
         jitEnd();
+        if (file) jitDump(path, file);
         jitExec();
     }
 
