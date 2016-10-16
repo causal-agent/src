@@ -1,5 +1,5 @@
 #if 0
-exec clang -Weverything $@ -o $(dirname $0)/pbd $0
+exec cc -Wall -Wextra -pedantic $@ -o $(dirname $0)/pbd $0
 #endif
 
 #include <err.h>
@@ -12,7 +12,7 @@ exec clang -Weverything $@ -o $(dirname $0)/pbd $0
 #include <sysexits.h>
 #include <unistd.h>
 
-static void spawn(const char *cmd, int child_fd, int parent_fd) {
+static void spawn(const char *cmd, int childFd, int parentFd) {
     pid_t pid = fork();
     if (pid < 0) err(EX_OSERR, "fork");
 
@@ -24,7 +24,7 @@ static void spawn(const char *cmd, int child_fd, int parent_fd) {
         if (status)
             warnx("child %s status %d", cmd, status);
     } else {
-        int fd = dup2(parent_fd, child_fd);
+        int fd = dup2(parentFd, childFd);
         if (fd < 0) err(EX_OSERR, "dup2");
 
         int error = execlp(cmd, cmd);
@@ -44,7 +44,7 @@ int main() {
         .sin_addr = { .s_addr = htonl(0x7f000001) },
     };
 
-    error = bind(server, (struct sockaddr *) &addr, sizeof(addr));
+    error = bind(server, (struct sockaddr *)&addr, sizeof(addr));
     if (error) err(EX_OSERR, "bind");
 
     error = listen(server, 1);
