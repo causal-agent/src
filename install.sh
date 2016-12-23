@@ -34,6 +34,7 @@ link .config/nvim/autoload/pathogen.vim
 link .config/nvim/colors/lame.vim
 link .config/nvim/init.vim
 link .config/nvim/syntax/nasm.vim
+link .gdbinit
 link .gnupg/gpg-agent.conf
 link .inputrc
 link .psqlrc
