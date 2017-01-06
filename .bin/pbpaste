@@ -1,1 +1,0 @@
-exec nc localhost 7062 < /dev/null

@@ -28,9 +28,8 @@ fi
 
 link .bin/jrp.c
 link .bin/manpager
-link .bin/pbcopy
+link .bin/pbcopy.c
 link .bin/pbd.c
-link .bin/pbpaste
 link .bin/xx.c
 link .config/git/config
 link .config/git/ignore
