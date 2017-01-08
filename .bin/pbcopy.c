@@ -5,6 +5,7 @@ exec cc -Wall -Wextra -pedantic -DPBPASTE $@ -o $(dirname $0)/pbpaste $0
 
 #include <arpa/inet.h>
 #include <err.h>
+#include <netinet/in.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <sysexits.h>
