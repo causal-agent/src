@@ -18,7 +18,7 @@ int main() {
         case 0: printf("...%02d...\n", clock->tm_hour); break;
         case 1: printf("..%02d....\n", clock->tm_hour); break;
         case 2: printf(".%02d.....\n", clock->tm_hour); break;
-        case 3: printf("%02d....%02d\n", clock->tm_hour, clock->tm_hour + 1); break;
+        case 3: printf("%d......%d\n", clock->tm_hour % 10, (clock->tm_hour + 1) / 10); break;
         case 4: printf(".....%02d.\n", clock->tm_hour + 1); break;
         case 5: printf("....%02d..\n", clock->tm_hour + 1); break;
         case 6: printf("...%02d...\n", clock->tm_hour + 1); break;
