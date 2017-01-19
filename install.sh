@@ -26,6 +26,7 @@ if [ -d ~/Library ]; then
   link Library/Keyboard\ Layouts/Programmer.keylayout
 fi
 
+link .bin/clock.c
 link .bin/jrp.c
 link .bin/manpager
 link .bin/pbcopy.c
