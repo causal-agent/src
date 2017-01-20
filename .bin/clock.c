@@ -14,14 +14,21 @@ int main() {
     struct tm *clock = localtime(&timestamp);
     if (!clock) err(EX_OSERR, "localtime");
 
-    switch ((clock->tm_min + 5) / 10) {
-        case 0: printf("...%02d...\n", clock->tm_hour); break;
-        case 1: printf("..%02d....\n", clock->tm_hour); break;
-        case 2: printf(".%02d.....\n", clock->tm_hour); break;
-        case 3: printf("%02d....%02d\n", clock->tm_hour, clock->tm_hour + 1); break;
-        case 4: printf(".....%02d.\n", clock->tm_hour + 1); break;
-        case 5: printf("....%02d..\n", clock->tm_hour + 1); break;
-        case 6: printf("...%02d...\n", clock->tm_hour + 1); break;
+    int hour = clock->tm_hour;
+    int next = clock->tm_hour + 1;
+
+    switch ((clock->tm_min + 3) / 6) {
+        case  0: printf("....%02d....\n", hour); break;
+        case  1: printf("...%02d.....\n", hour); break;
+        case  2: printf("..%02d......\n", hour); break;
+        case  3: printf(".%02d.......\n", hour); break;
+        case  4: printf("%02d........\n", hour); break;
+        case  5: printf("%d........%d\n", hour % 10, next / 10); break;
+        case  6: printf("........%02d\n", next); break;
+        case  7: printf(".......%02d.\n", next); break;
+        case  8: printf("......%02d..\n", next); break;
+        case  9: printf(".....%02d...\n", next); break;
+        case 10: printf("....%02d....\n", next); break;
     }
 
     return 0;
