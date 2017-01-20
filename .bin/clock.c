@@ -17,18 +17,14 @@ int main() {
     int hour = clock->tm_hour;
     int next = (hour + 1) % 24;
 
-    switch ((clock->tm_min + 3) / 6) {
-        case  0: printf("....%02d....\n", hour); break;
-        case  1: printf("...%02d.....\n", hour); break;
-        case  2: printf("..%02d......\n", hour); break;
-        case  3: printf(".%02d.......\n", hour); break;
-        case  4: printf("%02d........\n", hour); break;
-        case  5: printf("%d........%d\n", hour % 10, next / 10); break;
-        case  6: printf("........%02d\n", next); break;
-        case  7: printf(".......%02d.\n", next); break;
-        case  8: printf("......%02d..\n", next); break;
-        case  9: printf(".....%02d...\n", next); break;
-        case 10: printf("....%02d....\n", next); break;
+    switch ((clock->tm_min + 5) / 10) {
+        case 0: printf("..%02d..\n", hour); break;
+        case 1: printf(".%02d...\n", hour); break;
+        case 2: printf("%02d....\n", hour); break;
+        case 3: printf("%d....%d\n", hour % 10, next / 10); break;
+        case 4: printf("....%02d\n", next); break;
+        case 5: printf("...%02d.\n", next); break;
+        case 6: printf("..%02d..\n", next); break;
     }
 
     return 0;
