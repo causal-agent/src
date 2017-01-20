@@ -15,7 +15,7 @@ int main() {
     if (!clock) err(EX_OSERR, "localtime");
 
     int hour = clock->tm_hour;
-    int next = clock->tm_hour + 1;
+    int next = (hour + 1) % 24;
 
     switch ((clock->tm_min + 3) / 6) {
         case  0: printf("....%02d....\n", hour); break;
