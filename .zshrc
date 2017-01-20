@@ -10,7 +10,19 @@ autoload -Uz colors && colors
 bindkey -v
 KEYTIMEOUT=1
 
-PATH=$PATH:~/.bin
+OLDPATH=$PATH
+path=(
+  /sbin
+  /bin
+  /usr/local/sbin
+  /usr/local/bin
+  /usr/sbin
+  /usr/bin
+  ~/.bin
+  ~/.cargo/bin
+  ~/.gem/bin
+)
+
 export PAGER=less MANPAGER=less EDITOR=vim GIT_EDITOR=vim
 type nvim > /dev/null &&
   MANPAGER=manpager EDITOR=nvim GIT_EDITOR=nvim && alias vim=nvim
