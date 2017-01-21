@@ -3,6 +3,8 @@ cc -Wall -Wextra -pedantic $@ -o $(dirname $0)/pbcopy $0 && \
 exec cc -Wall -Wextra -pedantic -DPBPASTE $@ -o $(dirname $0)/pbpaste $0
 #endif
 
+// pbcopy and pbpaste implementation which connects to pbd.
+
 #include <arpa/inet.h>
 #include <err.h>
 #include <netinet/in.h>

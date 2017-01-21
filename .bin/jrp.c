@@ -2,6 +2,8 @@
 exec cc -Wall -Wextra -pedantic $@ $0 -ledit -o $(dirname $0)/jrp
 #endif
 
+// JIT RPN calculator.
+
 #include <err.h>
 #include <histedit.h>
 #include <stdbool.h>

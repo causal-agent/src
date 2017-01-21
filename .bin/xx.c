@@ -2,6 +2,8 @@
 exec cc -Wall -Wextra -pedantic $@ -o $(dirname $0)/xx $0
 #endif
 
+// Hexdump.
+
 #include <ctype.h>
 #include <err.h>
 #include <stdbool.h>

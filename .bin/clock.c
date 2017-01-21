@@ -2,6 +2,8 @@
 exec cc -Wall -Wextra -pedantic $@ -o $(dirname $0)/clock $0
 #endif
 
+// Fuzzy clock for display in tmux.
+
 #include <time.h>
 #include <stdio.h>
 #include <sysexits.h>

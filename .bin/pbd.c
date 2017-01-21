@@ -2,6 +2,8 @@
 exec cc -Wall -Wextra -pedantic $@ -o $(dirname $0)/pbd $0
 #endif
 
+// TCP server which pipes between macOS pbcopy and pbpaste.
+
 #include <err.h>
 #include <netinet/in.h>
 #include <stdint.h>
