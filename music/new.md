@@ -8,6 +8,7 @@
 - [Avec le soleil sortant de sa bouche — Alizé et Margaret D. Midi moins le quart. Sur la plage, un palmier ensanglanté][8]
 - [Kero Kero Bonito — Fish Bowl][9]
 - [Xiu Xiu — Jenny GoGo][10]
+- [Arcade Fire — I Give You Power][11]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
@@ -19,3 +20,4 @@
 [8]: http://cstrecords.com/cst121/
 [9]: https://youtu.be/FY-CjOJCjJE
 [10]: https://youtu.be/WMT6MsA3ut8
+[11]: https://youtu.be/f6jma9VQEls
