@@ -1,21 +1,26 @@
 # Dotfiles
 
-My configuration files.
+Configuration files and utilities.
 
 ## Configurations
 
+- [iTerm2]
+- [Karabiner] ([Seil])
 - git
-- gpg-agent
 - htop
-- [iTerm 2.9](https://www.iterm2.com/downloads.html)
-- [Karabiner](https://pqrs.org/osx/karabiner/)
-  ([Seil](https://pqrs.org/osx/karabiner/seil.html.en))
-- [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
+- [neovim]
+- gdb
+- gpg-agent
+- inputrc
 - psql
-- readline
 - ssh
 - tmux
 - zsh
+
+[iTerm2]: https://www.iterm2.com/downloads.html
+[Karabiner]: https://pqrs.org/osx/karabiner/
+[Seil]: https://pqrs.org/osx/karabiner/seil.html.en
+[neovim]: https://github.com/neovim/neovim/wiki/Installing-Neovim
 
 ## Install
 
