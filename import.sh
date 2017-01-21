@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env zsh
 
 # Import a file from ~ and replace it with a symlink.
 
@@ -9,7 +9,7 @@ error() {
   exit 1
 }
 
-[ -z "$1" ] && error "no path"
+[ -z "$1" ] && error 'no path'
 
 source_path="$HOME/$1"
 dest_path="$PWD/$1"
@@ -20,4 +20,4 @@ dest_path="$PWD/$1"
 mkdir -p "$(dirname "$dest_path")"
 mv "$source_path" "$dest_path"
 ln -s "$dest_path" "$source_path"
-echo "link $1" >> install.sh
+echo "link '$1'" >> install.sh
