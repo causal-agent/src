@@ -18,6 +18,6 @@ nmap <leader><leader> :nohlsearch<CR>
 colorscheme lame
 
 autocmd BufNewFile,BufRead *.asm,*.mac setf nasm
-autocmd FileType ruby setlocal shiftwidth=2
+autocmd FileType sh,zsh,ruby setlocal shiftwidth=2
 
 execute pathogen#infect()
