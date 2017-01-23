@@ -9,6 +9,7 @@
 - [Kero Kero Bonito — Fish Bowl][9]
 - [Xiu Xiu — Jenny GoGo][10]
 - [Arcade Fire — I Give You Power][11]
+- Avec le soleil sortant de sa bouche — Pas pire pop, I Love You So Much
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
