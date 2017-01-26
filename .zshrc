@@ -14,7 +14,7 @@ path=(
   /sbin /bin
   /usr/local/sbin /usr/local/bin
   /usr/sbin /usr/bin
-  ~/.bin ~/.cargo/bin ~/.gem/bin
+  ~/.bin ~/.cargo/bin
 )
 
 export PAGER=less MANPAGER=less EDITOR=vim GIT_EDITOR=vim
