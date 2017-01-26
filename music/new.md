@@ -12,6 +12,7 @@
 - Avec le soleil sortant de sa bouche — Pas pire pop, I Love You So Much
 - [Dan Smith — Some Tunes][12]
 - [Those Who Walk Away — "First Degraded Rhythm" + "First Partially Recollected Conversation"][13]
+- [Neil Cicierega — Mouth Moods][14]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
@@ -26,3 +27,4 @@
 [11]: https://youtu.be/f6jma9VQEls
 [12]: https://thedancemyth.bandcamp.com/album/some-tunes
 [13]: http://cstrecords.com/cst122/
+[14]: http://www.neilcic.com/mouthmoods/
