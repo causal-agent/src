@@ -54,3 +54,4 @@ hi link rustModPath Identifier
 
 hi link rubyDefine Structure
 hi link rubyStringDelimiter String
+hi link rubySymbol String
