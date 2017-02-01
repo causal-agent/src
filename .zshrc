@@ -35,6 +35,13 @@ alias gc='git commit' gca='gc --amend' gt='git tag'
 alias gp='git push' gu='git pull' gf='git fetch'
 alias gr='git rebase' gra='gr --abort' grc='gr --continue' grs='gr --skip'
 
+nasd() {
+  local tmp=$(mktemp)
+  cat > $tmp
+  nasm -p =(echo 'bits 64') -o >(ndisasm -b 64 /dev/stdin) $tmp
+  rm $tmp
+}
+
 setopt prompt_subst
 _prompt_git() {
   local dotgit=.git head
