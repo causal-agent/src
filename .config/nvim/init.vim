@@ -14,6 +14,7 @@ set number colorcolumn=80,100
 set list listchars=tab:»·,trail:·
 
 nmap <leader><leader> :nohlsearch<CR>
+command! W w
 
 colorscheme lame
 
