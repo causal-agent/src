@@ -15,6 +15,7 @@
 - [Neil Cicierega — Mouth Moods][14]
 - [Sun Kil Moon — Benji][15]
 - [Saltland — I Only Wish This For You][16]
+- [Woman is the Earth — Depths][17]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
@@ -32,3 +33,4 @@
 [14]: http://www.neilcic.com/mouthmoods/
 [15]: https://youtu.be/UtndQzCUEY4
 [16]: http://cstrecords.com/cst123/
+[17]: https://womanistheearth.bandcamp.com/album/depths
