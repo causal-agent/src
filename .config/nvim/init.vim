@@ -3,7 +3,7 @@ set shortmess=atI visualbell
 set wildmode=list:longest
 set splitbelow splitright
 
-set ignorecase smartcase inccommand=split
+set ignorecase smartcase inccommand=nosplit
 set tabstop=4 expandtab shiftwidth=4 shiftround smartindent
 set undofile
 
