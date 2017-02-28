@@ -18,6 +18,7 @@
 - [Woman is the Earth — Depths][17]
 - [BNNY RBBT — Big World][18]
 - [Jessica Moss — Glaciers I (Pt I)][19]
+- [Saltland — Light of Mercy][20]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
@@ -38,3 +39,4 @@
 [17]: https://womanistheearth.bandcamp.com/album/depths
 [18]: http://www.bnnyrbbt.fans
 [19]: http://cstrecords.com/cst124/
+[20]: http://cstrecords.com/saltland-releases-new-single-light-of-mercy/
