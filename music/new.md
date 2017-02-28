@@ -17,6 +17,7 @@
 - [Saltland — I Only Wish This For You][16]
 - [Woman is the Earth — Depths][17]
 - [BNNY RBBT — Big World][18]
+- [Jessica Moss — Glaciers I (Pt I)][19]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
@@ -36,3 +37,4 @@
 [16]: http://cstrecords.com/cst123/
 [17]: https://womanistheearth.bandcamp.com/album/depths
 [18]: http://www.bnnyrbbt.fans
+[19]: http://cstrecords.com/cst124/
