@@ -24,7 +24,7 @@ type nvim > /dev/null \
 export GPG_TTY=$TTY
 
 export CLICOLOR=1
-[ "$OSTYPE" = 'linux-gnu' ] \
+[[ "$OSTYPE" =~ 'linux-gnu' ]] \
   && alias ls='ls --color=auto' grep='grep --color' rm='rm -I'
 
 alias gs='git status --short --branch' gd='git diff'
