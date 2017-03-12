@@ -22,6 +22,7 @@
 - Xiu Xiu — A Promise
 - Xiu Xiu — Fabulous Muscles
 - Unwound — Leaves Turn Inside You
+- The Body Lovers / The Body Haters
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
