@@ -1,0 +1,19 @@
+include "/usr/share/kbd/keymaps/i386/qwerty/us.map.gz"
+
+keycode 2 = exclam one
+keycode 3 = at two
+keycode 4 = numbersign three
+keycode 5 = dollar four
+keycode 6 = percent five
+keycode 7 = asciicircum six
+keycode 8 = ampersand seven
+keycode 9 = asterisk eight
+keycode 10 = parenleft nine
+keycode 11 = parenright zero
+keycode 12 = underscore minus
+keycode 26 = braceleft bracketleft
+keycode 27 = braceright bracketright
+keycode 43 = bar backslash
+
+keycode 100 = Compose
+keycode 125 = Escape

@@ -8,6 +8,7 @@ Configuration files and utilities.
 - [Karabiner] ([Seil])
 - git
 - htop
+- keymap
 - [neovim]
 - gdb
 - gpg-agent
