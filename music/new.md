@@ -23,6 +23,8 @@
 - Xiu Xiu — Fabulous Muscles
 - Unwound — Leaves Turn Inside You
 - The Body Lovers / The Body Haters
+- [Do Make Say Think — Bound and Boundless][21]
+- [Joni Void — Dissociation (Kyla's Song)][22]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
@@ -44,3 +46,5 @@
 [18]: http://www.bnnyrbbt.fans
 [19]: http://cstrecords.com/cst124/
 [20]: http://cstrecords.com/saltland-releases-new-single-light-of-mercy/
+[21]: http://cstrecords.com/cst120/
+[22]: http://cstrecords.com/cst125/
