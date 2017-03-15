@@ -25,6 +25,7 @@ if [ -d '~/Library' ]; then
   link 'Library/Application Support/Karabiner/private.xml'
 fi
 
+link '.bin/bri.c'
 link '.bin/clock.c'
 link '.bin/jrp.c'
 link '.bin/manpager'
