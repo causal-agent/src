@@ -59,7 +59,7 @@ RPROMPT='%F{blue}%50<…<%~%F{yellow}$(_prompt_git)%f'
 
 _n() { _n() { echo } }
 _title() { print -Pn "\e]0;$1\a" }
-_title_precmd() { _title "%1~" }
-_title_preexec() { _title "%1~: $1" }
+_title_precmd() { _title '%1~' }
+_title_preexec() { psvar=("$1") _title '%1~: %1v' }
 precmd_functions=(_n _title_precmd)
 preexec_functions=(_title_preexec)
