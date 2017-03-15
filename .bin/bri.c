@@ -1,8 +1,8 @@
 #if 0
-sudo rm $(dirname $0)/bri && \
 cc -Wall -Wextra -pedantic $@ -o $(dirname $0)/bri $0 && \
 sudo chown root:root $(dirname $0)/bri && \
-exec sudo chmod u+s $(dirname $0)/bri
+sudo chmod u+s $(dirname $0)/bri
+exit
 #endif
 
 // Backlight brightness control.
