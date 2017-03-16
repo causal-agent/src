@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
         if (entry->d_name[0] == '.') continue;
 
         error = chdir(entry->d_name);
-        if (error) err(EX_IOERR, entry->d_name);
+        if (error) err(EX_IOERR, "%s", entry->d_name);
         break;
     }
     if (!entry) {
