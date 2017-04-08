@@ -25,6 +25,7 @@
 - The Body Lovers / The Body Haters
 - [Do Make Say Think — Bound and Boundless][21]
 - [Joni Void — Dissociation (Kyla's Song)][22]
+- Arca — Arca
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
