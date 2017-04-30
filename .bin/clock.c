@@ -10,16 +10,16 @@ exec cc -Wall -Wextra -pedantic $@ -o $(dirname $0)/clock $0
 #include <err.h>
 
 int main() {
-    time_t timestamp = time(NULL);
-    if (timestamp < 0) err(EX_OSERR, "time");
+    time_t ts = time(NULL);
+    if (ts < 0) err(EX_OSERR, "time");
 
-    struct tm *clock = localtime(&timestamp);
-    if (!clock) err(EX_OSERR, "localtime");
+    struct tm *time = localtime(&ts);
+    if (!time) err(EX_OSERR, "localtime");
 
-    int hour = clock->tm_hour;
+    int hour = time->tm_hour;
     int next = (hour + 1) % 24;
 
-    switch ((clock->tm_min + 5) / 10) {
+    switch ((time->tm_min + 5) / 10) {
         case 0: printf("..%02d..\n", hour); break;
         case 1: printf(".%02d...\n", hour); break;
         case 2: printf("%02d....\n", hour); break;
@@ -29,5 +29,5 @@ int main() {
         case 6: printf("..%02d..\n", next); break;
     }
 
-    return 0;
+    return EX_OK;
 }
