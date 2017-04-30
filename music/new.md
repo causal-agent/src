@@ -26,6 +26,7 @@
 - [Do Make Say Think — Bound and Boundless][21]
 - [Joni Void — Dissociation (Kyla's Song)][22]
 - Arca — Arca
+- [Xiu Xiu — Forget][23]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
@@ -49,3 +50,4 @@
 [20]: http://cstrecords.com/saltland-releases-new-single-light-of-mercy/
 [21]: http://cstrecords.com/cst120/
 [22]: http://cstrecords.com/cst125/
+[23]: https://youtu.be/ywRzfwA75pY
