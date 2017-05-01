@@ -4,7 +4,7 @@ if exists('syntax_on')
   syntax reset
 endif
 
-let colors_name = 'lame'
+let colors_name = 'trivial'
 
 hi Normal ctermbg=NONE ctermfg=NONE
 

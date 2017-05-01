@@ -16,9 +16,9 @@ set list listchars=tab:»·,trail:·
 nmap <leader><leader> :nohlsearch<CR>
 command! W w
 
-colorscheme lame
+colorscheme trivial
 
-autocmd BufNewFile,BufRead *.asm,*.mac setf nasm
+autocmd BufNewFile,BufRead *.asm,*.mac setfiletype nasm
 autocmd FileType sh,zsh,ruby setlocal shiftwidth=2
 
 execute pathogen#infect()
