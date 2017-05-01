@@ -1,117 +1,203 @@
 <?xml version="1.0"?>
 <root>
-  <item>
-    <name>Inverted Shift</name>
-    <identifier>private.inverted_shift</identifier>
+    <item>
+        <name>Inverted shift</name>
+        <identifier>private.inverted_shift</identifier>
 
-    <modifier_not>
-      ModifierFlag::COMMAND_L,
-      ModifierFlag::COMMAND_R,
-      ModifierFlag::CONTROL_L,
-      ModifierFlag::CONTROL_R,
-      ModifierFlag::FN,
-      ModifierFlag::OPTION_L,
-      ModifierFlag::OPTION_R,
-    </modifier_not>
+        <modifier_not>
+            ModifierFlag::COMMAND_L,
+            ModifierFlag::COMMAND_R,
+            ModifierFlag::CONTROL_L,
+            ModifierFlag::CONTROL_R,
+            ModifierFlag::OPTION_L,
+            ModifierFlag::OPTION_R,
+            ModifierFlag::FN,
+        </modifier_not>
 
-    <appendix>Swap minus and underscore</appendix>
-    <autogen>__KeyToKey__
-      KeyCode::MINUS, ModifierFlag::NONE,
-      KeyCode::MINUS, ModifierFlag::SHIFT_L
-    </autogen>
-    <autogen>__KeyToKey__
-      KeyCode::MINUS, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT | ModifierFlag::NONE,
-      KeyCode::MINUS,
-    </autogen>
+        <appendix>Swap minus and underscore</appendix>
 
-    <appendix>Swap backslash and pipe</appendix>
-    <autogen>__KeyToKey__
-      KeyCode::BACKSLASH, ModifierFlag::NONE,
-      KeyCode::BACKSLASH, ModifierFlag::SHIFT_L
-    </autogen>
-    <autogen>__KeyToKey__
-      KeyCode::BACKSLASH, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT | ModifierFlag::NONE,
-      KeyCode::BACKSLASH,
-    </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::MINUS, ModifierFlag::NONE,
+            KeyCode::MINUS, ModifierFlag::SHIFT_L
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::MINUS, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::MINUS
+        </autogen>
 
-    <appendix>Swap square brackets and braces</appendix>
-    <autogen>__KeyToKey__
-      KeyCode::BRACKET_LEFT, ModifierFlag::NONE,
-      KeyCode::BRACKET_LEFT, ModifierFlag::SHIFT_L
-    </autogen>
-    <autogen>__KeyToKey__
-      KeyCode::BRACKET_LEFT, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT | ModifierFlag::NONE,
-      KeyCode::BRACKET_LEFT,
-    </autogen>
-    <autogen>__KeyToKey__
-      KeyCode::BRACKET_RIGHT, ModifierFlag::NONE,
-      KeyCode::BRACKET_RIGHT, ModifierFlag::SHIFT_L
-    </autogen>
-    <autogen>__KeyToKey__
-      KeyCode::BRACKET_RIGHT, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT | ModifierFlag::NONE,
-      KeyCode::BRACKET_RIGHT,
-    </autogen>
+        <appendix>Swap backslash and pipe</appendix>
 
-    <appendix>Swap numbers and symbols</appendix>
-    <autogen>__KeyToKey__ KeyCode::KEY_1, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT, KeyCode::KEY_1</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_2, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT, KeyCode::KEY_2</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_3, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT, KeyCode::KEY_3,</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_4, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT, KeyCode::KEY_4</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_5, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT, KeyCode::KEY_5</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_6, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT, KeyCode::KEY_6</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_7, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT, KeyCode::KEY_7</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_8, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT, KeyCode::KEY_8</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_9, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT, KeyCode::KEY_9</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_0, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT, KeyCode::KEY_0</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_1, KeyCode::KEY_1, ModifierFlag::SHIFT_L</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_2, KeyCode::KEY_2, ModifierFlag::SHIFT_L</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_3, KeyCode::KEY_3, ModifierFlag::SHIFT_L</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_4, KeyCode::KEY_4, ModifierFlag::SHIFT_L</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_5, KeyCode::KEY_5, ModifierFlag::SHIFT_L</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_6, KeyCode::KEY_6, ModifierFlag::SHIFT_L</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_7, KeyCode::KEY_7, ModifierFlag::SHIFT_L</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_8, KeyCode::KEY_8, ModifierFlag::SHIFT_L</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_9, KeyCode::KEY_9, ModifierFlag::SHIFT_L</autogen>
-    <autogen>__KeyToKey__ KeyCode::KEY_0, KeyCode::KEY_0, ModifierFlag::SHIFT_L</autogen>
-  </item>
+        <autogen>
+            __KeyToKey__
+            KeyCode::BACKSLASH, ModifierFlag::NONE,
+            KeyCode::BACKSLASH, ModifierFlag::SHIFT_L
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::BACKSLASH, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::BACKSLASH
+        </autogen>
 
-  <devicevendordef>
-    <vendorname>LEOPOLD</vendorname>
-    <vendorid>0x0853</vendorid>
-  </devicevendordef>
+        <appendix>Swap square brackets and braces</appendix>
 
-  <deviceproductdef>
-    <productname>FC660C</productname>
-    <productid>0x0134</productid>
-  </deviceproductdef>
+        <autogen>
+            __KeyToKey__
+            KeyCode::BRACKET_LEFT, ModifierFlag::NONE,
+            KeyCode::BRACKET_LEFT, ModifierFlag::SHIFT_L
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::BRACKET_LEFT, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::BRACKET_LEFT
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::BRACKET_RIGHT, ModifierFlag::NONE,
+            KeyCode::BRACKET_RIGHT, ModifierFlag::SHIFT_L
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::BRACKET_RIGHT, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::BRACKET_RIGHT
+        </autogen>
 
-  <item>
-    <name>Leopold Media Control</name>
-    <identifier>private.leopold_media_control</identifier>
-    <device_only>DeviceVendor::LEOPOLD, DeviceProduct::FC660C</device_only>
+        <appendix>Swap numbers and symbols</appendix>
 
-    <appendix>Rebind Ctrl+Help to Volume Up</appendix>
-    <autogen>__KeyToKey__ KeyCode::HELP, ModifierFlag::CONTROL_R, ConsumerKeyCode::VOLUME_UP</autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_1, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::KEY_1
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_2, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::KEY_2
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_3, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::KEY_3
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_4, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::KEY_4
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_5, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::KEY_5
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_6, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::KEY_6
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_7, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::KEY_7
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_8, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::KEY_8
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_9, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::KEY_9
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_0, MODIFIERFLAG_EITHER_LEFT_OR_RIGHT_SHIFT,
+            KeyCode::KEY_0
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_1,
+            KeyCode::KEY_1, ModifierFlag::SHIFT_L
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_2,
+            KeyCode::KEY_2, ModifierFlag::SHIFT_L
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_3,
+            KeyCode::KEY_3, ModifierFlag::SHIFT_L
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_4,
+            KeyCode::KEY_4, ModifierFlag::SHIFT_L
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_5,
+            KeyCode::KEY_5, ModifierFlag::SHIFT_L
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_6,
+            KeyCode::KEY_6, ModifierFlag::SHIFT_L
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_7,
+            KeyCode::KEY_7, ModifierFlag::SHIFT_L
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_8,
+            KeyCode::KEY_8, ModifierFlag::SHIFT_L
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_9,
+            KeyCode::KEY_9, ModifierFlag::SHIFT_L
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::KEY_0,
+            KeyCode::KEY_0, ModifierFlag::SHIFT_L
+        </autogen>
+    </item>
 
-    <appendix>Rebind Ctrl+Delete to Volume Down</appendix>
-    <autogen>__KeyToKey__ KeyCode::FORWARD_DELETE, ModifierFlag::CONTROL_R, ConsumerKeyCode::VOLUME_DOWN</autogen>
+    <devicevendordef>
+        <vendorname>LEOPOLD</vendorname>
+        <vendorid>0x0853</vendorid>
+    </devicevendordef>
 
-    <appendix>Rebind Help to Play/Pause</appendix>
-    <autogen>__KeyToKey__ KeyCode::HELP, ConsumerKeyCode::MUSIC_PLAY</autogen>
+    <deviceproductdef>
+        <productname>FC660C</productname>
+        <productid>0x0134</productid>
+    </deviceproductdef>
 
-    <appendix>Rebind Delete to Next</appendix>
-    <autogen>__KeyToKey__ KeyCode::FORWARD_DELETE, ConsumerKeyCode::MUSIC_NEXT</autogen>
-  </item>
+    <item>
+        <name>Leopold media control</name>
+        <identifier>private.leopold_media_control</identifier>
+        <device_only>DeviceVendor::LEOPOLD, DeviceProduct::FC660C</device_only>
 
-  <item>
-    <name>Back/Forward Mouse Buttons to Space Switching</name>
-    <identifier>private.bfmb_spaces</identifier>
-    <device_only>DeviceVendor::LOGITECH, DeviceProduct::LOGITECH_UNIFYING_0xc52b</device_only>
+        <appendix>Bind ctrl help and delete to volume control</appendix>
 
-    <appendix>Button 4 to Control+L</appendix>
-    <autogen>__KeyToKey__ PointingButton::BUTTON4, KeyCode::L, ModifierFlag::CONTROL_L</autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::HELP, ModifierFlag::CONTROL_R,
+            ConsumerKeyCode::VOLUME_UP
+        </autogen>
+        <autogen>
+            __KeyToKey__
+            KeyCode::FORWARD_DELETE, ModifierFlag::CONTROL_R,
+            ConsumerKeyCode::VOLUME_DOWN
+        </autogen>
 
-    <appendix>Button 5 to Control+H</appendix>
-    <autogen>__KeyToKey__ PointingButton::BUTTON5, KeyCode::H, ModifierFlag::CONTROL_L</autogen>
-  </item>
+        <appendix>Bind help and delete to music play and next</appendix>
+
+        <autogen>__KeyToKey__ KeyCode::HELP, ConsumerKeyCode::MUSIC_PLAY</autogen>
+        <autogen>__KeyToKey__ KeyCode::FORWARD_DELETE, ConsumerKeyCode::MUSIC_NEXT</autogen>
+    </item>
 </root>
