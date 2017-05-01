@@ -44,8 +44,9 @@ void dump(size_t cols, size_t group, uint8_t flags, FILE *file) {
             skip = false;
         }
 
-        if (flags & FLAG_OFFSET)
+        if (flags & FLAG_OFFSET) {
             printf("%08zx:  ", offset);
+        }
 
         for (size_t i = 0; i < len; ++i) {
             if (group && i && !(i % group)) printf(" ");
@@ -53,11 +54,13 @@ void dump(size_t cols, size_t group, uint8_t flags, FILE *file) {
         }
 
         if (flags & FLAG_ASCII) {
-            for (size_t i = len; i < cols; ++i)
+            for (size_t i = len; i < cols; ++i) {
                 printf((group && !(i % group)) ? "    " : "   ");
+            }
             printf(" ");
-            for (size_t i = 0; i < len; ++i)
+            for (size_t i = 0; i < len; ++i) {
                 printf("%c", isprint(buf[i]) ? buf[i] : '.');
+            }
         }
 
         printf("\n");
@@ -81,7 +84,7 @@ int main(int argc, char *argv[]) {
     char *path = NULL;
 
     int opt;
-    while ((opt = getopt(argc, argv, "ac:fg:hku")) > 0) {
+    while (0 < (opt = getopt(argc, argv, "ac:fg:hku"))) {
         switch (opt) {
             case 'a': flags ^= FLAG_ASCII; break;
             case 'f': flags ^= FLAG_OFFSET; break;
@@ -95,8 +98,9 @@ int main(int argc, char *argv[]) {
         }
     }
     if (!cols) return EX_USAGE;
-    if (argc > optind)
+    if (argc > optind) {
         path = argv[optind];
+    }
 
     FILE *file = path ? fopen(path, "r") : stdin;
     if (!file) err(EX_NOINPUT, "%s", path);
