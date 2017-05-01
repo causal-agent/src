@@ -51,5 +51,5 @@ int main() {
     }
     if (readLen < 0) err(EX_IOERR, "read");
 
-    return 0;
+    return EX_OK;
 }
