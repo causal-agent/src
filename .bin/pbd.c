@@ -23,8 +23,9 @@ static void spawn(const char *cmd, int childFd, int parentFd) {
         pid_t wait = waitpid(pid, &status, 0);
         if (wait < 0) err(EX_OSERR, "waitpid");
 
-        if (status)
+        if (status) {
             warnx("child %s status %d", cmd, status);
+        }
     } else {
         int fd = dup2(parentFd, childFd);
         if (fd < 0) err(EX_OSERR, "dup2");
@@ -62,7 +63,9 @@ int main() {
         ssize_t peek = recv(client, &p, 1, MSG_PEEK);
         if (peek < 0) err(EX_IOERR, "recv");
 
-        if (peek) spawn("pbcopy", STDIN_FILENO, client);
+        if (peek) {
+            spawn("pbcopy", STDIN_FILENO, client);
+        }
 
         error = close(client);
         if (error) err(EX_IOERR, "close");
