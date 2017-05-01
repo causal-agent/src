@@ -1,11 +1,15 @@
 [user]
-	name = June McEnroe
-	email = programble@gmail.com
+    name = June McEnroe
+    email = programble@gmail.com
+
 [commit]
-	gpgSign = true
+    gpgSign = true
+
 [rebase]
-	autosquash = true
+    autosquash = true
+
 [pretty]
-	log = %Cred%h %Creset%s%C(yellow)%d %Cgreen(%ar) %Cblue<%an>
+    log = %Cred%h %Creset%s%C(yellow)%d %Cgreen(%ar) %Cblue<%an>
+
 [include]
-	path = ./override
+    path = ./private
