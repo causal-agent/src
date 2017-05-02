@@ -1,5 +1,5 @@
 set hidden
-set shortmess=atI visualbell
+set shortmess=atI
 set wildmode=list:longest
 set splitbelow splitright
 
@@ -8,7 +8,6 @@ set tabstop=4 expandtab shiftwidth=4 shiftround smartindent
 set undofile
 
 set title
-set ruler showcmd
 set scrolloff=1
 set number colorcolumn=80,100
 set list listchars=tab:»·,trail:·
