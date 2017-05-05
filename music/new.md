@@ -27,6 +27,7 @@
 - [Joni Void — Dissociation (Kyla's Song)][22]
 - Arca — Arca
 - [Xiu Xiu — Forget][23]
+- [Colin Stetson — All This I Do for Glory][24]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
@@ -51,3 +52,4 @@
 [21]: http://cstrecords.com/cst120/
 [22]: http://cstrecords.com/cst125/
 [23]: https://youtu.be/ywRzfwA75pY
+[24]: https://colinstetson.bandcamp.com/album/all-this-i-do-for-glory
