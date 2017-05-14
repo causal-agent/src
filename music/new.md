@@ -28,6 +28,7 @@
 - Arca — Arca
 - [Xiu Xiu — Forget][23]
 - [Colin Stetson — All This I Do for Glory][24]
+- Saltland — A Common Truth
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
