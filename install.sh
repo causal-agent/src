@@ -21,7 +21,7 @@ link() {
   echo "$1"
 }
 
-if [ -d '~/Library' ]; then
+if [ -d ~/Library ]; then
   link 'Library/Application Support/Karabiner/private.xml'
   link 'Library/Keyboard Layouts/Programmer.keylayout'
 fi
