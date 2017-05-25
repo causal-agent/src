@@ -23,6 +23,7 @@ link() {
 
 if [ -d '~/Library' ]; then
   link 'Library/Application Support/Karabiner/private.xml'
+  link 'Library/Keyboard Layouts/Programmer.keylayout'
 fi
 
 link '.bin/bri.c'
