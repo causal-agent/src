@@ -2,7 +2,7 @@
 <!DOCTYPE keyboard SYSTEM "file://localhost/System/Library/DTDs/KeyboardLayout.dtd">
 <!--
 
-Custom programmer layout based on Canadian.
+Custom programming layout based on Canadian.
 
 - Swapped numbers and symbols.
 - Swapped minus and underscore.
@@ -10,7 +10,7 @@ Custom programmer layout based on Canadian.
 - Swapped backslash and pipe.
 
 -->
-<keyboard group="126" id="-4574" maxout="1" name="Programmer">
+<keyboard group="126" id="-4574" maxout="1" name="Programming">
     <layouts>
         <layout first="0" last="17" mapSet="16c" modifiers="f4"/>
         <layout first="18" last="18" mapSet="994" modifiers="f4"/>
