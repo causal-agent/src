@@ -29,6 +29,7 @@
 - [Xiu Xiu — Forget][23]
 - [Colin Stetson — All This I Do for Glory][24]
 - Saltland — A Common Truth
+- [Death Grips — Steroids (Crouching Tiger Hidden Gabber Megamix)][25]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
@@ -54,3 +55,4 @@
 [22]: http://cstrecords.com/cst125/
 [23]: https://youtu.be/ywRzfwA75pY
 [24]: https://colinstetson.bandcamp.com/album/all-this-i-do-for-glory
+[25]: https://youtu.be/JUTKTk60aGk
