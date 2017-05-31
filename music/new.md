@@ -30,6 +30,7 @@
 - [Colin Stetson — All This I Do for Glory][24]
 - Saltland — A Common Truth
 - [Death Grips — Steroids (Crouching Tiger Hidden Gabber Megamix)][25]
+- Jessica Moss — Pools of Light
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
