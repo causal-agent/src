@@ -24,6 +24,10 @@ link() {
 if [ -d ~/Library ]; then
   link 'Library/Application Support/Karabiner/private.xml'
   link 'Library/Keyboard Layouts/Programming.keylayout'
+  link 'Library/Keyboard Layouts/Tarmak 1.keylayout'
+  link 'Library/Keyboard Layouts/Tarmak 2.keylayout'
+  link 'Library/Keyboard Layouts/Tarmak 3.keylayout'
+  link 'Library/Keyboard Layouts/Tarmak 4.keylayout'
 fi
 
 link '.bin/bri.c'
