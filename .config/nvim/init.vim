@@ -37,5 +37,7 @@ vnoremap N J
 vnoremap J N
 vnoremap E K
 vnoremap K E
+nmap <C-w>n <C-w>j
+nmap <C-w>e <C-w>k
 
 execute pathogen#infect()
