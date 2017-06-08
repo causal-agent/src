@@ -31,6 +31,7 @@
 - Saltland — A Common Truth
 - [Death Grips — Steroids (Crouching Tiger Hidden Gabber Megamix)][25]
 - Jessica Moss — Pools of Light
+- Ed Schrader's Music Beat — Sermon
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
