@@ -21,22 +21,14 @@ autocmd BufNewFile,BufRead *.asm,*.mac setfiletype nasm
 autocmd FileType sh,zsh,ruby setlocal shiftwidth=2
 
 " Tarmak 1
-nnoremap n j
-nnoremap j n
-nnoremap e k
-nnoremap k e
-nnoremap N J
-nnoremap J N
-nnoremap E K
-nnoremap K E
-vnoremap n j
-vnoremap j n
-vnoremap e k
-vnoremap k e
-vnoremap N J
-vnoremap J N
-vnoremap E K
-vnoremap K E
+noremap n j
+noremap e k
+noremap k n
+noremap j e
+noremap N J
+noremap E K
+noremap K N
+noremap J E
 nmap <C-w>n <C-w>j
 nmap <C-w>e <C-w>k
 
