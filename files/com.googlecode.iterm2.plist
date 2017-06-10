@@ -523,7 +523,7 @@
 	<key>NSWindow Frame SharedPreferences</key>
 	<string>327 239 796 473 0 0 1280 800 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>131 78 570 452 0 0 1280 800 </string>
+	<string>0 8 1277 792 0 0 1280 800 </string>
 	<key>NeverWarnAboutShortLivedSessions_3518C480-09C0-47C0-863F-A01193518920</key>
 	<true/>
 	<key>New Bookmarks</key>
@@ -2291,7 +2291,7 @@
 		</dict>
 	</dict>
 	<key>PrefsCustomFolder</key>
-	<string>/Users/home/Code/dotfiles/iterm</string>
+	<string>/Users/home/Code/dotfiles/files</string>
 	<key>PromptOnClose</key>
 	<true/>
 	<key>PromptOnQuit</key>
