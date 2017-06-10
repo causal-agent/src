@@ -5,10 +5,8 @@ Configuration files and utilities.
 ## Configurations
 
 - [iTerm2]
-- [Karabiner] ([Seil])
 - git
 - htop
-- keymap
 - [neovim]
 - gdb
 - gpg-agent
@@ -19,34 +17,7 @@ Configuration files and utilities.
 - zsh
 
 [iTerm2]: https://www.iterm2.com/downloads.html
-[Karabiner]: https://pqrs.org/osx/karabiner/
-[Seil]: https://pqrs.org/osx/karabiner/seil.html.en
 [neovim]: https://github.com/neovim/neovim/wiki/Installing-Neovim
-
-## Install
-
-Create symlinks in ~ for files in the current directory.
-
-    ./install.sh
-
-## Import
-
-Import a file from ~ and replace it with a symlink.
-
-    ./import.sh .dotrc
-
-## Prune
-
-Remove symbolic links in ~ to files that no longer exist in the current
-directory.
-
-    ./prune.sh
-
-## Vendor
-
-Pull latest versions of vendored files.
-
-    ./vendor.sh
 
 ## License
 
