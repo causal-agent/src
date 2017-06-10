@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-# Create symlinks in ~ for files in the current directory.
+# Create symlines in ~ for files in home.
 
 set -o errexit -o nounset -o pipefail
 
@@ -10,7 +10,7 @@ error() {
 }
 
 link() {
-  local source_path="$PWD/$1"
+  local source_path="$PWD/home/$1"
   local dest_path="$HOME/$1"
 
   [ -h "$dest_path" ] && return
@@ -21,14 +21,14 @@ link() {
   echo "$1"
 }
 
-if [ -d ~/Library ]; then
-  link 'Library/Application Support/Karabiner/private.xml'
-  link 'Library/Keyboard Layouts/CodeTarmak1.keylayout'
-  link 'Library/Keyboard Layouts/Tarmak 1.keylayout'
-  link 'Library/Keyboard Layouts/Tarmak 2.keylayout'
-  link 'Library/Keyboard Layouts/Tarmak 3.keylayout'
-  link 'Library/Keyboard Layouts/Tarmak 4.keylayout'
-fi
+#if [ -d ~/Library ]; then
+#  link 'Library/Application Support/Karabiner/private.xml'
+#  link 'Library/Keyboard Layouts/CodeTarmak1.keylayout'
+#  link 'Library/Keyboard Layouts/Tarmak 1.keylayout'
+#  link 'Library/Keyboard Layouts/Tarmak 2.keylayout'
+#  link 'Library/Keyboard Layouts/Tarmak 3.keylayout'
+#  link 'Library/Keyboard Layouts/Tarmak 4.keylayout'
+#fi
 
 link '.bin/bri.c'
 link '.bin/clock.c'
