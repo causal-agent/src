@@ -20,4 +20,4 @@ dest_path="$PWD/home/$1"
 mkdir -p "$(dirname "$dest_path")"
 mv "$source_path" "$dest_path"
 ln -s "$dest_path" "$source_path"
-echo "link '$1'" >> install.sh
+echo "link '$1'" >> link.sh
