@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-common=gdb git gnupg htop the_silver_searcher tmux tree
+common='gdb git gnupg htop the_silver_searcher tmux tree'
 
 macos() {
   homebrew=https://raw.githubusercontent.com/Homebrew/install/master/install
@@ -23,6 +23,6 @@ arch() {
   pacman -Sy --needed neovim openssh zsh
 }
 
-[ "`uname`" = 'Darwin' ] && exec macos
-[ -f /usr/local/sbin/pkg ] && exec freebsd
-[ -f /usr/bin/pacman ] && exec arch
+[ "`uname`" = 'Darwin' ] && macos && exit
+[ -f /usr/local/sbin/pkg ] && freebsd && exit
+[ -f /usr/bin/pacman ] && arch && exit
