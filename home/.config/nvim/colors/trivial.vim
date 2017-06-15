@@ -18,6 +18,7 @@ hi NonText ctermfg=DarkGray
 hi Search ctermbg=Yellow ctermfg=Black
 hi StatusLine cterm=NONE ctermbg=Black ctermfg=LightGray
 hi StatusLineNC cterm=NONE ctermbg=Black ctermfg=DarkGray
+hi Folded ctermbg=Black ctermfg=DarkGray
 hi Visual cterm=inverse ctermbg=NONE
 
 hi Comment ctermfg=DarkBlue
