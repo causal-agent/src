@@ -15,7 +15,7 @@ hi LineNr ctermfg=DarkGray
 hi MatchParen ctermbg=DarkGray ctermfg=White
 hi ModeMsg ctermfg=DarkGray
 hi NonText ctermfg=DarkGray
-hi Search ctermbg=Yellow ctermfg=Black
+hi Search ctermbg=NONE ctermfg=Yellow
 hi StatusLine cterm=NONE ctermbg=Black ctermfg=LightGray
 hi StatusLineNC cterm=NONE ctermbg=Black ctermfg=DarkGray
 hi Folded ctermbg=Black ctermfg=DarkGray
