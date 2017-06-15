@@ -5,6 +5,7 @@ set splitbelow splitright
 
 set ignorecase smartcase inccommand=nosplit
 set tabstop=4 expandtab shiftwidth=4 shiftround smartindent
+set foldmethod=syntax foldlevel=99
 set undofile
 
 set title
