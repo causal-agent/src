@@ -32,6 +32,8 @@
 - [Death Grips — Steroids (Crouching Tiger Hidden Gabber Megamix)][25]
 - Jessica Moss — Pools of Light
 - Ed Schrader's Music Beat — Sermon
+- [Arcade Fire — Everything Now][26]
+- [Arcade Fire — Creature Comfort][27]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
@@ -58,3 +60,5 @@
 [23]: https://youtu.be/ywRzfwA75pY
 [24]: https://colinstetson.bandcamp.com/album/all-this-i-do-for-glory
 [25]: https://youtu.be/JUTKTk60aGk
+[26]: https://youtu.be/zC30BYR3CUk
+[27]: https://youtu.be/xzwicesJQ7E
