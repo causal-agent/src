@@ -34,6 +34,7 @@
 - Ed Schrader's Music Beat — Sermon
 - [Arcade Fire — Everything Now][26]
 - [Arcade Fire — Creature Comfort][27]
+- [Chromatics — Shadow][28]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
@@ -62,3 +63,4 @@
 [25]: https://youtu.be/JUTKTk60aGk
 [26]: https://youtu.be/zC30BYR3CUk
 [27]: https://youtu.be/xzwicesJQ7E
+[28]: https://youtu.be/IGUboLZx3Tk
