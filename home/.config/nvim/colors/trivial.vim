@@ -20,7 +20,6 @@ hi StatusLine cterm=NONE ctermbg=Black ctermfg=LightGray
 hi StatusLineNC cterm=NONE ctermbg=Black ctermfg=DarkGray
 hi Folded ctermbg=Black ctermfg=DarkGray
 hi Visual cterm=inverse ctermbg=NONE
-
 hi Comment ctermfg=DarkBlue
 
 hi Constant ctermfg=NONE
@@ -42,14 +41,13 @@ hi link Typedef Structure
 
 hi Special ctermfg=LightGray
 hi SpecialComment ctermfg=LightBlue
+hi SpecialKey ctermfg=DarkGray
 
 hi Underlined ctermfg=NONE
-
 hi Error ctermbg=NONE ctermfg=LightRed
-
 hi Todo ctermbg=NONE ctermfg=LightBlue
 
-hi SpecialKey ctermfg=DarkGray
+" Language-specifics.
 
 hi diffAdded ctermfg=Green
 hi diffRemoved ctermfg=Red
@@ -59,3 +57,10 @@ hi link rustModPath Identifier
 hi link rubyDefine Structure
 hi link rubyStringDelimiter String
 hi link rubySymbol String
+
+hi link scalaCapitalWord Identifier
+hi link scalaCaseFollowing Identifier
+hi link scalaInstanceDeclaration Identifier
+hi link scalaKeywordModifier StorageClass
+hi link scalaTypeDeclaration Identifier
+hi link scalaTypeTypePostDeclaration Identifier
