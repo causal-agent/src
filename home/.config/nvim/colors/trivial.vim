@@ -1,10 +1,7 @@
-let &t_Co = 16
 hi clear
-if exists('syntax_on')
-  syntax reset
-endif
-
+syntax reset
 let colors_name = 'trivial'
+let &t_Co = 16
 
 hi Normal ctermbg=NONE ctermfg=NONE
 
