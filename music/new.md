@@ -36,6 +36,9 @@
 - [Arcade Fire — Creature Comfort][27]
 - [Chromatics — Shadow][28]
 - [Sarin — House of Leaves][29]
+- [FAUVE — Nuits Fauves][30]
+- [FAUVE — Blizzard][31]
+- [CocoRosie — Lost Girls][32]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
@@ -66,3 +69,6 @@
 [27]: https://youtu.be/xzwicesJQ7E
 [28]: https://youtu.be/IGUboLZx3Tk
 [29]: https://sarin.bandcamp.com/track/house-of-leaves-split-w-guiltfeeder
+[30]: https://youtu.be/cwaAppsy5yo
+[31]: https://youtu.be/HMpmedi_pH4
+[32]: https://youtu.be/aRa-SlftLQo
