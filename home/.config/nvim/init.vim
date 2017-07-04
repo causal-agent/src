@@ -20,6 +20,7 @@ command! W w
 
 colorscheme trivial
 
+autocmd TermOpen * setlocal statusline=%{b:term_title}
 autocmd BufEnter term://* startinsert
 autocmd BufNewFile,BufRead *.asm,*.mac setfiletype nasm
 autocmd FileType sh,zsh,ruby setlocal shiftwidth=2
