@@ -24,7 +24,6 @@ link() {
 link '.bin/bri.c'
 link '.bin/jrp.c'
 link '.bin/manpager'
-link '.bin/pbcopy.c'
 link '.bin/pbd.c'
 link '.bin/xx.c'
 link '.config/git/config'
