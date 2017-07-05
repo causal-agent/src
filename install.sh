@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-common='gdb git gnupg htop the_silver_searcher tmux tree'
+common='gdb git gnupg htop the_silver_searcher tree'
 
 macos() {
   homebrew=https://raw.githubusercontent.com/Homebrew/install/master/install

@@ -22,7 +22,6 @@ link() {
 }
 
 link '.bin/bri.c'
-link '.bin/clock.c'
 link '.bin/jrp.c'
 link '.bin/manpager'
 link '.bin/pbcopy.c'
@@ -42,5 +41,4 @@ link '.hushlogin'
 link '.inputrc'
 link '.psqlrc'
 link '.ssh/config'
-link '.tmux.conf'
 link '.zshrc'
