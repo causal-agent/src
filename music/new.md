@@ -1,44 +1,44 @@
-- [Julien Baker][1]
-- [Porter Robinson & Madeon — Shelter][2]
-- [Xiu Xiu — I Luv the Valley Oh][3]
-- [Xiu Xiu — Ceremony][4]
-- [Xiu Xiu — Honeysuckle][5]
-- [Joy Division — Love Will Tear Us Apart][6]
-- [G.L.O.S.S. — Trans Day of Revenge][7]
-- [Avec le soleil sortant de sa bouche — Alizé et Margaret D. Midi moins le quart. Sur la plage, un palmier ensanglanté][8]
-- [Kero Kero Bonito — Fish Bowl][9]
-- [Xiu Xiu — Jenny GoGo][10]
-- [Arcade Fire — I Give You Power][11]
-- Avec le soleil sortant de sa bouche — Pas pire pop, I Love You So Much
-- [Dan Smith — Some Tunes][12]
-- [Those Who Walk Away — "First Degraded Rhythm" + "First Partially Recollected Conversation"][13]
-- [Neil Cicierega — Mouth Moods][14]
-- [Sun Kil Moon — Benji][15]
-- [Saltland — I Only Wish This For You][16]
-- [Woman is the Earth — Depths][17]
-- [BNNY RBBT — Big World][18]
-- [Jessica Moss — Glaciers I (Pt I)][19]
-- [Saltland — Light of Mercy][20]
-- Xiu Xiu — A Promise
-- Xiu Xiu — Fabulous Muscles
-- Unwound — Leaves Turn Inside You
-- The Body Lovers / The Body Haters
-- [Do Make Say Think — Bound and Boundless][21]
-- [Joni Void — Dissociation (Kyla's Song)][22]
-- Arca — Arca
-- [Xiu Xiu — Forget][23]
-- [Colin Stetson — All This I Do for Glory][24]
-- Saltland — A Common Truth
-- [Death Grips — Steroids (Crouching Tiger Hidden Gabber Megamix)][25]
-- Jessica Moss — Pools of Light
-- Ed Schrader's Music Beat — Sermon
-- [Arcade Fire — Everything Now][26]
-- [Arcade Fire — Creature Comfort][27]
-- [Chromatics — Shadow][28]
-- [Sarin — House of Leaves][29]
-- [FAUVE — Nuits Fauves][30]
-- [FAUVE — Blizzard][31]
 - [CocoRosie — Lost Girls][32]
+- [FAUVE — Blizzard][31]
+- [FAUVE — Nuits Fauves][30]
+- [Sarin — House of Leaves][29]
+- [Chromatics — Shadow][28]
+- [Arcade Fire — Creature Comfort][27]
+- [Arcade Fire — Everything Now][26]
+- Ed Schrader's Music Beat — Sermon
+- Jessica Moss — Pools of Light
+- [Death Grips — Steroids (Crouching Tiger Hidden Gabber Megamix)][25]
+- Saltland — A Common Truth
+- [Colin Stetson — All This I Do for Glory][24]
+- [Xiu Xiu — Forget][23]
+- Arca — Arca
+- [Joni Void — Dissociation (Kyla's Song)][22]
+- [Do Make Say Think — Bound and Boundless][21]
+- The Body Lovers / The Body Haters
+- Unwound — Leaves Turn Inside You
+- Xiu Xiu — Fabulous Muscles
+- Xiu Xiu — A Promise
+- [Saltland — Light of Mercy][20]
+- [Jessica Moss — Glaciers I (Pt I)][19]
+- [BNNY RBBT — Big World][18]
+- [Woman is the Earth — Depths][17]
+- [Saltland — I Only Wish This For You][16]
+- [Sun Kil Moon — Benji][15]
+- [Neil Cicierega — Mouth Moods][14]
+- [Those Who Walk Away — "First Degraded Rhythm" + "First Partially Recollected Conversation"][13]
+- [Dan Smith — Some Tunes][12]
+- Avec le soleil sortant de sa bouche — Pas pire pop, I Love You So Much
+- [Arcade Fire — I Give You Power][11]
+- [Xiu Xiu — Jenny GoGo][10]
+- [Kero Kero Bonito — Fish Bowl][9]
+- [Avec le soleil sortant de sa bouche — Alizé et Margaret D. Midi moins le quart. Sur la plage, un palmier ensanglanté][8]
+- [G.L.O.S.S. — Trans Day of Revenge][7]
+- [Joy Division — Love Will Tear Us Apart][6]
+- [Xiu Xiu — Honeysuckle][5]
+- [Xiu Xiu — Ceremony][4]
+- [Xiu Xiu — I Luv the Valley Oh][3]
+- [Porter Robinson & Madeon — Shelter][2]
+- [Julien Baker][1]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
