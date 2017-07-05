@@ -15,7 +15,7 @@ set list listchars=tab:»·,trail:·
 
 nmap <leader><leader> :nohlsearch<CR>
 tmap <Esc><Esc> <C-\><C-n>
-tmap <C-w><C-w> <C-\><C-n><C-w><C-w>
+tmap <C-w> <C-\><C-n><C-w>
 command! W w
 
 colorscheme trivial
