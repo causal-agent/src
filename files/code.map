@@ -1,5 +1,14 @@
 include "/usr/share/kbd/keymaps/i386/qwerty/us.map.gz"
 
+# Tarmak 2.
+keycode 18 = f
+keycode 20 = g
+keycode 33 = t
+keycode 34 = j
+keycode 36 = n
+keycode 37 = e
+keycode 49 = k
+
 keycode 2 = exclam one
 keycode 3 = at two
 keycode 4 = numbersign three
