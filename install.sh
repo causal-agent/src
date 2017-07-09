@@ -18,9 +18,10 @@ freebsd() {
 }
 
 arch() {
-  pacman -Sy --needed base-devel
-  pacman -Sy --needed $common
-  pacman -Sy --needed neovim openssh zsh
+  pacman -Sy
+  pacman -S --needed base-devel
+  pacman -S --needed $common
+  pacman -S --needed neovim openssh zsh
 }
 
 [ "`uname`" = 'Darwin' ] && macos && exit
