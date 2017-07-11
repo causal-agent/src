@@ -23,13 +23,11 @@ link() {
 
 link '.bin/bri.c'
 link '.bin/jrp.c'
-link '.bin/manpager'
 link '.bin/pbd.c'
 link '.bin/xx.c'
 link '.config/git/config'
 link '.config/git/ignore'
 link '.config/htop/htoprc'
-link '.config/nvim/autoload/pathogen.vim'
 link '.config/nvim/colors/trivial.vim'
 link '.config/nvim/init.vim'
 link '.config/nvim/syntax/nasm.vim'

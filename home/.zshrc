@@ -19,7 +19,7 @@ path=(
 
 export PAGER=less MANPAGER=less EDITOR=vim GIT_EDITOR=vim
 type nvim > /dev/null \
-  && MANPAGER=manpager EDITOR=nvim GIT_EDITOR=nvim \
+  && EDITOR=nvim GIT_EDITOR=nvim MANPAGER="nvim -c 'set ft=man' -" \
   && alias vim=nvim
 export GPG_TTY=$TTY
 
