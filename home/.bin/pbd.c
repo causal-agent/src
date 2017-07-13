@@ -1,7 +1,10 @@
 #if 0
-cc -Wall -Wextra -pedantic $@ -o $(dirname $0)/pbd $0 && \
-cc -Wall -Wextra -pedantic -DPBCOPY $@ -o $(dirname $0)/pbcopy $0 && \
-exec cc -Wall -Wextra -pedantic -DPBCOPY -DPBPASTE $@ -o $(dirname $0)/pbpaste $0
+set -e
+bin=$(dirname $0)
+cc -Wall -Wextra -pedantic $@ -o $bin/pbd $0
+ln -f $bin/pbd $bin/pbcopy
+ln -f $bin/pbd $bin/pbpaste
+exit
 #endif
 
 // TCP server which pipes between macOS pbcopy and pbpaste, and pbcopy and
@@ -10,6 +13,7 @@ exec cc -Wall -Wextra -pedantic -DPBCOPY -DPBPASTE $@ -o $(dirname $0)/pbpaste $
 #include <arpa/inet.h>
 #include <err.h>
 #include <netinet/in.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,8 +21,6 @@ exec cc -Wall -Wextra -pedantic -DPBCOPY -DPBPASTE $@ -o $(dirname $0)/pbpaste $
 #include <sys/wait.h>
 #include <sysexits.h>
 #include <unistd.h>
-
-#ifndef PBCOPY
 
 static void spawn(const char *cmd, int childFd, int parentFd) {
     pid_t pid = fork();
@@ -41,7 +43,7 @@ static void spawn(const char *cmd, int childFd, int parentFd) {
     }
 }
 
-int main() {
+static int pbd(void) {
     int error;
 
     int server = socket(PF_INET, SOCK_STREAM, 0);
@@ -78,11 +80,7 @@ int main() {
     }
 }
 
-#else
-
-int main() {
-    int error;
-
+static int pbdClient(void) {
     int client = socket(PF_INET, SOCK_STREAM, 0);
     if (client < 0) err(EX_OSERR, "socket");
 
@@ -92,19 +90,13 @@ int main() {
         .sin_addr = { .s_addr = htonl(0x7f000001) },
     };
 
-    error = connect(client, (struct sockaddr *)&addr, sizeof(addr));
+    int error = connect(client, (struct sockaddr *)&addr, sizeof(addr));
     if (error) err(EX_OSERR, "connect");
 
-#ifdef PBPASTE
-    int fdIn = client;
-    int fdOut = STDOUT_FILENO;
-    error = shutdown(client, SHUT_WR);
-    if (error) err(EX_OSERR, "shutdown");
-#else
-    int fdIn = STDIN_FILENO;
-    int fdOut = client;
-#endif
+    return client;
+}
 
+static void copy(int fdIn, int fdOut) {
     char readBuf[4096];
     ssize_t readLen;
     while (0 < (readLen = read(fdIn, readBuf, sizeof(readBuf)))) {
@@ -117,8 +109,28 @@ int main() {
         if (writeLen < 0) err(EX_IOERR, "write");
     }
     if (readLen < 0) err(EX_IOERR, "read");
+}
 
+static int pbcopy(void) {
+    int client = pbdClient();
+    copy(STDIN_FILENO, client);
     return EX_OK;
 }
 
-#endif
+static int pbpaste(void) {
+    int client = pbdClient();
+    int error = shutdown(client, SHUT_WR);
+    if (error) err(EX_OSERR, "shutdown");
+    copy(client, STDOUT_FILENO);
+    return EX_OK;
+}
+
+int main(int argc __attribute((unused)), char *argv[]) {
+    if (!argv[0][0] || !argv[0][1]) return EX_USAGE;
+    switch (argv[0][2]) {
+        case 'd': return pbd();
+        case 'c': return pbcopy();
+        case 'p': return pbpaste();
+    }
+    return EX_USAGE;
+}
