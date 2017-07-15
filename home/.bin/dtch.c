@@ -227,7 +227,7 @@ static int atch(int argc, char *argv[]) {
             ssize_t len = read(STDIN_FILENO, buf, sizeof(buf));
             if (len < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
 
-            if (len && buf[0] == ('Q' & ~0x40)) {
+            if (len && buf[0] == CTRL('Q')) {
                 // TODO: Message?
                 exit(0);
             }
