@@ -10,6 +10,7 @@ exit
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -150,8 +151,6 @@ static int dtch(int argc, char *argv[]) {
         err(EX_OSERR, "%s", cmd);
     }
 
-    // TODO: Kill child on error after this point?
-
     error = listen(server, 1);
     if (error) err(EX_IOERR, "listen");
 
@@ -162,15 +161,15 @@ static int dtch(int argc, char *argv[]) {
         ssize_t len = sendFd(client, master);
         if (len < 0) warn("sendmsg(%d)", client);
 
-        // TODO: Send SIGWINCH?
-
         len = recv(client, &z, sizeof(z), 0);
         if (len < 0) warn("recv(%d)", client);
 
         error = close(client);
         if (error) warn("close(%d)", client);
 
-        // TODO: Detect death of child.
+        pid_t dead = waitpid(pid, NULL, WNOHANG);
+        if (dead < 0) warn("waitpid(%d)", pid);
+        if (dead) exit(EX_OK);
     }
 }
 
@@ -213,8 +212,6 @@ static int atch(int argc, char *argv[]) {
     error = ioctl(master, TIOCSWINSZ, &window);
     if (error) warn("ioctl(%d, TIOCSWINSZ)", master);
 
-    // TODO: Handle SIGWINCH?
-
     struct pollfd fds[2];
     fds[0].fd = STDIN_FILENO;
     fds[0].events = POLLIN;
@@ -228,8 +225,7 @@ static int atch(int argc, char *argv[]) {
             if (len < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
 
             if (len && buf[0] == CTRL('Q')) {
-                // TODO: Message?
-                exit(0);
+                exit(EX_OK);
             }
 
             len = writeAll(master, buf, len);
