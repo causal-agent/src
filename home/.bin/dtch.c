@@ -6,6 +6,8 @@ ln -f $bin/dtch $bin/atch
 exit
 #endif
 
+// Session attach and detach.
+
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
