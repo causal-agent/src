@@ -1,7 +1,7 @@
 #if 0
 set -e
 bin=$(dirname $0)
-cc -Wall -Wextra -pedantic $@ -o $bin/dtch $0
+cc -Wall -Wextra -pedantic $@ -lutil -o $bin/dtch $0
 ln -f $bin/dtch $bin/atch
 exit
 #endif
@@ -22,7 +22,14 @@ exit
 #include <sysexits.h>
 #include <termios.h>
 #include <unistd.h>
+
+#if defined __FreeBSD__
+#include <libutil.h>
+#elif defined __linux__
+#include <pty.h>
+#else
 #include <util.h>
+#endif
 
 static struct passwd *getUser(void) {
     uid_t uid = getuid();
