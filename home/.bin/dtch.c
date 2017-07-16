@@ -6,23 +6,23 @@ ln -f $bin/dtch $bin/atch
 exit
 #endif
 
-#include <sys/wait.h>
-#include <util.h>
-#include <sys/stat.h>
+#include <err.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
-#include <stdlib.h>
-#include <sysexits.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <pwd.h>
-#include <err.h>
-#include <sys/un.h>
 #include <stdio.h>
-#include <errno.h>
+#include <stdlib.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <sys/wait.h>
+#include <sysexits.h>
 #include <termios.h>
+#include <unistd.h>
+#include <util.h>
 
 static struct passwd *getUser(void) {
     uid_t uid = getuid();
