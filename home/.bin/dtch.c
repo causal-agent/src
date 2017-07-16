@@ -165,6 +165,10 @@ static struct termios saveTerm;
 
 static void restoreTerm(void) {
     tcsetattr(STDERR_FILENO, TCSADRAIN, &saveTerm);
+    printf(
+        "\x1b[?1049l" // rmcup
+        "\x1b\x63\x1b[!p\x1b[?3;4l\x1b[4l\x1b>" // reset
+    );
 }
 
 static int atch(int argc, char *argv[]) {
@@ -199,14 +203,19 @@ static int atch(int argc, char *argv[]) {
     error = tcsetattr(STDERR_FILENO, TCSADRAIN, &raw);
     if (error) err(EX_IOERR, "tcsetattr(%d)", STDERR_FILENO);
 
+    char ctrlL = CTRL('L');
+    ssize_t len = write(master, &ctrlL, 1);
+    if (len < 0) err(EX_IOERR, "write(%d)", master);
+
     struct pollfd fds[2] = {
         { .fd = STDIN_FILENO, .events = POLLIN },
         { .fd = master, .events = POLLIN },
     };
 
-    char buf[4096];
-    ssize_t len;
     while (0 < poll(fds, 2, -1)) {
+        char buf[4096];
+        ssize_t len;
+
         if (fds[0].revents) {
             len = read(STDIN_FILENO, buf, sizeof(buf));
             if (len < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
