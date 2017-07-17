@@ -21,15 +21,10 @@ static bool allZero(const uint8_t *buf, size_t len) {
 
 enum {
     FLAG_ASCII  = 1 << 0,
-    FLAG_COLOR  = 1 << 1,
-    FLAG_OFFSET = 1 << 2,
-    FLAG_SKIP   = 1 << 3,
-    FLAG_UNDUMP = 1 << 4,
+    FLAG_OFFSET = 1 << 1,
+    FLAG_SKIP   = 1 << 2,
+    FLAG_UNDUMP = 1 << 3,
 };
-
-static void color(size_t i) {
-    printf("\x1b[%c%cm", (i % 8) ? '3' : '9', (char)(i % 8 + '0'));
-}
 
 static void dump(size_t cols, size_t group, uint8_t flags, FILE *file) {
     uint8_t buf[cols];
@@ -38,8 +33,6 @@ static void dump(size_t cols, size_t group, uint8_t flags, FILE *file) {
         offset += len;
         len = fread(buf, 1, sizeof(buf), file);
         if (!len) break;
-
-        if (flags & FLAG_COLOR) printf("\x1b[39m");
 
         if ((flags & FLAG_SKIP) && len == sizeof(buf)) {
             static bool skip;
@@ -57,7 +50,6 @@ static void dump(size_t cols, size_t group, uint8_t flags, FILE *file) {
 
         for (size_t i = 0; i < len; ++i) {
             if (group && i && !(i % group)) printf(" ");
-            if (flags & FLAG_COLOR) color(i);
             printf("%02x ", buf[i]);
         }
 
@@ -67,7 +59,7 @@ static void dump(size_t cols, size_t group, uint8_t flags, FILE *file) {
             }
             printf(" ");
             for (size_t i = 0; i < len; ++i) {
-                if (flags & FLAG_COLOR) color(i);
+                if (group && i && !(i % group)) printf(" ");
                 printf("%c", isprint(buf[i]) ? buf[i] : '.');
             }
         }
@@ -93,17 +85,16 @@ int main(int argc, char *argv[]) {
     char *path = NULL;
 
     int opt;
-    while (0 < (opt = getopt(argc, argv, "aCc:fg:hku"))) {
+    while (0 < (opt = getopt(argc, argv, "ac:fg:hku"))) {
         switch (opt) {
             case 'a': flags ^= FLAG_ASCII; break;
-            case 'C': flags ^= FLAG_COLOR; break;
             case 'f': flags ^= FLAG_OFFSET; break;
             case 'k': flags ^= FLAG_SKIP; break;
             case 'u': flags ^= FLAG_UNDUMP; break;
             case 'c': cols = strtoul(optarg, NULL, 10); break;
             case 'g': group = strtoul(optarg, NULL, 10); break;
             default:
-                fprintf(stderr, "usage: xx [-aCfku] [-c cols] [-g group] [file]\n");
+                fprintf(stderr, "usage: xx [-afku] [-c cols] [-g group] [file]\n");
                 return (opt == 'h') ? EX_OK : EX_USAGE;
         }
     }
