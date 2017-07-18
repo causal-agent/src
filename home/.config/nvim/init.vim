@@ -3,7 +3,7 @@ set undofile
 set shortmess=atI
 set wildmode=list:longest
 set splitbelow splitright
-command W w
+command! W w
 autocmd BufNewFile,BufRead *.asm,*.mac setfiletype nasm
 
 set tabstop=8 expandtab shiftwidth=4 shiftround smartindent
@@ -32,3 +32,5 @@ noremap K N
 noremap J E
 nmap <C-w>n <C-w>j
 nmap <C-w>e <C-w>k
+nmap <C-w>N <C-w>J
+nmap <C-w>E <C-w>K
