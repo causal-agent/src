@@ -9,7 +9,6 @@ macos() {
   [ ! -f /usr/local/bin/brew ] && ruby -e "`curl -fsSL $homebrew`"
   brew install $common
   brew install neovim/neovim/neovim openssh
-  brew cask install iterm2
 }
 
 freebsd() {
