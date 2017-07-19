@@ -1630,7 +1630,7 @@
 	<key>UseBoldFonts</key>
 	<false/>
 	<key>UseBrightBold</key>
-	<false/>
+	<true/>
 	<key>VisualBell</key>
 	<true/>
 	<key>VisualBellOnlyWhenMuted</key>
