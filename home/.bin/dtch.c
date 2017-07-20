@@ -134,7 +134,7 @@ static int dtch(int argc, char *argv[]) {
     if (error) err(EX_IOERR, "%s", addr.sun_path);
     atexit(unlinkAddr);
 
-    error = chmod(addr.sun_path, S_IRWXU);
+    error = chmod(addr.sun_path, 0600);
     if (error) err(EX_IOERR, "%s", addr.sun_path);
 
     int master;
