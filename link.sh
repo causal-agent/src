@@ -23,6 +23,7 @@ link() {
 
 link '.bin/bri.c'
 link '.bin/dtch.c'
+link '.bin/hnel.c'
 link '.bin/jrp.c'
 link '.bin/pbd.c'
 link '.bin/xx.c'
