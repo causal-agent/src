@@ -7,6 +7,8 @@ exec cc -Wall -Wextra -pedantic $@ -lutil -o $(dirname $0)/hnel $0
 #include <err.h>
 #include <poll.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
+#include <sys/wait.h>
 #include <sysexits.h>
 #include <termios.h>
 #include <unistd.h>
@@ -35,6 +37,7 @@ static void restoreTerm(void) {
 }
 
 int main(int argc, char *argv[]) {
+    int error;
     if (argc < 2) return EX_USAGE;
 
     char table[256] = {0};
@@ -43,8 +46,12 @@ int main(int argc, char *argv[]) {
     table['j'] = 'e'; table['J'] = 'E'; table[CTRL('J')] = CTRL('E');
     table['k'] = 'n'; table['K'] = 'N'; table[CTRL('K')] = CTRL('N');
 
+    struct winsize window;
+    error = ioctl(STDERR_FILENO, TIOCGWINSZ, &window);
+    if (error) err(EX_IOERR, "ioctl");
+
     int master;
-    pid_t pid = forkpty(&master, NULL, NULL, NULL);
+    pid_t pid = forkpty(&master, NULL, NULL, &window);
     if (pid < 0) err(EX_OSERR, "forkpty");
 
     if (!pid) {
@@ -52,7 +59,7 @@ int main(int argc, char *argv[]) {
         err(EX_OSERR, "%s", argv[1]);
     }
 
-    int error = tcgetattr(STDERR_FILENO, &saveTerm);
+    error = tcgetattr(STDERR_FILENO, &saveTerm);
     if (error) err(EX_IOERR, "tcgetattr");
     atexit(restoreTerm);
 
