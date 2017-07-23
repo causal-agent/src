@@ -1,7 +1,9 @@
 #if 0
-cc -Wall -Wextra -pedantic $@ -o $(dirname $0)/bri $0 && \
-sudo chown root:root $(dirname $0)/bri && \
-sudo chmod u+s $(dirname $0)/bri
+set -e
+bin=$(dirname $0)
+cc -Wall -Wextra -pedantic $@ -o $bin/bri $0
+sudo chown root:root $bin/bri
+sudo chmod u+s $bin/bri
 exit
 #endif
 
@@ -64,9 +66,6 @@ int main(int argc, char *argv[]) {
 
         value = buf;
     }
-
-    error = setuid(0);
-    if (error) err(EX_NOPERM, "setuid(0)");
 
     FILE *brightness = fopen("brightness", "w");
     if (!brightness) err(EX_IOERR, "brightness");
