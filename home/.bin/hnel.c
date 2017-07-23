@@ -2,7 +2,7 @@
 exec cc -Wall -Wextra -pedantic $@ -lutil -o $(dirname $0)/hnel $0
 #endif
 
-// Wrapper for preserving HJKL in Tarmak layouts.
+// PTY wrapper for preserving HJKL in Tarmak layouts.
 
 #include <err.h>
 #include <poll.h>
@@ -38,6 +38,7 @@ static void restoreTerm(void) {
 
 int main(int argc, char *argv[]) {
     int error;
+
     if (argc < 2) return EX_USAGE;
 
     char table[256] = {0};
@@ -45,19 +46,6 @@ int main(int argc, char *argv[]) {
     table['e'] = 'k'; table['E'] = 'K'; table[CTRL('E')] = CTRL('K');
     table['j'] = 'e'; table['J'] = 'E'; table[CTRL('J')] = CTRL('E');
     table['k'] = 'n'; table['K'] = 'N'; table[CTRL('K')] = CTRL('N');
-
-    struct winsize window;
-    error = ioctl(STDERR_FILENO, TIOCGWINSZ, &window);
-    if (error) err(EX_IOERR, "ioctl");
-
-    int master;
-    pid_t pid = forkpty(&master, NULL, NULL, &window);
-    if (pid < 0) err(EX_OSERR, "forkpty");
-
-    if (!pid) {
-        execvp(argv[1], argv + 1);
-        err(EX_OSERR, "%s", argv[1]);
-    }
 
     error = tcgetattr(STDERR_FILENO, &saveTerm);
     if (error) err(EX_IOERR, "tcgetattr");
@@ -68,14 +56,27 @@ int main(int argc, char *argv[]) {
     error = tcsetattr(STDERR_FILENO, TCSADRAIN, &raw);
     if (error) err(EX_IOERR, "tcsetattr");
 
+    struct winsize window;
+    error = ioctl(STDERR_FILENO, TIOCGWINSZ, &window);
+    if (error) err(EX_IOERR, "ioctl(%d, TIOCGWINSZ)", STDERR_FILENO);
+
+    int master;
+    pid_t pid = forkpty(&master, NULL, NULL, &window);
+    if (pid < 0) err(EX_OSERR, "forkpty");
+
+    if (!pid) {
+        execvp(argv[1], argv + 1);
+        err(EX_OSERR, "%s", argv[1]);
+    }
+
     struct pollfd fds[2] = {
         { .fd = STDIN_FILENO, .events = POLLIN },
         { .fd = master, .events = POLLIN },
     };
-
-    char buf[4096];
-    ssize_t len;
     while (0 < poll(fds, 2, -1)) {
+        char buf[4096];
+        ssize_t len;
+
         if (fds[0].revents) {
             len = read(STDIN_FILENO, buf, sizeof(buf));
             if (len < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
