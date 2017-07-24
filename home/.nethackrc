@@ -1,0 +1,10 @@
+OPTIONS=name:June
+OPTIONS=role:Ranger
+OPTIONS=race:Human
+OPTIONS=gender:female
+OPTIONS=align:neutral
+
+OPTIONS=DECgraphics
+OPTIONS=color
+
+OPTIONS=pickup_types:$!?+/
