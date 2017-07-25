@@ -3,6 +3,7 @@ OPTIONS=role:Ranger
 OPTIONS=race:Human
 OPTIONS=gender:female
 OPTIONS=align:neutral
+OPTIONS=dogname:Light
 
 OPTIONS=DECgraphics
 OPTIONS=color
