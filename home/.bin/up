@@ -1,0 +1,12 @@
+#!/usr/bin/env zsh
+set -o errexit -o nounset -o pipefail
+
+ts=$(date +%s)
+rand=$(openssl rand -hex 4)
+ext=${1##*.}
+url=$(printf 'tmp.cmcenroe.me/%x%s.%s' "$ts" "$rand" "$ext")
+
+scp -q "$1" "tmp.cmcenroe.me:/usr/local/www/$url"
+
+echo "https://$url"
+type pbcopy > /dev/null && echo -n "https://$url" | pbcopy

@@ -1,0 +1,7 @@
+#!/usr/bin/env zsh
+set -o errexit -o nounset -o pipefail
+
+dir=$(mktemp -d)
+screencapture -i "$dir/capture.png"
+up "$dir/capture.png"
+rm -r "$dir"
