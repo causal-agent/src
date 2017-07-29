@@ -6,6 +6,7 @@ exec cc -Wall -Wextra -pedantic $@ -lutil -o $(dirname $0)/hnel $0
 
 #include <err.h>
 #include <poll.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
@@ -41,6 +42,7 @@ int main(int argc, char *argv[]) {
 
     if (argc < 2) return EX_USAGE;
 
+    bool enable = true;
     char table[256] = {0};
     table['n'] = 'j'; table['N'] = 'J'; table[CTRL('N')] = CTRL('J');
     table['e'] = 'k'; table['E'] = 'K'; table[CTRL('E')] = CTRL('K');
@@ -82,8 +84,13 @@ int main(int argc, char *argv[]) {
             if (len < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
 
             if (len == 1) {
+                if (buf[0] == CTRL('S')) {
+                    enable = !enable;
+                    continue;
+                }
+
                 unsigned char c = buf[0];
-                if (table[c]) buf[0] = table[c];
+                if (enable && table[c]) buf[0] = table[c];
             }
 
             len = writeAll(master, buf, len);
