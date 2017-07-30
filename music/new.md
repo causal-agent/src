@@ -1,3 +1,4 @@
+- [Converge — I Can Tell You About Pain][33]
 - [CocoRosie — Lost Girls][32]
 - [FAUVE — Blizzard][31]
 - [FAUVE — Nuits Fauves][30]
@@ -72,3 +73,4 @@
 [30]: https://youtu.be/cwaAppsy5yo
 [31]: https://youtu.be/HMpmedi_pH4
 [32]: https://youtu.be/aRa-SlftLQo
+[33]: https://convergecult.bandcamp.com/album/i-can-tell-you-about-pain
