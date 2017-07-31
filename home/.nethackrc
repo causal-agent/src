@@ -1,5 +1,5 @@
 OPTIONS=name:June
-OPTIONS=role:Ranger
+OPTIONS=role:Valkyrie
 OPTIONS=race:Human
 OPTIONS=gender:female
 OPTIONS=align:neutral
