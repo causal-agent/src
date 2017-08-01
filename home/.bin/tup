@@ -1,0 +1,7 @@
+#!/usr/bin/env zsh
+set -o errexit -o nounset -o pipefail
+
+dir=$(mktemp -d)
+cat > "$dir/input.txt"
+up "$dir/input.txt"
+rm -r "$dir"
