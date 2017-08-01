@@ -22,6 +22,13 @@ exec cc -Wall -Wextra -pedantic $@ -lutil -o $(dirname $0)/hnel $0
 #include <util.h>
 #endif
 
+static char table[256] = {
+    ['n'] = 'j', ['N'] = 'J', [CTRL('N')] = CTRL('J'),
+    ['e'] = 'k', ['E'] = 'K', [CTRL('E')] = CTRL('K'),
+    ['j'] = 'e', ['J'] = 'E', [CTRL('J')] = CTRL('E'),
+    ['k'] = 'n', ['K'] = 'N', [CTRL('K')] = CTRL('N'),
+};
+
 static ssize_t writeAll(int fd, const char *buf, size_t len) {
     ssize_t writeLen;
     while (0 < (writeLen = write(fd, buf, len))) {
@@ -41,13 +48,6 @@ int main(int argc, char *argv[]) {
     int error;
 
     if (argc < 2) return EX_USAGE;
-
-    bool enable = true;
-    char table[256] = {0};
-    table['n'] = 'j'; table['N'] = 'J'; table[CTRL('N')] = CTRL('J');
-    table['e'] = 'k'; table['E'] = 'K'; table[CTRL('E')] = CTRL('K');
-    table['j'] = 'e'; table['J'] = 'E'; table[CTRL('J')] = CTRL('E');
-    table['k'] = 'n'; table['K'] = 'N'; table[CTRL('K')] = CTRL('N');
 
     error = tcgetattr(STDERR_FILENO, &saveTerm);
     if (error) err(EX_IOERR, "tcgetattr");
@@ -70,6 +70,8 @@ int main(int argc, char *argv[]) {
         execvp(argv[1], argv + 1);
         err(EX_OSERR, "%s", argv[1]);
     }
+
+    bool enable = true;
 
     struct pollfd fds[2] = {
         { .fd = STDIN_FILENO, .events = POLLIN },
