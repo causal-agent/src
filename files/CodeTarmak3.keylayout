@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE keyboard PUBLIC "" "file://localhost/System/Library/DTDs/KeyboardLayout.dtd">
-<!--Created by Ukelele version 2.2.4 on 2013-04-10 at 22:51 (GMT+08:00)-->
-<!--Last edited by Ukelele version 2.2.8 on 2014-11-23 at 23:07 (EST)-->
-<keyboard group="0" id="2541" name="Tarmak 3" maxout="1">
+<keyboard group="0" id="2542" name="Code Tarmak 3" maxout="1">
     <layouts>
         <layout first="0" last="17" modifiers="f4" mapSet="16c"/>
         <layout first="18" last="18" modifiers="f4" mapSet="984"/>
@@ -14,11 +12,13 @@
         <layout first="206" last="207" modifiers="f4" mapSet="984"/>
     </layouts>
     <modifierMap id="f4" defaultIndex="7">
-        <keyMapSelect mapIndex="0">
+        <keyMapSelect mapIndex="8">
             <modifier keys="command?"/>
+        </keyMapSelect>
+        <keyMapSelect mapIndex="0">
             <modifier keys="anyShift? caps? command"/>
         </keyMapSelect>
-        <keyMapSelect mapIndex="1">
+        <keyMapSelect mapIndex="9">
             <modifier keys="anyShift caps?"/>
         </keyMapSelect>
         <keyMapSelect mapIndex="2">
@@ -938,6 +938,38 @@
             <key code="124" output="&#x001D;"/>
             <key code="125" output="&#x001F;"/>
             <key code="126" output="&#x001E;"/>
+        </keyMap>
+        <keyMap index="8" baseMapSet="16c" baseIndex="0">
+            <key code="18" output="!"/>
+            <key code="19" output="@"/>
+            <key code="20" output="#"/>
+            <key code="21" output="$"/>
+            <key code="22" output="^"/>
+            <key code="23" output="%"/>
+            <key code="25" output="("/>
+            <key code="26" output="&#x0026;"/>
+            <key code="27" output="_"/>
+            <key code="28" output="*"/>
+            <key code="29" output=")"/>
+            <key code="30" output="}"/>
+            <key code="33" output="{"/>
+            <key code="42" output="|"/>
+        </keyMap>
+        <keyMap index="9" baseMapSet="16c" baseIndex="1">
+            <key code="18" output="1"/>
+            <key code="19" output="2"/>
+            <key code="20" output="3"/>
+            <key code="21" output="4"/>
+            <key code="22" output="6"/>
+            <key code="23" output="5"/>
+            <key code="25" output="9"/>
+            <key code="26" output="7"/>
+            <key code="27" output="-"/>
+            <key code="28" output="8"/>
+            <key code="29" output="0"/>
+            <key code="30" output="]"/>
+            <key code="33" output="["/>
+            <key code="42" output="\"/>
         </keyMap>
     </keyMapSet>
     <keyMapSet id="984">
