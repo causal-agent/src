@@ -23,6 +23,6 @@ arch() {
   pacman -S --needed neovim openssh zsh
 }
 
-[ "`uname`" = 'Darwin' ] && macos && exit
+[ "$(uname)" = 'Darwin' ] && macos && exit
 [ -f /usr/local/sbin/pkg ] && freebsd && exit
 [ -f /usr/bin/pacman ] && arch && exit
