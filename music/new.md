@@ -1,3 +1,4 @@
+- [Aurora][36]
 - [Joy Division — Atmosphere][35]
 - [Underworld — Born Slippy][34]
 - [Converge — I Can Tell You About Pain][33]
@@ -78,3 +79,4 @@
 [33]: https://convergecult.bandcamp.com/album/i-can-tell-you-about-pain
 [34]: https://youtu.be/iTFrCbQGyvM
 [35]: https://youtu.be/1EdUjlawLJM
+[36]: https://youtu.be/evBgLWQwAFA
