@@ -1,6 +1,6 @@
 - [Florist — Tiny Desk Concert][38]
 - [CHVRCHES — Tiny Desk Concert][37]
-- [Aurora][36]
+- [Aurora — Tiny Desk Concert][36]
 - [Joy Division — Atmosphere][35]
 - [Underworld — Born Slippy][34]
 - [Converge — I Can Tell You About Pain][33]
@@ -44,7 +44,7 @@
 - [Xiu Xiu — Ceremony][4]
 - [Xiu Xiu — I Luv the Valley Oh][3]
 - [Porter Robinson & Madeon — Shelter][2]
-- [Julien Baker][1]
+- [Julien Baker — Tiny Desk Concert][1]
 
 [1]: https://youtu.be/tADWPTqR_4A
 [2]: https://youtu.be/fzQ6gRAEoy0
