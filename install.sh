@@ -8,12 +8,12 @@ macos() {
   xcode-select --install || true
   [ ! -f /usr/local/bin/brew ] && ruby -e "`curl -fsSL $homebrew`"
   brew install $common
-  brew install neovim/neovim/neovim openssh
+  brew install ddate neovim/neovim/neovim openssh
 }
 
 freebsd() {
   pkg install $common
-  pkg install curl neovim sudo zsh
+  pkg install curl ddate neovim sudo zsh
 }
 
 arch() {
