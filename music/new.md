@@ -1,3 +1,4 @@
+- [Godspeed You! Black Emperor — Undoing a Luciferian Towers][39]
 - [Florist — Tiny Desk Concert][38]
 - [CHVRCHES — Tiny Desk Concert][37]
 - [Aurora — Tiny Desk Concert][36]
@@ -84,3 +85,4 @@
 [36]: https://youtu.be/evBgLWQwAFA
 [37]: https://youtu.be/haunJARHPm4
 [38]: https://youtu.be/WbyyxIZ02Zs
+[39]: https://godspeedyoublackemperor.bandcamp.com/track/undoing-a-luciferian-towers
