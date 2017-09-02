@@ -54,10 +54,3 @@ hi link rustModPath Identifier
 hi link rubyDefine Structure
 hi link rubyStringDelimiter String
 hi link rubySymbol String
-
-hi link scalaCapitalWord Identifier
-hi link scalaCaseFollowing Identifier
-hi link scalaInstanceDeclaration Identifier
-hi link scalaKeywordModifier StorageClass
-hi link scalaTypeDeclaration Identifier
-hi link scalaTypeTypePostDeclaration Identifier
