@@ -38,7 +38,7 @@ static void spawn(const char *cmd, int childFd, int parentFd) {
         int fd = dup2(parentFd, childFd);
         if (fd < 0) err(EX_OSERR, "dup2");
 
-        int error = execlp(cmd, cmd);
+        int error = execlp(cmd, cmd, NULL);
         if (error) err(EX_OSERR, "execlp");
     }
 }
