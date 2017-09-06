@@ -1,9 +1,4 @@
-#if 0
-exec cc -Wall -Wextra -Wpedantic -o $(dirname $0)/watch $0
-#endif
-
-/*
- * Execute a command each time files change.
+/* Execute a command each time files change.
  *
  * Copyright (c) 2017, June McEnroe <programble@gmail.com>
  *
