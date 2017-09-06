@@ -21,17 +21,9 @@ link() {
   echo "$1"
 }
 
-link '.bin/bri.c'
-link '.bin/dtch.c'
-link '.bin/hnel.c'
-link '.bin/jrp.c'
-link '.bin/pbd.c'
 link '.bin/sup'
 link '.bin/tup'
 link '.bin/up'
-link '.bin/wake.c'
-link '.bin/watch.c'
-link '.bin/xx.c'
 link '.config/git/config'
 link '.config/git/ignore'
 link '.config/htop/htoprc'
