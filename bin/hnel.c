@@ -1,6 +1,4 @@
-/* PTY wrapper for preserving HJKL in Tarmak layouts.
- *
- * Copyright (c) 2017, June McEnroe <programble@gmail.com>
+/* Copyright (c) 2017, June McEnroe <programble@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -15,6 +13,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+// PTY wrapper for preserving HJKL in Tarmak layouts.
 
 #include <err.h>
 #include <poll.h>
