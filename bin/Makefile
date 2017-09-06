@@ -3,7 +3,7 @@ CWARNS = -Wall -Wextra -Wpedantic
 
 all: $(BINS)
 
-%: %.c
+.c:
 	$(CC) $(CWARNS) $(CFLAGS) -o $@ $<
 
 atch: dtch
