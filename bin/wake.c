@@ -16,6 +16,8 @@
 
 // Wake-on-LAN.
 
+#include <sys/types.h>
+
 #include <err.h>
 #include <netinet/in.h>
 #include <stdint.h>
