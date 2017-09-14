@@ -36,4 +36,7 @@ link: $(BINS)
 unlink:
 	rm -f $(BINS:%=~/.bin/%)
 
+.gitignore: Makefile
+	echo $(BINS) | tr ' ' '\n' > .gitignore
+
 .PHONY: all clean link unlink
