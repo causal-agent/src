@@ -1,4 +1,4 @@
-BINS = atch bri dtch hnel jrp pbcopy pbd pbpaste wake watch xx
+BINS = atch bri dtch hnel jrp pbcopy pbd pbpaste typo wake watch xx
 CWARNS = -Wall -Wextra -Wpedantic
 
 all: $(BINS)
@@ -23,6 +23,9 @@ pbcopy: pbd
 
 pbpaste: pbd
 	ln -f pbd pbpaste
+
+typo: typo.c
+	$(CC) $(CWARNS) $(CFLAGS) -lcurses -o typo typo.c
 
 clean:
 	rm -f $(BINS)
