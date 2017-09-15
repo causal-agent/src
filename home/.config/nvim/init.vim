@@ -7,7 +7,6 @@ command! W w
 autocmd BufNewFile,BufRead *.asm,*.mac setfiletype nasm
 
 set tabstop=8 expandtab shiftwidth=4 shiftround smartindent
-autocmd FileType sh,zsh,ruby setlocal shiftwidth=2
 set ignorecase smartcase inccommand=nosplit
 nmap <leader><leader> :nohlsearch<CR>
 set foldmethod=syntax foldlevel=99
