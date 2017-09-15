@@ -52,6 +52,7 @@ int main() {
     for (size_t i = 0; i < targetsLen; ++i) {
         setTarget(i);
     }
+    mvhline(LINES - 2, 0, ACS_HLINE, COLS);
 
     time_t start = time(NULL);
     if (start < 0) err(EX_OSERR, "time");
