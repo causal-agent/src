@@ -1,24 +1,22 @@
 #!/usr/bin/env zsh
-
-# Create symlines in ~ for files in home.
-
 set -o errexit -o nounset -o pipefail
 
-error() {
-  echo "$1"
-  exit 1
+# Create symbolic links in ~.
+
+fail() {
+    echo "$1"
+    exit 1
 }
 
 link() {
-  local source_path="$PWD/home/$1"
-  local dest_path="$HOME/$1"
+    local source_path="$PWD/home/$1"
+    local dest_path="$HOME/$1"
 
-  [ -h "$dest_path" ] && return
-  [ -e "$dest_path" ] && error "$dest_path exists"
+    [ -L "$dest_path" ] && return
 
-  mkdir -p "$(dirname "$dest_path")"
-  ln -s "$source_path" "$dest_path"
-  echo "$1"
+    mkdir -p "$(dirname "$dest_path")"
+    ln -s "$source_path" "$dest_path"
+    echo "$1"
 }
 
 link '.bin/sup'
