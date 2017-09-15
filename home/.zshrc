@@ -58,8 +58,8 @@ _prompt_git() {
   esac
 }
 [ -n "$SSH_CLIENT" ] && _prompt_ssh='%F{magenta}'
-PROMPT="%(?.%F{green}$_prompt_ssh.%F{red})»%f "
-RPROMPT='%F{blue}%50<…<%~%F{yellow}$(_prompt_git)%f'
+PROMPT="%(?.%F{white}$_prompt_ssh.%F{red})%#%f "
+RPROMPT='%F{white}%50<..<%~$(_prompt_git)%f'
 
 _n() { _n() { echo } }
 _title() { print -Pn "\e]0;$1\a" }
