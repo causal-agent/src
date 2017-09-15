@@ -24,7 +24,7 @@ pbcopy: pbd
 pbpaste: pbd
 	ln -f pbd pbpaste
 
-typo: typo.c
+typo: typo.c words.txt
 	$(CC) $(CWARNS) $(CFLAGS) -lcurses -o typo typo.c
 
 clean:
