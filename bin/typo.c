@@ -56,12 +56,12 @@ int main() {
     time_t start = time(NULL);
     if (start < 0) err(EX_OSERR, "time");
 
-    int wordCount = 0;
+    int letterCount = 0;
     for (;;) {
         time_t now = time(NULL);
         if (now < 0) err(EX_OSERR, "time");
 
-        double wpm = (double)wordCount / difftime(now, start) * 60;
+        double wpm = (double)letterCount / 5.0 / difftime(now, start) * 60.0;
 
         char *wpmDisplay;
         int len = asprintf(&wpmDisplay, "%.2f WPM ", wpm);
@@ -79,7 +79,7 @@ int main() {
         for (size_t i = 0; i < targetsLen; ++i) {
             if (strcmp(word, targets[i])) continue;
             setTarget(i);
-            wordCount++;
+            letterCount += strlen(word);
             break;
         }
     }
