@@ -99,8 +99,10 @@ static int recvFd(int sock) {
     if (n < 0) return -1;
 
     struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
-    if (!cmsg) { errno = ENOMSG; return -1; }
-    if (cmsg->cmsg_type != SCM_RIGHTS) { errno = EBADMSG; return -1; }
+    if (!cmsg || cmsg->cmsg_type != SCM_RIGHTS) {
+        errno = ENOMSG;
+        return -1;
+    }
 
     return *(int *)CMSG_DATA(cmsg);
 }
