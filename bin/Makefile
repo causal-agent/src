@@ -2,7 +2,7 @@ BINS = atch bri dtch hnel jrp pbcopy pbd pbpaste typo wake watch xx
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lcurses -ledit -lutil
 
-all: $(BINS)
+all: $(BINS) .gitignore
 
 atch: dtch
 	ln -f dtch atch
