@@ -1,14 +1,14 @@
 #!/bin/sh
 set -eu
 
-common='gdb git gnupg htop sl the_silver_searcher tree'
+common='gdb gnupg htop sl the_silver_searcher tree'
 
 homebrew=https://raw.githubusercontent.com/Homebrew/install/master/install
 macos() {
     xcode-select --install || true
     [ ! -f /usr/local/bin/brew ] && ruby -e "`curl -fsSL $homebrew`"
     brew install $common
-    brew install ddate neovim/neovim/neovim openssh
+    brew install ddate git neovim/neovim/neovim openssh
 }
 
 freebsd() {
