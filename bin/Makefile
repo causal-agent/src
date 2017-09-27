@@ -7,11 +7,8 @@ all: $(BINS)
 atch: dtch
 	ln -f dtch atch
 
-pbcopy: pbd
-	ln -f pbd pbcopy
-
-pbpaste: pbd
-	ln -f pbd pbpaste
+pbcopy pbpaste: pbd
+	ln -f pbd $@
 
 clean:
 	rm -f $(BINS)
