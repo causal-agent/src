@@ -18,4 +18,8 @@ dest_path="$PWD/home/$1"
 mkdir -p "$(dirname "$dest_path")"
 mv "$source_path" "$dest_path"
 ln -s "$dest_path" "$source_path"
+
 echo "link '$1'" >> link.zsh
+head=$(head -n 21 link.zsh)
+tail=$(tail -n +21 link.zsh | sort)
+echo "$head\n$tail" > link.zsh
