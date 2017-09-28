@@ -58,12 +58,12 @@ _prompt_git() {
   esac
 }
 [ -n "$SSH_CLIENT" ] && _prompt_ssh='%F{magenta}'
-PROMPT="%(?.%F{white}$_prompt_ssh.%F{red})%#%f "
+PROMPT="
+%(?.%F{white}$_prompt_ssh.%F{red})%#%f "
 RPROMPT='%F{white}%50<..<%~$(_prompt_git)%f'
 
-_n() { _n() { echo } }
 _title() { print -Pn "\e]0;$1\a" }
 _title_precmd() { _title '%1~' }
 _title_preexec() { psvar=("$1") _title '%1~: %1v' }
-precmd_functions=(_n _title_precmd)
+precmd_functions=(_title_precmd)
 preexec_functions=(_title_preexec)
