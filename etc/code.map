@@ -1,15 +1,19 @@
 include "/usr/share/kbd/keymaps/i386/qwerty/us.map.gz"
 
-# Tarmak 3.
+# Tarmak 4.
 keycode 18 = f
-keycode 19 = j
+keycode 19 = p
 keycode 20 = g
+keycode 21 = j
+keycode 24 = y
+keycode 25 = semicolon colon
 keycode 31 = r
 keycode 32 = s
 keycode 33 = t
 keycode 34 = d
 keycode 36 = n
 keycode 37 = e
+keycode 39 = o
 keycode 49 = k
 
 keycode 2 = exclam one
