@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-common='gdb gnupg htop sl the_silver_searcher tree'
+common='gdb gnupg htop nasm sl the_silver_searcher tree'
 
 homebrew=https://raw.githubusercontent.com/Homebrew/install/master/install
 macos() {
