@@ -25,59 +25,68 @@
 #include <sysexits.h>
 #include <unistd.h>
 
-static bool allZero(const uint8_t *buf, size_t len) {
-    for (size_t i = 0; i < len; ++i)
+static bool zero(const uint8_t *buf, size_t len) {
+    for (size_t i = 0; i < len; ++i) {
         if (buf[i]) return false;
+    }
     return true;
 }
 
-enum {
-    FLAG_ASCII  = 1 << 0,
-    FLAG_OFFSET = 1 << 1,
-    FLAG_SKIP   = 1 << 2,
-    FLAG_UNDUMP = 1 << 3,
-};
+static struct {
+    size_t cols;
+    size_t group;
+    bool ascii;
+    bool offset;
+    bool skip;
+} options = { 16, 8, true, true, false };
 
-static void dump(size_t cols, size_t group, uint8_t flags, FILE *file) {
-    uint8_t buf[cols];
-    size_t offset = 0, len = 0;
-    for (;;) {
-        offset += len;
-        len = fread(buf, 1, sizeof(buf), file);
-        if (!len) break;
+static void dump(FILE *file) {
+    bool skip = false;
 
-        if ((flags & FLAG_SKIP) && len == sizeof(buf)) {
-            static bool skip;
-            if (allZero(buf, len)) {
+    uint8_t buf[options.cols];
+    size_t offset = 0;
+    for (size_t len; (len = fread(buf, 1, sizeof(buf), file)); offset += len) {
+
+        if (options.skip) {
+            if (zero(buf, len)) {
                 if (!skip) printf("*\n");
                 skip = true;
                 continue;
+            } else {
+                skip = false;
             }
-            skip = false;
         }
 
-        if (flags & FLAG_OFFSET) {
+        if (options.offset) {
             printf("%08zx:  ", offset);
         }
 
-        for (size_t i = 0; i < len; ++i) {
-            if (group && i && !(i % group)) printf(" ");
-            printf("%02x ", buf[i]);
+        for (size_t i = 0; i < sizeof(buf); ++i) {
+            if (options.group) {
+                if (i && !(i % options.group)) {
+                    printf(" ");
+                }
+            }
+            if (i < len) {
+                printf("%02hhx ", buf[i]);
+            } else {
+                printf("   ");
+            }
         }
 
-        if (flags & FLAG_ASCII) {
-            for (size_t i = len; i < cols; ++i) {
-                printf((group && !(i % group)) ? "    " : "   ");
-            }
+        if (options.ascii) {
             printf(" ");
             for (size_t i = 0; i < len; ++i) {
-                if (group && i && !(i % group)) printf(" ");
+                if (options.group) {
+                    if (i && !(i % options.group)) {
+                        printf(" ");
+                    }
+                }
                 printf("%c", isprint(buf[i]) ? buf[i] : '.');
             }
         }
 
         printf("\n");
-        if (len < sizeof(buf)) break;
     }
 }
 
@@ -87,41 +96,35 @@ static void undump(FILE *file) {
     while (1 == (match = fscanf(file, " %hhx", &byte))) {
         printf("%c", byte);
     }
-    if (match == 0) errx(EX_DATAERR, "invalid input");
+    if (!match) errx(EX_DATAERR, "invalid input");
 }
 
 int main(int argc, char *argv[]) {
-    size_t cols = 16;
-    size_t group = 8;
-    uint8_t flags = FLAG_ASCII | FLAG_OFFSET;
+    bool reverse = false;
     char *path = NULL;
 
     int opt;
-    while (0 < (opt = getopt(argc, argv, "ac:fg:hku"))) {
+    while (0 < (opt = getopt(argc, argv, "ac:g:rsz"))) {
         switch (opt) {
-            case 'a': flags ^= FLAG_ASCII; break;
-            case 'f': flags ^= FLAG_OFFSET; break;
-            case 'k': flags ^= FLAG_SKIP; break;
-            case 'u': flags ^= FLAG_UNDUMP; break;
-            case 'c': cols = strtoul(optarg, NULL, 10); break;
-            case 'g': group = strtoul(optarg, NULL, 10); break;
-            default:
-                fprintf(stderr, "usage: xx [-afku] [-c cols] [-g group] [file]\n");
-                return (opt == 'h') ? EX_OK : EX_USAGE;
+            case 'a': options.ascii ^= true; break;
+            case 'c': options.cols = strtoul(optarg, NULL, 0); break;
+            case 'g': options.group = strtoul(optarg, NULL, 0); break;
+            case 'r': reverse = true; break;
+            case 's': options.offset ^= true; break;
+            case 'z': options.skip ^= true; break;
+            default: return EX_USAGE;
         }
     }
-    if (!cols) return EX_USAGE;
-    if (argc > optind) {
-        path = argv[optind];
-    }
+    if (argc > optind) path = argv[optind];
+    if (!options.cols) return EX_USAGE;
 
     FILE *file = path ? fopen(path, "r") : stdin;
     if (!file) err(EX_NOINPUT, "%s", path);
 
-    if (flags & FLAG_UNDUMP) {
+    if (reverse) {
         undump(file);
     } else {
-        dump(cols, group, flags, file);
+        dump(file);
     }
 
     if (ferror(file)) err(EX_IOERR, "%s", path);
