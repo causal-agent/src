@@ -1,4 +1,4 @@
-BINS = atch bri dtch hnel jrp pbcopy pbd pbpaste typo wake watch xx
+BINS = atch bri dtch hnel ish jrp pbcopy pbd pbpaste typo wake watch xx
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lcurses -ledit -lutil
 
