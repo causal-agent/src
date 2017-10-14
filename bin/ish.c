@@ -93,6 +93,7 @@ int main(int argc, const char *argv[]) {
         int tok = tok_line(tokenizer, el_line(editLine), &argc, &argv, NULL, NULL);
         if (tok < 0) errx(EX_SOFTWARE, "tok_line");
         if (tok > 0) continue; // TODO: Change prompt.
+        if (!argc) continue;
 
         bool builtin = false;
         for (size_t i = 0; i < ARRAY_LEN(BUILTINS); ++i) {
