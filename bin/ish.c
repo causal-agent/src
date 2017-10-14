@@ -1,5 +1,6 @@
 #include <err.h>
 #include <histedit.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,16 +10,16 @@
 #include <unistd.h>
 
 #define UNUSED __attribute__((unused))
+#define ARRAY_LEN(a) (sizeof(a) / sizeof(a[0]))
 
-static int builtinCd(int argc, const char *argv[]) {
-    const char *path = getenv("HOME");
-    if (argc > 1) path = argv[1];
+static int cdBuiltin(int argc, const char *argv[]) {
+    const char *path = (argc > 1) ? argv[1] : getenv("HOME");
     int error = chdir(path);
     if (error) warn("%s", path);
     return error;
 }
 
-static int builtinExec(int argc, const char *argv[]) {
+static int execBuiltin(int argc, const char *argv[]) {
     if (argc < 2) return 0;
     execvp(argv[1], (char *const *)argv + 1);
     err(EX_UNAVAILABLE, "%s", argv[1]);
@@ -26,12 +27,32 @@ static int builtinExec(int argc, const char *argv[]) {
 
 static const struct {
     const char *name;
-    int (*fn)(int argc, const char *argv[]);
+    int (*fn)(int, const char **);
 } BUILTINS[] = {
-    { "cd", builtinCd },
-    { "exec", builtinExec },
+    { "cd", cdBuiltin },
+    { "exec", execBuiltin },
 };
-#define BUILTINS_LEN (sizeof(BUILTINS) / sizeof(BUILTINS[0]))
+
+static int forkExec(int argc UNUSED, const char *argv[]) {
+    pid_t pid = fork();
+    if (pid < 0) err(EX_OSERR, "fork");
+
+    if (!pid) {
+        execvp(argv[0], (char *const *)argv);
+        err(EX_UNAVAILABLE, "%s", argv[0]);
+    }
+
+    int status;
+    pid_t dead = wait(&status);
+    if (dead < 0) err(EX_OSERR, "wait");
+
+    if (WIFEXITED(status)) {
+        return WEXITSTATUS(status);
+    } else {
+        warnx("%s %s", sys_siglist[WTERMSIG(status)], argv[0]);
+        return 128 + WTERMSIG(status);
+    }
+}
 
 static char *prompt(EditLine *editLine UNUSED) {
     return "$ ";
@@ -74,26 +95,13 @@ int main(int argc, const char *argv[]) {
         if (tok > 0) continue; // TODO: Change prompt.
 
         bool builtin = false;
-        for (size_t i = 0; i < BUILTINS_LEN; ++i) {
+        for (size_t i = 0; i < ARRAY_LEN(BUILTINS); ++i) {
             if (strcmp(argv[0], BUILTINS[i].name)) continue;
             builtin = true;
             BUILTINS[i].fn(argc, argv);
             break;
         }
-
-        if (!builtin) {
-            pid_t pid = fork();
-            if (pid < 0) err(EX_OSERR, "fork");
-
-            if (!pid) {
-                execvp(argv[0], (char *const *)argv);
-                err(EX_UNAVAILABLE, "%s", argv[0]);
-            }
-
-            int status;
-            pid_t dead = wait(&status);
-            if (dead < 0) err(EX_OSERR, "wait");
-        }
+        if (!builtin) forkExec(argc, argv);
 
         tok_reset(tokenizer);
     }
