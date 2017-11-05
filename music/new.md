@@ -1,3 +1,4 @@
+- [Converge — The Dusk in Us][40]
 - St. Vincent — MASSEDUCTION
 - [Godspeed You! Black Emperor — Undoing a Luciferian Towers][39]
 - [Florist — Tiny Desk Concert][38]
@@ -87,3 +88,4 @@
 [37]: https://youtu.be/haunJARHPm4
 [38]: https://youtu.be/WbyyxIZ02Zs
 [39]: https://godspeedyoublackemperor.bandcamp.com/track/undoing-a-luciferian-towers
+[40]: https://convergecult.bandcamp.com/album/the-dusk-in-us
