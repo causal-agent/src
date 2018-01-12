@@ -1,3 +1,4 @@
+- [Street Sects — End Position][41]
 - [Converge — The Dusk in Us][40]
 - St. Vincent — MASSEDUCTION
 - [Godspeed You! Black Emperor — Undoing a Luciferian Towers][39]
@@ -89,3 +90,4 @@
 [38]: https://youtu.be/WbyyxIZ02Zs
 [39]: https://godspeedyoublackemperor.bandcamp.com/track/undoing-a-luciferian-towers
 [40]: https://convergecult.bandcamp.com/album/the-dusk-in-us
+[41]: https://streetsects.bandcamp.com/album/end-position-2
