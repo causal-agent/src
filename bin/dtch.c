@@ -63,8 +63,8 @@ static ssize_t writeAll(int fd, const char *buf, size_t len) {
     return writeLen;
 }
 
-char z;
-struct iovec iov = { .iov_base = &z, .iov_len = 1 };
+static char z;
+static struct iovec iov = { .iov_base = &z, .iov_len = 1 };
 
 static ssize_t sendFd(int sock, int fd) {
     size_t len = CMSG_LEN(sizeof(int));
