@@ -29,10 +29,12 @@
 #define MASK_UP     (0x40)
 #define MASK_SELECT (0x80)
 
-#define SUIT_CLUB    (0x00)
-#define SUIT_DIAMOND (0x10)
-#define SUIT_SPADE   (0x20)
-#define SUIT_HEART   (0x30)
+enum {
+    SUIT_CLUB    = 0x00,
+    SUIT_DIAMOND = 0x10,
+    SUIT_SPADE   = 0x20,
+    SUIT_HEART   = 0x30,
+};
 
 struct Stack {
     uint8_t data[52];
@@ -64,7 +66,7 @@ static struct {
     struct Stack waste;
     struct Stack found[4];
     struct Stack table[7];
-} snap, g = {
+} save, g = {
     .stock = {
         .data = {
             0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -79,18 +81,18 @@ static struct {
         .index = 0,
     },
     .waste = EMPTY,
-    .found = { EMPTY, EMPTY, EMPTY },
+    .found = { EMPTY, EMPTY, EMPTY, EMPTY },
     .table = {
         EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY
     },
 };
 
-static void snapshot(void) {
-    memcpy(&snap, &g, sizeof(g));
+static void checkpoint(void) {
+    memcpy(&save, &g, sizeof(g));
 }
 
 static void undo(void) {
-    memcpy(&g, &snap, sizeof(g));
+    memcpy(&g, &save, sizeof(g));
 }
 
 static void shuffle(void) {
@@ -125,20 +127,31 @@ static void draw(void) {
 }
 
 static void wasted(void) {
-    for (int i = g.waste.index; i < 52; ++i) {
+    uint8_t n = len(&g.waste);
+    for (int i = 0; i < n; ++i) {
         push(&g.stock, pop(&g.waste) & ~MASK_UP);
     }
 }
 
-static bool validFound(const struct Stack *found, uint8_t card) {
-    if (!get(found, 0)) return true;
+static void transfer(struct Stack *dest, struct Stack *src, uint8_t n) {
+    struct Stack temp = EMPTY;
+    for (int i = 0; i < n; ++i) {
+        push(&temp, pop(src) & ~MASK_SELECT);
+    }
+    for (int i = 0; i < n; ++i) {
+        push(dest, pop(&temp));
+    }
+}
+
+static bool canFound(const struct Stack *found, uint8_t card) {
+    if (!get(found, 0)) return (card & MASK_RANK) == 1;
     if ((card & MASK_SUIT) != (get(found, 0) & MASK_SUIT)) return false;
     return (card & MASK_RANK) == (get(found, 0) & MASK_RANK) + 1;
 }
 
-static bool validTable(const struct Stack *table, uint8_t card) {
+static bool canTable(const struct Stack *table, uint8_t card) {
     if (!get(table, 0)) return (card & MASK_RANK) == 13;
-    if ((card & MASK_COLOR) != (get(table, 0) & MASK_COLOR)) return false;
+    if ((card & MASK_COLOR) == (get(table, 0) & MASK_COLOR)) return false;
     return (card & MASK_RANK) == (get(table, 0) & MASK_RANK) - 1;
 }
 
@@ -198,11 +211,7 @@ static void renderCard(int y, int x, uint8_t card) {
         addch(rank[card & MASK_RANK]);
 
     } else {
-        bkgdset(COLOR_PAIR(PAIR_EMPTY));
-        if (card) {
-            bkgdset(COLOR_PAIR(PAIR_BACK));
-        }
-
+        bkgdset(COLOR_PAIR(card ? PAIR_BACK : PAIR_EMPTY));
         mvaddstr(y, x, "   ");
         mvaddstr(y + 1, x, "   ");
         mvaddstr(y + 2, x, "   ");
@@ -232,6 +241,7 @@ static void render(void) {
     x = 2;
     for (int i = 0; i < 7; ++i) {
         y = 5;
+        // FIXME: Render empty.
         for (int j = len(&g.table[i]); j > 0; --j) {
             renderCard(y, x, get(&g.table[i], j - 1));
             y++;
@@ -240,41 +250,89 @@ static void render(void) {
     }
 }
 
+static struct Stack *src;
+static uint8_t depth;
+
+static void select(struct Stack *stack) {
+    if (!get(stack, 0)) return;
+    src = stack;
+    depth = 1;
+    push(stack, pop(stack) | MASK_SELECT);
+}
+
+static void deepen(void) {
+    if (depth == len(src)) return;
+    if (!(get(src, depth) & MASK_UP)) return;
+    src->data[src->index + depth] |= MASK_SELECT;
+    depth += 1;
+}
+
+static void cancel(void) {
+    for (int i = 0; i < depth; ++i) {
+        src->data[src->index + i] &= ~MASK_SELECT;
+    }
+    src = NULL;
+    depth = 0;
+}
+
+#define ESC (0x1B)
+
 int main() {
     curse();
 
     shuffle();
     deal();
-    snapshot();
+    checkpoint();
 
     for (;;) {
         reveal();
         render();
 
-        switch (getch()) {
-            case 's':
-            case ' ':
-                snapshot();
-                if (get(&g.stock, 0)) {
-                    draw();
+        int c = getch();
+        if (src) {
+            // FIXME: Checkpoint.
+            if (c >= 'a' && c <= 'd' && depth == 1) {
+                if (canFound(&g.found[c - 'a'], get(src, 0))) {
+                    transfer(&g.found[c - 'a'], src, depth);
+                    src = NULL;
+                    depth = 0;
                 } else {
-                    wasted();
+                    cancel();
                 }
-                break;
-
-            case 'w':
-                if (get(&g.waste, 0)) {
-                    push(&g.waste, pop(&g.waste) ^ MASK_SELECT);
+            } else if (c >= '1' && c <= '7') {
+                if (src == &g.table[c - '1']) {
+                    deepen();
+                } else if (canTable(&g.table[c - '1'], get(src, depth - 1))) {
+                    transfer(&g.table[c - '1'], src, depth);
+                    src = NULL;
+                    depth = 0;
+                } else {
+                    cancel();
                 }
-                break;
+            } else {
+                cancel();
+            }
 
-            case 'u':
-                undo();
-                break;
-
-            case 'q':
-                endwin();
-                return 0;
+        } else if (c == 's' || c == ' ') {
+            checkpoint();
+            if (get(&g.stock, 0)) {
+                draw();
+            } else {
+                wasted();
+            }
+        } else if (c == 'w') {
+            select(&g.waste);
+        } else if (c >= '1' && c <= '7') {
+            select(&g.table[c - '1']);
+        } else if (c >= 'a' && c <= 'd') {
+            select(&g.found[c - 'a']);
+        } else if (c == 'u') {
+            undo();
+        } else if (c == 'q') {
+            break;
         }
     }
+
+    endwin();
+    return 0;
 }
