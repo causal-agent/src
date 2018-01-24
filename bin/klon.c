@@ -155,6 +155,13 @@ static bool canTable(const struct Stack *table, uint8_t card) {
     return (card & MASK_RANK) == (get(table, 0) & MASK_RANK) - 1;
 }
 
+static struct Stack *autoFound(uint8_t card) {
+    for (int i = 0; i < 4; ++i) {
+        if (canFound(&g.found[i], card)) return &g.found[i];
+    }
+    return NULL;
+}
+
 enum {
     PAIR_EMPTY = 1,
     PAIR_BACK,
@@ -241,7 +248,7 @@ static void render(void) {
     x = 2;
     for (int i = 0; i < 7; ++i) {
         y = 5;
-        // FIXME: Render empty.
+        renderCard(y, x, 0);
         for (int j = len(&g.table[i]); j > 0; --j) {
             renderCard(y, x, get(&g.table[i], j - 1));
             y++;
@@ -275,8 +282,6 @@ static void cancel(void) {
     depth = 0;
 }
 
-#define ESC (0x1B)
-
 int main() {
     curse();
 
@@ -294,6 +299,15 @@ int main() {
             if (c >= 'a' && c <= 'd' && depth == 1) {
                 if (canFound(&g.found[c - 'a'], get(src, 0))) {
                     transfer(&g.found[c - 'a'], src, depth);
+                    src = NULL;
+                    depth = 0;
+                } else {
+                    cancel();
+                }
+            } else if ((c == 'f' || c == '\n') && depth == 1) {
+                struct Stack *found = autoFound(get(src, 0));
+                if (found) {
+                    transfer(found, src, depth);
                     src = NULL;
                     depth = 0;
                 } else {
