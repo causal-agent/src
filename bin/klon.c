@@ -136,7 +136,7 @@ static void wasted(void) {
 static void transfer(struct Stack *dest, struct Stack *src, uint8_t n) {
     struct Stack temp = EMPTY;
     for (int i = 0; i < n; ++i) {
-        push(&temp, pop(src) & ~MASK_SELECT);
+        push(&temp, pop(src));
     }
     for (int i = 0; i < n; ++i) {
         push(dest, pop(&temp));
@@ -262,16 +262,24 @@ static uint8_t depth;
 
 static void select(struct Stack *stack) {
     if (!get(stack, 0)) return;
-    src = stack;
-    depth = 1;
-    push(stack, pop(stack) | MASK_SELECT);
-}
-
-static void deepen(void) {
+    if (src != stack) {
+        src = stack;
+        depth = 0;
+    }
     if (depth == len(src)) return;
     if (!(get(src, depth) & MASK_UP)) return;
     src->data[src->index + depth] |= MASK_SELECT;
     depth += 1;
+}
+
+static void commit(struct Stack *dest) {
+    for (int i = 0; i < depth; ++i) {
+        src->data[src->index + i] &= ~MASK_SELECT;
+    }
+    checkpoint();
+    transfer(dest, src, depth);
+    src = NULL;
+    depth = 0;
 }
 
 static void cancel(void) {
@@ -295,31 +303,24 @@ int main() {
 
         int c = getch();
         if (src) {
-            // FIXME: Checkpoint.
             if (c >= 'a' && c <= 'd' && depth == 1) {
                 if (canFound(&g.found[c - 'a'], get(src, 0))) {
-                    transfer(&g.found[c - 'a'], src, depth);
-                    src = NULL;
-                    depth = 0;
+                    commit(&g.found[c - 'a']);
                 } else {
                     cancel();
                 }
             } else if ((c == 'f' || c == '\n') && depth == 1) {
                 struct Stack *found = autoFound(get(src, 0));
                 if (found) {
-                    transfer(found, src, depth);
-                    src = NULL;
-                    depth = 0;
+                    commit(found);
                 } else {
                     cancel();
                 }
             } else if (c >= '1' && c <= '7') {
                 if (src == &g.table[c - '1']) {
-                    deepen();
+                    select(&g.table[c - '1']);
                 } else if (canTable(&g.table[c - '1'], get(src, depth - 1))) {
-                    transfer(&g.table[c - '1'], src, depth);
-                    src = NULL;
-                    depth = 0;
+                    commit(&g.table[c - '1']);
                 } else {
                     cancel();
                 }
