@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE keyboard SYSTEM "file://localhost/System/Library/DTDs/KeyboardLayout.dtd">
-<keyboard group="0" id="5009" name="Colemak" maxout="2">
+<keyboard group="0" id="5009" name="Code Colemak" maxout="2">
     <layouts>
         <layout first="0" last="0" modifiers="48" mapSet="312" />
     </layouts>
     <modifierMap id="48" defaultIndex="0">
-        <keyMapSelect mapIndex="0">
+        <keyMapSelect mapIndex="8">
             <modifier keys="" />
         </keyMapSelect>
-        <keyMapSelect mapIndex="1">
+        <keyMapSelect mapIndex="9">
             <modifier keys="anyShift caps?" />
         </keyMapSelect>
         <keyMapSelect mapIndex="2">
@@ -944,6 +944,38 @@
             <key code="124" output="&#x1D;" />
             <key code="125" output="&#x1F;" />
             <key code="126" output="&#x1E;" />
+        </keyMap>
+        <keyMap index="8" baseMapSet="312" baseIndex="0">
+            <key code="18" output="!"/>
+            <key code="19" output="@"/>
+            <key code="20" output="#"/>
+            <key code="21" output="$"/>
+            <key code="22" output="^"/>
+            <key code="23" output="%"/>
+            <key code="25" output="("/>
+            <key code="26" output="&#x0026;"/>
+            <key code="27" output="_"/>
+            <key code="28" output="*"/>
+            <key code="29" output=")"/>
+            <key code="30" output="}"/>
+            <key code="33" output="{"/>
+            <key code="42" output="|"/>
+        </keyMap>
+        <keyMap index="9" baseMapSet="312" baseIndex="1">
+            <key code="18" output="1"/>
+            <key code="19" output="2"/>
+            <key code="20" output="3"/>
+            <key code="21" output="4"/>
+            <key code="22" output="6"/>
+            <key code="23" output="5"/>
+            <key code="25" output="9"/>
+            <key code="26" output="7"/>
+            <key code="27" output="-"/>
+            <key code="28" output="8"/>
+            <key code="29" output="0"/>
+            <key code="30" output="]"/>
+            <key code="33" output="["/>
+            <key code="42" output="\"/>
         </keyMap>
     </keyMapSet>
     <actions>
