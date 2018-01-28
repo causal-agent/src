@@ -155,13 +155,6 @@ static bool canTable(const struct Stack *table, uint8_t card) {
     return (card & MASK_RANK) == (get(table, 0) & MASK_RANK) - 1;
 }
 
-static struct Stack *autoFound(uint8_t card) {
-    for (int i = 0; i < 4; ++i) {
-        if (canFound(&g.found[i], card)) return &g.found[i];
-    }
-    return NULL;
-}
-
 enum {
     PAIR_EMPTY = 1,
     PAIR_BACK,
@@ -260,34 +253,31 @@ static void render(void) {
 static struct Stack *src;
 static uint8_t depth;
 
-static void select(struct Stack *stack) {
-    if (!get(stack, 0)) return;
-    if (src != stack) {
-        src = stack;
-        depth = 0;
-    }
+static void deepen(void) {
+    assert(src);
     if (depth == len(src)) return;
     if (!(get(src, depth) & MASK_UP)) return;
     src->data[src->index + depth] |= MASK_SELECT;
-    depth += 1;
+    depth++;
+}
+
+static void select(struct Stack *stack) {
+    if (!get(stack, 0)) return;
+    src = stack;
+    depth = 0;
+    deepen();
 }
 
 static void commit(struct Stack *dest) {
+    assert(src);
     for (int i = 0; i < depth; ++i) {
         src->data[src->index + i] &= ~MASK_SELECT;
     }
-    checkpoint();
-    transfer(dest, src, depth);
-    src = NULL;
-    depth = 0;
-}
-
-static void cancel(void) {
-    for (int i = 0; i < depth; ++i) {
-        src->data[src->index + i] &= ~MASK_SELECT;
+    if (dest) {
+        checkpoint();
+        transfer(dest, src, depth);
     }
     src = NULL;
-    depth = 0;
 }
 
 int main() {
@@ -302,49 +292,54 @@ int main() {
         render();
 
         int c = getch();
-        if (src) {
-            if (c >= 'a' && c <= 'd' && depth == 1) {
-                if (canFound(&g.found[c - 'a'], get(src, 0))) {
-                    commit(&g.found[c - 'a']);
+        if (!src) {
+            if (c == 'q') {
+                break;
+            } else if (c == 'u') {
+                undo();
+            } else if (c == 's' || c == ' ') {
+                if (get(&g.stock, 0)) {
+                    checkpoint();
+                    draw();
                 } else {
-                    cancel();
+                    wasted();
                 }
-            } else if ((c == 'f' || c == '\n') && depth == 1) {
-                struct Stack *found = autoFound(get(src, 0));
-                if (found) {
-                    commit(found);
-                } else {
-                    cancel();
-                }
+            } else if (c == 'w') {
+                select(&g.waste);
+            } else if (c >= 'a' && c <= 'd') {
+                select(&g.found[c - 'a']);
             } else if (c >= '1' && c <= '7') {
-                if (src == &g.table[c - '1']) {
-                    select(&g.table[c - '1']);
-                } else if (canTable(&g.table[c - '1'], get(src, depth - 1))) {
-                    commit(&g.table[c - '1']);
-                } else {
-                    cancel();
-                }
-            } else {
-                cancel();
+                select(&g.table[c - '1']);
             }
 
-        } else if (c == 's' || c == ' ') {
-            checkpoint();
-            if (get(&g.stock, 0)) {
-                draw();
+        } else {
+            if (c >= '1' && c <= '7') {
+                struct Stack *table = &g.table[c - '1'];
+                if (src == table) {
+                    deepen();
+                } else if (canTable(table, get(src, depth - 1))) {
+                    commit(table);
+                } else {
+                    commit(NULL);
+                }
+            } else if (depth == 1 && c >= 'a' && c <= 'd') {
+                struct Stack *found = &g.found[c - 'a'];
+                if (canFound(found, get(src, 0))) {
+                    commit(found);
+                } else {
+                    commit(NULL);
+                }
+            } else if (depth == 1 && (c == 'f' || c == '\n')) {
+                struct Stack *found;
+                for (int i = 0; i < 4; ++i) {
+                    found = &g.found[i];
+                    if (canFound(found, get(src, 0))) break;
+                    found = NULL;
+                }
+                commit(found);
             } else {
-                wasted();
+                commit(NULL);
             }
-        } else if (c == 'w') {
-            select(&g.waste);
-        } else if (c >= '1' && c <= '7') {
-            select(&g.table[c - '1']);
-        } else if (c >= 'a' && c <= 'd') {
-            select(&g.found[c - 'a']);
-        } else if (c == 'u') {
-            undo();
-        } else if (c == 'q') {
-            break;
         }
     }
 
