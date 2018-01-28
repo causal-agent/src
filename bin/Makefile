@@ -1,8 +1,11 @@
-BINS = atch bri dtch hnel jrp klon pbcopy pbd pbpaste typo wake watch xx
+PINS = atch bri dtch hnel pbcopy pbd pbpaste wake xx
+BINS = $(PINS) jrp klon typo watch
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lcurses -ledit -lutil
 
 all: $(BINS) .gitignore
+
+portable: $(PINS) .gitignore
 
 atch: dtch
 	ln -f dtch atch
@@ -13,7 +16,7 @@ pbcopy pbpaste: pbd
 clean:
 	rm -f $(BINS)
 
-link: $(BINS)
+link:
 	ln -s -f $(BINS:%=$(PWD)/%) ~/.bin
 
 unlink:
