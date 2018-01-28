@@ -57,7 +57,8 @@ PROMPT="
 %(?.%F{white}$_prompt_ssh.%F{red})%#%f "
 RPROMPT='%F{white}%50<..<%~$(_prompt_git)%f'
 
-_title() { print -Pn "\e]0;$1\a" }
+_title() { }
+[[ "$TERM" =~ "xterm" ]] && _title() { print -Pn "\e]0;$1\a" }
 _title_precmd() { _title '%1~' }
 _title_preexec() { psvar=("$1") _title '%1~: %1v' }
 precmd_functions=(_title_precmd)
