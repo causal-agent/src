@@ -13,6 +13,8 @@ atch: dtch
 pbcopy pbpaste: pbd
 	ln -f pbd $@
 
+color: color.o fb.o
+
 clean:
 	rm -f $(BINS)
 
