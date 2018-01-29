@@ -17,8 +17,6 @@ setuid: bri
 	chown root bri
 	chmod u+s bri
 
-color: color.o fb.o
-
 clean:
 	rm -f $(BINS)
 
