@@ -45,11 +45,11 @@ struct Psf2Header {
 static const uint32_t BG = 0x1D2021;
 static const uint32_t FG = 0xA99A84;
 
-int main(int argc, char *argv[]) {
+int main() {
     size_t count;
 
-    const char *fontPath = "/usr/share/kbd/consolefonts/Lat2-Terminus16.psfu.gz";
-    if (argc > 1) fontPath = argv[1];
+    const char *fontPath = getenv("FONT");
+    if (!fontPath) fontPath = "/usr/share/kbd/consolefonts/Lat2-Terminus16.psfu.gz";
 
     gzFile font = gzopen(fontPath, "r");
     if (!font) err(EX_NOINPUT, "%s", fontPath);
@@ -93,6 +93,7 @@ int main(int argc, char *argv[]) {
 
         char str[64];
         size_t len = strftime(str, sizeof(str), "%H:%M", local);
+        assert(len);
 
         for (int i = 0; i < (60 - local->tm_sec); ++i) {
             uint32_t left = info.xres - header.glyphWidth * len;
