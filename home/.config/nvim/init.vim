@@ -4,6 +4,7 @@ set shortmess=atI
 set wildmode=list:longest
 set splitbelow splitright
 command! W w
+command! Q q
 autocmd BufNewFile,BufRead *.asm,*.mac setfiletype nasm
 
 set tabstop=8 expandtab shiftwidth=4 shiftround smartindent
