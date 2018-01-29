@@ -13,6 +13,10 @@ atch: dtch
 pbcopy pbpaste: pbd
 	ln -f pbd $@
 
+setuid: bri
+	chown root bri
+	chmod u+s bri
+
 color: color.o fb.o
 
 clean:
@@ -27,4 +31,4 @@ unlink:
 .gitignore: Makefile
 	echo $(BINS) | tr ' ' '\n' > .gitignore
 
-.PHONY: all clean link unlink
+.PHONY: all portable setuid clean link unlink
