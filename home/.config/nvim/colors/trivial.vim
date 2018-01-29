@@ -1,7 +1,7 @@
 hi clear
 syntax reset
 let colors_name = 'trivial'
-let &t_Co = 16
+let &t_Co = 8
 
 hi Normal ctermbg=NONE ctermfg=NONE
 
@@ -9,7 +9,7 @@ hi ColorColumn ctermbg=Black
 hi EndOfBuffer ctermfg=DarkGray
 hi VertSplit cterm=NONE ctermbg=NONE ctermfg=DarkGray
 hi LineNr ctermfg=DarkGray
-hi MatchParen ctermbg=DarkGray ctermfg=White
+hi MatchParen ctermbg=NONE ctermfg=White
 hi ModeMsg ctermfg=DarkGray
 hi NonText ctermfg=DarkGray
 hi Search ctermbg=NONE ctermfg=Yellow
