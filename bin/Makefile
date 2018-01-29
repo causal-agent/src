@@ -1,11 +1,16 @@
-PINS = atch bri dtch hnel pbcopy pbd pbpaste wake xx
-BINS = $(PINS) jrp klon typo watch
+ANY_BINS = atch dtch hnel pbcopy pbd pbpaste wake xx
+BSD_BINS = jrp klon typo watch
+LIN_BINS = bri fbclock
+ALL_BINS = $(ANY_BINS) $(BSD_BINS) $(LIN_BINS)
+
 CFLAGS += -Wall -Wextra -Wpedantic
-LDLIBS = -lcurses -ledit -lutil
+LDLIBS = -lcurses -ledit -lutil -lz
 
-all: $(BINS) .gitignore
+bsd: $(ANY_BINS) $(BSD_BINS) .gitignore
 
-portable: $(PINS) .gitignore
+linux: $(ANY_BINS) $(LIN_BINS) .gitignore
+
+any: $(ANY_BINS) .gitignore
 
 atch: dtch
 	ln -f dtch atch
@@ -18,15 +23,15 @@ setuid: bri
 	chmod u+s bri
 
 clean:
-	rm -f $(BINS)
+	rm -f $(ALL_BINS)
 
 link:
-	ln -s -f $(BINS:%=$(PWD)/%) ~/.bin
+	ln -s -f $(ALL_BINS:%=$(PWD)/%) ~/.bin
 
 unlink:
-	rm -f $(BINS:%=~/.bin/%)
+	rm -f $(ALL_BINS:%=~/.bin/%)
 
 .gitignore: Makefile
-	echo $(BINS) | tr ' ' '\n' > .gitignore
+	echo $(ALL_BINS) | tr ' ' '\n' > .gitignore
 
-.PHONY: all portable setuid clean link unlink
+.PHONY: bsd linux any setuid clean link unlink
