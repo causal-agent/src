@@ -30,8 +30,6 @@
 #include <unistd.h>
 #include <zlib.h>
 
-static const char *FONT = "/usr/share/kbd/consolefonts/Lat2-Terminus16.psfu.gz";
-
 static const uint32_t PSF2_MAGIC = 0x864AB572;
 struct Psf2Header {
     uint32_t magic;
@@ -47,38 +45,45 @@ struct Psf2Header {
 static const uint32_t BG = 0x1D2021;
 static const uint32_t FG = 0xA99A84;
 
-int main() {
+int main(int argc, char *argv[]) {
     size_t count;
 
-    gzFile font = gzopen(FONT, "r");
-    if (!font) err(EX_NOINPUT, "%s", FONT);
+    const char *fontPath = "/usr/share/kbd/consolefonts/Lat2-Terminus16.psfu.gz";
+    if (argc > 1) fontPath = argv[1];
+
+    gzFile font = gzopen(fontPath, "r");
+    if (!font) err(EX_NOINPUT, "%s", fontPath);
 
     struct Psf2Header header;
     count = gzfread(&header, sizeof(header), 1, font);
-    if (!count) errx(EX_IOERR, "%s: %s", FONT, gzerror(font, NULL));
+    if (!count) errx(EX_IOERR, "%s: %s", fontPath, gzerror(font, NULL));
 
-    assert(header.magic == PSF2_MAGIC);
-    assert(header.headerSize == sizeof(struct Psf2Header));
+    if (header.magic != PSF2_MAGIC) {
+        errx(EX_DATAERR, "%s: invalid header magic %#x", fontPath, header.magic);
+    }
+    if (header.headerSize != sizeof(struct Psf2Header)) {
+        errx(EX_DATAERR, "%s: weird header size %d", fontPath, header.headerSize);
+    }
 
     uint8_t glyphs[header.glyphCount][header.glyphSize];
     count = gzfread(glyphs, header.glyphSize, header.glyphCount, font);
-    if (!count) errx(EX_IOERR, "%s: %s", FONT, gzerror(font, NULL));
+    if (!count) errx(EX_IOERR, "%s: %s", fontPath, gzerror(font, NULL));
 
     assert(Z_OK == gzclose(font));
 
-    const char *path = getenv("FRAMEBUFFER");
-    if (!path) path = "/dev/fb0";
+    const char *fbPath = getenv("FRAMEBUFFER");
+    if (!fbPath) fbPath = "/dev/fb0";
 
-    int fb = open(path, O_RDWR);
-    if (fb < 0) err(EX_OSFILE, "%s", path);
+    int fb = open(fbPath, O_RDWR);
+    if (fb < 0) err(EX_OSFILE, "%s", fbPath);
 
     struct fb_var_screeninfo info;
     int error = ioctl(fb, FBIOGET_VSCREENINFO, &info);
-    if (error) err(EX_IOERR, "%s", path);
+    if (error) err(EX_IOERR, "%s", fbPath);
 
     size_t len = 4 * info.xres * info.yres;
     uint32_t *buf = mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0);
-    if (buf == MAP_FAILED) err(EX_IOERR, "%s", path);
+    if (buf == MAP_FAILED) err(EX_IOERR, "%s", fbPath);
 
     for (;;) {
         time_t t = time(NULL);
