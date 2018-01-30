@@ -14,12 +14,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// PTY wrapper for preserving HJKL in Tarmak layouts.
+// PTY wrapper for remapping arbitrary keys.
 
 #include <err.h>
 #include <poll.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
 #include <sysexits.h>
@@ -33,13 +34,6 @@
 #else
 #include <util.h>
 #endif
-
-static char table[256] = {
-    ['n'] = 'j', ['N'] = 'J', [CTRL('N')] = CTRL('J'),
-    ['e'] = 'k', ['E'] = 'K', [CTRL('E')] = CTRL('K'),
-    ['j'] = 'e', ['J'] = 'E', [CTRL('J')] = CTRL('E'),
-    ['k'] = 'n', ['K'] = 'N', [CTRL('K')] = CTRL('N'),
-};
 
 static ssize_t writeAll(int fd, const char *buf, size_t len) {
     ssize_t writeLen;
@@ -59,7 +53,13 @@ static void restoreTerm(void) {
 int main(int argc, char *argv[]) {
     int error;
 
-    if (argc < 2) return EX_USAGE;
+    if (argc < 4) return EX_USAGE;
+
+    char table[256] = {0};
+    if (strlen(argv[1]) != strlen(argv[2])) return EX_USAGE;
+    for (const char *from = argv[1], *to = argv[2]; *from; ++from, ++to) {
+        table[(unsigned)*from] = *to;
+    }
 
     error = tcgetattr(STDERR_FILENO, &saveTerm);
     if (error) err(EX_IOERR, "tcgetattr");
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
     if (pid < 0) err(EX_OSERR, "forkpty");
 
     if (!pid) {
-        execvp(argv[1], argv + 1);
+        execvp(argv[3], argv + 3);
         err(EX_OSERR, "%s", argv[1]);
     }
 
