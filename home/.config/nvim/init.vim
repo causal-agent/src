@@ -21,16 +21,3 @@ colorscheme trivial
 autocmd TermOpen * setlocal nonumber statusline=%{b:term_title}
 autocmd BufEnter term://* startinsert
 tmap <C-w> <C-\><C-n><C-w>
-
-noremap n j
-noremap e k
-noremap k n
-noremap j e
-noremap N J
-noremap E K
-noremap K N
-noremap J E
-nmap <C-w>n <C-w>j
-nmap <C-w>e <C-w>k
-nmap <C-w>N <C-w>J
-nmap <C-w>E <C-w>K
