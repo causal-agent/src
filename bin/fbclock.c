@@ -106,10 +106,10 @@ int main() {
                 buf[bottom * info.xres + x] = FG;
             }
 
-            for (char *s = str; *s; ++s) {
+            for (const char *s = str; *s; ++s) {
                 uint8_t *glyph = glyphs[(uint8_t)*s];
+                uint32_t stride = header.glyphSize / header.glyphHeight;
                 for (uint32_t y = 0; y < header.glyphHeight; ++y) {
-                    uint32_t stride = header.glyphSize / header.glyphHeight;
                     for (uint32_t x = 0; x < header.glyphWidth; ++x) {
                         uint8_t bits = glyph[y * stride + x / 8];
                         uint8_t bit = bits >> (7 - x % 8) & 1;
