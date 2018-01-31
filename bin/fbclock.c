@@ -65,8 +65,8 @@ int main() {
         errx(EX_DATAERR, "%s: weird header size %d", fontPath, header.headerSize);
     }
 
-    uint8_t glyphs[header.glyphCount][header.glyphSize];
-    count = gzfread(glyphs, header.glyphSize, header.glyphCount, font);
+    uint8_t glyphs[128][header.glyphSize];
+    count = gzfread(glyphs, header.glyphSize, 128, font);
     if (!count) errx(EX_IOERR, "%s: %s", fontPath, gzerror(font, NULL));
 
     assert(Z_OK == gzclose(font));
