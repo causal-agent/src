@@ -1,3 +1,4 @@
+- [rook&nomie — DAYDREAM][43]
 - [Spiritualized — Ladies and Gentlemen We Are Floating in Space][42]
 - [Street Sects — End Position][41]
 - [Converge — The Dusk in Us][40]
@@ -93,3 +94,4 @@
 [40]: https://convergecult.bandcamp.com/album/the-dusk-in-us
 [41]: https://streetsects.bandcamp.com/album/end-position-2
 [42]: https://youtu.be/p47V3w4m1yg
+[43]: https://youtu.be/00TdaTffFeY
