@@ -1,6 +1,6 @@
 ANY_BINS = atch dtch hnel pbcopy pbd pbpaste wake xx
 BSD_BINS = jrp klon typo watch
-LIN_BINS = bri fbclock gfxx
+LIN_BINS = bri fbatt fbclock gfxx
 ALL_BINS = $(ANY_BINS) $(BSD_BINS) $(LIN_BINS)
 
 CFLAGS += -Wall -Wextra -Wpedantic

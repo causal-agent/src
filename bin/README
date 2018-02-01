@@ -19,6 +19,11 @@ with ^Q.
     dtch a nvim & disown
     atch a
 
+                                 fbatt
+
+Battery charge indicator panel for the Linux Framebuffer through
+/sys/class/power_supply.
+
                                 fbclock
 
 Clock panel for the Linux framebuffer. Renders PSF2 bitmap fonts.
