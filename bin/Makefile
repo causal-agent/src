@@ -6,11 +6,11 @@ ALL_BINS = $(ANY_BINS) $(BSD_BINS) $(LIN_BINS)
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lcurses -ledit -lutil -lz
 
+any: $(ANY_BINS) .gitignore
+
 bsd: $(ANY_BINS) $(BSD_BINS) .gitignore
 
 linux: $(ANY_BINS) $(LIN_BINS) .gitignore
-
-any: $(ANY_BINS) .gitignore
 
 atch: dtch
 	ln -f dtch atch
