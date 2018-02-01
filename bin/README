@@ -21,7 +21,7 @@ with ^Q.
 
                                  fbatt
 
-Battery charge indicator panel for the Linux Framebuffer through
+Battery charge indicator panel for the Linux framebuffer through
 /sys/class/power_supply.
 
                                 fbclock
