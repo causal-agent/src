@@ -35,6 +35,15 @@ static int init(int argc, char *argv[]);
 static void draw(struct Buffer buf);
 static void input(char in);
 
+static struct Buffer buf;
+
+static uint32_t saveBg;
+static void restoreBg(void) {
+    for (size_t i = 0; i < buf.xres * buf.yres; ++i) {
+        buf.data[i] = saveBg;
+    }
+}
+
 static struct termios saveTerm;
 static void restoreTerm(void) {
     tcsetattr(STDERR_FILENO, TCSADRAIN, &saveTerm);
@@ -57,12 +66,15 @@ int main(int argc, char *argv[]) {
     if (error) err(EX_IOERR, "%s", path);
 
     size_t size = 4 * info.xres * info.yres;
-    struct Buffer buf = {
+    buf = (struct Buffer) {
         .data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0),
         .xres = info.xres,
         .yres = info.yres,
     };
     if (buf.data == MAP_FAILED) err(EX_IOERR, "%s", path);
+
+    saveBg = buf.data[0];
+    atexit(restoreBg);
 
     error = tcgetattr(STDERR_FILENO, &saveTerm);
     if (error) err(EX_IOERR, "tcgetattr");
