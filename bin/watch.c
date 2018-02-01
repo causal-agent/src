@@ -14,8 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Execute a command each time files change.
-
 #include <sys/types.h>
 
 #include <err.h>

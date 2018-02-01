@@ -14,8 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Typing game.
-
 #include <curses.h>
 #include <err.h>
 #include <stdlib.h>

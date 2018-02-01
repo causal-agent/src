@@ -14,8 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Linux framebuffer clock.
-
 #include <assert.h>
 #include <err.h>
 #include <fcntl.h>

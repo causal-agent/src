@@ -14,8 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Hexdump.
-
 #include <ctype.h>
 #include <err.h>
 #include <stdbool.h>

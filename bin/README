@@ -1,0 +1,99 @@
+
+Tools primarily targetting Darwin and FreeBSD. Some don't build on Linux
+and some only build on Linux. All code licensed AGPLv3. See LICENSE.
+
+                                  bri
+
+Backlight brightness control for Linux through /sys/class/backlight.
+
+    bri 255
+    bri ---
+    bri ++
+
+                               dtch/atch
+
+Session detach and attach. Simple implementation of part of screen(1) by
+lending out the master end of a PTY over a UNIX domain socket. Detach
+with ^Q.
+
+    dtch a nvim & disown
+    atch a
+
+                                fbclock
+
+Clock panel for the Linux framebuffer. Renders PSF2 bitmap fonts.
+
+                                  gfxx
+
+Work in progress.
+
+                                  hnel
+
+The tr(1) of PTYs, for remapping keys. Originally for preserving HJKL in
+alternate keyboard layouts. Toggle remapping with ^S.
+
+    hnel '[]{}' '{}[]' vi
+
+                                  jrp
+
+JIT RPN calculator for x86_64. Mostly just to be overkill.
+
+    B   bin    O   oct    D   dec    X   hex
+    ;   drop   :   dup    \   swap
+    _   neg    +   add    -   sub
+    *   mul    /   div    %   rem
+    &   and    |   or     ^   xor
+    ~   not    <   shl    >   shr
+    '   quot   ,   prch   .   prnt
+
+                                  klon
+
+Klondike solitaire for curses. BSD-only for arc4random_uniform.
+
+    q   quit
+    u   undo
+    ' ' draw
+    w   waste
+    a-d foundations
+    1-7 tableau
+    ^M  auto-foundation
+
+                           pbd/pbcopy/pbpaste
+
+TCP server which pipes into macOS pbcopy(1) and from pbpaste(1), and
+pbcopy and pbpaste implementations that connect to it. Used to share
+the macOS pasteboard over SSH with RemoteForward 7062 127.0.0.1:7062.
+This used to make nvim's "+ register work but they seem to have changed
+their detection.
+
+    pbd & disown
+    ssh tux.local
+    pbpaste
+
+                                  typo
+
+Typing game for curses. BSD-only for arc4random_uniform. Displays random
+words from 10 000 common words in words.txt to be typed. Calculates WPM
+assuming every 5 letters is 1 word.
+
+                                  wake
+
+Broadcasts a wake-on-LAN packet to one of my machines.
+
+                                 watch
+
+Executes a command each time files change. BSD-only for kqueue(2).
+
+    watch watch.c make
+    watch wake.c watch.c -- make wake watch
+
+                                   xx
+
+Hexdump tool.
+
+    -a          toggle ASCII
+    -c N        set columns
+    -g N        set grouping
+    -r          reverse hexdump
+    -s          toggle offsets
+    -z          skip zeros

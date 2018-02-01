@@ -14,8 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Backlight brightness control.
-
 #include <dirent.h>
 #include <err.h>
 #include <errno.h>

@@ -14,8 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Session attach and detach.
-
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>

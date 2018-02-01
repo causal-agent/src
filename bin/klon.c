@@ -14,8 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Klondike solitaire.
-
 #include <assert.h>
 #include <curses.h>
 #include <locale.h>

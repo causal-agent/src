@@ -14,8 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Wake-on-LAN.
-
 #include <sys/types.h>
 
 #include <err.h>

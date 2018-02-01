@@ -14,8 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// PTY wrapper for remapping arbitrary keys.
-
 #include <err.h>
 #include <poll.h>
 #include <stdbool.h>

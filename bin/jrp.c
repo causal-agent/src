@@ -14,8 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// JIT RPN calculator.
-
 #include <err.h>
 #include <histedit.h>
 #include <stdbool.h>
