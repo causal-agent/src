@@ -25,22 +25,17 @@
 #include <termios.h>
 #include <unistd.h>
 
-struct Buffer {
-    uint32_t *data;
-    size_t xres;
-    size_t yres;
-};
-
 static int init(int argc, char *argv[]);
-static void draw(struct Buffer buf);
+static void draw(uint32_t *buf, size_t xres, size_t yres);
 static void input(char in);
 
-static struct Buffer buf;
+static uint32_t *buf;
+static struct fb_var_screeninfo info;
 
 static uint32_t saveBg;
 static void restoreBg(void) {
-    for (size_t i = 0; i < buf.xres * buf.yres; ++i) {
-        buf.data[i] = saveBg;
+    for (size_t i = 0; i < info.xres * info.yres; ++i) {
+        buf[i] = saveBg;
     }
 }
 
@@ -61,19 +56,14 @@ int main(int argc, char *argv[]) {
     int fb = open(path, O_RDWR);
     if (fb < 0) err(EX_OSFILE, "%s", path);
 
-    struct fb_var_screeninfo info;
     error = ioctl(fb, FBIOGET_VSCREENINFO, &info);
     if (error) err(EX_IOERR, "%s", path);
 
     size_t size = 4 * info.xres * info.yres;
-    buf = (struct Buffer) {
-        .data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0),
-        .xres = info.xres,
-        .yres = info.yres,
-    };
-    if (buf.data == MAP_FAILED) err(EX_IOERR, "%s", path);
+    buf = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0);
+    if (buf == MAP_FAILED) err(EX_IOERR, "%s", path);
 
-    saveBg = buf.data[0];
+    saveBg = buf[0];
     atexit(restoreBg);
 
     error = tcgetattr(STDERR_FILENO, &saveTerm);
@@ -86,7 +76,7 @@ int main(int argc, char *argv[]) {
     if (error) err(EX_IOERR, "tcsetattr");
 
     for (;;) {
-        draw(buf);
+        draw(buf, info.xres, info.yres);
 
         char in;
         ssize_t len = read(STDERR_FILENO, &in, 1);
@@ -122,14 +112,24 @@ int main(int argc, char *argv[]) {
 #include <string.h>
 #include <sys/stat.h>
 
+static enum {
+    COLOR_GRAYSCALE,
+    COLOR_PALETTE,
+    COLOR_RGB,
+    COLOR__MAX,
+} space;
+static uint32_t palette[256];
 static uint8_t bits = 1;
 static bool endian;
+
 static bool reverse;
-static size_t width = 16;
 static size_t offset;
+
+static size_t width = 16;
+static bool mirror;
 static size_t scale = 1;
 
-static size_t size = 1024 * 1024;
+static size_t size = 1024 * 1024; // max from pipe.
 static uint8_t *data;
 
 static uint8_t get(size_t i) {
@@ -140,17 +140,24 @@ static uint8_t get(size_t i) {
     }
 }
 
-static int init(int argc, char *argv[]) {
+static /**/ int init(int argc, char *argv[]) {
     const char *path = NULL;
 
     int opt;
-    while (0 < (opt = getopt(argc, argv, "b:en:rw:z:"))) {
+    while (0 < (opt = getopt(argc, argv, "c:b:ern:mw:z:"))) {
         switch (opt) {
+            case 'c': switch (optarg[0]) {
+                case 'g': space = COLOR_GRAYSCALE; break;
+                case 'p': space = COLOR_PALETTE; break;
+                case 'r': space = COLOR_RGB; break;
+                default: return EX_USAGE;
+            } break;
             case 'b': bits     = strtoul(optarg, NULL, 0); break;
             case 'e': endian  ^= true; break;
-            case 'n': offset   = strtoul(optarg, NULL, 0); break;
             case 'r': reverse ^= true; break;
+            case 'n': offset   = strtoul(optarg, NULL, 0); break;
             case 'w': width    = strtoul(optarg, NULL, 0); break;
+            case 'm': mirror  ^= true; break;
             case 'z': scale    = strtoul(optarg, NULL, 0); break;
             default: return EX_USAGE;
         }
@@ -177,109 +184,185 @@ static int init(int argc, char *argv[]) {
     return EX_OK;
 }
 
-static void dump(void) {
+static void printOpts(void) {
     printf(
-        "gfxx %s%s-b %hhu -n %zu -w %zu -z %zu\n",
-        reverse ? "-r " : "",
-        endian ? "-e " : "",
+        "gfxx -c %c -b %hhu %s%s-n %#zx -w %zu %s-z %zu\n",
+        "gpr"[space],
         bits,
+        endian ? "-e " : "",
+        reverse ? "-r " : "",
         offset,
         width,
+        mirror ? "-m " : "",
         scale
     );
 }
 
-struct Cursor {
+struct Pos {
+    uint32_t *buf;
+    size_t xres;
+    size_t yres;
     size_t left;
     size_t x;
     size_t y;
 };
 
-static struct Cursor step(struct Buffer buf, struct Cursor cur) {
-    cur.x++;
-    if (cur.x - cur.left == width) {
-        cur.y++;
-        cur.x = cur.left;
-    }
-    if (cur.y == buf.yres / scale) {
-        cur.left += width;
-        cur.x = cur.left;
-        cur.y = 0;
-    }
-    return cur;
-}
-
-static void put(struct Buffer buf, struct Cursor cur, uint32_t p) {
-    size_t scaledX = cur.x * scale;
-    size_t scaledY = cur.y * scale;
-    for (size_t fillY = scaledY; fillY < scaledY + scale; ++fillY) {
-        if (fillY >= buf.yres) break;
-        for (size_t fillX = scaledX; fillX < scaledX + scale; ++fillX) {
-            if (fillX >= buf.xres) break;
-            buf.data[fillY * buf.xres + fillX] = p;
+static void next(struct Pos *pos) {
+    if (mirror) {
+        if (pos->x == pos->left) {
+            pos->y++;
+            pos->x = pos->left + width;
+        }
+        if (pos->y == pos->yres / scale) {
+            pos->left += width;
+            pos->x = pos->left + width;
+            pos->y = 0;
+        }
+        pos->x--;
+    } else {
+        pos->x++;
+        if (pos->x - pos->left == width) {
+            pos->y++;
+            pos->x = pos->left;
+        }
+        if (pos->y == pos->yres / scale) {
+            pos->left += width;
+            pos->x = pos->left;
+            pos->y = 0;
         }
     }
 }
 
-// TODO: Palette.
-static void draw1(struct Buffer buf) {
-    struct Cursor cur = {0};
+static void put(const struct Pos *pos, uint32_t p) {
+    size_t scaledX = pos->x * scale;
+    size_t scaledY = pos->y * scale;
+    for (size_t fillY = scaledY; fillY < scaledY + scale; ++fillY) {
+        if (fillY >= pos->yres) break;
+        for (size_t fillX = scaledX; fillX < scaledX + scale; ++fillX) {
+            if (fillX >= pos->xres) break;
+            pos->buf[fillY * pos->xres + fillX] = p;
+        }
+    }
+}
+
+static void draw1(struct Pos *pos) {
     for (size_t i = offset; i < size; ++i) {
         for (int s = 0; s < 8; ++s) {
             uint8_t b = get(i) >> (endian ? s : 7 - s) & 1;
-            uint32_t p = b ? 0xFFFFFF : 0x000000;
-            put(buf, cur, p);
-            cur = step(buf, cur);
+            if (space == COLOR_PALETTE) {
+                put(pos, palette[b]);
+            } else {
+                space = COLOR_GRAYSCALE;
+                put(pos, b ? 0xFFFFFF : 0x000000);
+            }
+            next(pos);
         }
     }
 }
 
-// TODO: Palette.
-static void draw8(struct Buffer buf) {
-    struct Cursor cur = {0};
+static void draw4(struct Pos *pos) {
     for (size_t i = offset; i < size; ++i) {
-        uint32_t p = get(i) | get(i) << 8 | get(i) << 16;
-        put(buf, cur, p);
-        cur = step(buf, cur);
+        uint32_t a = (endian) ? get(i) >>   4 : get(i) & 0x0F;
+        uint32_t b = (endian) ? get(i) & 0x0F : get(i) >>   4;
+        if (space == COLOR_PALETTE) {
+            put(pos, palette[a]);
+            next(pos);
+            put(pos, palette[b]);
+            next(pos);
+        } else {
+            space = COLOR_GRAYSCALE;
+            a = 256 * a / 8;
+            b = 256 * b / 8;
+            put(pos, a << 16 | a << 8 | a);
+            next(pos);
+            put(pos, b << 16 | b << 8 | b);
+            next(pos);
+        }
     }
 }
 
-static void draw24(struct Buffer buf) {
-    struct Cursor cur = {0};
+static void draw8(struct Pos *pos) {
+    for (size_t i = offset; i < size; ++i) {
+        uint32_t p = 0;
+        if (space == COLOR_GRAYSCALE) {
+            p = get(i) | get(i) << 8 | get(i) << 16;
+        } else if (space == COLOR_PALETTE) {
+            p = palette[get(i)];
+        } else if (space == COLOR_RGB) {
+            // FIXME: This might be totally wrong.
+            // RRRGGGBB
+            uint32_t r = (endian) ? get(i) >> 5 & 0x07 : get(i) >> 0 & 0x07;
+            uint32_t g = (endian) ? get(i) >> 2 & 0x07 : get(i) >> 3 & 0x07;
+            uint32_t b = (endian) ? get(i) >> 0 & 0x03 : get(i) >> 6 & 0x03;
+            p = (256 * r / 8) << 16 | (256 * g / 8) << 8 | (256 * b / 4);
+        }
+        put(pos, p);
+        next(pos);
+    }
+}
+
+static void draw16(struct Pos *pos) {
+    for (size_t i = offset; i + 1 < size; i += 2) {
+        // FIXME: Endian means this, or BGR?
+        uint16_t x = (endian)
+            ? (uint16_t)get(i+0) << 8 | (uint16_t)get(i+1)
+            : (uint16_t)get(i+1) << 8 | (uint16_t)get(i+0);
+        // FIXME: This might be totally wrong.
+        // RRRRRGGGGGGBBBBB
+        space = COLOR_RGB;
+        uint32_t r = x >> 11 & 0x1F;
+        uint32_t g = x >>  5 & 0x3F;
+        uint32_t b = x >>  0 & 0x1F;
+        uint32_t p = (256 * r / 32) << 16 | (256 * g / 64) << 8 | (256 * b / 32);
+        put(pos, p);
+        next(pos);
+    }
+}
+
+static void draw24(struct Pos *pos) {
     for (size_t i = offset; i + 2 < size; i += 3) {
+        space = COLOR_RGB;
         uint32_t p = (endian)
-            ? get(i) << 16 | get(i+1) <<  8 | get(i+2) <<  0
-            : get(i) <<  0 | get(i+1) <<  8 | get(i+2) << 16;
-        put(buf, cur, p);
-        cur = step(buf, cur);
+            ? get(i+0) << 16 | get(i+1) << 8 | get(i+2) << 0
+            : get(i+2) << 16 | get(i+1) << 8 | get(i+0) << 0;
+        put(pos, p);
+        next(pos);
     }
 }
 
-static void draw32(struct Buffer buf) {
-    struct Cursor cur = {0};
+static void draw32(struct Pos *pos) {
     for (size_t i = offset; i + 3 < size; i += 4) {
+        space = COLOR_RGB;
         uint32_t p = (endian)
-            ? get(i) << 24 | get(i+1) << 16 | get(i+2) <<  8 | get(i+3) <<  0
-            : get(i) <<  0 | get(i+1) <<  8 | get(i+2) << 16 | get(i+3) << 24;
-        put(buf, cur, p);
-        cur = step(buf, cur);
+            ? get(i+0) << 24 | get(i+1) << 16 | get(i+2) << 8 | get(i+3) << 0
+            : get(i+3) << 24 | get(i+2) << 16 | get(i+1) << 8 | get(i+0) << 0;
+        put(pos, p);
+        next(pos);
     }
 }
 
-static void draw(struct Buffer buf) {
-    memset(buf.data, 0, 4 * buf.xres * buf.yres);
+static /**/ void draw(uint32_t *buf, size_t xres, size_t yres) {
+    memset(buf, 0, 4 * xres * yres);
+    struct Pos pos = {
+        .buf = buf,
+        .xres = xres,
+        .yres = yres,
+        .x = (mirror) ? width - 1 : 0
+    };
     switch (bits) {
-        case 1:  draw1(buf);  break;
-        case 8:  draw8(buf);  break;
-        case 24: draw24(buf); break;
-        case 32: draw32(buf); break;
+        case 1:  draw1(&pos);  break;
+        case 4:  draw4(&pos);  break;
+        case 8:  draw8(&pos);  break;
+        case 16: draw16(&pos); break;
+        case 24: draw24(&pos); break;
+        case 32: draw32(&pos); break;
         default: break;
     }
 }
 
-static void input(char in) {
+static /**/ void input(char in) {
     switch (in) {
-        case 'q': dump(); exit(EX_OK);
+        case 'q': printOpts(); exit(EX_OK);
         break; case '+': scale++;
         break; case '-': if (scale > 1) scale--;
         break; case '.': width++;
@@ -292,16 +375,20 @@ static void input(char in) {
         break; case 'l': offset++;
         break; case 'e': endian ^= true;
         break; case 'r': reverse ^= true;
+        break; case 'm': mirror ^= true;
+        break; case 'c': space++; if (space == COLOR__MAX) space = 0;
         break; case 'b':
             switch (bits) {
-                case 1:  bits =  8; break;
+                case 1:  bits =  4; break;
+                case 4:  bits =  8; break;
                 case 32: bits =  1; break;
                 default: bits += 8;
             }
         break; case 'B':
             switch (bits) {
+                case 8:  bits =  4; break;
+                case 4:  bits =  1; break;
                 case 1:  bits = 32; break;
-                case 8:  bits =  1; break;
                 default: bits -= 8;
             }
     }
