@@ -112,13 +112,20 @@ int main(int argc, char *argv[]) {
 #include <string.h>
 #include <sys/stat.h>
 
+#define RGB(r, g, b) ((uint32_t)(r) << 16 | (uint32_t)(g) << 8 | (uint32_t)(b))
+#define GRAY(n) RGB(n, n, n)
+
 static enum {
     COLOR_GRAYSCALE,
     COLOR_PALETTE,
     COLOR_RGB,
     COLOR__MAX,
 } space;
-static uint32_t palette[256];
+static uint32_t palette[256] = {
+    // FIXME: hardcoded 16-color VGA.
+    0x000000, 0xAA0000, 0x00AA00, 0xAA5500, 0x0000AA, 0xAA00AA, 0x00AAAA, 0xAAAAAA,
+    0x555555, 0xFF5555, 0x55FF55, 0xFFFF55, 0x5555FF, 0xFF55FF, 0x55FFFF, 0xFFFFFF,
+};
 static uint8_t bits = 1;
 static bool endian;
 
@@ -248,11 +255,10 @@ static void put(const struct Pos *pos, uint32_t p) {
 static void draw1(struct Pos *pos) {
     for (size_t i = offset; i < size; ++i) {
         for (int s = 0; s < 8; ++s) {
-            uint8_t b = get(i) >> (endian ? s : 7 - s) & 1;
+            uint8_t b = get(i) >> (endian ? 7 - s : s) & 1;
             if (space == COLOR_PALETTE) {
                 put(pos, palette[b]);
             } else {
-                space = COLOR_GRAYSCALE;
                 put(pos, b ? 0xFFFFFF : 0x000000);
             }
             next(pos);
@@ -262,20 +268,13 @@ static void draw1(struct Pos *pos) {
 
 static void draw4(struct Pos *pos) {
     for (size_t i = offset; i < size; ++i) {
-        uint32_t a = (endian) ? get(i) >>   4 : get(i) & 0x0F;
-        uint32_t b = (endian) ? get(i) & 0x0F : get(i) >>   4;
-        if (space == COLOR_PALETTE) {
-            put(pos, palette[a]);
-            next(pos);
-            put(pos, palette[b]);
-            next(pos);
-        } else {
-            space = COLOR_GRAYSCALE;
-            a = 256 * a / 8;
-            b = 256 * b / 8;
-            put(pos, a << 16 | a << 8 | a);
-            next(pos);
-            put(pos, b << 16 | b << 8 | b);
+        for (int s = 0; s < 8; s += 4) {
+            uint8_t n = get(i) >> (endian ? 4 - s : s) & 0x0F;
+            if (space == COLOR_PALETTE) {
+                put(pos, palette[n]);
+            } else {
+                put(pos, GRAY(256 * (uint32_t)n / 8));
+            }
             next(pos);
         }
     }
@@ -283,20 +282,17 @@ static void draw4(struct Pos *pos) {
 
 static void draw8(struct Pos *pos) {
     for (size_t i = offset; i < size; ++i) {
-        uint32_t p = 0;
         if (space == COLOR_GRAYSCALE) {
-            p = get(i) | get(i) << 8 | get(i) << 16;
+            put(pos, GRAY(get(i)));
         } else if (space == COLOR_PALETTE) {
-            p = palette[get(i)];
-        } else if (space == COLOR_RGB) {
-            // FIXME: This might be totally wrong.
-            // RRRGGGBB
+            put(pos, palette[get(i)]);
+        } else {
+            // FIXME: This might be totally wrong. RRRGGGBB
             uint32_t r = (endian) ? get(i) >> 5 & 0x07 : get(i) >> 0 & 0x07;
             uint32_t g = (endian) ? get(i) >> 2 & 0x07 : get(i) >> 3 & 0x07;
             uint32_t b = (endian) ? get(i) >> 0 & 0x03 : get(i) >> 6 & 0x03;
-            p = (256 * r / 8) << 16 | (256 * g / 8) << 8 | (256 * b / 4);
+            put(pos, RGB(256 * r / 8, 256 * g / 8, 256 * b / 4));
         }
-        put(pos, p);
         next(pos);
     }
 }
@@ -307,36 +303,33 @@ static void draw16(struct Pos *pos) {
         uint16_t x = (endian)
             ? (uint16_t)get(i+0) << 8 | (uint16_t)get(i+1)
             : (uint16_t)get(i+1) << 8 | (uint16_t)get(i+0);
-        // FIXME: This might be totally wrong.
-        // RRRRRGGGGGGBBBBB
-        space = COLOR_RGB;
+        // FIXME: This might be totally wrong. RRRRRGGGGGGBBBBB
         uint32_t r = x >> 11 & 0x1F;
         uint32_t g = x >>  5 & 0x3F;
         uint32_t b = x >>  0 & 0x1F;
-        uint32_t p = (256 * r / 32) << 16 | (256 * g / 64) << 8 | (256 * b / 32);
-        put(pos, p);
+        put(pos, RGB(256 * r / 32, 256 * g / 64, 256 * b / 32));
         next(pos);
     }
 }
 
 static void draw24(struct Pos *pos) {
     for (size_t i = offset; i + 2 < size; i += 3) {
-        space = COLOR_RGB;
-        uint32_t p = (endian)
-            ? get(i+0) << 16 | get(i+1) << 8 | get(i+2) << 0
-            : get(i+2) << 16 | get(i+1) << 8 | get(i+0) << 0;
-        put(pos, p);
+        if (endian) {
+            put(pos, RGB(get(i + 0), get(i + 1), get(i + 2)));
+        } else {
+            put(pos, RGB(get(i + 2), get(i + 1), get(i + 0)));
+        }
         next(pos);
     }
 }
 
 static void draw32(struct Pos *pos) {
     for (size_t i = offset; i + 3 < size; i += 4) {
-        space = COLOR_RGB;
-        uint32_t p = (endian)
-            ? get(i+0) << 24 | get(i+1) << 16 | get(i+2) << 8 | get(i+3) << 0
-            : get(i+3) << 24 | get(i+2) << 16 | get(i+1) << 8 | get(i+0) << 0;
-        put(pos, p);
+        if (endian) {
+            put(pos, RGB(get(i + 1), get(i + 2), get(i + 3)));
+        } else {
+            put(pos, RGB(get(i + 2), get(i + 1), get(i + 0)));
+        }
         next(pos);
     }
 }
@@ -370,8 +363,8 @@ static /**/ void input(char in) {
         break; case '>': width *= 2;
         break; case '<': if (width / 2 >= 1) width /= 2;
         break; case 'h': if (offset) offset--;
-        break; case 'j': offset += width;
-        break; case 'k': if (offset >= width) offset -= width;
+        break; case 'j': offset += width * bits / 8;
+        break; case 'k': if (offset >= width * bits / 8) offset -= width * bits / 8;
         break; case 'l': offset++;
         break; case 'e': endian ^= true;
         break; case 'r': reverse ^= true;
