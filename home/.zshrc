@@ -1,5 +1,5 @@
 unsetopt beep
-setopt nomatch interactive_comments
+setopt auto_pushd nomatch interactive_comments
 setopt inc_append_history hist_ignore_dups
 HISTFILE=~/.history HISTSIZE=5000 SAVEHIST=5000
 
