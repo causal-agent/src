@@ -112,8 +112,10 @@ int main(int argc, char *argv[]) {
 #include <string.h>
 #include <sys/stat.h>
 
-#define RGB(r, g, b) ((uint32_t)(r) << 16 | (uint32_t)(g) << 8 | (uint32_t)(b))
-#define GRAY(n) RGB(n, n, n)
+#define RGB(r,g,b) ((uint32_t)(r) << 16 | (uint32_t)(g) << 8 | (uint32_t)(b))
+#define GRAY(n)    RGB(n, n, n)
+#define MASK(b)    ((1 << b) - 1)
+#define SCALE(b,n) (uint8_t)(255 * (uint32_t)(n) / MASK(b))
 
 static enum {
     COLOR_GRAYSCALE,
@@ -121,13 +123,14 @@ static enum {
     COLOR_RGB,
     COLOR__MAX,
 } space;
-static uint32_t palette[256] = {
-    // FIXME: hardcoded.
-    0x000000, 0xFF0000, 0x00FF00, 0xFFFF00, 0x0000FF, 0xFF00FF, 0x00FFFF, 0xFFFFFF,
-    0x000000, 0xFF0000, 0x00FF00, 0xFFFF00, 0x0000FF, 0xFF00FF, 0x00FFFF, 0xFFFFFF,
-};
 static uint8_t bits = 1;
 static bool endian;
+static uint32_t palette[256] = {
+#define P8 0x000000, 0xFF0000, 0x00FF00, 0xFFFF00, 0x0000FF, 0xFF00FF, 0x00FFFF, 0xFFFFFF,
+    P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8
+    P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8
+#undef P8
+};
 
 static bool reverse;
 static size_t offset;
@@ -252,28 +255,14 @@ static void put(const struct Pos *pos, uint32_t p) {
     }
 }
 
-static void draw1(struct Pos *pos) {
+static void drawBits(struct Pos *pos) {
     for (size_t i = offset; i < size; ++i) {
-        for (int s = 0; s < 8; ++s) {
-            uint8_t b = get(i) >> (endian ? 7 - s : s) & 1;
-            if (space == COLOR_PALETTE) {
-                put(pos, palette[b]);
-            } else {
-                put(pos, b ? 0xFFFFFF : 0x000000);
-            }
-            next(pos);
-        }
-    }
-}
-
-static void draw4(struct Pos *pos) {
-    for (size_t i = offset; i < size; ++i) {
-        for (int s = 0; s < 8; s += 4) {
-            uint8_t n = get(i) >> (endian ? 4 - s : s) & 0x0F;
+        for (int s = 0; s < 8; s += bits) {
+            uint8_t n = get(i) >> (endian ? 8 - bits - s : s) & MASK(bits);
             if (space == COLOR_PALETTE) {
                 put(pos, palette[n]);
             } else {
-                put(pos, GRAY(256 * (uint32_t)n / 8));
+                put(pos, GRAY(SCALE(bits, n)));
             }
             next(pos);
         }
@@ -287,11 +276,10 @@ static void draw8(struct Pos *pos) {
         } else if (space == COLOR_PALETTE) {
             put(pos, palette[get(i)]);
         } else {
-            // FIXME: This might be totally wrong. RRRGGGBB
-            uint32_t r = (endian) ? get(i) >> 5 & 0x07 : get(i) >> 0 & 0x07;
-            uint32_t g = (endian) ? get(i) >> 2 & 0x07 : get(i) >> 3 & 0x07;
-            uint32_t b = (endian) ? get(i) >> 0 & 0x03 : get(i) >> 6 & 0x03;
-            put(pos, RGB(256 * r / 8, 256 * g / 8, 256 * b / 4));
+            uint32_t r = (endian ? get(i) >> 5 : get(i) >> 0) & MASK(3);
+            uint32_t g = (endian ? get(i) >> 2 : get(i) >> 3) & MASK(3);
+            uint32_t b = (endian ? get(i) >> 0 : get(i) >> 6) & MASK(2);
+            put(pos, RGB(SCALE(3, r), SCALE(3, g), SCALE(2, b)));
         }
         next(pos);
     }
@@ -299,15 +287,13 @@ static void draw8(struct Pos *pos) {
 
 static void draw16(struct Pos *pos) {
     for (size_t i = offset; i + 1 < size; i += 2) {
-        // FIXME: Endian means this, or BGR?
-        uint16_t x = (endian)
+        uint16_t n = (endian)
             ? (uint16_t)get(i+0) << 8 | (uint16_t)get(i+1)
             : (uint16_t)get(i+1) << 8 | (uint16_t)get(i+0);
-        // FIXME: This might be totally wrong. RRRRRGGGGGGBBBBB
-        uint32_t r = x >> 11 & 0x1F;
-        uint32_t g = x >>  5 & 0x3F;
-        uint32_t b = x >>  0 & 0x1F;
-        put(pos, RGB(256 * r / 32, 256 * g / 64, 256 * b / 32));
+        uint32_t r = n >> 11 & MASK(5);
+        uint32_t g = n >>  5 & MASK(6);
+        uint32_t b = n >>  0 & MASK(5);
+        put(pos, RGB(SCALE(5, r), SCALE(6, g), SCALE(5, b)));
         next(pos);
     }
 }
@@ -343,12 +329,11 @@ static /**/ void draw(uint32_t *buf, size_t xres, size_t yres) {
         .x = (mirror) ? width - 1 : 0
     };
     switch (bits) {
-        case 1:  draw1(&pos);  break;
-        case 4:  draw4(&pos);  break;
         case 8:  draw8(&pos);  break;
         case 16: draw16(&pos); break;
         case 24: draw24(&pos); break;
         case 32: draw32(&pos); break;
+        default: drawBits(&pos);
     }
 }
 
