@@ -122,9 +122,9 @@ static enum {
     COLOR__MAX,
 } space;
 static uint32_t palette[256] = {
-    // FIXME: hardcoded 16-color VGA.
-    0x000000, 0xAA0000, 0x00AA00, 0xAA5500, 0x0000AA, 0xAA00AA, 0x00AAAA, 0xAAAAAA,
-    0x555555, 0xFF5555, 0x55FF55, 0xFFFF55, 0x5555FF, 0xFF55FF, 0x55FFFF, 0xFFFFFF,
+    // FIXME: hardcoded.
+    0x000000, 0xFF0000, 0x00FF00, 0xFFFF00, 0x0000FF, 0xFF00FF, 0x00FFFF, 0xFFFFFF,
+    0x000000, 0xFF0000, 0x00FF00, 0xFFFF00, 0x0000FF, 0xFF00FF, 0x00FFFF, 0xFFFFFF,
 };
 static uint8_t bits = 1;
 static bool endian;
@@ -349,40 +349,34 @@ static /**/ void draw(uint32_t *buf, size_t xres, size_t yres) {
         case 16: draw16(&pos); break;
         case 24: draw24(&pos); break;
         case 32: draw32(&pos); break;
-        default: break;
     }
 }
 
 static /**/ void input(char in) {
+    size_t pixel = (bits + 7) / 8;
+    size_t row = width * bits / 8;
     switch (in) {
         case 'q': printOpts(); exit(EX_OK);
-        break; case '+': scale++;
-        break; case '-': if (scale > 1) scale--;
+        break; case '[': if (!space--) space = COLOR__MAX - 1;
+        break; case ']': if (++space == COLOR__MAX) space = 0;
+        break; case '{': if (bits > 16) bits -= 8; else bits = (bits + 1) / 2;
+        break; case '}': if (bits < 16) bits *= 2; else bits += 8;
+        break; case 'e': endian ^= true;
+        break; case 'r': reverse ^= true;
+        break; case 'h': if (offset) offset--;
+        break; case 'j': offset += pixel;
+        break; case 'k': if (offset >= pixel) offset -= pixel;
+        break; case 'l': offset++;
+        break; case 'H': if (offset >= row) offset -= row;
+        break; case 'J': offset += width * row;
+        break; case 'K': if (offset >= width * row) offset -= width * row;
+        break; case 'L': offset += row;
         break; case '.': width++;
         break; case ',': if (width > 1) width--;
         break; case '>': width *= 2;
         break; case '<': if (width / 2 >= 1) width /= 2;
-        break; case 'h': if (offset) offset--;
-        break; case 'j': offset += width * bits / 8;
-        break; case 'k': if (offset >= width * bits / 8) offset -= width * bits / 8;
-        break; case 'l': offset++;
-        break; case 'e': endian ^= true;
-        break; case 'r': reverse ^= true;
         break; case 'm': mirror ^= true;
-        break; case 'c': space++; if (space == COLOR__MAX) space = 0;
-        break; case 'b':
-            switch (bits) {
-                case 1:  bits =  4; break;
-                case 4:  bits =  8; break;
-                case 32: bits =  1; break;
-                default: bits += 8;
-            }
-        break; case 'B':
-            switch (bits) {
-                case 8:  bits =  4; break;
-                case 4:  bits =  1; break;
-                case 1:  bits = 32; break;
-                default: bits -= 8;
-            }
+        break; case '+': scale++;
+        break; case '-': if (scale > 1) scale--;
     }
 }
