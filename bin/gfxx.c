@@ -152,9 +152,10 @@ static uint8_t get(size_t i) {
 
 static /**/ int init(int argc, char *argv[]) {
     const char *path = NULL;
+    const char *palPath = NULL;
 
     int opt;
-    while (0 < (opt = getopt(argc, argv, "c:b:ern:mw:z:"))) {
+    while (0 < (opt = getopt(argc, argv, "c:p:b:ern:mw:z:"))) {
         switch (opt) {
             case 'c': switch (optarg[0]) {
                 case 'g': space = COLOR_GRAYSCALE; break;
@@ -162,6 +163,7 @@ static /**/ int init(int argc, char *argv[]) {
                 case 'r': space = COLOR_RGB; break;
                 default: return EX_USAGE;
             } break;
+            case 'p': palPath  = optarg; break;
             case 'b': bits     = strtoul(optarg, NULL, 0); break;
             case 'e': endian  ^= true; break;
             case 'r': reverse ^= true; break;
@@ -174,6 +176,16 @@ static /**/ int init(int argc, char *argv[]) {
     }
     if (argc > optind) path = argv[optind];
     if (!bits || !width || !scale) return EX_USAGE;
+
+    if (palPath) {
+        FILE *pal = fopen(palPath, "r");
+        if (!pal) err(EX_NOINPUT, "%s", palPath);
+
+        fread(palette, 1, sizeof(palette), pal);
+        if (ferror(pal)) err(EX_IOERR, "%s", palPath);
+
+        fclose(pal);
+    }
 
     FILE *file = path ? fopen(path, "r") : stdin;
     if (!file) err(EX_NOINPUT, "%s", path);
@@ -190,6 +202,8 @@ static /**/ int init(int argc, char *argv[]) {
 
     size = fread(data, 1, size, file);
     if (ferror(file)) err(EX_IOERR, "%s", path);
+
+    fclose(file);
 
     return EX_OK;
 }
@@ -345,7 +359,7 @@ static /**/ void input(char in) {
         break; case '[': if (!space--) space = COLOR__MAX - 1;
         break; case ']': if (++space == COLOR__MAX) space = 0;
         break; case '{': if (bits > 16) bits -= 8; else bits = (bits + 1) / 2;
-        break; case '}': if (bits < 16) bits *= 2; else bits += 8;
+        break; case '}': if (bits < 16) bits *= 2; else if (bits < 32) bits += 8;
         break; case 'e': endian ^= true;
         break; case 'r': reverse ^= true;
         break; case 'h': if (offset) offset--;
