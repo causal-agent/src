@@ -15,6 +15,8 @@ linux: $(ANY_BINS) $(LIN_BINS) .gitignore
 atch: dtch
 	ln -f dtch atch
 
+gfxx: gfxx.o gfb.o
+
 pbcopy pbpaste: pbd
 	ln -f pbd $@
 
@@ -32,6 +34,6 @@ unlink:
 	rm -f $(ALL_BINS:%=~/.bin/%)
 
 .gitignore: Makefile
-	echo $(ALL_BINS) | tr ' ' '\n' > .gitignore
+	echo '*.o' $(ALL_BINS) | tr ' ' '\n' > .gitignore
 
 .PHONY: bsd linux any setuid clean link unlink
