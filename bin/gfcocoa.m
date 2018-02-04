@@ -15,33 +15,51 @@
  */
 
 #import <Cocoa/Cocoa.h>
+#import <err.h>
 #import <stdint.h>
 #import <stdlib.h>
+#import <sysexits.h>
+
+#define UNUSED __attribute__((unused))
 
 extern int init(int argc, char *argv[]);
 extern void draw(uint32_t *buf, size_t xres, size_t yres);
 extern void input(char in);
 
-#define WIDTH (640)
-#define HEIGHT (480)
-
-static size_t size = 4 * WIDTH * HEIGHT;
-static uint32_t buf[WIDTH * HEIGHT];
-
-@interface BufferView : NSView
+@interface BufferView : NSView {
+    size_t bufSize;
+    uint32_t *buf;
+}
 @end
 
 @implementation BufferView
-- (void) drawRect: (NSRect) dirtyRect {
+- (void) draw {
+    draw(buf, [self frame].size.width, [self frame].size.height);
+    [self setNeedsDisplay: YES];
+}
+
+- (void) setFrameSize: (NSSize) newSize {
+    [super setFrameSize: newSize];
+    size_t newBufSize = 4 * newSize.width * newSize.height;
+    if (newBufSize > bufSize) {
+        bufSize = newBufSize;
+        buf = malloc(bufSize);
+        if (!buf) err(EX_OSERR, "malloc(%zu)", bufSize);
+    }
+    [self draw];
+}
+
+- (void) drawRect: (NSRect) UNUSED dirtyRect {
+    NSSize size = [self frame].size;
     CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
     CGColorSpaceRef rgb = CGColorSpaceCreateDeviceRGB();
-    CGDataProviderRef data = CGDataProviderCreateWithData(NULL, buf, size, NULL);
+    CGDataProviderRef data = CGDataProviderCreateWithData(NULL, buf, bufSize, NULL);
     CGImageRef image = CGImageCreate(
-        WIDTH,
-        HEIGHT,
+        size.width,
+        size.height,
         8,
         32,
-        WIDTH * 4,
+        4 * size.width,
         rgb,
         kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
         data,
@@ -49,7 +67,7 @@ static uint32_t buf[WIDTH * HEIGHT];
         false,
         kCGRenderingIntentDefault
     );
-    CGContextDrawImage(ctx, CGRectMake(0, 0, WIDTH, HEIGHT), image);
+    CGContextDrawImage(ctx, [self frame], image);
     CGImageRelease(image);
     CGDataProviderRelease(data);
     CGColorSpaceRelease(rgb);
@@ -73,8 +91,7 @@ static uint32_t buf[WIDTH * HEIGHT];
     ];
     if (converted) {
         input(in);
-        draw(buf, WIDTH, HEIGHT);
-        [self setNeedsDisplay: YES];
+        [self draw];
     }
 }
 @end
@@ -83,7 +100,8 @@ static uint32_t buf[WIDTH * HEIGHT];
 @end
 
 @implementation Delegate
-- (BOOL) applicationShouldTerminateAfterLastWindowClosed: (NSApplication *) sender {
+- (BOOL) applicationShouldTerminateAfterLastWindowClosed:
+    (NSApplication *) UNUSED sender {
     return YES;
 }
 @end
@@ -116,7 +134,7 @@ int main(int argc, char *argv[]) {
         | NSResizableWindowMask;
     NSWindow *window = [
         [NSWindow alloc]
-        initWithContentRect: NSMakeRect(0, 0, WIDTH, HEIGHT)
+        initWithContentRect: NSMakeRect(0, 0, 800, 600)
         styleMask: style
         backing: NSBackingStoreBuffered
         defer: YES
@@ -126,8 +144,6 @@ int main(int argc, char *argv[]) {
 
     BufferView *view = [[BufferView alloc] initWithFrame: [window frame]];
     [window setContentView: view];
-
-    draw(buf, WIDTH, HEIGHT);
 
     [window makeKeyAndOrderFront: nil];
     [NSApp activateIgnoringOtherApps: YES];
