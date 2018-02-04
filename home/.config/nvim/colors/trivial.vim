@@ -17,32 +17,33 @@ hi StatusLine cterm=NONE ctermbg=Black ctermfg=LightGray
 hi StatusLineNC cterm=NONE ctermbg=Black ctermfg=DarkGray
 hi Folded ctermbg=Black ctermfg=DarkGray
 hi Visual cterm=inverse ctermbg=NONE
+
 hi Comment ctermfg=DarkBlue
 
-hi Constant ctermfg=NONE
+hi! link Constant Normal
 hi String ctermfg=DarkCyan
 hi link Character String
 
-hi Identifier cterm=NONE ctermfg=NONE
+hi! link Identifier Normal
 
 hi Statement ctermfg=LightGray
+hi link Operator Normal
 
 hi PreProc ctermfg=DarkGreen
-hi Macro ctermfg=DarkYellow
-hi link PreCondit Macro
 
-hi Type ctermfg=NONE
-hi StorageClass ctermfg=LightGray
+hi! link Type Normal
+hi link StorageClass Statement
 hi link Structure StorageClass
 hi link Typedef Structure
 
-hi Special ctermfg=LightGray
+hi! link Special Statement
 hi SpecialComment ctermfg=LightBlue
-hi SpecialKey ctermfg=DarkGray
+hi SpecialKey ctermfg=DarkMagenta
 
 hi Underlined ctermfg=NONE
 hi Error ctermbg=NONE ctermfg=LightRed
-hi Todo ctermbg=NONE ctermfg=LightBlue
+hi SpellBad ctermbg=NONE ctermfg=DarkRed
+hi! link Todo SpecialComment
 
 " Language-specifics.
 
