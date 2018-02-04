@@ -28,19 +28,19 @@ extern void input(char in);
 static size_t size = 4 * WIDTH * HEIGHT;
 static uint32_t buf[WIDTH * HEIGHT];
 
-@interface BufferView : NSView {
-}
+@interface BufferView : NSView
 @end
 
 @implementation BufferView
 - (void)drawRect:(NSRect)dirtyRect {
     CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
     CGColorSpaceRef rgb = CGColorSpaceCreateDeviceRGB();
-    CGDataProviderRef data = CGDataProviderCreateWithData(NULL, buf, size, NULL);
+    CGDataProviderRef data =
+        CGDataProviderCreateWithData(NULL, buf, size, NULL);
     CGImageRef image =
         CGImageCreate(WIDTH, HEIGHT, 8, 32, WIDTH * 4, rgb,
-        kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
-        data, NULL, false, kCGRenderingIntentDefault);
+                      kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
+                      data, NULL, false, kCGRenderingIntentDefault);
     CGContextDrawImage(ctx, CGRectMake(0, 0, WIDTH, HEIGHT), image);
     CGImageRelease(image);
     CGDataProviderRelease(data);
@@ -66,26 +66,39 @@ static uint32_t buf[WIDTH * HEIGHT];
 }
 @end
 
+@interface Delegate : NSObject <NSApplicationDelegate>
+@end
+
+@implementation Delegate
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:
+    (NSApplication *)sender {
+    return YES;
+}
+@end
+
 int main(int argc, char *argv[]) {
     int error = init(argc, argv);
-    if (error) return error;
+    if (error)
+        return error;
 
     draw(buf, WIDTH, HEIGHT);
 
     [NSApplication sharedApplication];
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+    [NSApp setDelegate:[Delegate new]];
 
     NSWindow *window = [[NSWindow alloc]
-        initWithContentRect:NSMakeRect(0, 0, 640, 480)
-                  styleMask:NSTitledWindowMask | NSClosableWindowMask
+        initWithContentRect:NSMakeRect(0, 0, WIDTH, HEIGHT)
+                  styleMask:NSTitledWindowMask | NSClosableWindowMask |
+                            NSMiniaturizableWindowMask | NSResizableWindowMask
                     backing:NSBackingStoreBuffered
-                      defer:NO];
-    [window setTitle:[[NSString alloc] initWithUTF8String:argv[0]]];
-    [window center];
+                      defer:YES];
 
     BufferView *view = [[BufferView alloc] initWithFrame:[window frame]];
     [window setContentView:view];
 
+    [window setTitle:[NSString stringWithUTF8String:argv[0]]];
+    [window center];
     [window makeKeyAndOrderFront:nil];
     [NSApp activateIgnoringOtherApps:YES];
     [NSApp run];
