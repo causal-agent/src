@@ -264,6 +264,13 @@ extern void draw(uint32_t *buf, size_t xres, size_t yres) {
     }
 }
 
+static void samplePalette(void) {
+    size_t temp = scale;
+    scale = 1;
+    draw(palette, 256, 1);
+    scale = temp;
+}
+
 extern void input(char in) {
     size_t pixel = (bits + 7) / 8;
     size_t row = width * bits / 8;
@@ -271,6 +278,7 @@ extern void input(char in) {
         case 'q': printOpts(); exit(EX_OK);
         break; case '[': if (!space--) space = COLOR__MAX - 1;
         break; case ']': if (++space == COLOR__MAX) space = 0;
+        break; case 'p': samplePalette();
         break; case '{': if (bits > 16) bits -= 8; else bits = (bits + 1) / 2;
         break; case '}': if (bits < 16) bits *= 2; else if (bits < 32) bits += 8;
         break; case 'e': endian ^= true;
