@@ -61,19 +61,21 @@ static uint32_t buf[WIDTH * HEIGHT];
 
 - (void) keyDown: (NSEvent *) event {
     char in;
-    [
+    BOOL converted = [
         [event characters]
         getBytes: &in
         maxLength: 1
         usedLength: NULL
         encoding: NSASCIIStringEncoding
-        options: NSStringEncodingConversionAllowLossy
+        options: 0
         range: NSMakeRange(0, 1)
         remainingRange: NULL
     ];
-    input(in);
-    draw(buf, WIDTH, HEIGHT);
-    [self setNeedsDisplay: YES];
+    if (converted) {
+        input(in);
+        draw(buf, WIDTH, HEIGHT);
+        [self setNeedsDisplay: YES];
+    }
 }
 @end
 
@@ -90,25 +92,43 @@ int main(int argc, char *argv[]) {
     int error = init(argc, argv);
     if (error) return error;
 
-    draw(buf, WIDTH, HEIGHT);
-
     [NSApplication sharedApplication];
     [NSApp setActivationPolicy: NSApplicationActivationPolicyRegular];
     [NSApp setDelegate: [Delegate new]];
 
+    NSString *name = [[NSProcessInfo processInfo] processName];
+    NSMenu *menu = [NSMenu new];
+    NSMenuItem *quit = [
+        [NSMenuItem alloc]
+        initWithTitle: [@"Quit " stringByAppendingString: name]
+        action: @selector(terminate:)
+        keyEquivalent: @"q"
+    ];
+    [menu addItem: quit];
+    NSMenuItem *menuItem = [NSMenuItem new];
+    [menuItem setSubmenu: menu];
+    [NSApp setMainMenu: [NSMenu new]];
+    [[NSApp mainMenu] addItem: menuItem];
+
+    NSUInteger style = NSTitledWindowMask
+        | NSClosableWindowMask
+        | NSMiniaturizableWindowMask
+        | NSResizableWindowMask;
     NSWindow *window = [
         [NSWindow alloc]
         initWithContentRect: NSMakeRect(0, 0, WIDTH, HEIGHT)
-        styleMask: NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask
+        styleMask: style
         backing: NSBackingStoreBuffered
         defer: YES
     ];
+    [window setTitle: name];
+    [window center];
 
     BufferView *view = [[BufferView alloc] initWithFrame: [window frame]];
     [window setContentView: view];
 
-    [window setTitle: [NSString stringWithUTF8String: argv[0]]];
-    [window center];
+    draw(buf, WIDTH, HEIGHT);
+
     [window makeKeyAndOrderFront: nil];
     [NSApp activateIgnoringOtherApps: YES];
     [NSApp run];
