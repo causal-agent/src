@@ -28,52 +28,41 @@ extern void input(char in);
 static size_t size = 4 * WIDTH * HEIGHT;
 static uint32_t buf[WIDTH * HEIGHT];
 
-@interface BufferView : NSView { }
+@interface BufferView : NSView {
+}
 @end
 
 @implementation BufferView
-- (void) drawRect: (NSRect) dirtyRect {
+- (void)drawRect:(NSRect)dirtyRect {
     CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
     CGColorSpaceRef rgb = CGColorSpaceCreateDeviceRGB();
     CGDataProviderRef data = CGDataProviderCreateWithData(NULL, buf, size, NULL);
-    CGImageRef image = CGImageCreate(
-        WIDTH,
-        HEIGHT,
-        8,
-        32,
-        WIDTH * 4,
-        rgb,
+    CGImageRef image =
+        CGImageCreate(WIDTH, HEIGHT, 8, 32, WIDTH * 4, rgb,
         kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
-        data,
-        NULL,
-        false,
-        kCGRenderingIntentDefault
-    );
+        data, NULL, false, kCGRenderingIntentDefault);
     CGContextDrawImage(ctx, CGRectMake(0, 0, WIDTH, HEIGHT), image);
     CGImageRelease(image);
     CGDataProviderRelease(data);
     CGColorSpaceRelease(rgb);
 }
 
-- (BOOL) acceptsFirstResponder {
+- (BOOL)acceptsFirstResponder {
     return YES;
 }
 
-- (void) keyDown: (NSEvent *) event {
+- (void)keyDown:(NSEvent *)event {
     char in;
-    [
-        [event characters]
-        getBytes: &in
-        maxLength: 1
-        usedLength: NULL
-        encoding: NSASCIIStringEncoding
-        options: NSStringEncodingConversionAllowLossy
-        range: NSMakeRange(0, 1)
-        remainingRange: NULL
-    ];
+    [[event characters] getBytes:&in
+                       maxLength:1
+                      usedLength:NULL
+                        encoding:NSASCIIStringEncoding
+                         options:NSStringEncodingConversionAllowLossy
+                           range:NSMakeRange(0, 1)
+                  remainingRange:NULL];
     input(in);
     draw(buf, WIDTH, HEIGHT);
-    [self setNeedsDisplay: YES];
+    [self setNeedsDisplay:YES];
 }
 @end
 
@@ -81,25 +70,23 @@ int main(int argc, char *argv[]) {
     int error = init(argc, argv);
     if (error) return error;
 
-    [NSApplication sharedApplication];
-    [NSApp setActivationPolicy: NSApplicationActivationPolicyRegular];
-
-    NSWindow *window = [
-        [NSWindow alloc]
-        initWithContentRect: NSMakeRect(0, 0, 640, 480)
-        styleMask: NSTitledWindowMask | NSClosableWindowMask
-        backing: NSBackingStoreBuffered
-        defer: NO
-    ];
-    [window setTitle: [[NSString alloc] initWithUTF8String: argv[0]]];
-    [window center];
-
-    BufferView *view = [[BufferView alloc] initWithFrame: [window frame]];
-    [window setContentView: view];
-
     draw(buf, WIDTH, HEIGHT);
 
-    [window makeKeyAndOrderFront: nil];
-    [NSApp activateIgnoringOtherApps: YES];
+    [NSApplication sharedApplication];
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+
+    NSWindow *window = [[NSWindow alloc]
+        initWithContentRect:NSMakeRect(0, 0, 640, 480)
+                  styleMask:NSTitledWindowMask | NSClosableWindowMask
+                    backing:NSBackingStoreBuffered
+                      defer:NO];
+    [window setTitle:[[NSString alloc] initWithUTF8String:argv[0]]];
+    [window center];
+
+    BufferView *view = [[BufferView alloc] initWithFrame:[window frame]];
+    [window setContentView:view];
+
+    [window makeKeyAndOrderFront:nil];
+    [NSApp activateIgnoringOtherApps:YES];
     [NSApp run];
 }
