@@ -38,10 +38,9 @@ static enum {
 static uint8_t bits = 1;
 static bool endian;
 static uint32_t palette[256] = {
-#define P8 0x000000, 0xFF0000, 0x00FF00, 0xFFFF00, 0x0000FF, 0xFF00FF, 0x00FFFF, 0xFFFFFF,
-    P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8
-    P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8 P8
-#undef P8
+#define X(...) __VA_ARGS__, __VA_ARGS__
+    X(X(X(X(X(X(X(0x000000, 0xFFFFFF)))))))
+#undef X
 };
 
 static bool reverse;
@@ -187,6 +186,8 @@ static void drawBits(struct Pos *pos) {
             uint8_t n = get(i) >> (endian ? 8 - bits - s : s) & MASK(bits);
             if (space == COLOR_PALETTE) {
                 put(pos, palette[n]);
+            } else if (space == COLOR_RGB && bits == 4) {
+                put(pos, RGB(SCALE(1, n & 1), SCALE(1, n & 2), SCALE(1, n & 4)));
             } else {
                 put(pos, GRAY(SCALE(bits, n)));
             }
