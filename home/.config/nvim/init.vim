@@ -7,7 +7,7 @@ command! W w
 command! Q q
 autocmd BufNewFile,BufRead *.asm,*.mac setfiletype nasm
 
-set tabstop=8 expandtab shiftwidth=4 shiftround smartindent
+set tabstop=8 expandtab shiftwidth=4 shiftround smartindent cinoptions=l1(sU1m1
 set ignorecase smartcase inccommand=nosplit
 nmap <leader><leader> :nohlsearch<CR>
 set foldmethod=syntax foldlevel=99
