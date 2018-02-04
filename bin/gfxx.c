@@ -142,7 +142,7 @@ struct Pos {
     size_t y;
 };
 
-static void next(struct Pos *pos) {
+static bool next(struct Pos *pos) {
     if (mirror) {
         if (pos->x == pos->left) {
             pos->y++;
@@ -152,6 +152,7 @@ static void next(struct Pos *pos) {
             pos->left += width;
             pos->x = pos->left + width;
             pos->y = 0;
+            if (pos->x > pos->xres) return false;
         }
         pos->x--;
     } else {
@@ -164,8 +165,10 @@ static void next(struct Pos *pos) {
             pos->left += width;
             pos->x = pos->left;
             pos->y = 0;
+            if (pos->x > pos->xres) return false;
         }
     }
+    return true;
 }
 
 static void put(const struct Pos *pos, uint32_t p) {
@@ -191,7 +194,7 @@ static void drawBits(struct Pos *pos) {
             } else {
                 put(pos, GRAY(SCALE(bits, n)));
             }
-            next(pos);
+            if (!next(pos)) return;
         }
     }
 }
@@ -208,7 +211,7 @@ static void draw8(struct Pos *pos) {
             uint32_t b = (endian ? get(i) >> 0 : get(i) >> 6) & MASK(2);
             put(pos, RGB(SCALE(3, r), SCALE(3, g), SCALE(2, b)));
         }
-        next(pos);
+        if (!next(pos)) break;
     }
 }
 
@@ -221,7 +224,7 @@ static void draw16(struct Pos *pos) {
         uint32_t g = n >>  5 & MASK(6);
         uint32_t b = n >>  0 & MASK(5);
         put(pos, RGB(SCALE(5, r), SCALE(6, g), SCALE(5, b)));
-        next(pos);
+        if (!next(pos)) break;
     }
 }
 
@@ -232,7 +235,7 @@ static void draw24(struct Pos *pos) {
         } else {
             put(pos, RGB(get(i + 2), get(i + 1), get(i + 0)));
         }
-        next(pos);
+        if (!next(pos)) break;
     }
 }
 
@@ -243,7 +246,7 @@ static void draw32(struct Pos *pos) {
         } else {
             put(pos, RGB(get(i + 2), get(i + 1), get(i + 0)));
         }
-        next(pos);
+        if (!next(pos)) break;
     }
 }
 
@@ -299,4 +302,5 @@ extern void input(char in) {
         break; case '+': scale++;
         break; case '-': if (scale > 1) scale--;
     }
+    printOpts();
 }
