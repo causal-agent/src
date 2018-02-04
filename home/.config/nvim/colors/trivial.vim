@@ -9,7 +9,7 @@ hi ColorColumn ctermbg=Black
 hi EndOfBuffer ctermfg=DarkGray
 hi VertSplit cterm=NONE ctermbg=NONE ctermfg=DarkGray
 hi LineNr ctermfg=DarkGray
-hi MatchParen ctermbg=NONE ctermfg=White
+hi MatchParen ctermbg=NONE ctermfg=DarkYellow
 hi ModeMsg ctermfg=DarkGray
 hi NonText ctermfg=DarkGray
 hi Search ctermbg=NONE ctermfg=Yellow
