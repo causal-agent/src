@@ -32,37 +32,48 @@ static uint32_t buf[WIDTH * HEIGHT];
 @end
 
 @implementation BufferView
-- (void)drawRect:(NSRect)dirtyRect {
+- (void) drawRect: (NSRect) dirtyRect {
     CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
     CGColorSpaceRef rgb = CGColorSpaceCreateDeviceRGB();
-    CGDataProviderRef data =
-        CGDataProviderCreateWithData(NULL, buf, size, NULL);
-    CGImageRef image =
-        CGImageCreate(WIDTH, HEIGHT, 8, 32, WIDTH * 4, rgb,
-                      kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
-                      data, NULL, false, kCGRenderingIntentDefault);
+    CGDataProviderRef data = CGDataProviderCreateWithData(NULL, buf, size, NULL);
+    CGImageRef image = CGImageCreate(
+        WIDTH,
+        HEIGHT,
+        8,
+        32,
+        WIDTH * 4,
+        rgb,
+        kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
+        data,
+        NULL,
+        false,
+        kCGRenderingIntentDefault
+    );
     CGContextDrawImage(ctx, CGRectMake(0, 0, WIDTH, HEIGHT), image);
     CGImageRelease(image);
     CGDataProviderRelease(data);
     CGColorSpaceRelease(rgb);
 }
 
-- (BOOL)acceptsFirstResponder {
+- (BOOL) acceptsFirstResponder {
     return YES;
 }
 
-- (void)keyDown:(NSEvent *)event {
+- (void) keyDown: (NSEvent *) event {
     char in;
-    [[event characters] getBytes:&in
-                       maxLength:1
-                      usedLength:NULL
-                        encoding:NSASCIIStringEncoding
-                         options:NSStringEncodingConversionAllowLossy
-                           range:NSMakeRange(0, 1)
-                  remainingRange:NULL];
+    [
+        [event characters]
+        getBytes: &in
+        maxLength: 1
+        usedLength: NULL
+        encoding: NSASCIIStringEncoding
+        options: NSStringEncodingConversionAllowLossy
+        range: NSMakeRange(0, 1)
+        remainingRange: NULL
+    ];
     input(in);
     draw(buf, WIDTH, HEIGHT);
-    [self setNeedsDisplay:YES];
+    [self setNeedsDisplay: YES];
 }
 @end
 
@@ -70,36 +81,35 @@ static uint32_t buf[WIDTH * HEIGHT];
 @end
 
 @implementation Delegate
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:
-    (NSApplication *)sender {
+- (BOOL) applicationShouldTerminateAfterLastWindowClosed: (NSApplication *) sender {
     return YES;
 }
 @end
 
 int main(int argc, char *argv[]) {
     int error = init(argc, argv);
-    if (error)
-        return error;
+    if (error) return error;
 
     draw(buf, WIDTH, HEIGHT);
 
     [NSApplication sharedApplication];
-    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-    [NSApp setDelegate:[Delegate new]];
+    [NSApp setActivationPolicy: NSApplicationActivationPolicyRegular];
+    [NSApp setDelegate: [Delegate new]];
 
-    NSWindow *window = [[NSWindow alloc]
-        initWithContentRect:NSMakeRect(0, 0, WIDTH, HEIGHT)
-                  styleMask:NSTitledWindowMask | NSClosableWindowMask |
-                            NSMiniaturizableWindowMask | NSResizableWindowMask
-                    backing:NSBackingStoreBuffered
-                      defer:YES];
+    NSWindow *window = [
+        [NSWindow alloc]
+        initWithContentRect: NSMakeRect(0, 0, WIDTH, HEIGHT)
+        styleMask: NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask
+        backing: NSBackingStoreBuffered
+        defer: YES
+    ];
 
-    BufferView *view = [[BufferView alloc] initWithFrame:[window frame]];
-    [window setContentView:view];
+    BufferView *view = [[BufferView alloc] initWithFrame: [window frame]];
+    [window setContentView: view];
 
-    [window setTitle:[NSString stringWithUTF8String:argv[0]]];
+    [window setTitle: [NSString stringWithUTF8String: argv[0]]];
     [window center];
-    [window makeKeyAndOrderFront:nil];
-    [NSApp activateIgnoringOtherApps:YES];
+    [window makeKeyAndOrderFront: nil];
+    [NSApp activateIgnoringOtherApps: YES];
     [NSApp run];
 }
