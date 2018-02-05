@@ -29,10 +29,17 @@ extern void input(char in);
 @interface BufferView : NSView {
     size_t bufSize;
     uint32_t *buf;
+    CGColorSpaceRef colorSpace;
+    CGDataProviderRef dataProvider;
 }
 @end
 
 @implementation BufferView
+- (instancetype) initWithFrame: (NSRect) frameRect {
+    colorSpace = CGColorSpaceCreateDeviceRGB();
+    return [super initWithFrame: frameRect];
+}
+
 - (void) draw {
     draw(buf, [self frame].size.width, [self frame].size.height);
     [self setNeedsDisplay: YES];
@@ -45,6 +52,8 @@ extern void input(char in);
         bufSize = newBufSize;
         buf = malloc(bufSize);
         if (!buf) err(EX_OSERR, "malloc(%zu)", bufSize);
+        CGDataProviderRelease(dataProvider);
+        dataProvider = CGDataProviderCreateWithData(NULL, buf, bufSize, NULL);
     }
     [self draw];
 }
@@ -52,25 +61,15 @@ extern void input(char in);
 - (void) drawRect: (NSRect) UNUSED dirtyRect {
     NSSize size = [self frame].size;
     CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
-    CGColorSpaceRef rgb = CGColorSpaceCreateDeviceRGB();
-    CGDataProviderRef data = CGDataProviderCreateWithData(NULL, buf, bufSize, NULL);
     CGImageRef image = CGImageCreate(
-        size.width,
-        size.height,
-        8,
-        32,
-        4 * size.width,
-        rgb,
-        kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
-        data,
-        NULL,
-        false,
-        kCGRenderingIntentDefault
+        size.width, size.height,
+        8, 32, 4 * size.width,
+        colorSpace, kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
+        dataProvider,
+        NULL, false, kCGRenderingIntentDefault
     );
     CGContextDrawImage(ctx, [self frame], image);
     CGImageRelease(image);
-    CGDataProviderRelease(data);
-    CGColorSpaceRelease(rgb);
 }
 
 - (BOOL) acceptsFirstResponder {
