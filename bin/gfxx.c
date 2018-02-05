@@ -182,7 +182,7 @@ static bool nextY(struct Iter *it) {
     }
     it->x = it->left;
     if (mirror) it->x += width - 1;
-    return (it->left < it->xres);
+    return (it->left < it->xres / scale);
 }
 
 static bool next(struct Iter *it) {
