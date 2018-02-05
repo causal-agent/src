@@ -1,21 +1,32 @@
 ANY_BINS = atch dtch hnel pbcopy pbd pbpaste wake xx
 BSD_BINS = jrp klon typo watch
-LIN_BINS = bri fbatt fbclock gfxx
-ALL_BINS = $(ANY_BINS) $(BSD_BINS) $(LIN_BINS)
+MAC_BINS = gfxx-cocoa gfxx
+LIN_BINS = bri fbatt fbclock gfxx-fb gfxx
+ALL_BINS = $(ANY_BINS) $(BSD_BINS) $(MAC_BINS) $(LIN_BINS)
 
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lcurses -ledit -lutil -lz
 
-any: $(ANY_BINS) .gitignore
+any: .gitignore $(ANY_BINS)
 
-bsd: $(ANY_BINS) $(BSD_BINS) .gitignore
+bsd: any $(BSD_BINS)
 
-linux: $(ANY_BINS) $(LIN_BINS) .gitignore
+mac: bsd $(MAC_BINS)
+
+linux: any $(LIN_BINS)
 
 atch: dtch
 	ln -f dtch atch
 
-gfxx: gfxx.o gfb.o
+gfxx-cocoa: gfxx.o gfcocoa.o
+	$(CC) $(LDFLAGS) gfxx.o gfcocoa.o $(LDLIBS) -framework Cocoa -o $@
+
+gfxx-fb: gfxx.o gfb.o
+	$(CC) $(LDFLAGS) gfxx.o gfb.o $(LDLIBS) -o $@
+
+gfxx:
+	[ -f gfxx-cocoa ] && ln -s gfxx-cocoa gfxx || true
+	[ -f gfxx-fb ] && ln -s gfxx-fb gfxx || true
 
 pbcopy pbpaste: pbd
 	ln -f pbd $@
@@ -25,7 +36,7 @@ setuid: bri
 	chmod u+s bri
 
 clean:
-	rm -f $(ALL_BINS)
+	rm -f *.o $(ALL_BINS)
 
 link:
 	ln -s -f $(ALL_BINS:%=$(PWD)/%) ~/.bin
