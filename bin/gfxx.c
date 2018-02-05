@@ -152,7 +152,6 @@ static bool next(struct Pos *pos) {
             pos->left += width;
             pos->x = pos->left + width;
             pos->y = 0;
-            if (pos->x > pos->xres) return false;
         }
         pos->x--;
     } else {
@@ -165,10 +164,9 @@ static bool next(struct Pos *pos) {
             pos->left += width;
             pos->x = pos->left;
             pos->y = 0;
-            if (pos->x > pos->xres) return false;
         }
     }
-    return true;
+    return (pos->left < pos->xres);
 }
 
 static void put(const struct Pos *pos, uint32_t p) {
