@@ -47,4 +47,4 @@ unlink:
 .gitignore: Makefile
 	echo '*.o' $(ALL_BINS) | tr ' ' '\n' > .gitignore
 
-.PHONY: bsd linux any setuid clean link unlink
+.PHONY: any bsd mac linux setuid clean link unlink
