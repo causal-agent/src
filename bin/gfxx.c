@@ -28,7 +28,7 @@
 
 #define RGB(r,g,b) ((uint32_t)(r) << 16 | (uint32_t)(g) << 8 | (uint32_t)(b))
 #define GRAY(n)    RGB(n, n, n)
-#define MASK(b)    ((1 << b) - 1)
+#define MASK(b)    ((1 << (b)) - 1)
 #define SCALE(b,n) ((b) ? (uint8_t)(255 * (uint32_t)(n) / MASK(b)) : 0)
 
 static enum {
@@ -208,7 +208,7 @@ static uint32_t interpolate(uint32_t n) {
         g = (n >>= bits[3]) & MASK(bits[2]);
         r = (n >>= bits[2]) & MASK(bits[1]);
     } else {
-        r = (n >>= bits[0]) & MASK(bits[1]);
+        r = n & MASK(bits[1]);
         g = (n >>= bits[1]) & MASK(bits[2]);
         b = (n >>= bits[2]) & MASK(bits[3]);
     }
