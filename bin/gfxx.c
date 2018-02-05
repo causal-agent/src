@@ -59,7 +59,7 @@ extern int init(int argc, char *argv[]) {
     const char *path = NULL;
 
     int opt;
-    while (0 < (opt = getopt(argc, argv, "c:b:e:E:n:w:fmz:"))) {
+    while (0 < (opt = getopt(argc, argv, "c:b:e:E:n:fmw:z:"))) {
         switch (opt) {
             case 'c': switch (optarg[0]) {
                 case 'p': space = COLOR_PALETTE; break;
@@ -86,9 +86,9 @@ extern int init(int argc, char *argv[]) {
                 bits[3] = optarg[len-1] - '0';
             } break;
             case 'n': offset  = strtoul(optarg, NULL, 0); break;
-            case 'w': width   = strtoul(optarg, NULL, 0); break;
             case 'f': flip   ^= true; break;
             case 'm': mirror ^= true; break;
+            case 'w': width   = strtoul(optarg, NULL, 0); break;
             case 'z': scale   = strtoul(optarg, NULL, 0); break;
             default: return EX_USAGE;
         }
@@ -119,19 +119,24 @@ extern int init(int argc, char *argv[]) {
     return EX_OK;
 }
 
-static void printOpts(void) {
-    printf(
-        "gfxx -c %s -e %c -E %c -b %c%c%c%c -n %#zx -w %zu %s%s-z %zu\n",
+static char options[128];
+
+extern const char *title(void) {
+    snprintf(
+        options,
+        sizeof(options),
+        "gfxx -c %s -e%c -E%c -b %c%c%c%c -n %#zx %s%s-w %zu -z %zu",
         (const char *[COLOR__MAX]){ "palette", "grayscale", "rgb" }[space],
         "lb"[byteOrder],
         "lb"[bitOrder],
         bits[0] + '0', bits[1] + '0', bits[2] + '0', bits[3] + '0',
         offset,
-        width,
         flip ? "-f " : "",
         mirror ? "-m " : "",
+        width,
         scale
     );
+    return options;
 }
 
 struct Iter {
@@ -284,8 +289,8 @@ extern void input(char in) {
     size_t pixel = (BITS_TOTAL + 7) / 8;
     size_t row = width * pixel;
     switch (in) {
-        case 'q': printOpts(); exit(EX_OK);
-        break; case 'o': printOpts();
+        case 'q': title(); printf("%s\n", options); exit(EX_OK);
+        break; case 'o': title(); printf("%s\n", options);
         break; case '[': if (!space--) space = COLOR__MAX - 1;
         break; case ']': if (++space == COLOR__MAX) space = 0;
         break; case '{': if (!preset--) preset = PRESETS_LEN - 1; setPreset();

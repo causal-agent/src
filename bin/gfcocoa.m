@@ -23,6 +23,7 @@
 #define UNUSED __attribute__((unused))
 
 extern int init(int argc, char *argv[]);
+extern const char *title(void);
 extern void draw(uint32_t *buf, size_t xres, size_t yres);
 extern void input(char in);
 
@@ -38,6 +39,10 @@ extern void input(char in);
 - (instancetype) initWithFrame: (NSRect) frameRect {
     colorSpace = CGColorSpaceCreateDeviceRGB();
     return [super initWithFrame: frameRect];
+}
+
+- (void) setWindowTitle {
+    [[self window] setTitle: [NSString stringWithUTF8String: title()]];
 }
 
 - (void) draw {
@@ -90,6 +95,7 @@ extern void input(char in);
     ];
     if (converted) {
         input(in);
+        [self setWindowTitle];
         [self draw];
     }
 }
@@ -138,11 +144,11 @@ int main(int argc, char *argv[]) {
         backing: NSBackingStoreBuffered
         defer: YES
     ];
-    [window setTitle: name];
     [window center];
 
     BufferView *view = [[BufferView alloc] initWithFrame: [window frame]];
     [window setContentView: view];
+    [view setWindowTitle];
 
     [window makeKeyAndOrderFront: nil];
     [NSApp activateIgnoringOtherApps: YES];
