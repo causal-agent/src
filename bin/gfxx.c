@@ -44,8 +44,8 @@ static uint32_t palette[256] = {
 };
 
 static size_t offset;
-
 static size_t width = 16;
+static bool flip;
 static bool mirror;
 static size_t scale = 1;
 
@@ -57,7 +57,7 @@ extern int init(int argc, char *argv[]) {
     const char *palPath = NULL;
 
     int opt;
-    while (0 < (opt = getopt(argc, argv, "c:p:b:ern:mw:z:"))) {
+    while (0 < (opt = getopt(argc, argv, "c:p:b:ern:fmw:z:"))) {
         switch (opt) {
             case 'c': switch (optarg[0]) {
                 case 'g': space = COLOR_GRAYSCALE; break;
@@ -70,6 +70,7 @@ extern int init(int argc, char *argv[]) {
             case 'e': endian  ^= true; break;
             case 'n': offset   = strtoul(optarg, NULL, 0); break;
             case 'w': width    = strtoul(optarg, NULL, 0); break;
+            case 'f': flip    ^= true; break;
             case 'm': mirror  ^= true; break;
             case 'z': scale    = strtoul(optarg, NULL, 0); break;
             default: return EX_USAGE;
@@ -111,18 +112,19 @@ extern int init(int argc, char *argv[]) {
 
 static void printOpts(void) {
     printf(
-        "gfxx -c %c -b %hhu %s-n %#zx -w %zu %s-z %zu\n",
+        "gfxx -c %c -b %hhu %s-n %#zx -w %zu %s%s-z %zu\n",
         "gpr"[space],
         bits,
         endian ? "-e " : "",
         offset,
         width,
+        flip ? "-f " : "",
         mirror ? "-m " : "",
         scale
     );
 }
 
-struct Pos {
+struct Iter {
     uint32_t *buf;
     size_t xres;
     size_t yres;
@@ -131,78 +133,92 @@ struct Pos {
     size_t y;
 };
 
-static bool next(struct Pos *pos) {
+static struct Iter iter(uint32_t *buf, size_t xres, size_t yres) {
+    struct Iter it = { .buf = buf, .xres = xres, .yres = yres };
+    if (mirror) it.x = width - 1;
+    if (flip) it.y = yres / scale - 1;
+    return it;
+}
+
+static bool nextX(struct Iter *it) {
     if (mirror) {
-        if (pos->x == pos->left) {
-            pos->y++;
-            pos->x = pos->left + width;
-        }
-        if (pos->y == pos->yres / scale) {
-            pos->left += width;
-            pos->x = pos->left + width;
-            pos->y = 0;
-        }
-        pos->x--;
+        if (it->x == it->left) return false;
+        it->x--;
     } else {
-        pos->x++;
-        if (pos->x - pos->left == width) {
-            pos->y++;
-            pos->x = pos->left;
-        }
-        if (pos->y == pos->yres / scale) {
-            pos->left += width;
-            pos->x = pos->left;
-            pos->y = 0;
-        }
+        it->x++;
+        if (it->x == it->left + width) return false;
     }
-    return (pos->left < pos->xres);
+    return true;
 }
 
-static void put(const struct Pos *pos, uint32_t p) {
-    size_t scaledX = pos->x * scale;
-    size_t scaledY = pos->y * scale;
+static bool nextY(struct Iter *it) {
+    if (flip) {
+        if (it->y == 0) {
+            it->left += width;
+            it->y = it->yres / scale;
+        }
+        it->y--;
+    } else {
+        it->y++;
+        if (it->y == it->yres / scale) {
+            it->left += width;
+            it->y = 0;
+        }
+    }
+    it->x = it->left;
+    if (mirror) it->x += width - 1;
+    return (it->left < it->xres);
+}
+
+static bool next(struct Iter *it) {
+    return (nextX(it) ? true : nextY(it));
+}
+
+static void put(const struct Iter *it, uint32_t p) {
+    size_t scaledX = it->x * scale;
+    size_t scaledY = it->y * scale;
     for (size_t fillY = scaledY; fillY < scaledY + scale; ++fillY) {
-        if (fillY >= pos->yres) break;
+        if (fillY >= it->yres) break;
         for (size_t fillX = scaledX; fillX < scaledX + scale; ++fillX) {
-            if (fillX >= pos->xres) break;
-            pos->buf[fillY * pos->xres + fillX] = p;
+            if (fillX >= it->xres) break;
+            it->buf[fillY * it->xres + fillX] = p;
         }
     }
 }
 
-static void drawBits(struct Pos *pos) {
+static void drawBits(struct Iter *it) {
     for (size_t i = offset; i < size; ++i) {
         for (int s = 0; s < 8; s += bits) {
             uint8_t n = data[i] >> (endian ? 8 - bits - s : s) & MASK(bits);
             if (space == COLOR_PALETTE) {
-                put(pos, palette[n]);
+                put(it, palette[n]);
             } else if (space == COLOR_RGB && bits == 4) {
-                put(pos, RGB(SCALE(1, n & 1), SCALE(1, n & 2), SCALE(1, n & 4)));
+                put(it, RGB(SCALE(1, n & 1), SCALE(1, n & 2), SCALE(1, n & 4)));
             } else {
-                put(pos, GRAY(SCALE(bits, n)));
+                put(it, GRAY(SCALE(bits, n)));
             }
-            if (!next(pos)) return;
+            if (!next(it)) return;
         }
     }
 }
 
-static void draw8(struct Pos *pos) {
+static void draw8(struct Iter *it) {
     for (size_t i = offset; i < size; ++i) {
         if (space == COLOR_GRAYSCALE) {
-            put(pos, GRAY(data[i]));
+            put(it, GRAY(data[i]));
         } else if (space == COLOR_PALETTE) {
-            put(pos, palette[data[i]]);
+            put(it, palette[data[i]]);
         } else {
             uint32_t r = (endian ? data[i] >> 5 : data[i] >> 0) & MASK(3);
             uint32_t g = (endian ? data[i] >> 2 : data[i] >> 3) & MASK(3);
             uint32_t b = (endian ? data[i] >> 0 : data[i] >> 6) & MASK(2);
-            put(pos, RGB(SCALE(3, r), SCALE(3, g), SCALE(2, b)));
+            put(it, RGB(SCALE(3, r), SCALE(3, g), SCALE(2, b)));
         }
-        if (!next(pos)) break;
+        if (!next(it)) break;
     }
 }
 
-static void draw16(struct Pos *pos) {
+static void draw16(struct Iter *it) {
     for (size_t i = offset; i + 1 < size; i += 2) {
         uint16_t n = (endian)
             ? (uint16_t)data[i+0] << 8 | (uint16_t)data[i+1]
@@ -210,47 +226,42 @@ static void draw16(struct Pos *pos) {
         uint32_t r = n >> 11 & MASK(5);
         uint32_t g = n >>  5 & MASK(6);
         uint32_t b = n >>  0 & MASK(5);
-        put(pos, RGB(SCALE(5, r), SCALE(6, g), SCALE(5, b)));
-        if (!next(pos)) break;
+        put(it, RGB(SCALE(5, r), SCALE(6, g), SCALE(5, b)));
+        if (!next(it)) break;
     }
 }
 
-static void draw24(struct Pos *pos) {
+static void draw24(struct Iter *it) {
     for (size_t i = offset; i + 2 < size; i += 3) {
         if (endian) {
-            put(pos, RGB(data[i + 0], data[i + 1], data[i + 2]));
+            put(it, RGB(data[i + 0], data[i + 1], data[i + 2]));
         } else {
-            put(pos, RGB(data[i + 2], data[i + 1], data[i + 0]));
+            put(it, RGB(data[i + 2], data[i + 1], data[i + 0]));
         }
-        if (!next(pos)) break;
+        if (!next(it)) break;
     }
 }
 
-static void draw32(struct Pos *pos) {
+static void draw32(struct Iter *it) {
     for (size_t i = offset; i + 3 < size; i += 4) {
         if (endian) {
-            put(pos, RGB(data[i + 1], data[i + 2], data[i + 3]));
+            put(it, RGB(data[i + 1], data[i + 2], data[i + 3]));
         } else {
-            put(pos, RGB(data[i + 2], data[i + 1], data[i + 0]));
+            put(it, RGB(data[i + 2], data[i + 1], data[i + 0]));
         }
-        if (!next(pos)) break;
+        if (!next(it)) break;
     }
 }
 
 extern void draw(uint32_t *buf, size_t xres, size_t yres) {
     memset(buf, 0, 4 * xres * yres);
-    struct Pos pos = {
-        .buf = buf,
-        .xres = xres,
-        .yres = yres,
-        .x = (mirror) ? width - 1 : 0
-    };
+    struct Iter it = iter(buf, xres, yres);
     switch (bits) {
-        case 8:  draw8(&pos);  break;
-        case 16: draw16(&pos); break;
-        case 24: draw24(&pos); break;
-        case 32: draw32(&pos); break;
-        default: drawBits(&pos);
+        case 8:  draw8(&it);  break;
+        case 16: draw16(&it); break;
+        case 24: draw24(&it); break;
+        case 32: draw32(&it); break;
+        default: drawBits(&it);
     }
 }
 
@@ -285,6 +296,7 @@ extern void input(char in) {
         break; case ',': if (width > 1) width--;
         break; case '>': width *= 2;
         break; case '<': if (width / 2 >= 1) width /= 2;
+        break; case 'f': flip ^= true;
         break; case 'm': mirror ^= true;
         break; case '+': scale++;
         break; case '-': if (scale > 1) scale--;
