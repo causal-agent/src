@@ -32,7 +32,7 @@
 #define SCALE(b,n) ((b) ? (uint8_t)(255 * (uint32_t)(n) / MASK(b)) : 0)
 
 static enum {
-    COLOR_PALETTE,
+    COLOR_INDEXED,
     COLOR_GRAYSCALE,
     COLOR_RGB,
     COLOR__MAX,
@@ -62,7 +62,7 @@ extern int init(int argc, char *argv[]) {
     while (0 < (opt = getopt(argc, argv, "c:b:e:E:n:fmw:z:"))) {
         switch (opt) {
             case 'c': switch (optarg[0]) {
-                case 'p': space = COLOR_PALETTE; break;
+                case 'i': space = COLOR_INDEXED; break;
                 case 'g': space = COLOR_GRAYSCALE; break;
                 case 'r': space = COLOR_RGB; break;
                 default: return EX_USAGE;
@@ -126,7 +126,7 @@ extern const char *title(void) {
         options,
         sizeof(options),
         "gfxx -c %s -e%c -E%c -b %c%c%c%c -n %#zx %s%s-w %zu -z %zu",
-        (const char *[COLOR__MAX]){ "palette", "grayscale", "rgb" }[space],
+        (const char *[COLOR__MAX]){ "indexed", "grayscale", "rgb" }[space],
         "lb"[byteOrder],
         "lb"[bitOrder],
         bits[0] + '0', bits[1] + '0', bits[2] + '0', bits[3] + '0',
@@ -224,7 +224,7 @@ static void drawBits(struct Iter *it) {
             } else {
                 n = data[i] >> b & MASK(BITS_TOTAL);
             }
-            if (space == COLOR_PALETTE) {
+            if (space == COLOR_INDEXED) {
                 put(it, palette[n]);
             } else if (space == COLOR_GRAYSCALE) {
                 put(it, GRAY(SCALE(BITS_COLOR, n)));
@@ -244,7 +244,7 @@ static void drawBytes(struct Iter *it) {
             n <<= 8;
             n |= (byteOrder == ENDIAN_BIG) ? data[i+b] : data[i+bytes-b-1];
         }
-        if (space == COLOR_PALETTE) {
+        if (space == COLOR_INDEXED) {
             put(it, palette[n & 0xFF]);
         } else if (space == COLOR_GRAYSCALE) {
             put(it, GRAY(SCALE(BITS_COLOR, n & MASK(BITS_COLOR))));
@@ -265,7 +265,13 @@ extern void draw(uint32_t *buf, size_t xres, size_t yres) {
     }
 }
 
-#define PRESETS_LEN (sizeof(PRESETS) / sizeof(PRESETS[0]))
+static void samplePalette(void) {
+    size_t temp = scale;
+    scale = 1;
+    draw(palette, 256, 1);
+    scale = temp;
+}
+
 static const uint8_t PRESETS[][4] = {
     { 0, 0, 1, 0 },
     { 0, 1, 1, 0 },
@@ -277,8 +283,8 @@ static const uint8_t PRESETS[][4] = {
     { 0, 8, 8, 8 },
     { 8, 8, 8, 8 },
 };
+#define PRESETS_LEN (sizeof(PRESETS) / sizeof(PRESETS[0]))
 static uint8_t preset = PRESETS_LEN - 1;
-
 static void setPreset(void) {
     for (int i = 0; i < 4; ++i) {
         bits[i] = PRESETS[preset][i];
@@ -293,6 +299,7 @@ extern void input(char in) {
         break; case 'o': title(); printf("%s\n", options);
         break; case '[': if (!space--) space = COLOR__MAX - 1;
         break; case ']': if (++space == COLOR__MAX) space = 0;
+        break; case 'p': samplePalette();
         break; case '{': if (!preset--) preset = PRESETS_LEN - 1; setPreset();
         break; case '}': if (++preset == PRESETS_LEN) preset = 0; setPreset();
         break; case 'e': byteOrder ^= ENDIAN_BIG;
