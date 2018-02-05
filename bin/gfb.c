@@ -19,6 +19,7 @@
 #include <linux/fb.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sysexits.h>
@@ -75,8 +76,10 @@ int main(int argc, char *argv[]) {
     error = tcsetattr(STDERR_FILENO, TCSADRAIN, &term);
     if (error) err(EX_IOERR, "tcsetattr");
 
+    uint32_t back[info.xres * info.yres];
     for (;;) {
-        draw(buf, info.xres, info.yres);
+        draw(back, info.xres, info.yres);
+        memcpy(buf, back, size);
 
         char in;
         ssize_t len = read(STDERR_FILENO, &in, 1);
