@@ -55,10 +55,11 @@ static size_t size;
 static uint8_t *data;
 
 extern int init(int argc, char *argv[]) {
+    const char *pal = NULL;
     const char *path = NULL;
 
     int opt;
-    while (0 < (opt = getopt(argc, argv, "c:b:e:E:n:fmw:z:"))) {
+    while (0 < (opt = getopt(argc, argv, "c:p:b:e:E:n:fmw:z:"))) {
         switch (opt) {
             case 'c': switch (optarg[0]) {
                 case 'i': space = COLOR_INDEXED; break;
@@ -66,6 +67,7 @@ extern int init(int argc, char *argv[]) {
                 case 'r': space = COLOR_RGB; break;
                 default: return EX_USAGE;
             } break;
+            case 'p': pal = optarg; break;
             case 'e': switch (optarg[0]) {
                 case 'l': byteOrder = ENDIAN_LITTLE; break;
                 case 'b': byteOrder = ENDIAN_BIG; break;
@@ -95,6 +97,15 @@ extern int init(int argc, char *argv[]) {
     if (argc > optind) path = argv[optind];
     if (!width || !scale) return EX_USAGE;
 
+    if (pal) {
+        FILE *file = fopen(pal, "r");
+        if (!file) err(EX_NOINPUT, "%s", pal);
+        fread(palette, 4, 256, file);
+        if (ferror(file)) err(EX_IOERR, "%s", pal);
+        int error = fclose(file);
+        if (error) err(EX_IOERR, "%s", pal);
+    }
+
     if (path) {
         int fd = open(path, O_RDONLY);
         if (fd < 0) err(EX_NOINPUT, "%s", path);
@@ -120,7 +131,7 @@ extern int init(int argc, char *argv[]) {
 
 static char options[128];
 
-extern const char *title(void) {
+static void formatOptions(void) {
     snprintf(
         options,
         sizeof(options),
@@ -135,6 +146,28 @@ extern const char *title(void) {
         width,
         scale
     );
+}
+
+static void formatName(const char *ext) {
+    snprintf(
+        options,
+        sizeof(options),
+        "%c%c%c%c%c%c%c-%08zx-%c%c%02zu-%zu.%s",
+        "igr"[space],
+        "lb"[byteOrder],
+        "lb"[bitOrder],
+        bits[0] + '0', bits[1] + '0', bits[2] + '0', bits[3] + '0',
+        offset,
+        "xf"[flip],
+        "xm"[mirror],
+        width,
+        scale,
+        ext
+    );
+}
+
+extern const char *title(void) {
+    formatOptions();
     return options;
 }
 
@@ -270,11 +303,21 @@ extern void draw(uint32_t *buf, size_t xres, size_t yres) {
     }
 }
 
-static void samplePalette(void) {
+static void palSample(void) {
     size_t temp = scale;
     scale = 1;
     draw(palette, 256, 1);
     scale = temp;
+}
+
+static void palDump(void) {
+    formatName("dat");
+    FILE *file = fopen(options, "w");
+    if (!file) { warn("%s", options); return; }
+    size_t count = fwrite(palette, 4, 256, file);
+    if (count != 256) { warn("%s", options); return; }
+    int error = fclose(file);
+    if (error) { warn("%s", options); return; }
 }
 
 static const uint8_t PRESETS[][4] = {
@@ -300,11 +343,12 @@ extern void input(char in) {
     size_t pixel = (BITS_TOTAL + 7) / 8;
     size_t row = width * pixel;
     switch (in) {
-        case 'q': title(); printf("%s\n", options); exit(EX_OK);
-        break; case 'o': title(); printf("%s\n", options);
+        case 'q': formatOptions(); printf("%s\n", options); exit(EX_OK);
+        break; case 'o': formatOptions(); printf("%s\n", options);
         break; case '[': if (!space--) space = COLOR__MAX - 1;
         break; case ']': if (++space == COLOR__MAX) space = 0;
-        break; case 'p': samplePalette();
+        break; case 'p': palSample();
+        break; case 'P': palDump();
         break; case '{': if (!preset--) preset = PRESETS_LEN - 1; setPreset();
         break; case '}': if (++preset == PRESETS_LEN) preset = 0; setPreset();
         break; case 'e': byteOrder ^= ENDIAN_BIG;
