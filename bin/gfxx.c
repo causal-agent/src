@@ -320,6 +320,12 @@ static void palDump(void) {
     if (error) { warn("%s", options); return; }
 }
 
+static uint8_t bit = 0;
+static void setBit(char in) {
+    bits[bit++] = in - '0';
+    bit &= MASK(2);
+}
+
 static const uint8_t PRESETS[][4] = {
     { 0, 0, 1, 0 },
     { 0, 1, 1, 0 },
@@ -334,6 +340,7 @@ static const uint8_t PRESETS[][4] = {
 #define PRESETS_LEN (sizeof(PRESETS) / sizeof(PRESETS[0]))
 static uint8_t preset = PRESETS_LEN - 1;
 static void setPreset(void) {
+    bit = 0;
     for (int i = 0; i < 4; ++i) {
         bits[i] = PRESETS[preset][i];
     }
@@ -369,5 +376,6 @@ extern void input(char in) {
         break; case 'm': mirror ^= true;
         break; case '+': scale++;
         break; case '-': if (scale > 1) scale--;
+        break; default: if (in >= '0' && in <= '9') setBit(in);
     }
 }
