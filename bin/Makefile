@@ -7,7 +7,7 @@ ALL_BINS = $(ANY_BINS) $(BSD_BINS) $(MAC_BINS) $(LIN_BINS)
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lcurses -ledit -lutil -lz
 
-any: .gitignore $(ANY_BINS)
+any: .gitignore tags $(ANY_BINS)
 
 bsd: any $(BSD_BINS)
 
@@ -45,6 +45,9 @@ unlink:
 	rm -f $(ALL_BINS:%=~/.bin/%)
 
 .gitignore: Makefile
-	echo '*.o' $(ALL_BINS) | tr ' ' '\n' > .gitignore
+	echo tags '*.o' $(ALL_BINS) | tr ' ' '\n' > .gitignore
+
+tags: *.c
+	ctags *.c
 
 .PHONY: any bsd mac linux setuid clean link unlink
