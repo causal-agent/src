@@ -79,12 +79,11 @@ extern int init(int argc, char *argv[]) {
                 default: return EX_USAGE;
             } break;
             case 'b': {
-                size_t len = strlen(optarg);
-                if (len < 3 || len > 4) return EX_USAGE;
-                bits[0] = (len > 3) ? optarg[0] - '0' : 0;
-                bits[1] = optarg[len-3] - '0';
-                bits[2] = optarg[len-2] - '0';
-                bits[3] = optarg[len-1] - '0';
+                if (strlen(optarg) < 4) return EX_USAGE;
+                bits[0] = optarg[0] - '0';
+                bits[1] = optarg[1] - '0';
+                bits[2] = optarg[2] - '0';
+                bits[3] = optarg[3] - '0';
             } break;
             case 'n': offset  = strtoul(optarg, NULL, 0); break;
             case 'f': flip   ^= true; break;
