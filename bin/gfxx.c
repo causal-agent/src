@@ -29,7 +29,6 @@
 #define RGB(r,g,b) ((uint32_t)(r) << 16 | (uint32_t)(g) << 8 | (uint32_t)(b))
 #define GRAY(n)    RGB(n, n, n)
 #define MASK(b)    ((1 << (b)) - 1)
-#define SCALE(b,n) ((b) ? (uint8_t)(255 * (uint32_t)(n) / MASK(b)) : 0)
 
 static enum {
     COLOR_INDEXED,
@@ -201,6 +200,12 @@ static void put(const struct Iter *it, uint32_t p) {
     }
 }
 
+static uint8_t interp(uint8_t b, uint32_t n) {
+    if (b == 8) return n;
+    if (b == 0) return 0;
+    return n * MASK(8) / MASK(b);
+}
+
 static uint32_t interpolate(uint32_t n) {
     uint32_t r, g, b;
     if (bitOrder == ENDIAN_LITTLE) {
@@ -212,7 +217,7 @@ static uint32_t interpolate(uint32_t n) {
         g = (n >>= bits[1]) & MASK(bits[2]);
         b = (n >>= bits[2]) & MASK(bits[3]);
     }
-    return RGB(SCALE(bits[1], r), SCALE(bits[2], g), SCALE(bits[3], b));
+    return RGB(interp(bits[1], r), interp(bits[2], g), interp(bits[3], b));
 }
 
 static void drawBits(struct Iter *it) {
@@ -227,7 +232,7 @@ static void drawBits(struct Iter *it) {
             if (space == COLOR_INDEXED) {
                 put(it, palette[n]);
             } else if (space == COLOR_GRAYSCALE) {
-                put(it, GRAY(SCALE(BITS_COLOR, n)));
+                put(it, GRAY(interp(BITS_COLOR, n & MASK(BITS_COLOR))));
             } else if (space == COLOR_RGB) {
                 put(it, interpolate(n));
             }
@@ -247,7 +252,7 @@ static void drawBytes(struct Iter *it) {
         if (space == COLOR_INDEXED) {
             put(it, palette[n & 0xFF]);
         } else if (space == COLOR_GRAYSCALE) {
-            put(it, GRAY(SCALE(BITS_COLOR, n & MASK(BITS_COLOR))));
+            put(it, GRAY(interp(BITS_COLOR, n & MASK(BITS_COLOR))));
         } else if (space == COLOR_RGB) {
             put(it, interpolate(n));
         }
