@@ -130,12 +130,13 @@ extern int init(int argc, char *argv[]) {
 
 static char options[128];
 
+static const char *SPACE_STR[COLOR__MAX] = { "indexed", "grayscale", "rgb" };
 static void formatOptions(void) {
     snprintf(
         options,
         sizeof(options),
         "gfxx -c %s -e%c -E%c -b %c%c%c%c -n %#zx %s%s-w %zu -z %zu",
-        (const char *[COLOR__MAX]){ "indexed", "grayscale", "rgb" }[space],
+        SPACE_STR[space],
         "lb"[byteOrder],
         "lb"[bitOrder],
         bits[0] + '0', bits[1] + '0', bits[2] + '0', bits[3] + '0',
@@ -147,25 +148,7 @@ static void formatOptions(void) {
     );
 }
 
-static void formatName(const char *ext) {
-    snprintf(
-        options,
-        sizeof(options),
-        "%c%c%c%c%c%c%c-%08zx-%c%c%02zu-%zu.%s",
-        "igr"[space],
-        "lb"[byteOrder],
-        "lb"[bitOrder],
-        bits[0] + '0', bits[1] + '0', bits[2] + '0', bits[3] + '0',
-        offset,
-        "xf"[flip],
-        "xm"[mirror],
-        width,
-        scale,
-        ext
-    );
-}
-
-extern const char *title(void) {
+extern const char *status(void) {
     formatOptions();
     return options;
 }
@@ -302,6 +285,26 @@ extern void draw(uint32_t *buf, size_t xres, size_t yres) {
     }
 }
 
+static char fileName[FILENAME_MAX];
+
+static void formatName(const char *ext) {
+    snprintf(
+        fileName,
+        sizeof(fileName),
+        "%c%c%c%c%c%c%c-%08zx-%c%c%02zu-%zu.%s",
+        "igr"[space],
+        "lb"[byteOrder],
+        "lb"[bitOrder],
+        bits[0] + '0', bits[1] + '0', bits[2] + '0', bits[3] + '0',
+        offset,
+        "xf"[flip],
+        "xm"[mirror],
+        width,
+        scale,
+        ext
+    );
+}
+
 static void palSample(void) {
     size_t temp = scale;
     scale = 1;
@@ -311,12 +314,12 @@ static void palSample(void) {
 
 static void palDump(void) {
     formatName("dat");
-    FILE *file = fopen(options, "w");
-    if (!file) { warn("%s", options); return; }
+    FILE *file = fopen(fileName, "w");
+    if (!file) { warn("%s", fileName); return; }
     size_t count = fwrite(palette, 4, 256, file);
-    if (count != 256) { warn("%s", options); return; }
+    if (count != 256) { warn("%s", fileName); return; }
     int error = fclose(file);
-    if (error) { warn("%s", options); return; }
+    if (error) { warn("%s", fileName); return; }
 }
 
 static uint8_t bit = 0;

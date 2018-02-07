@@ -23,7 +23,7 @@
 #define UNUSED __attribute__((unused))
 
 extern int init(int argc, char *argv[]);
-extern const char *title(void);
+extern const char *status(void);
 extern void draw(uint32_t *buf, size_t xres, size_t yres);
 extern void input(char in);
 
@@ -42,7 +42,7 @@ extern void input(char in);
 }
 
 - (void) setWindowTitle {
-    [[self window] setTitle: [NSString stringWithUTF8String: title()]];
+    [[self window] setTitle: [NSString stringWithUTF8String: status()]];
 }
 
 - (void) draw {
