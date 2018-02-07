@@ -17,6 +17,7 @@
 #include <err.h>
 #include <fcntl.h>
 #include <linux/fb.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,18 +28,9 @@
 #include <unistd.h>
 
 extern int init(int argc, char *argv[]);
+extern const char *status(void);
 extern void draw(uint32_t *buf, size_t xres, size_t yres);
-extern void input(char in);
-
-static uint32_t *buf;
-static struct fb_var_screeninfo info;
-
-static uint32_t saveBg;
-static void restoreBg(void) {
-    for (size_t i = 0; i < info.xres * info.yres; ++i) {
-        buf[i] = saveBg;
-    }
-}
+extern bool input(char in);
 
 static struct termios saveTerm;
 static void restoreTerm(void) {
@@ -57,15 +49,13 @@ int main(int argc, char *argv[]) {
     int fb = open(path, O_RDWR);
     if (fb < 0) err(EX_OSFILE, "%s", path);
 
+    struct fb_var_screeninfo info;
     error = ioctl(fb, FBIOGET_VSCREENINFO, &info);
     if (error) err(EX_IOERR, "%s", path);
 
     size_t size = 4 * info.xres * info.yres;
-    buf = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0);
+    uint32_t *buf = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0);
     if (buf == MAP_FAILED) err(EX_IOERR, "%s", path);
-
-    saveBg = buf[0];
-    atexit(restoreBg);
 
     error = tcgetattr(STDERR_FILENO, &saveTerm);
     if (error) err(EX_IOERR, "tcgetattr");
@@ -75,6 +65,8 @@ int main(int argc, char *argv[]) {
     term.c_lflag &= ~(ICANON | ECHO);
     error = tcsetattr(STDERR_FILENO, TCSADRAIN, &term);
     if (error) err(EX_IOERR, "tcsetattr");
+
+    uint32_t saveBg = buf[0];
 
     uint32_t back[info.xres * info.yres];
     for (;;) {
@@ -86,6 +78,12 @@ int main(int argc, char *argv[]) {
         if (len < 0) err(EX_IOERR, "read");
         if (!len) return EX_DATAERR;
 
-        input(in);
+        if (!input(in)) {
+            for (uint32_t i = 0; i < info.xres * info.yres; ++i) {
+                buf[i] = saveBg;
+            }
+            fprintf(stderr, "%s\n", status());
+            return EX_OK;
+        }
     }
 }

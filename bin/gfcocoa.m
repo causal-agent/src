@@ -16,6 +16,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <err.h>
+#import <stdbool.h>
 #import <stdint.h>
 #import <stdlib.h>
 #import <sysexits.h>
@@ -25,7 +26,7 @@
 extern int init(int argc, char *argv[]);
 extern const char *status(void);
 extern void draw(uint32_t *buf, size_t xres, size_t yres);
-extern void input(char in);
+extern bool input(char in);
 
 @interface BufferView : NSView {
     size_t bufSize;
@@ -94,7 +95,9 @@ extern void input(char in);
         remainingRange: NULL
     ];
     if (converted) {
-        input(in);
+        if (!input(in)) {
+            [NSApp terminate: self];
+        }
         [self setWindowTitle];
         [self draw];
     }

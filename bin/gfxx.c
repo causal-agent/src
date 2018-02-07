@@ -348,11 +348,11 @@ static void setPreset(void) {
     }
 }
 
-extern void input(char in) {
+extern bool input(char in) {
     size_t pixel = (BITS_TOTAL + 7) / 8;
     size_t row = width * pixel;
     switch (in) {
-        case 'q': formatOptions(); printf("%s\n", options); exit(EX_OK);
+        case 'q': return false;
         break; case 'o': formatOptions(); printf("%s\n", options);
         break; case '[': if (!space--) space = COLOR__MAX - 1;
         break; case ']': if (++space == COLOR__MAX) space = 0;
@@ -380,4 +380,5 @@ extern void input(char in) {
         break; case '-': if (scale > 1) scale--;
         break; default: if (in >= '0' && in <= '9') setBit(in);
     }
+    return true;
 }
