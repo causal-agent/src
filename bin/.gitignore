@@ -2,6 +2,7 @@ tags
 *.o
 atch
 dtch
+gfxx
 hnel
 pbcopy
 pbd
@@ -12,11 +13,6 @@ jrp
 klon
 typo
 watch
-gfxx-cocoa
-gfxx
 bri
 fbatt
 fbclock
-gfxx-fb
-gfxx
-gfxx-x11
