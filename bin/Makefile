@@ -29,7 +29,7 @@ setuid: bri
 	chmod u+s bri
 
 clean:
-	rm -f *.o gfx/*.o $(ALL_BINS)
+	rm -f tags *.o gfx/*.o $(ALL_BINS)
 
 link:
 	ln -s -f $(ALL_BINS:%=$(PWD)/%) ~/.bin
@@ -38,9 +38,9 @@ unlink:
 	rm -f $(ALL_BINS:%=~/.bin/%)
 
 .gitignore: Makefile
-	echo tags '*.o' $(ALL_BINS) | tr ' ' '\n' > .gitignore
+	echo '*.o' tags $(ALL_BINS) | tr ' ' '\n' > .gitignore
 
 tags: *.c
-	ctags *.c
+	ctags -w *.c
 
 .PHONY: any bsd linux setuid clean link unlink
