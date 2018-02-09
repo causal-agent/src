@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
         switch (event.type) {
             case KeyPress: {
                 XKeyEvent key = event.xkey;
-                KeySym sym = XLookupKeysym(&key, key.state);
+                KeySym sym = XLookupKeysym(&key, key.state & ShiftMask);
                 if (sym > 0x80) break;
                 if (!input(sym)) return EX_OK;
                 XStoreName(display, window, status());
