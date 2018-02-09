@@ -23,59 +23,72 @@
 
 #include "gfx.h"
 
-static size_t width;
-static size_t height;
+static size_t width = 800;
+static size_t height = 600;
+
+static Display *display;
+static Window window;
+static Atom WM_DELETE_WINDOW;
+static GC windowGc;
+static XImage *image;
 
 static size_t bufSize;
 static uint32_t *buf;
 
-static Display *display;
-static Window window;
-static GC gc;
-static XImage *image;
+static size_t pixmapWidth;
+static size_t pixmapHeight;
 static Pixmap pixmap;
 
-static void resize(size_t newWidth, size_t newHeight) {
-    size_t newSize = 4 * newWidth * newHeight;
+static void createWindow(void) {
+    display = XOpenDisplay(NULL);
+    if (!display) errx(EX_UNAVAILABLE, "XOpenDisplay: %s", XDisplayName(NULL));
+
+    Window root = DefaultRootWindow(display);
+    window = XCreateSimpleWindow(display, root, 0, 0, width, height, 0, 0, 0);
+
+    WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", false);
+    XSetWMProtocols(display, window, &WM_DELETE_WINDOW, 1);
+
+    windowGc = XCreateGC(display, window, 0, NULL);
+
+    image = XCreateImage(display, NULL, 24, ZPixmap, 0, NULL, width, height, 32, 0);
+}
+
+static void resizePixmap(void) {
+    size_t newSize = 4 * width * height;
     if (newSize > bufSize) {
-        free(buf);
-        buf = malloc(newSize);
-        if (!buf) err(EX_OSERR, "malloc(%zu)", newSize);
         bufSize = newSize;
+        free(buf);
+        buf = malloc(bufSize);
+        if (!buf) err(EX_OSERR, "malloc(%zu)", bufSize);
     }
 
     image->data = (char *)buf;
-    image->width = newWidth;
-    image->height = newHeight;
-    image->bytes_per_line = 4 * newWidth;
+    image->width = width;
+    image->height = height;
+    image->bytes_per_line = 4 * width;
 
-    if (pixmap) XFreePixmap(display, pixmap);
-    pixmap = XCreatePixmap(display, window, newWidth, newHeight, 24);
-
-    width = newWidth;
-    height = newHeight;
+    if (width > pixmapWidth || height > pixmapHeight) {
+        pixmapWidth = width;
+        pixmapHeight = height;
+        if (pixmap) XFreePixmap(display, pixmap);
+        pixmap = XCreatePixmap(display, window, pixmapWidth, pixmapHeight, 24);
+    }
 }
 
 static void drawWindow(void) {
     draw(buf, width, height);
-    XPutImage(display, pixmap, gc, image, 0, 0, 0, 0, width, height);
-    XCopyArea(display, pixmap, window, gc, 0, 0, width, height, 0, 0);
+    XPutImage(display, pixmap, windowGc, image, 0, 0, 0, 0, width, height);
+    XCopyArea(display, pixmap, window, windowGc, 0, 0, width, height, 0, 0);
 }
 
 int main(int argc, char *argv[]) {
     int error = init(argc, argv);
     if (error) return error;
 
-    display = XOpenDisplay(NULL);
-    if (!display) errx(EX_UNAVAILABLE, "XOpenDisplay: %s", XDisplayName(NULL));
-
-    Window root = DefaultRootWindow(display);
-    window = XCreateSimpleWindow(display, root, 0, 0, 800, 600, 0, 0, 0);
-    gc = XCreateGC(display, window, 0, NULL);
-    image = XCreateImage(display, NULL, 24, ZPixmap, 0, NULL, 0, 0, 32, 0);
-
-    Atom WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", false);
-    XSetWMProtocols(display, window, &WM_DELETE_WINDOW, 1);
+    createWindow();
+    resizePixmap();
+    drawWindow();
 
     XStoreName(display, window, status());
     XMapWindow(display, window);
@@ -84,26 +97,29 @@ int main(int argc, char *argv[]) {
     XSelectInput(display, window, ExposureMask | StructureNotifyMask | KeyPressMask);
     for (;;) {
         XNextEvent(display, &event);
+
         switch (event.type) {
             case KeyPress: {
                 XKeyEvent key = event.xkey;
                 KeySym sym = XLookupKeysym(&key, key.state);
-                if (sym > 128) break;
+                if (sym > 0x80) break;
                 if (!input(sym)) return EX_OK;
+                XStoreName(display, window, status());
                 drawWindow();
             } break;
 
             case ConfigureNotify: {
                 XConfigureEvent configure = event.xconfigure;
-                resize(configure.width, configure.height);
+                width = configure.width;
+                height = configure.height;
+                resizePixmap();
                 drawWindow();
             } break;
 
             case Expose: {
                 XExposeEvent expose = event.xexpose;
                 XCopyArea(
-                    display,
-                    pixmap, window, gc,
+                    display, pixmap, window, windowGc,
                     expose.x, expose.y,
                     expose.width, expose.height,
                     expose.x, expose.y
@@ -111,10 +127,8 @@ int main(int argc, char *argv[]) {
             } break;
 
             case ClientMessage: {
-                XClientMessageEvent message = event.xclient;
-                if ((Atom)message.data.l[0] == WM_DELETE_WINDOW) {
-                    return EX_OK;
-                }
+                XClientMessageEvent client = event.xclient;
+                if ((Atom)client.data.l[0] == WM_DELETE_WINDOW) return EX_OK;
             } break;
         }
     }
