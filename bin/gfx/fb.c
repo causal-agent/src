@@ -28,10 +28,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-extern int init(int argc, char *argv[]);
-extern const char *status(void);
-extern void draw(uint32_t *buf, size_t xres, size_t yres);
-extern bool input(char in);
+#include "gfx.h"
 
 static struct termios saveTerm;
 static void restoreTerm(void) {

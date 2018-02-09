@@ -21,12 +21,9 @@
 #import <stdlib.h>
 #import <sysexits.h>
 
-#define UNUSED __attribute__((unused))
+#import "gfx.h"
 
-extern int init(int argc, char *argv[]);
-extern const char *status(void);
-extern void draw(uint32_t *buf, size_t xres, size_t yres);
-extern bool input(char in);
+#define UNUSED __attribute__((unused))
 
 @interface BufferView : NSView {
     size_t bufSize;

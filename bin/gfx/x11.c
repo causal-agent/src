@@ -21,10 +21,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-extern int init(int argc, char *argv[]);
-extern const char *status(void);
-extern void draw(uint32_t *buf, size_t width, size_t height);
-extern bool input(char in);
+#include "gfx.h"
 
 static size_t width;
 static size_t height;

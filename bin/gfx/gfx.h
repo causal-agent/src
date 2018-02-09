@@ -14,10 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sysexits.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
 
-#include "gfx.h"
-
-int main() {
-    return EX_CONFIG;
-}
+extern int init(int argc, char *argv[]);
+extern const char *status(void);
+extern void draw(uint32_t *buf, size_t width, size_t height);
+extern bool input(char in);
