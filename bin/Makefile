@@ -6,8 +6,8 @@ GFX = none
 
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lcurses -ledit -lutil -lz
-LDLIBS_cocoa = $(LDLIBS) -framework Cocoa
-LDLIBS_x11 = $(LDLIBS) -lX11
+LDLIBS_cocoa = -framework Cocoa
+LDLIBS_x11 = -lX11
 
 any: .gitignore tags $(ANY_BINS)
 
@@ -19,7 +19,7 @@ atch: dtch
 	ln -f dtch atch
 
 gfxx: gfxx.o gfx/$(GFX).o
-	$(CC) $(LDFLAGS) gfxx.o gfx/$(GFX).o $(LDLIBS_$(GFX)) -o $@
+	$(CC) $(LDFLAGS) gfxx.o gfx/$(GFX).o $(LDLIBS) $(LDLIBS_$(GFX)) -o $@
 
 pbcopy pbpaste: pbd
 	ln -f pbd $@
