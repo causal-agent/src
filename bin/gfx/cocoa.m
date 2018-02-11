@@ -121,13 +121,19 @@ int main(int argc, char *argv[]) {
 
     NSString *name = [[NSProcessInfo processInfo] processName];
     NSMenu *menu = [NSMenu new];
-    NSMenuItem *quit = [
-        [NSMenuItem alloc]
-        initWithTitle: [@"Quit " stringByAppendingString: name]
+    [
+        menu
+        addItemWithTitle: @"Close Window"
+        action: @selector(performClose:)
+        keyEquivalent: @"w"
+    ];
+    [menu addItem: [NSMenuItem separatorItem]];
+    [
+        menu
+        addItemWithTitle: [@"Quit " stringByAppendingString: name]
         action: @selector(terminate:)
         keyEquivalent: @"q"
     ];
-    [menu addItem: quit];
     NSMenuItem *menuItem = [NSMenuItem new];
     [menuItem setSubmenu: menu];
     [NSApp setMainMenu: [NSMenu new]];
