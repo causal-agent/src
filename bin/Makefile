@@ -2,7 +2,7 @@ ANY_BINS = atch dtch gfxx hnel pbcopy pbd pbpaste wake xx
 BSD_BINS = jrp klon typo watch
 LIN_BINS = bri fbatt fbclock
 ALL_BINS = $(ANY_BINS) $(BSD_BINS) $(LIN_BINS)
-GFX = none
+GFX ?= none
 
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -ledit -lncurses -lutil -lz
