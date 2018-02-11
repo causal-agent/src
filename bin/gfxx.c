@@ -36,14 +36,18 @@ static enum {
     COLOR_RGB,
     COLOR__MAX,
 } space = COLOR_RGB;
+static const char *COLOR__STR[COLOR__MAX] = { "indexed", "grayscale", "rgb" };
 static uint32_t palette[256];
+
 static enum {
     ENDIAN_LITTLE,
     ENDIAN_BIG,
 } byteOrder, bitOrder;
+
+enum { PAD, R, G, B };
 static uint8_t bits[4] = { 8, 8, 8, 8 };
-#define BITS_COLOR (bits[1] + bits[2] + bits[3])
-#define BITS_TOTAL (bits[0] + BITS_COLOR)
+#define BITS_COLOR (bits[R] + bits[G] + bits[B])
+#define BITS_TOTAL (bits[PAD] + BITS_COLOR)
 
 static size_t offset;
 static size_t width = 16;
@@ -54,7 +58,7 @@ static size_t scale = 1;
 static size_t size;
 static uint8_t *data;
 
-extern int init(int argc, char *argv[]) {
+int init(int argc, char *argv[]) {
     const char *pal = NULL;
     const char *path = NULL;
 
@@ -80,10 +84,9 @@ extern int init(int argc, char *argv[]) {
             } break;
             case 'b': {
                 if (strlen(optarg) < 4) return EX_USAGE;
-                bits[0] = optarg[0] - '0';
-                bits[1] = optarg[1] - '0';
-                bits[2] = optarg[2] - '0';
-                bits[3] = optarg[3] - '0';
+                for (int i = 0; i < 4; ++i) {
+                    bits[i] = optarg[i] - '0';
+                }
             } break;
             case 'n': offset  = strtoul(optarg, NULL, 0); break;
             case 'f': flip   ^= true; break;
@@ -99,8 +102,10 @@ extern int init(int argc, char *argv[]) {
     if (pal) {
         FILE *file = fopen(pal, "r");
         if (!file) err(EX_NOINPUT, "%s", pal);
+
         fread(palette, 4, 256, file);
         if (ferror(file)) err(EX_IOERR, "%s", pal);
+
         int error = fclose(file);
         if (error) err(EX_IOERR, "%s", pal);
     }
@@ -121,6 +126,7 @@ extern int init(int argc, char *argv[]) {
         size = 1024 * 1024;
         data = malloc(size);
         if (!data) err(EX_OSERR, "malloc(%zu)", size);
+
         size = fread(data, 1, size, stdin);
         if (ferror(stdin)) err(EX_IOERR, "stdin");
     }
@@ -129,17 +135,15 @@ extern int init(int argc, char *argv[]) {
 }
 
 static char options[128];
-
-static const char *SPACE_STR[COLOR__MAX] = { "indexed", "grayscale", "rgb" };
 static void formatOptions(void) {
     snprintf(
         options,
         sizeof(options),
         "gfxx -c %s -e%c -E%c -b %c%c%c%c -n %#zx %s%s-w %zu -z %zu",
-        SPACE_STR[space],
+        COLOR__STR[space],
         "lb"[byteOrder],
         "lb"[bitOrder],
-        bits[0] + '0', bits[1] + '0', bits[2] + '0', bits[3] + '0',
+        bits[PAD] + '0', bits[R] + '0', bits[G] + '0', bits[B] + '0',
         offset,
         flip ? "-f " : "",
         mirror ? "-m " : "",
@@ -148,7 +152,7 @@ static void formatOptions(void) {
     );
 }
 
-extern const char *status(void) {
+const char *status(void) {
     formatOptions();
     return options;
 }
@@ -200,17 +204,17 @@ static bool nextY(struct Iter *it) {
 }
 
 static bool next(struct Iter *it) {
-    return (nextX(it) ? true : nextY(it));
+    return nextX(it) || nextY(it);
 }
 
-static void put(const struct Iter *it, uint32_t p) {
+static void put(const struct Iter *it, uint32_t pixel) {
     size_t scaledX = it->x * scale;
     size_t scaledY = it->y * scale;
     for (size_t fillY = scaledY; fillY < scaledY + scale; ++fillY) {
         if (fillY >= it->bufHeight) break;
         for (size_t fillX = scaledX; fillX < scaledX + scale; ++fillX) {
             if (fillX >= it->bufWidth) break;
-            it->buf[fillY * it->bufWidth + fillX] = p;
+            it->buf[fillY * it->bufWidth + fillX] = pixel;
         }
     }
 }
@@ -221,18 +225,18 @@ static uint8_t interp(uint8_t b, uint32_t n) {
     return n * MASK(8) / MASK(b);
 }
 
-static uint32_t interpolate(uint32_t n) {
+static uint32_t interpolate(uint32_t rgb) {
     uint32_t r, g, b;
     if (bitOrder == ENDIAN_LITTLE) {
-        b = n & MASK(bits[3]);
-        g = (n >>= bits[3]) & MASK(bits[2]);
-        r = (n >>= bits[2]) & MASK(bits[1]);
+        b = rgb & MASK(bits[B]);
+        g = (rgb >>= bits[B]) & MASK(bits[G]);
+        r = (rgb >>= bits[G]) & MASK(bits[R]);
     } else {
-        r = n & MASK(bits[1]);
-        g = (n >>= bits[1]) & MASK(bits[2]);
-        b = (n >>= bits[2]) & MASK(bits[3]);
+        r = rgb & MASK(bits[R]);
+        g = (rgb >>= bits[R]) & MASK(bits[G]);
+        b = (rgb >>= bits[G]) & MASK(bits[B]);
     }
-    return RGB(interp(bits[1], r), interp(bits[2], g), interp(bits[3], b));
+    return RGB(interp(bits[R], r), interp(bits[G], g), interp(bits[B], b));
 }
 
 static void drawBits(struct Iter *it) {
@@ -244,6 +248,7 @@ static void drawBits(struct Iter *it) {
             } else {
                 n = data[i] >> b & MASK(BITS_TOTAL);
             }
+
             if (space == COLOR_INDEXED) {
                 put(it, palette[n]);
             } else if (space == COLOR_GRAYSCALE) {
@@ -251,6 +256,7 @@ static void drawBits(struct Iter *it) {
             } else if (space == COLOR_RGB) {
                 put(it, interpolate(n));
             }
+
             if (!next(it)) return;
         }
     }
@@ -264,6 +270,7 @@ static void drawBytes(struct Iter *it) {
             n <<= 8;
             n |= (byteOrder == ENDIAN_BIG) ? data[i+b] : data[i+bytes-b-1];
         }
+
         if (space == COLOR_INDEXED) {
             put(it, palette[n & 0xFF]);
         } else if (space == COLOR_GRAYSCALE) {
@@ -271,11 +278,12 @@ static void drawBytes(struct Iter *it) {
         } else if (space == COLOR_RGB) {
             put(it, interpolate(n));
         }
+
         if (!next(it)) return;
     }
 }
 
-extern void draw(uint32_t *buf, size_t bufWidth, size_t bufHeight) {
+void draw(uint32_t *buf, size_t bufWidth, size_t bufHeight) {
     memset(buf, 0, 4 * bufWidth * bufHeight);
     struct Iter it = iter(buf, bufWidth, bufHeight);
     if (BITS_TOTAL >= 8) {
@@ -286,7 +294,6 @@ extern void draw(uint32_t *buf, size_t bufWidth, size_t bufHeight) {
 }
 
 static char fileName[FILENAME_MAX];
-
 static void formatName(const char *ext) {
     snprintf(
         fileName,
@@ -295,7 +302,7 @@ static void formatName(const char *ext) {
         "igr"[space],
         "lb"[byteOrder],
         "lb"[bitOrder],
-        bits[0] + '0', bits[1] + '0', bits[2] + '0', bits[3] + '0',
+        bits[PAD] + '0', bits[R] + '0', bits[G] + '0', bits[B] + '0',
         offset,
         "xf"[flip],
         "xm"[mirror],
@@ -315,17 +322,19 @@ static void palSample(void) {
 static void palDump(void) {
     formatName("dat");
     FILE *file = fopen(fileName, "w");
-    if (!file) { warn("%s", fileName); return; }
+    if (!file) err(EX_CANTCREAT, "%s", fileName);
+
     size_t count = fwrite(palette, 4, 256, file);
-    if (count != 256) { warn("%s", fileName); return; }
+    if (count != 256) err(EX_IOERR, "%s", fileName);
+
     int error = fclose(file);
-    if (error) { warn("%s", fileName); return; }
+    if (error) err(EX_IOERR, "%s", fileName);
 }
 
 static uint8_t bit = 0;
 static void setBit(char in) {
     bits[bit++] = in - '0';
-    bit &= MASK(2);
+    bit &= 3;
 }
 
 static const uint8_t PRESETS[][4] = {
@@ -340,15 +349,16 @@ static const uint8_t PRESETS[][4] = {
     { 8, 8, 8, 8 },
 };
 #define PRESETS_LEN (sizeof(PRESETS) / sizeof(PRESETS[0]))
+
 static uint8_t preset = PRESETS_LEN - 1;
 static void setPreset(void) {
-    bit = 0;
     for (int i = 0; i < 4; ++i) {
         bits[i] = PRESETS[preset][i];
     }
+    bit = 0;
 }
 
-extern bool input(char in) {
+bool input(char in) {
     size_t pixel = (BITS_TOTAL + 7) / 8;
     size_t row = width * pixel;
     switch (in) {
@@ -373,7 +383,7 @@ extern bool input(char in) {
         break; case '.': width++;
         break; case ',': if (width > 1) width--;
         break; case '>': width *= 2;
-        break; case '<': if (width / 2 >= 1) width /= 2;
+        break; case '<': if (width > 1) width /= 2;
         break; case 'f': flip ^= true;
         break; case 'm': mirror ^= true;
         break; case '+': scale++;
