@@ -155,17 +155,17 @@ extern const char *status(void) {
 
 struct Iter {
     uint32_t *buf;
-    size_t xres;
-    size_t yres;
+    size_t bufWidth;
+    size_t bufHeight;
     size_t left;
     size_t x;
     size_t y;
 };
 
-static struct Iter iter(uint32_t *buf, size_t xres, size_t yres) {
-    struct Iter it = { .buf = buf, .xres = xres, .yres = yres };
+static struct Iter iter(uint32_t *buf, size_t bufWidth, size_t bufHeight) {
+    struct Iter it = { .buf = buf, .bufWidth = bufWidth, .bufHeight = bufHeight };
     if (mirror) it.x = width - 1;
-    if (flip) it.y = yres / scale - 1;
+    if (flip) it.y = bufHeight / scale - 1;
     return it;
 }
 
@@ -184,19 +184,19 @@ static bool nextY(struct Iter *it) {
     if (flip) {
         if (it->y == 0) {
             it->left += width;
-            it->y = it->yres / scale;
+            it->y = it->bufHeight / scale;
         }
         it->y--;
     } else {
         it->y++;
-        if (it->y == it->yres / scale) {
+        if (it->y == it->bufHeight / scale) {
             it->left += width;
             it->y = 0;
         }
     }
     it->x = it->left;
     if (mirror) it->x += width - 1;
-    return (it->left < it->xres / scale);
+    return (it->left < it->bufWidth / scale);
 }
 
 static bool next(struct Iter *it) {
@@ -207,10 +207,10 @@ static void put(const struct Iter *it, uint32_t p) {
     size_t scaledX = it->x * scale;
     size_t scaledY = it->y * scale;
     for (size_t fillY = scaledY; fillY < scaledY + scale; ++fillY) {
-        if (fillY >= it->yres) break;
+        if (fillY >= it->bufHeight) break;
         for (size_t fillX = scaledX; fillX < scaledX + scale; ++fillX) {
-            if (fillX >= it->xres) break;
-            it->buf[fillY * it->xres + fillX] = p;
+            if (fillX >= it->bufWidth) break;
+            it->buf[fillY * it->bufWidth + fillX] = p;
         }
     }
 }
@@ -275,9 +275,9 @@ static void drawBytes(struct Iter *it) {
     }
 }
 
-extern void draw(uint32_t *buf, size_t xres, size_t yres) {
-    memset(buf, 0, 4 * xres * yres);
-    struct Iter it = iter(buf, xres, yres);
+extern void draw(uint32_t *buf, size_t bufWidth, size_t bufHeight) {
+    memset(buf, 0, 4 * bufWidth * bufHeight);
+    struct Iter it = iter(buf, bufWidth, bufHeight);
     if (BITS_TOTAL >= 8) {
         drawBytes(&it);
     } else {
