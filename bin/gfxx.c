@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <arpa/inet.h>
 #include <err.h>
 #include <fcntl.h>
 #include <stdbool.h>
@@ -25,6 +26,7 @@
 #include <sys/stat.h>
 #include <sysexits.h>
 #include <unistd.h>
+#include <zlib.h>
 
 #define RGB(r,g,b) ((uint32_t)(r) << 16 | (uint32_t)(g) << 8 | (uint32_t)(b))
 #define GRAY(n)    RGB(n, n, n)
@@ -293,11 +295,13 @@ void draw(uint32_t *buf, size_t bufWidth, size_t bufHeight) {
     }
 }
 
-static char fileName[FILENAME_MAX];
+static FILE *outFile;
+
+static char outName[FILENAME_MAX];
 static void formatName(const char *ext) {
     snprintf(
-        fileName,
-        sizeof(fileName),
+        outName,
+        sizeof(outName),
         "%c%c%c%c%c%c%c-%08zx-%c%c%02zu-%zu.%s",
         "igr"[space],
         "lb"[byteOrder],
@@ -312,6 +316,60 @@ static void formatName(const char *ext) {
     );
 }
 
+static uint32_t crc;
+static void pngWrite(const void *data, size_t size) {
+    crc = crc32(crc, data, size);
+    size_t count = fwrite(data, 1, size, outFile);
+    if (count < size) err(EX_IOERR, "%s", outName);
+}
+
+static void pngUint32(uint32_t data) {
+    uint32_t net = htonl(data);
+    pngWrite(&net, 4);
+}
+
+static void pngChunk(const char *type, uint32_t size) {
+    pngUint32(size);
+    crc = crc32(0, Z_NULL, 0);
+    pngWrite(type, 4);
+}
+
+static void pngEncode(uint32_t *src, size_t srcWidth, size_t srcHeight) {
+    size_t scanline = 1 + 3 * srcWidth;
+    uint8_t filt[scanline * srcHeight];
+    for (size_t y = 0; y < srcHeight; ++y) {
+        filt[y * scanline] = 0; // None
+        for (size_t x = 0; x < srcWidth; ++x) {
+            uint32_t srcPixel = src[y * srcWidth + x];
+            uint8_t *filtPixel = &filt[y * scanline + 1 + 3 * x];
+            filtPixel[0] = srcPixel >> 16;
+            filtPixel[1] = srcPixel >> 8;
+            filtPixel[2] = srcPixel;
+        }
+    }
+
+    size_t dataSize = compressBound(sizeof(filt));
+    uint8_t data[dataSize];
+    int error = compress(data, &dataSize, filt, sizeof(filt));
+    if (error != Z_OK) errx(EX_SOFTWARE, "compress: %d", error);
+
+    size_t count = fwrite("\x89PNG\r\n\x1A\n", 1, 8, outFile);
+    if (count < 8) err(EX_IOERR, "%s", outName);
+
+    pngChunk("IHDR", 13);
+    pngUint32(srcWidth);
+    pngUint32(srcHeight);
+    pngWrite("\x08\x02\x00\x00\x00", 5); // 8-bit RGB
+    pngUint32(crc);
+
+    pngChunk("IDAT", dataSize);
+    pngWrite(data, dataSize);
+    pngUint32(crc);
+
+    pngChunk("IEND", 0);
+    pngUint32(crc);
+}
+
 static void palSample(void) {
     size_t temp = scale;
     scale = 1;
@@ -319,16 +377,23 @@ static void palSample(void) {
     scale = temp;
 }
 
-static void palDump(void) {
+static void palDat(void) {
     formatName("dat");
-    FILE *file = fopen(fileName, "w");
-    if (!file) err(EX_CANTCREAT, "%s", fileName);
+    outFile = fopen(outName, "w");
+    if (!outFile) err(EX_CANTCREAT, "%s", outName);
+    size_t count = fwrite(palette, 4, 256, outFile);
+    if (count < 256) err(EX_IOERR, "%s", outName);
+    int error = fclose(outFile);
+    if (error) err(EX_IOERR, "%s", outName);
+}
 
-    size_t count = fwrite(palette, 4, 256, file);
-    if (count != 256) err(EX_IOERR, "%s", fileName);
-
-    int error = fclose(file);
-    if (error) err(EX_IOERR, "%s", fileName);
+static void palPng(void) {
+    formatName("png");
+    outFile = fopen(outName, "w");
+    if (!outFile) err(EX_CANTCREAT, "%s", outName);
+    pngEncode(palette, 16, 16);
+    int error = fclose(outFile);
+    if (error) err(EX_IOERR, "%s", outName);
 }
 
 static uint8_t bit = 0;
@@ -366,8 +431,9 @@ bool input(char in) {
         break; case 'o': formatOptions(); printf("%s\n", options);
         break; case '[': if (!space--) space = COLOR__MAX - 1;
         break; case ']': if (++space == COLOR__MAX) space = 0;
-        break; case 'p': palSample();
-        break; case 'P': palDump();
+        break; case 's': palSample();
+        break; case 'p': palDat();
+        break; case 'P': palPng();
         break; case '{': if (!preset--) preset = PRESETS_LEN - 1; setPreset();
         break; case '}': if (++preset == PRESETS_LEN) preset = 0; setPreset();
         break; case 'e': byteOrder ^= ENDIAN_BIG;
