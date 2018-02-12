@@ -15,7 +15,7 @@ set foldmethod=syntax foldlevel=99
 set title
 set scrolloff=1
 set number colorcolumn=80,100
-set list listchars=tab:»·,trail:·
+set list listchars=tab:»\ ,trail:·
 colorscheme trivial
 
 autocmd TermOpen * setlocal nonumber statusline=%{b:term_title}
