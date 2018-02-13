@@ -364,6 +364,7 @@ void draw(uint32_t *buf, size_t bufWidth, size_t bufHeight) {
         drawBits(&it);
     }
     if (dump) pngEncode(buf, bufWidth, bufHeight);
+    dump = false;
 }
 
 static void palSample(void) {
@@ -408,7 +409,6 @@ static void setPreset(void) {
 bool input(char in) {
     size_t pixel = (BITS_TOTAL + 7) / 8;
     size_t row = width * pixel;
-    dump = false;
     switch (in) {
         case 'q': return false;
         break; case 'x': dump = true;
