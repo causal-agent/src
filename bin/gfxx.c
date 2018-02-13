@@ -285,42 +285,11 @@ static void drawBytes(struct Iter *it) {
     }
 }
 
-void draw(uint32_t *buf, size_t bufWidth, size_t bufHeight) {
-    memset(buf, 0, 4 * bufWidth * bufHeight);
-    struct Iter it = iter(buf, bufWidth, bufHeight);
-    if (BITS_TOTAL >= 8) {
-        drawBytes(&it);
-    } else {
-        drawBits(&it);
-    }
-}
-
-static FILE *outFile;
-
-static char outName[FILENAME_MAX];
-static void formatName(const char *ext) {
-    snprintf(
-        outName,
-        sizeof(outName),
-        "%c%c%c%c%c%c%c-%08zx-%c%c%02zu-%zu.%s",
-        "igr"[space],
-        "lb"[byteOrder],
-        "lb"[bitOrder],
-        bits[PAD] + '0', bits[R] + '0', bits[G] + '0', bits[B] + '0',
-        offset,
-        "xf"[flip],
-        "xm"[mirror],
-        width,
-        scale,
-        ext
-    );
-}
-
 static uint32_t crc;
 static void pngWrite(const void *data, size_t size) {
     crc = crc32(crc, data, size);
-    size_t count = fwrite(data, 1, size, outFile);
-    if (count < size) err(EX_IOERR, "%s", outName);
+    size_t count = fwrite(data, 1, size, stdout);
+    if (count < size) err(EX_IOERR, "stdout");
 }
 
 static void pngUint32(uint32_t data) {
@@ -353,13 +322,27 @@ static void pngEncode(uint32_t *src, size_t srcWidth, size_t srcHeight) {
     int error = compress(data, &dataSize, filt, sizeof(filt));
     if (error != Z_OK) errx(EX_SOFTWARE, "compress: %d", error);
 
-    size_t count = fwrite("\x89PNG\r\n\x1A\n", 1, 8, outFile);
-    if (count < 8) err(EX_IOERR, "%s", outName);
+    const uint8_t SIGNATURE[] = { 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' };
+    const uint8_t HEADER[] = { 8, 2, 0, 0, 0 }; // 8-bit RGB
+    const char SOFTWARE[] = "Software";
 
-    pngChunk("IHDR", 13);
+    size_t count = fwrite(SIGNATURE, sizeof(SIGNATURE), 1, stdout);
+    if (count < 1) err(EX_IOERR, "stdout");
+
+    pngChunk("IHDR", 4 + 4 + sizeof(HEADER));
     pngUint32(srcWidth);
     pngUint32(srcHeight);
-    pngWrite("\x08\x02\x00\x00\x00", 5); // 8-bit RGB
+    pngWrite(HEADER, sizeof(HEADER));
+    pngUint32(crc);
+
+    formatOptions();
+    pngChunk("tEXt", sizeof(SOFTWARE) + strlen(options));
+    pngWrite(SOFTWARE, sizeof(SOFTWARE));
+    pngWrite(options, strlen(options));
+    pngUint32(crc);
+
+    pngChunk("sBIT", 3);
+    pngWrite(&bits[R], 3);
     pngUint32(crc);
 
     pngChunk("IDAT", dataSize);
@@ -370,6 +353,19 @@ static void pngEncode(uint32_t *src, size_t srcWidth, size_t srcHeight) {
     pngUint32(crc);
 }
 
+static bool dump;
+
+void draw(uint32_t *buf, size_t bufWidth, size_t bufHeight) {
+    memset(buf, 0, 4 * bufWidth * bufHeight);
+    struct Iter it = iter(buf, bufWidth, bufHeight);
+    if (BITS_TOTAL >= 8) {
+        drawBytes(&it);
+    } else {
+        drawBits(&it);
+    }
+    if (dump) pngEncode(buf, bufWidth, bufHeight);
+}
+
 static void palSample(void) {
     size_t temp = scale;
     scale = 1;
@@ -377,23 +373,9 @@ static void palSample(void) {
     scale = temp;
 }
 
-static void palDat(void) {
-    formatName("dat");
-    outFile = fopen(outName, "w");
-    if (!outFile) err(EX_CANTCREAT, "%s", outName);
-    size_t count = fwrite(palette, 4, 256, outFile);
-    if (count < 256) err(EX_IOERR, "%s", outName);
-    int error = fclose(outFile);
-    if (error) err(EX_IOERR, "%s", outName);
-}
-
-static void palPng(void) {
-    formatName("png");
-    outFile = fopen(outName, "w");
-    if (!outFile) err(EX_CANTCREAT, "%s", outName);
-    pngEncode(palette, 16, 16);
-    int error = fclose(outFile);
-    if (error) err(EX_IOERR, "%s", outName);
+static void palDump(void) {
+    size_t count = fwrite(palette, 4, 256, stdout);
+    if (count < 256) err(EX_IOERR, "stdout");
 }
 
 static uint8_t bit = 0;
@@ -426,14 +408,15 @@ static void setPreset(void) {
 bool input(char in) {
     size_t pixel = (BITS_TOTAL + 7) / 8;
     size_t row = width * pixel;
+    dump = false;
     switch (in) {
         case 'q': return false;
+        break; case 'x': dump = true;
         break; case 'o': formatOptions(); printf("%s\n", options);
         break; case '[': if (!space--) space = COLOR__MAX - 1;
         break; case ']': if (++space == COLOR__MAX) space = 0;
-        break; case 's': palSample();
-        break; case 'p': palDat();
-        break; case 'P': palPng();
+        break; case 'p': palSample();
+        break; case 'P': palDump();
         break; case '{': if (!preset--) preset = PRESETS_LEN - 1; setPreset();
         break; case '}': if (++preset == PRESETS_LEN) preset = 0; setPreset();
         break; case 'e': byteOrder ^= ENDIAN_BIG;
