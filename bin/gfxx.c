@@ -57,6 +57,8 @@ static bool flip;
 static bool mirror;
 static size_t scale = 1;
 
+static const char *prefix = "gfxx";
+
 static size_t size;
 static uint8_t *data;
 
@@ -65,7 +67,7 @@ int init(int argc, char *argv[]) {
     const char *path = NULL;
 
     int opt;
-    while (0 < (opt = getopt(argc, argv, "c:p:b:e:E:n:fmw:z:"))) {
+    while (0 < (opt = getopt(argc, argv, "c:p:b:e:E:n:fmw:z:o:"))) {
         switch (opt) {
             case 'c': switch (optarg[0]) {
                 case 'i': space = COLOR_INDEXED; break;
@@ -95,6 +97,7 @@ int init(int argc, char *argv[]) {
             case 'm': mirror ^= true; break;
             case 'w': width   = strtoul(optarg, NULL, 0); break;
             case 'z': scale   = strtoul(optarg, NULL, 0); break;
+            case 'o': prefix  = optarg; break;
             default: return EX_USAGE;
         }
     }
@@ -285,25 +288,29 @@ static void drawBytes(struct Iter *it) {
     }
 }
 
+static unsigned counter = 1;
+static char pngPath[FILENAME_MAX];
+static FILE *png;
+
 static uint32_t crc;
 static void pngWrite(const void *data, size_t size) {
     crc = crc32(crc, data, size);
-    size_t count = fwrite(data, 1, size, stdout);
-    if (count < size) err(EX_IOERR, "stdout");
+    size_t count = fwrite(data, 1, size, png);
+    if (count < size) err(EX_IOERR, "%s", pngPath);
 }
-
 static void pngUint32(uint32_t data) {
     uint32_t net = htonl(data);
     pngWrite(&net, 4);
 }
-
 static void pngChunk(const char *type, uint32_t size) {
     pngUint32(size);
     crc = crc32(0, Z_NULL, 0);
     pngWrite(type, 4);
 }
 
-static void pngEncode(uint32_t *src, size_t srcWidth, size_t srcHeight) {
+static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
+    int error;
+
     size_t scanline = 1 + 3 * srcWidth;
     uint8_t filt[scanline * srcHeight];
     for (size_t y = 0; y < srcHeight; ++y) {
@@ -319,15 +326,19 @@ static void pngEncode(uint32_t *src, size_t srcWidth, size_t srcHeight) {
 
     size_t dataSize = compressBound(sizeof(filt));
     uint8_t data[dataSize];
-    int error = compress(data, &dataSize, filt, sizeof(filt));
+    error = compress(data, &dataSize, filt, sizeof(filt));
     if (error != Z_OK) errx(EX_SOFTWARE, "compress: %d", error);
+
+    snprintf(pngPath, sizeof(pngPath), "%s%04u.png", prefix, counter++);
+    png = fopen(pngPath, "wx");
+    if (!png) err(EX_CANTCREAT, "%s", pngPath);
 
     const uint8_t SIGNATURE[] = { 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' };
     const uint8_t HEADER[] = { 8, 2, 0, 0, 0 }; // 8-bit RGB
     const char SOFTWARE[] = "Software";
 
-    size_t count = fwrite(SIGNATURE, sizeof(SIGNATURE), 1, stdout);
-    if (count < 1) err(EX_IOERR, "stdout");
+    size_t count = fwrite(SIGNATURE, sizeof(SIGNATURE), 1, png);
+    if (count < 1) err(EX_IOERR, "%s", pngPath);
 
     pngChunk("IHDR", 4 + 4 + sizeof(HEADER));
     pngUint32(srcWidth);
@@ -351,6 +362,9 @@ static void pngEncode(uint32_t *src, size_t srcWidth, size_t srcHeight) {
 
     pngChunk("IEND", 0);
     pngUint32(crc);
+
+    error = fclose(png);
+    if (error) err(EX_IOERR, "%s", pngPath);
 }
 
 static bool dump;
@@ -363,7 +377,7 @@ void draw(uint32_t *buf, size_t bufWidth, size_t bufHeight) {
     } else {
         drawBits(&it);
     }
-    if (dump) pngEncode(buf, bufWidth, bufHeight);
+    if (dump) pngDump(buf, bufWidth, bufHeight);
     dump = false;
 }
 
