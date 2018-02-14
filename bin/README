@@ -75,12 +75,6 @@ their detection.
     ssh tux.local
     pbpaste
 
-                                  typo
-
-Typing game for curses. BSD-only for arc4random_uniform. Displays random
-words from 10 000 common words in words.txt to be typed. Calculates WPM
-assuming every 5 letters is 1 word.
-
                                   wake
 
 Broadcasts a wake-on-LAN packet to one of my machines.
