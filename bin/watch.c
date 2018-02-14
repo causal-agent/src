@@ -53,11 +53,11 @@ static void exec(char *const argv[]) {
     if (pid < 0) err(EX_OSERR, "wait");
 
     if (WIFEXITED(status)) {
-        warnx("exit %d", WEXITSTATUS(status));
+        warnx("exit %d\n", WEXITSTATUS(status));
     } else if (WIFSIGNALED(status)) {
-        warnx("signal %d", WTERMSIG(status));
+        warnx("signal %d\n", WTERMSIG(status));
     } else {
-        warnx("status %d", status);
+        warnx("status %d\n", status);
     }
 }
 
