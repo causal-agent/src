@@ -362,7 +362,11 @@ static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
     if (error) err(EX_IOERR, "%s", pngPath);
 }
 
-static bool dump;
+static enum {
+    DUMP_NONE,
+    DUMP_ONE,
+    DUMP_ALL,
+} dump;
 
 void draw(uint32_t *buf, size_t bufWidth, size_t bufHeight) {
     memset(buf, 0, 4 * bufWidth * bufHeight);
@@ -373,7 +377,7 @@ void draw(uint32_t *buf, size_t bufWidth, size_t bufHeight) {
         drawBits(&it);
     }
     if (dump) pngDump(buf, bufWidth, bufHeight);
-    dump = false;
+    if (dump == DUMP_ONE) dump = DUMP_NONE;
 }
 
 static void palSample(void) {
@@ -420,7 +424,8 @@ bool input(char in) {
     size_t row = width * pixel;
     switch (in) {
         case 'q': return false;
-        break; case 'x': dump = true;
+        break; case 'x': dump = DUMP_ONE;
+        break; case 'X': dump ^= DUMP_ALL;
         break; case 'o': formatOptions(); printf("%s\n", options);
         break; case '[': if (!space--) space = COLOR__MAX - 1;
         break; case ']': if (++space == COLOR__MAX) space = 0;
