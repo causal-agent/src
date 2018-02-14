@@ -28,9 +28,9 @@
 #include <unistd.h>
 #include <zlib.h>
 
-#define RGB(r,g,b) ((uint32_t)(r) << 16 | (uint32_t)(g) << 8 | (uint32_t)(b))
-#define GRAY(n)    RGB(n, n, n)
-#define MASK(b)    ((1 << (b)) - 1)
+#define RGB(r, g, b) ((uint32_t)(r) << 16 | (uint32_t)(g) << 8 | (uint32_t)(b))
+#define GRAY(n) RGB(n, n, n)
+#define MASK(b) ((1 << (b)) - 1)
 
 static enum {
     COLOR_INDEXED,
@@ -302,11 +302,12 @@ static void pngUint32(uint32_t data) {
     uint32_t net = htonl(data);
     pngWrite(&net, 4);
 }
-static void pngChunk(const char *type, uint32_t size) {
-    pngUint32(size);
-    crc = crc32(0, Z_NULL, 0);
-    pngWrite(type, 4);
-}
+
+#define ONCE(before, after) for (int _once = ((before), 1); _once; (after), --_once)
+#define PNG_CHUNK(type, size) ONCE( \
+    (pngUint32((size)), crc = crc32(0, Z_NULL, 0), pngWrite((type), 4)), \
+    pngUint32(crc) \
+)
 
 static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
     int error;
@@ -337,31 +338,25 @@ static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
     const uint8_t HEADER[] = { 8, 2, 0, 0, 0 }; // 8-bit RGB
     const char SOFTWARE[] = "Software";
 
-    size_t count = fwrite(SIGNATURE, sizeof(SIGNATURE), 1, png);
-    if (count < 1) err(EX_IOERR, "%s", pngPath);
-
-    pngChunk("IHDR", 4 + 4 + sizeof(HEADER));
-    pngUint32(srcWidth);
-    pngUint32(srcHeight);
-    pngWrite(HEADER, sizeof(HEADER));
-    pngUint32(crc);
-
     formatOptions();
-    pngChunk("tEXt", sizeof(SOFTWARE) + strlen(options));
-    pngWrite(SOFTWARE, sizeof(SOFTWARE));
-    pngWrite(options, strlen(options));
-    pngUint32(crc);
 
-    pngChunk("sBIT", 3);
-    pngWrite(&bits[R], 3);
-    pngUint32(crc);
-
-    pngChunk("IDAT", dataSize);
-    pngWrite(data, dataSize);
-    pngUint32(crc);
-
-    pngChunk("IEND", 0);
-    pngUint32(crc);
+    pngWrite(SIGNATURE, sizeof(SIGNATURE));
+    PNG_CHUNK("IHDR", 4 + 4 + sizeof(HEADER)) {
+        pngUint32(srcWidth);
+        pngUint32(srcHeight);
+        pngWrite(HEADER, sizeof(HEADER));
+    }
+    PNG_CHUNK("tEXt", sizeof(SOFTWARE) + strlen(options)) {
+        pngWrite(SOFTWARE, sizeof(SOFTWARE));
+        pngWrite(options, strlen(options));
+    }
+    PNG_CHUNK("sBIT", 3) {
+        pngWrite(&bits[R], 3);
+    }
+    PNG_CHUNK("IDAT", dataSize) {
+        pngWrite(data, dataSize);
+    }
+    PNG_CHUNK("IEND", 0);
 
     error = fclose(png);
     if (error) err(EX_IOERR, "%s", pngPath);
