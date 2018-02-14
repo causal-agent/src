@@ -424,7 +424,7 @@ static void setPreset(void) {
 
 bool input(char in) {
     size_t pixel = (BITS_TOTAL + 7) / 8;
-    size_t row = width * pixel;
+    size_t row = width * BITS_TOTAL / 8;
     switch (in) {
         case 'q': return false;
         break; case 'x': dump = DUMP_ONE;
