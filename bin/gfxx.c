@@ -28,9 +28,11 @@
 #include <unistd.h>
 #include <zlib.h>
 
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MASK(b) ((1 << (b)) - 1)
+
 #define RGB(r, g, b) ((uint32_t)(r) << 16 | (uint32_t)(g) << 8 | (uint32_t)(b))
 #define GRAY(n) RGB(n, n, n)
-#define MASK(b) ((1 << (b)) - 1)
 
 static enum {
     COLOR_INDEXED,
@@ -351,7 +353,8 @@ static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
         pngWrite(options, strlen(options));
     }
     PNG_CHUNK("sBIT", 3) {
-        pngWrite(&bits[R], 3);
+        uint8_t sbit[3] = { MAX(bits[R], 1), MAX(bits[G], 1), MAX(bits[B], 1) };
+        pngWrite(sbit, sizeof(sbit));
     }
     PNG_CHUNK("IDAT", dataSize) {
         pngWrite(data, dataSize);
