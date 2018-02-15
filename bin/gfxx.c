@@ -335,6 +335,7 @@ static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
     snprintf(pngPath, sizeof(pngPath), "%s%04u.png", prefix, counter++);
     png = fopen(pngPath, "wx");
     if (!png) err(EX_CANTCREAT, "%s", pngPath);
+    printf("%s\n", pngPath);
 
     const uint8_t SIGNATURE[] = { 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' };
     const uint8_t HEADER[] = { 8, 2, 0, 0, 0 }; // 8-bit RGB
