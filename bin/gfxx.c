@@ -271,7 +271,7 @@ static void drawBits(struct Iter *it) {
 
 static void drawBytes(struct Iter *it) {
     uint8_t bytes = (BITS_TOTAL + 7) / 8;
-    for (size_t i = offset; i < size; i += bytes) {
+    for (size_t i = offset; i + bytes <= size; i += bytes) {
         uint32_t n = 0;
         for (size_t b = 0; b < bytes; ++b) {
             n <<= 8;
