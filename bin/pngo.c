@@ -16,7 +16,6 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
-#include <ctype.h>
 #include <err.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -46,7 +45,7 @@ static const uint8_t SIGNATURE[8] = {
 static void readSignature(const char *path, FILE *file) {
     uint8_t signature[8];
     readExpect(path, file, signature, 8, "signature");
-    if (memcmp(signature, SIGNATURE, 8)) {
+    if (0 != memcmp(signature, SIGNATURE, 8)) {
         errx(EX_DATAERR, "%s: invalid signature", path);
     }
 }
@@ -56,9 +55,9 @@ struct PACKED Chunk {
     char type[4];
 };
 
-static const char *typeStr(const struct Chunk *chunk) {
+static const char *typeStr(struct Chunk chunk) {
     static char buf[5];
-    memcpy(buf, chunk->type, 4);
+    memcpy(buf, chunk.type, 4);
     return buf;
 }
 
@@ -96,10 +95,25 @@ struct PACKED Header {
     uint8_t interlace;
 };
 
+static uint8_t bytesPerPixel(struct Header header) {
+    assert(header.depth == 8);
+    switch (header.color) {
+        case GRAYSCALE:       return 1;
+        case TRUECOLOR:       return 3;
+        case INDEXED:         return 1;
+        case GRAYSCALE_ALPHA: return 2;
+        case TRUECOLOR_ALPHA: return 4;
+    }
+}
+
+static size_t dataSize(struct Header header) {
+    return (1 + bytesPerPixel(header) * header.width) * header.height;
+}
+
 static struct Header readHeader(const char *path, FILE *file) {
     struct Chunk ihdr = readChunk(path, file);
-    if (memcmp(ihdr.type, "IHDR", 4)) {
-        errx(EX_DATAERR, "%s: expected IHDR, found %s", path, typeStr(&ihdr));
+    if (0 != memcmp(ihdr.type, "IHDR", 4)) {
+        errx(EX_DATAERR, "%s: expected IHDR, found %s", path, typeStr(ihdr));
     }
     if (ihdr.size != sizeof(struct Header)) {
         errx(
@@ -148,45 +162,53 @@ static struct Header readHeader(const char *path, FILE *file) {
     return header;
 }
 
-struct Data {
-    size_t size;
-    uint8_t *ptr;
-};
+static uint8_t *readData(const char *path, FILE *file, struct Header header) {
+    size_t size = dataSize(header);
+    uint8_t *data = malloc(size);
+    if (!data) err(EX_OSERR, "malloc(%zu)", size);
 
-static struct Data readData(const char *path, FILE *file, struct Chunk idat) {
-    uint32_t crc = crc32(CRC_INIT, (Bytef *)idat.type, sizeof(idat.type));
-
-    uint8_t deflate[idat.size];
-    readExpect(path, file, deflate, sizeof(deflate), "image data");
-    readCrc(path, file, crc32(crc, deflate, sizeof(deflate)));
-
-    z_stream stream = { .next_in = deflate, .avail_in = sizeof(deflate) };
+    struct z_stream_s stream = { .next_out = data, .avail_out = size };
     int error = inflateInit(&stream);
     if (error != Z_OK) errx(EX_SOFTWARE, "%s: inflateInit: %s", path, stream.msg);
 
-    // "More typical zlib compression ratios are on the order of 2:1 to 5:1."
-    // <https://www.zlib.net/zlib_tech.html>
-    // FIXME: Compression ratio in PNG is usually much higher.
-    struct Data data = { .size = idat.size * 5 };
-    data.ptr = malloc(data.size);
-    if (!data.ptr) err(EX_OSERR, "malloc(%zu)", data.size);
-
     for (;;) {
-        stream.next_out = data.ptr + stream.total_out;
-        stream.avail_out = data.size - stream.total_out;
+        struct Chunk chunk = readChunk(path, file);
+        if (0 == memcmp(chunk.type, "IEND", 4)) {
+            errx(EX_DATAERR, "%s: expected IDAT chunk, found IEND", path);
+        }
+        if (0 != memcmp(chunk.type, "IDAT", 4)) {
+            if (chunk.type[0] & 0x20) {
+                int error = fseek(file, chunk.size + 4, SEEK_CUR);
+                if (error) err(EX_IOERR, "%s", path);
+                continue;
+            }
+            errx(
+                EX_CONFIG, "%s: unsupported critical chunk %s",
+                path, typeStr(chunk)
+            );
+        }
 
-        int status = inflate(&stream, Z_SYNC_FLUSH);
-        if (status == Z_STREAM_END) break;
-        if (status != Z_OK) errx(EX_DATAERR, "%s: inflate: %s", path, stream.msg);
+        uint32_t crc = crc32(CRC_INIT, (Bytef *)chunk.type, sizeof(chunk.type));
 
-        fprintf(stderr, "realloc %zu -> %zu\n", data.size, data.size * 2); // FIXME
-        data.ptr = realloc(data.ptr, data.size *= 2);
-        if (!data.ptr) err(EX_OSERR, "realloc(%zu)", data.size);
+        uint8_t idat[chunk.size];
+        readExpect(path, file, idat, sizeof(idat), "image data");
+        readCrc(path, file, crc32(crc, idat, sizeof(idat)));
+
+        stream.next_in = idat;
+        stream.avail_in = chunk.size;
+        int error = inflate(&stream, Z_SYNC_FLUSH);
+        if (error == Z_STREAM_END) break;
+        if (error != Z_OK) errx(EX_DATAERR, "%s: inflate: %s", path, stream.msg);
+    }
+    inflateEnd(&stream);
+
+    if (stream.total_out != size) {
+        errx(
+            EX_DATAERR, "%s: expected data size %zu, found %zu",
+            path, size, stream.total_out
+        );
     }
 
-    data.size = stream.total_out;
-    fprintf(stderr, "total_out = %zu\n", data.size); // FIXME
-    fprintf(stderr, "ratio = %zu\n", data.size / idat.size); // FIXME
     return data;
 }
 
@@ -239,22 +261,14 @@ struct Scanline {
     uint8_t *ptr;
 };
 
-static void reconData(const char *path, struct Header header, struct Data data) {
-    uint8_t bytes = 3; // TODO
-
-    size_t size = bytes * header.width * header.height;
-    if (data.size < size) {
-        errx(
-            EX_DATAERR, "%s: expected data size %zu, found %zu",
-            path, size, data.size
-        );
-    }
+static void reconData(const char *path, struct Header header, uint8_t *data) {
+    uint8_t bpp = bytesPerPixel(header);
+    uint32_t stride = 1 + bpp * header.width;
 
     struct Scanline lines[header.height];
-    uint32_t stride = 1 + bytes * header.width;
     for (uint32_t y = 0; y < header.height; ++y) {
-        lines[y].type = &data.ptr[y * stride];
-        lines[y].ptr = &data.ptr[y * stride + 1];
+        lines[y].type = &data[y * stride];
+        lines[y].ptr = &data[y * stride + 1];
         if (*lines[y].type > FILT_PAETH) {
             errx(EX_DATAERR, "%s: invalid filter type %hhu", path, *lines[y].type);
         }
@@ -262,44 +276,42 @@ static void reconData(const char *path, struct Header header, struct Data data) 
 
     for (uint32_t y = 0; y < header.height; ++y) {
         for (uint32_t x = 0; x < header.width; ++x) {
-            for (uint8_t i = 0; i < bytes; ++i) {
-                lines[y].ptr[x * bytes + i] = recon(
+            for (uint8_t i = 0; i < bpp; ++i) {
+                lines[y].ptr[x * bpp + i] = recon(
                     *lines[y].type,
-                    lines[y].ptr[x * bytes + i],
-                    x ? lines[y].ptr[(x - 1) * bytes + i] : 0,
-                    y ? lines[y - 1].ptr[x * bytes + i] : 0,
-                    (x && y) ? lines[y - 1].ptr[(x - 1) * bytes + i] : 0
+                    lines[y].ptr[x * bpp + i],
+                    x ? lines[y].ptr[(x - 1) * bpp + i] : 0,
+                    y ? lines[y - 1].ptr[x * bpp + i] : 0,
+                    (x && y) ? lines[y - 1].ptr[(x - 1) * bpp + i] : 0
                 );
-                *lines[y].type = FILT_NONE;
             }
         }
+        *lines[y].type = FILT_NONE;
     }
 }
 
-static void filterData(struct Header header, struct Data data) {
-    uint8_t bytes = 3; // TODO
+static void filterData(struct Header header, uint8_t *data) {
+    uint8_t bpp = bytesPerPixel(header);
+    uint32_t stride = 1 + bpp * header.width;
 
     struct Scanline lines[header.height];
-    uint32_t stride = 1 + bytes * header.width;
     for (uint32_t y = 0; y < header.height; ++y) {
-        lines[y].type = &data.ptr[y * stride];
-        lines[y].ptr = &data.ptr[y * stride + 1];
+        lines[y].type = &data[y * stride];
+        lines[y].ptr = &data[y * stride + 1];
         assert(*lines[y].type == FILT_NONE);
     }
 
-    for (uint32_t ry = 0; ry < header.height; ++ry) {
-        uint32_t y = header.height - 1 - ry;
-        for (uint32_t rx = 0; rx < header.width; ++rx) {
-            uint32_t x = header.width - 1 - rx;
-            for (uint8_t i = 0; i < bytes; ++i) {
+    for (uint32_t y = header.height - 1; y < header.height; --y) {
+        for (uint32_t x = header.width - 1; x < header.width; --x) {
+            for (uint8_t i = 0; i < bpp; ++i) {
                 // TODO: Filter type heuristic.
                 *lines[y].type = FILT_PAETH;
-                lines[y].ptr[x * bytes + i] = filt(
+                lines[y].ptr[x * bpp + i] = filt(
                     FILT_PAETH,
-                    lines[y].ptr[x * bytes + i],
-                    x ? lines[y].ptr[(x - 1) * bytes + i] : 0,
-                    y ? lines[y - 1].ptr[x * bytes + i] : 0,
-                    (x && y) ? lines[y - 1].ptr[(x - 1) * bytes + i] : 0
+                    lines[y].ptr[x * bpp + i],
+                    x ? lines[y].ptr[(x - 1) * bpp + i] : 0,
+                    y ? lines[y - 1].ptr[x * bpp + i] : 0,
+                    (x && y) ? lines[y - 1].ptr[(x - 1) * bpp + i] : 0
                 );
             }
         }
@@ -335,10 +347,10 @@ static void writeHeader(const char *path, FILE *file, struct Header header) {
     writeCrc(path, file, crc32(crc, (Bytef *)&header, sizeof(header)));
 }
 
-static void writeData(const char *path, FILE *file, struct Data data) {
-    size_t bound = compressBound(data.size);
+static void writeData(const char *path, FILE *file, uint8_t *data, size_t size) {
+    size_t bound = compressBound(size);
     uint8_t deflate[bound];
-    int error = compress2(deflate, &bound, data.ptr, data.size, Z_BEST_COMPRESSION);
+    int error = compress2(deflate, &bound, data, size, Z_BEST_COMPRESSION);
     if (error != Z_OK) errx(EX_SOFTWARE, "%s: compress2: %d", path, error);
 
     struct Chunk idat = { .size = bound, .type = { 'I', 'D', 'A', 'T' } };
@@ -365,39 +377,17 @@ int main(int argc, char *argv[]) {
 
     readSignature(path, file);
     struct Header header = readHeader(path, file);
-    if (header.color != TRUECOLOR) {
-        errx(EX_CONFIG, "%s: unsupported color type %u", path, header.color);
+    if (header.interlace) {
+        errx(
+            EX_CONFIG, "%s: unsupported interlace method %hhu",
+            path, header.interlace
+        );
     }
     if (header.depth != 8) {
         errx(EX_CONFIG, "%s: unsupported bit depth %hhu", path, header.depth);
     }
 
-    struct Data data = { .size = 0, .ptr = NULL };
-    for (;;) {
-        struct Chunk chunk = readChunk(path, file);
-        if (!memcmp(chunk.type, "IDAT", 4)) {
-            if (data.size) {
-                errx(EX_CONFIG, "%s: unsupported multiple IDAT chunks", path);
-            }
-            data = readData(path, file, chunk);
-
-        } else if (!memcmp(chunk.type, "IEND", 4)) {
-            if (!data.size) errx(EX_DATAERR, "%s: missing IDAT chunk", path);
-            int error = fclose(file);
-            if (error) err(EX_IOERR, "%s", path);
-            break;
-
-        } else if (isupper(chunk.type[0])) {
-            errx(
-                EX_CONFIG, "%s: unsupported critical chunk %s",
-                path, typeStr(&chunk)
-            );
-
-        } else {
-            int error = fseek(file, chunk.size + 4, SEEK_CUR);
-            if (error) err(EX_IOERR, "%s", path);
-        }
-    }
+    uint8_t *data = readData(path, file, header);
 
     reconData(path, header, data);
 
@@ -411,7 +401,7 @@ int main(int argc, char *argv[]) {
 
     writeSignature(path, file);
     writeHeader(path, file, header);
-    writeData(path, file, data);
+    writeData(path, file, data, dataSize(header));
     writeEnd(path, file);
 
     int error = fclose(file);
