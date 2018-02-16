@@ -226,7 +226,7 @@ static uint8_t paethPredictor(uint8_t a, uint8_t b, uint8_t c) {
     int32_t pb = labs(p - (int32_t)b);
     int32_t pc = labs(p - (int32_t)c);
     if (pa <= pb && pa <= pc) return a;
-    if (pb < pc) return b;
+    if (pb <= pc) return b;
     return c;
 }
 
