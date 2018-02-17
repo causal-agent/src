@@ -17,6 +17,7 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <err.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -220,100 +221,96 @@ enum PACKED FilterType {
     FILT_PAETH,
 };
 
-static uint8_t paethPredictor(uint8_t a, uint8_t b, uint8_t c) {
-    int32_t p = (int32_t)a + (int32_t)b - (int32_t)c;
-    int32_t pa = labs(p - (int32_t)a);
-    int32_t pb = labs(p - (int32_t)b);
-    int32_t pc = labs(p - (int32_t)c);
-    if (pa <= pb && pa <= pc) return a;
-    if (pb <= pc) return b;
-    return c;
+struct FilterBytes {
+    uint8_t x;
+    uint8_t a;
+    uint8_t b;
+    uint8_t c;
+};
+
+static uint8_t paethPredictor(struct FilterBytes f) {
+    int32_t p = (int32_t)f.a + (int32_t)f.b - (int32_t)f.c;
+    int32_t pa = labs(p - (int32_t)f.a);
+    int32_t pb = labs(p - (int32_t)f.b);
+    int32_t pc = labs(p - (int32_t)f.c);
+    if (pa <= pb && pa <= pc) return f.a;
+    if (pb <= pc) return f.b;
+    return f.c;
 }
 
-static uint8_t recon(
-    enum FilterType type,
-    uint8_t x, uint8_t a, uint8_t b, uint8_t c
-) {
+static uint8_t recon(enum FilterType type, struct FilterBytes f) {
     switch (type) {
-        case FILT_NONE:    return x;
-        case FILT_SUB:     return x + a;
-        case FILT_UP:      return x + b;
-        case FILT_AVERAGE: return x + ((uint32_t)a + (uint32_t)b) / 2;
-        case FILT_PAETH:   return x + paethPredictor(a, b, c);
+        case FILT_NONE:    return f.x;
+        case FILT_SUB:     return f.x + f.a;
+        case FILT_UP:      return f.x + f.b;
+        case FILT_AVERAGE: return f.x + ((uint32_t)f.a + (uint32_t)f.b) / 2;
+        case FILT_PAETH:   return f.x + paethPredictor(f);
     }
 }
 
-static uint8_t filt(
-    enum FilterType type,
-    uint8_t x, uint8_t a, uint8_t b, uint8_t c
-) {
+static uint8_t filt(enum FilterType type, struct FilterBytes f) {
     switch (type) {
-        case FILT_NONE:    return x;
-        case FILT_SUB:     return x - a;
-        case FILT_UP:      return x - b;
-        case FILT_AVERAGE: return x - ((uint32_t)a + (uint32_t)b) / 2;
-        case FILT_PAETH:   return x - paethPredictor(a, b, c);
+        case FILT_NONE:    return f.x;
+        case FILT_SUB:     return f.x - f.a;
+        case FILT_UP:      return f.x - f.b;
+        case FILT_AVERAGE: return f.x - ((uint32_t)f.a + (uint32_t)f.b) / 2;
+        case FILT_PAETH:   return f.x - paethPredictor(f);
     }
 }
 
 struct Scanline {
     enum FilterType *type;
-    uint8_t *ptr;
+    uint8_t *data;
 };
 
-static void reconData(const char *path, struct Header header, uint8_t *data) {
-    uint8_t bpp = bytesPerPixel(header);
-    uint32_t stride = 1 + bpp * header.width;
+static struct Scanline *scanlines(
+    const char *path, struct Header header, uint8_t *data
+) {
+    struct Scanline *lines = malloc(header.height * sizeof(*lines));
+    if (!lines) err(EX_OSERR, "malloc(%zu)", header.height * sizeof(*lines));
 
-    struct Scanline lines[header.height];
+    uint32_t stride = 1 + bytesPerPixel(header) * header.width;
     for (uint32_t y = 0; y < header.height; ++y) {
         lines[y].type = &data[y * stride];
-        lines[y].ptr = &data[y * stride + 1];
+        lines[y].data = &data[y * stride + 1];
         if (*lines[y].type > FILT_PAETH) {
             errx(EX_DATAERR, "%s: invalid filter type %hhu", path, *lines[y].type);
         }
     }
 
+    return lines;
+}
+
+static struct FilterBytes filterBytes(
+    const struct Scanline *lines, uint8_t bpp,
+    uint32_t y, uint32_t i
+) {
+    bool a = (i >= bpp), b = (y > 0), c = (a && b);
+    return (struct FilterBytes) {
+        .x = lines[y].data[i],
+        .a = a ? lines[y].data[i - bpp]     : 0,
+        .b = b ? lines[y - 1].data[i]       : 0,
+        .c = c ? lines[y - 1].data[i - bpp] : 0,
+    };
+}
+
+static void reconData(struct Header header, const struct Scanline *lines) {
+    uint8_t bpp = bytesPerPixel(header);
     for (uint32_t y = 0; y < header.height; ++y) {
-        for (uint32_t x = 0; x < header.width; ++x) {
-            for (uint8_t i = 0; i < bpp; ++i) {
-                lines[y].ptr[x * bpp + i] = recon(
-                    *lines[y].type,
-                    lines[y].ptr[x * bpp + i],
-                    x ? lines[y].ptr[(x - 1) * bpp + i] : 0,
-                    y ? lines[y - 1].ptr[x * bpp + i] : 0,
-                    (x && y) ? lines[y - 1].ptr[(x - 1) * bpp + i] : 0
-                );
-            }
+        for (uint32_t i = 0; i < bpp * header.width; ++i) {
+            lines[y].data[i] = recon(*lines[y].type, filterBytes(lines, bpp, y, i));
         }
         *lines[y].type = FILT_NONE;
     }
 }
 
-static void filterData(struct Header header, uint8_t *data) {
+static void filterData(struct Header header, const struct Scanline *lines) {
     uint8_t bpp = bytesPerPixel(header);
-    uint32_t stride = 1 + bpp * header.width;
-
-    struct Scanline lines[header.height];
-    for (uint32_t y = 0; y < header.height; ++y) {
-        lines[y].type = &data[y * stride];
-        lines[y].ptr = &data[y * stride + 1];
-        assert(*lines[y].type == FILT_NONE);
-    }
-
     for (uint32_t y = header.height - 1; y < header.height; --y) {
-        for (uint32_t x = header.width - 1; x < header.width; --x) {
-            for (uint8_t i = 0; i < bpp; ++i) {
-                // TODO: Filter type heuristic.
-                *lines[y].type = FILT_PAETH;
-                lines[y].ptr[x * bpp + i] = filt(
-                    FILT_PAETH,
-                    lines[y].ptr[x * bpp + i],
-                    x ? lines[y].ptr[(x - 1) * bpp + i] : 0,
-                    y ? lines[y - 1].ptr[x * bpp + i] : 0,
-                    (x && y) ? lines[y - 1].ptr[(x - 1) * bpp + i] : 0
-                );
-            }
+        // TODO: Filter type heuristic.
+        *lines[y].type = FILT_PAETH;
+        for (uint32_t i = (bpp * header.width) - 1; i < bpp * header.width; ++i) {
+            lines[y].data[i] = filt(*lines[y].type, filterBytes(lines, bpp, y, i));
         }
     }
 }
@@ -388,12 +385,13 @@ int main(int argc, char *argv[]) {
     }
 
     uint8_t *data = readData(path, file, header);
+    struct Scanline *lines = scanlines(path, header, data);
 
-    reconData(path, header, data);
+    reconData(header, lines);
 
     // TODO: "Optimize".
 
-    filterData(header, data);
+    filterData(header, lines);
 
     // TODO: -o
     path = "stdout";
@@ -406,4 +404,6 @@ int main(int argc, char *argv[]) {
 
     int error = fclose(file);
     if (error) err(EX_IOERR, "%s", path);
+
+    // TODO: Free lines, data.
 }
