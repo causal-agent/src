@@ -309,7 +309,7 @@ static void filterData(struct Header header, const struct Scanline *lines) {
     for (uint32_t y = header.height - 1; y < header.height; --y) {
         // TODO: Filter type heuristic.
         *lines[y].type = FILT_PAETH;
-        for (uint32_t i = (bpp * header.width) - 1; i < bpp * header.width; ++i) {
+        for (uint32_t i = (bpp * header.width) - 1; i < bpp * header.width; --i) {
             lines[y].data[i] = filt(*lines[y].type, filterBytes(lines, bpp, y, i));
         }
     }
