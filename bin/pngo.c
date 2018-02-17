@@ -95,6 +95,7 @@ struct PACKED Header {
     uint8_t filter;
     uint8_t interlace;
 };
+#define ALPHA (0x04)
 
 static size_t lineSize(struct Header header) {
     switch (header.color) {
@@ -371,44 +372,90 @@ static void writeEnd(const char *path, FILE *file) {
     writeCrc(path, file, crc32(CRC_INIT, (Bytef *)iend.type, sizeof(iend.type)));
 }
 
-int main(int argc, char *argv[]) {
-    const char *path = "stdin";
-    FILE *file = stdin;
-    if (argc > 1) {
-        path = argv[1];
-        file = fopen(path, "r");
-        if (!file) err(EX_NOINPUT, "%s", path);
+static void eliminateAlpha(
+    struct Header *header, uint8_t *data, struct Scanline *lines
+) {
+    if (!(header->color & ALPHA)) return;
+
+    size_t pixelSize = lineSize(*header) / header->width;
+    size_t colorSize = (header->color & TRUECOLOR)
+        ? 3 * header->depth / 8
+        : 1 * header->depth / 8;
+    for (uint32_t y = 0; y < header->height; ++y) {
+        for (uint32_t x = 0; x < header->width; ++x) {
+            if (lines[y].data[x * pixelSize + colorSize] != 0xFF) return;
+            if (header->depth == 16) {
+                if (lines[y].data[x * pixelSize + colorSize + 1] != 0xFF) return;
+            }
+        }
     }
 
-    readSignature(path, file);
-    struct Header header = readHeader(path, file);
+    uint8_t *ptr = data;
+    for (uint32_t y = 0; y < header->height; ++y) {
+        uint8_t *type = ptr++;
+        uint8_t *data = ptr;
+        *type = *lines[y].type;
+        for (uint32_t x = 0; x < header->width; ++x) {
+            memcpy(ptr, &lines[y].data[x * pixelSize], colorSize);
+            ptr += colorSize;
+        }
+        lines[y].type = type;
+        lines[y].data = data;
+    }
+
+    header->color &= ~ALPHA;
+}
+
+static void optimize(const char *inPath, const char *outPath) {
+    FILE *input = stdin;
+    if (inPath) {
+        input = fopen(inPath, "r");
+        if (!input) err(EX_NOINPUT, "%s", inPath);
+    } else {
+        inPath = "stdin";
+    }
+
+    readSignature(inPath, input);
+    struct Header header = readHeader(inPath, input);
     if (header.interlace) {
         errx(
             EX_CONFIG, "%s: unsupported interlace method %hhu",
-            path, header.interlace
+            inPath, header.interlace
         );
     }
+    uint8_t *data = readData(inPath, input, header);
 
-    uint8_t *data = readData(path, file, header);
-    struct Scanline *lines = scanlines(path, header, data);
+    int error = fclose(input);
+    if (error) err(EX_IOERR, "%s", inPath);
 
+    struct Scanline *lines = scanlines(inPath, header, data);
     reconData(header, lines);
 
-    // TODO: "Optimize".
-
+    eliminateAlpha(&header, data, lines);
     filterData(header, lines);
 
-    // TODO: -o
-    path = "stdout";
-    file = stdout;
+    FILE *output = stdout;
+    if (outPath) {
+        output = fopen(outPath, "wx");
+        if (!output) err(EX_CANTCREAT, "%s", outPath);
+    } else {
+        outPath = "stdout";
+    }
 
-    writeSignature(path, file);
-    writeHeader(path, file, header);
-    writeData(path, file, data, dataSize(header));
-    writeEnd(path, file);
+    writeSignature(outPath, output);
+    writeHeader(outPath, output, header);
+    writeData(outPath, output, data, dataSize(header));
+    writeEnd(outPath, output);
 
-    int error = fclose(file);
-    if (error) err(EX_IOERR, "%s", path);
+    error = fclose(output);
+    if (error) err(EX_IOERR, "%s", outPath);
 
-    // TODO: Free lines, data.
+    free(lines);
+    free(data);
+}
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) return EX_USAGE;
+    optimize(argv[1], NULL);
+    return EX_OK;
 }
