@@ -96,19 +96,18 @@ struct PACKED Header {
     uint8_t interlace;
 };
 
-static uint8_t bytesPerPixel(struct Header header) {
-    assert(header.depth >= 8);
+static size_t lineSize(struct Header header) {
     switch (header.color) {
-        case GRAYSCALE:       return 1 * header.depth / 8;
-        case TRUECOLOR:       return 3 * header.depth / 8;
-        case INDEXED:         return 1 * header.depth / 8;
-        case GRAYSCALE_ALPHA: return 2 * header.depth / 8;
-        case TRUECOLOR_ALPHA: return 4 * header.depth / 8;
+        case GRAYSCALE:       return (header.width * 1 * header.depth + 7) / 8;
+        case TRUECOLOR:       return (header.width * 3 * header.depth + 7) / 8;
+        case INDEXED:         return (header.width * 1 * header.depth + 7) / 8;
+        case GRAYSCALE_ALPHA: return (header.width * 2 * header.depth + 7) / 8;
+        case TRUECOLOR_ALPHA: return (header.width * 4 * header.depth + 7) / 8;
     }
 }
 
 static size_t dataSize(struct Header header) {
-    return (1 + bytesPerPixel(header) * header.width) * header.height;
+    return (1 + lineSize(header)) * header.height;
 }
 
 static struct Header readHeader(const char *path, FILE *file) {
@@ -270,7 +269,7 @@ static struct Scanline *scanlines(
     struct Scanline *lines = malloc(header.height * sizeof(*lines));
     if (!lines) err(EX_OSERR, "malloc(%zu)", header.height * sizeof(*lines));
 
-    uint32_t stride = 1 + bytesPerPixel(header) * header.width;
+    size_t stride = 1 + lineSize(header);
     for (uint32_t y = 0; y < header.height; ++y) {
         lines[y].type = &data[y * stride];
         lines[y].data = &data[y * stride + 1];
@@ -283,43 +282,44 @@ static struct Scanline *scanlines(
 }
 
 static struct FilterBytes filterBytes(
-    const struct Scanline *lines, uint8_t bpp,
-    uint32_t y, uint32_t i
+    struct Header header, const struct Scanline *lines,
+    uint32_t y, size_t i
 ) {
-    bool a = (i >= bpp), b = (y > 0), c = (a && b);
+    size_t pixelSize = lineSize(header) / header.width;
+    if (!pixelSize) pixelSize = 1;
+    bool a = (i >= pixelSize), b = (y > 0), c = (a && b);
     return (struct FilterBytes) {
         .x = lines[y].data[i],
-        .a = a ? lines[y].data[i - bpp]     : 0,
-        .b = b ? lines[y - 1].data[i]       : 0,
-        .c = c ? lines[y - 1].data[i - bpp] : 0,
+        .a = a ? lines[y].data[i - pixelSize] : 0,
+        .b = b ? lines[y - 1].data[i] : 0,
+        .c = c ? lines[y - 1].data[i - pixelSize] : 0,
     };
 }
 
 static void reconData(struct Header header, const struct Scanline *lines) {
-    uint8_t bpp = bytesPerPixel(header);
     for (uint32_t y = 0; y < header.height; ++y) {
-        for (uint32_t i = 0; i < bpp * header.width; ++i) {
-            lines[y].data[i] = recon(*lines[y].type, filterBytes(lines, bpp, y, i));
+        for (size_t i = 0; i < lineSize(header); ++i) {
+            lines[y].data[i] =
+                recon(*lines[y].type, filterBytes(header, lines, y, i));
         }
         *lines[y].type = FILT_NONE;
     }
 }
 
 static void filterData(struct Header header, const struct Scanline *lines) {
-    uint8_t bpp = bytesPerPixel(header);
     for (uint32_t y = header.height - 1; y < header.height; --y) {
-        uint8_t filter[FILT__COUNT][bpp * header.width];
+        uint8_t filter[FILT__COUNT][lineSize(header)];
         uint32_t heuristic[FILT__COUNT] = { 0 };
         enum FilterType minType = FILT_NONE;
         for (enum FilterType type = FILT_NONE; type < FILT__COUNT; ++type) {
-            for (uint32_t i = 0; i < bpp * header.width; ++i) {
-                filter[type][i] = filt(type, filterBytes(lines, bpp, y, i));
+            for (uint32_t i = 0; i < lineSize(header); ++i) {
+                filter[type][i] = filt(type, filterBytes(header, lines, y, i));
                 heuristic[type] += abs((int8_t)filter[type][i]);
             }
             if (heuristic[type] < heuristic[minType]) minType = type;
         }
         *lines[y].type = minType;
-        memcpy(lines[y].data, filter[minType], bpp * header.width);
+        memcpy(lines[y].data, filter[minType], lineSize(header));
     }
 }
 
@@ -387,9 +387,6 @@ int main(int argc, char *argv[]) {
             EX_CONFIG, "%s: unsupported interlace method %hhu",
             path, header.interlace
         );
-    }
-    if (header.depth < 8) {
-        errx(EX_CONFIG, "%s: unsupported bit depth %hhu", path, header.depth);
     }
 
     uint8_t *data = readData(path, file, header);
