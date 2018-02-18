@@ -26,6 +26,7 @@
 #include <zlib.h>
 
 #define PACKED __attribute__((packed))
+#define BYTE_PAIR(a, b) ((uint16_t)(a) << 8 | (uint16_t)(b))
 
 #define CRC_INIT (crc32(0, Z_NULL, 0))
 
@@ -72,7 +73,8 @@ static struct Chunk readChunk(const char *path, FILE *file) {
 static void readCrc(const char *path, FILE *file, uint32_t expected) {
     uint32_t found;
     readExpect(path, file, &found, sizeof(found), "CRC32");
-    if (ntohl(found) != expected) {
+    found = ntohl(found);
+    if (found != expected) {
         errx(
             EX_DATAERR, "%s: expected CRC32 %08x, found %08x",
             path, expected, found
@@ -80,22 +82,24 @@ static void readCrc(const char *path, FILE *file, uint32_t expected) {
     }
 }
 
+enum PACKED Color {
+    GRAYSCALE       = 0,
+    TRUECOLOR       = 2,
+    INDEXED         = 3,
+    GRAYSCALE_ALPHA = 4,
+    TRUECOLOR_ALPHA = 6
+};
+#define ALPHA (0x04)
+
 struct PACKED Header {
     uint32_t width;
     uint32_t height;
     uint8_t depth;
-    enum PACKED {
-        GRAYSCALE       = 0,
-        TRUECOLOR       = 2,
-        INDEXED         = 3,
-        GRAYSCALE_ALPHA = 4,
-        TRUECOLOR_ALPHA = 6,
-    } color;
-    uint8_t compression;
-    uint8_t filter;
-    uint8_t interlace;
+    enum Color color;
+    enum PACKED { DEFLATE } compression;
+    enum PACKED { ADAPTIVE } filter;
+    enum PACKED { PROGRESSIVE, ADAM7 } interlace;
 };
-#define ALPHA (0x04)
 
 static size_t lineSize(struct Header header) {
     switch (header.color) {
@@ -125,7 +129,7 @@ static struct Header readHeader(const char *path, FILE *file) {
     uint32_t crc = crc32(CRC_INIT, (Bytef *)ihdr.type, sizeof(ihdr.type));
 
     struct Header header;
-    readExpect(path, file, &header, sizeof(header), "IHDR data");
+    readExpect(path, file, &header, sizeof(header), "header");
     readCrc(path, file, crc32(crc, (Bytef *)&header, sizeof(header)));
 
     header.width = ntohl(header.width);
@@ -133,30 +137,28 @@ static struct Header readHeader(const char *path, FILE *file) {
 
     if (!header.width) errx(EX_DATAERR, "%s: invalid width 0", path);
     if (!header.height) errx(EX_DATAERR, "%s: invalid height 0", path);
-    if (
-        header.depth != 1
-        && header.depth != 2
-        && header.depth != 4
-        && header.depth != 8
-        && header.depth != 16
-    ) errx(EX_DATAERR, "%s: invalid bit depth %hhu", path, header.depth);
-    if (
-        header.color != GRAYSCALE
-        && header.color != TRUECOLOR
-        && header.color != INDEXED
-        && header.color != GRAYSCALE_ALPHA
-        && header.color != TRUECOLOR_ALPHA
-    ) errx(EX_DATAERR, "%s: invalid color type %hhu", path, header.color);
-    if (header.compression) {
+    switch (BYTE_PAIR(header.color, header.depth)) {
+        case 0x0001: case 0x0002: case 0x0004: case 0x0008: case 0x0010: break;
+        case 0x0208: case 0x0210:                                        break;
+        case 0x0301: case 0x0302: case 0x0304: case 0x0308:              break;
+        case 0x0408: case 0x0410:                                        break;
+        case 0x0608: case 0x0610:                                        break;
+        default:
+            errx(
+                EX_DATAERR, "%s: invalid color type %hhu and bit depth %hhu",
+                path, header.color, header.depth
+            );
+    }
+    if (header.compression != DEFLATE) {
         errx(
             EX_DATAERR, "%s: invalid compression method %hhu",
             path, header.compression
         );
     }
-    if (header.filter) {
+    if (header.filter != ADAPTIVE) {
         errx(EX_DATAERR, "%s: invalid filter method %hhu", path, header.filter);
     }
-    if (header.interlace > 1) {
+    if (header.interlace > ADAM7) {
         errx(EX_DATAERR, "%s: invalid interlace method %hhu", path, header.interlace);
     }
 
@@ -164,18 +166,17 @@ static struct Header readHeader(const char *path, FILE *file) {
 }
 
 static uint8_t *readData(const char *path, FILE *file, struct Header header) {
-    size_t size = dataSize(header);
-    uint8_t *data = malloc(size);
-    if (!data) err(EX_OSERR, "malloc(%zu)", size);
+    uint8_t *data = malloc(dataSize(header));
+    if (!data) err(EX_OSERR, "malloc(%zu)", dataSize(header));
 
-    struct z_stream_s stream = { .next_out = data, .avail_out = size };
+    struct z_stream_s stream = { .next_out = data, .avail_out = dataSize(header) };
     int error = inflateInit(&stream);
     if (error != Z_OK) errx(EX_SOFTWARE, "%s: inflateInit: %s", path, stream.msg);
 
     for (;;) {
         struct Chunk chunk = readChunk(path, file);
         if (0 == memcmp(chunk.type, "IEND", 4)) {
-            errx(EX_DATAERR, "%s: expected IDAT chunk, found IEND", path);
+            errx(EX_DATAERR, "%s: missing IDAT chunk", path);
         }
         if (0 != memcmp(chunk.type, "IDAT", 4)) {
             if (chunk.type[0] & 0x20) {
@@ -203,33 +204,33 @@ static uint8_t *readData(const char *path, FILE *file, struct Header header) {
     }
     inflateEnd(&stream);
 
-    if (stream.total_out != size) {
+    if (stream.total_out != dataSize(header)) {
         errx(
             EX_DATAERR, "%s: expected data size %zu, found %zu",
-            path, size, stream.total_out
+            path, dataSize(header), stream.total_out
         );
     }
 
     return data;
 }
 
-enum PACKED FilterType {
-    FILT_NONE,
-    FILT_SUB,
-    FILT_UP,
-    FILT_AVERAGE,
-    FILT_PAETH,
+enum PACKED Filter {
+    NONE,
+    SUB,
+    UP,
+    AVERAGE,
+    PAETH,
 };
-#define FILT__COUNT (FILT_PAETH + 1)
+#define FILTER_COUNT (PAETH + 1)
 
-struct FilterBytes {
+struct Bytes {
     uint8_t x;
     uint8_t a;
     uint8_t b;
     uint8_t c;
 };
 
-static uint8_t paethPredictor(struct FilterBytes f) {
+static uint8_t paethPredictor(struct Bytes f) {
     int32_t p = (int32_t)f.a + (int32_t)f.b - (int32_t)f.c;
     int32_t pa = abs(p - (int32_t)f.a);
     int32_t pb = abs(p - (int32_t)f.b);
@@ -239,42 +240,42 @@ static uint8_t paethPredictor(struct FilterBytes f) {
     return f.c;
 }
 
-static uint8_t recon(enum FilterType type, struct FilterBytes f) {
+static uint8_t recon(enum Filter type, struct Bytes f) {
     switch (type) {
-        case FILT_NONE:    return f.x;
-        case FILT_SUB:     return f.x + f.a;
-        case FILT_UP:      return f.x + f.b;
-        case FILT_AVERAGE: return f.x + ((uint32_t)f.a + (uint32_t)f.b) / 2;
-        case FILT_PAETH:   return f.x + paethPredictor(f);
+        case NONE:    return f.x;
+        case SUB:     return f.x + f.a;
+        case UP:      return f.x + f.b;
+        case AVERAGE: return f.x + ((uint32_t)f.a + (uint32_t)f.b) / 2;
+        case PAETH:   return f.x + paethPredictor(f);
     }
 }
 
-static uint8_t filt(enum FilterType type, struct FilterBytes f) {
+static uint8_t filt(enum Filter type, struct Bytes f) {
     switch (type) {
-        case FILT_NONE:    return f.x;
-        case FILT_SUB:     return f.x - f.a;
-        case FILT_UP:      return f.x - f.b;
-        case FILT_AVERAGE: return f.x - ((uint32_t)f.a + (uint32_t)f.b) / 2;
-        case FILT_PAETH:   return f.x - paethPredictor(f);
+        case NONE:    return f.x;
+        case SUB:     return f.x - f.a;
+        case UP:      return f.x - f.b;
+        case AVERAGE: return f.x - ((uint32_t)f.a + (uint32_t)f.b) / 2;
+        case PAETH:   return f.x - paethPredictor(f);
     }
 }
 
 struct Scanline {
-    enum FilterType *type;
+    enum Filter *type;
     uint8_t *data;
 };
 
 static struct Scanline *scanlines(
     const char *path, struct Header header, uint8_t *data
 ) {
-    struct Scanline *lines = malloc(header.height * sizeof(*lines));
-    if (!lines) err(EX_OSERR, "malloc(%zu)", header.height * sizeof(*lines));
+    struct Scanline *lines = calloc(header.height, sizeof(*lines));
+    if (!lines) err(EX_OSERR, "calloc(%u, %zu)", header.height, sizeof(*lines));
 
     size_t stride = 1 + lineSize(header);
     for (uint32_t y = 0; y < header.height; ++y) {
         lines[y].type = &data[y * stride];
         lines[y].data = &data[y * stride + 1];
-        if (*lines[y].type >= FILT__COUNT) {
+        if (*lines[y].type >= FILTER_COUNT) {
             errx(EX_DATAERR, "%s: invalid filter type %hhu", path, *lines[y].type);
         }
     }
@@ -282,14 +283,14 @@ static struct Scanline *scanlines(
     return lines;
 }
 
-static struct FilterBytes filterBytes(
+static struct Bytes origBytes(
     struct Header header, const struct Scanline *lines,
     uint32_t y, size_t i
 ) {
     size_t pixelSize = lineSize(header) / header.width;
     if (!pixelSize) pixelSize = 1;
     bool a = (i >= pixelSize), b = (y > 0), c = (a && b);
-    return (struct FilterBytes) {
+    return (struct Bytes) {
         .x = lines[y].data[i],
         .a = a ? lines[y].data[i - pixelSize] : 0,
         .b = b ? lines[y - 1].data[i] : 0,
@@ -301,20 +302,20 @@ static void reconData(struct Header header, const struct Scanline *lines) {
     for (uint32_t y = 0; y < header.height; ++y) {
         for (size_t i = 0; i < lineSize(header); ++i) {
             lines[y].data[i] =
-                recon(*lines[y].type, filterBytes(header, lines, y, i));
+                recon(*lines[y].type, origBytes(header, lines, y, i));
         }
-        *lines[y].type = FILT_NONE;
+        *lines[y].type = NONE;
     }
 }
 
 static void filterData(struct Header header, const struct Scanline *lines) {
     for (uint32_t y = header.height - 1; y < header.height; --y) {
-        uint8_t filter[FILT__COUNT][lineSize(header)];
-        uint32_t heuristic[FILT__COUNT] = { 0 };
-        enum FilterType minType = FILT_NONE;
-        for (enum FilterType type = FILT_NONE; type < FILT__COUNT; ++type) {
+        uint8_t filter[FILTER_COUNT][lineSize(header)];
+        uint32_t heuristic[FILTER_COUNT] = { 0 };
+        enum Filter minType = NONE;
+        for (enum Filter type = NONE; type < FILTER_COUNT; ++type) {
             for (uint32_t i = 0; i < lineSize(header); ++i) {
-                filter[type][i] = filt(type, filterBytes(header, lines, y, i));
+                filter[type][i] = filt(type, origBytes(header, lines, y, i));
                 heuristic[type] += abs((int8_t)filter[type][i]);
             }
             if (heuristic[type] < heuristic[minType]) minType = type;
@@ -378,14 +379,13 @@ static void eliminateAlpha(
     if (!(header->color & ALPHA)) return;
 
     size_t pixelSize = lineSize(*header) / header->width;
-    size_t colorSize = (header->color & TRUECOLOR)
-        ? 3 * header->depth / 8
-        : 1 * header->depth / 8;
+    size_t alphaSize = header->depth / 8;
+    size_t colorSize = pixelSize - alphaSize;
+
     for (uint32_t y = 0; y < header->height; ++y) {
         for (uint32_t x = 0; x < header->width; ++x) {
-            if (lines[y].data[x * pixelSize + colorSize] != 0xFF) return;
-            if (header->depth == 16) {
-                if (lines[y].data[x * pixelSize + colorSize + 1] != 0xFF) return;
+            for (size_t i = 0; i < alphaSize; ++i) {
+                if (lines[y].data[x * pixelSize + colorSize + i] != 0xFF) return;
             }
         }
     }
@@ -417,7 +417,7 @@ static void optimize(const char *inPath, const char *outPath) {
 
     readSignature(inPath, input);
     struct Header header = readHeader(inPath, input);
-    if (header.interlace) {
+    if (header.interlace != PROGRESSIVE) {
         errx(
             EX_CONFIG, "%s: unsupported interlace method %hhu",
             inPath, header.interlace
