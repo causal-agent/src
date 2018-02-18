@@ -75,6 +75,16 @@ their detection.
     ssh tux.local
     pbpaste
 
+                                  pngo
+
+PNG optimizer. Does not support interlaced PNGs.
+
+ - Discards ancillary chunks
+ - Discards unnecessary alpha channel
+ - Converts unnecessary truecolor to grayscale
+ - Applies a simple filter type heuristic
+ - Applies zlib's best compression
+
                                   wake
 
 Broadcasts a wake-on-LAN packet to one of my machines.

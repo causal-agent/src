@@ -364,7 +364,7 @@ static void filterData(void) {
     }
 }
 
-static void eliminateAlpha(void) {
+static void discardAlpha(void) {
     if (!(header.color & ALPHA)) return;
     size_t sampleSize = header.depth / 8;
     size_t pixelSize = 4 * sampleSize;
@@ -391,7 +391,7 @@ static void eliminateAlpha(void) {
     header.color &= ~ALPHA;
 }
 
-static void eliminateColor(void) {
+static void discardColor(void) {
     if (!(header.color & TRUECOLOR)) return;
     size_t sampleSize = header.depth / 8;
     size_t pixelSize = ((header.color & ALPHA) ? 4 : 3) * sampleSize;
@@ -462,8 +462,8 @@ static void optimize(const char *inPath, const char *outPath) {
 
     scanlines();
     reconData();
-    eliminateAlpha();
-    eliminateColor();
+    discardAlpha();
+    discardColor();
     filterData();
     free(lines);
 
