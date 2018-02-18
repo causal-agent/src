@@ -314,19 +314,15 @@ static void pngUint32(uint32_t data) {
 static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
     int error;
 
-    size_t scanline = 1 + (space == COLOR_GRAYSCALE ? 1 : 3) * srcWidth;
+    size_t scanline = 1 + 3 * srcWidth;
     uint8_t filt[scanline * srcHeight];
     for (size_t y = 0; y < srcHeight; ++y) {
         filt[y * scanline] = 0; // None
         for (size_t x = 0; x < srcWidth; ++x) {
-            if (space == COLOR_GRAYSCALE) {
-                filt[y * scanline + 1 + x] = src[y * srcWidth + x];
-            } else {
-                uint8_t *filtPixel = &filt[y * scanline + 1 + 3 * x];
-                filtPixel[0] = src[y * srcWidth + x] >> 16;
-                filtPixel[1] = src[y * srcWidth + x] >> 8;
-                filtPixel[2] = src[y * srcWidth + x];
-            }
+            uint8_t *filtPixel = &filt[y * scanline + 1 + 3 * x];
+            filtPixel[0] = src[y * srcWidth + x] >> 16;
+            filtPixel[1] = src[y * srcWidth + x] >> 8;
+            filtPixel[2] = src[y * srcWidth + x];
         }
     }
 
@@ -340,31 +336,24 @@ static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
     if (!png) { warn("%s", pngPath); return; }
     printf("%s\n", pngPath);
 
-    uint8_t signature[] = { 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' };
-    uint8_t header[] = { 8, (space == COLOR_GRAYSCALE ? 0 : 2), 0, 0, 0 };
-    char software[] = "Software";
+    const uint8_t SIGNATURE[] = { 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' };
+    const uint8_t HEADER[] = { 8, 2, 0, 0, 0 }; // 8-bit truecolor
+    const char SOFTWARE[] = "Software";
     formatOptions();
 
-    pngWrite(signature, sizeof(signature));
-    PNG_CHUNK("IHDR", 4 + 4 + sizeof(header)) {
+    pngWrite(SIGNATURE, sizeof(SIGNATURE));
+    PNG_CHUNK("IHDR", 4 + 4 + sizeof(HEADER)) {
         pngUint32(srcWidth);
         pngUint32(srcHeight);
-        pngWrite(header, sizeof(header));
+        pngWrite(HEADER, sizeof(HEADER));
     }
-    PNG_CHUNK("tEXt", sizeof(software) + strlen(options)) {
-        pngWrite(software, sizeof(software));
+    PNG_CHUNK("tEXt", sizeof(SOFTWARE) + strlen(options)) {
+        pngWrite(SOFTWARE, sizeof(SOFTWARE));
         pngWrite(options, strlen(options));
     }
-    if (space == COLOR_GRAYSCALE) {
-        PNG_CHUNK("sBIT", 1) {
-            uint8_t sbit = BITS_COLOR;
-            pngWrite(&sbit, 1);
-        }
-    } else {
-        PNG_CHUNK("sBIT", 3) {
-            uint8_t sbit[] = { MAX(bits[R], 1), MAX(bits[G], 1), MAX(bits[B], 1) };
-            pngWrite(sbit, sizeof(sbit));
-        }
+    PNG_CHUNK("sBIT", 3) {
+        uint8_t sbit[] = { MAX(bits[R], 1), MAX(bits[G], 1), MAX(bits[B], 1) };
+        pngWrite(sbit, sizeof(sbit));
     }
     PNG_CHUNK("IDAT", dataSize) {
         pngWrite(data, dataSize);
