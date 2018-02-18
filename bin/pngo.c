@@ -366,15 +366,12 @@ static void filterData(void) {
 
 static void eliminateAlpha(void) {
     if (!(header.color & ALPHA)) return;
-
-    size_t pixelSize = lineSize() / header.width;
-    size_t alphaSize = header.depth / 8;
-    size_t colorSize = pixelSize - alphaSize;
-
+    size_t sampleSize = header.depth / 8;
+    size_t pixelSize = 4 * sampleSize;
     for (uint32_t y = 0; y < header.height; ++y) {
         for (uint32_t x = 0; x < header.width; ++x) {
-            for (size_t i = 0; i < alphaSize; ++i) {
-                if (lines[y].data[x * pixelSize + colorSize + i] != 0xFF) return;
+            for (size_t i = 0; i < sampleSize; ++i) {
+                if (lines[y].data[x * pixelSize + 3 * sampleSize + i] != 0xFF) return;
             }
         }
     }
@@ -385,14 +382,59 @@ static void eliminateAlpha(void) {
         uint8_t *data = ptr;
         *type = *lines[y].type;
         for (uint32_t x = 0; x < header.width; ++x) {
-            memcpy(ptr, &lines[y].data[x * pixelSize], colorSize);
-            ptr += colorSize;
+            memcpy(ptr, &lines[y].data[x * pixelSize], 3 * sampleSize);
+            ptr += 3 * sampleSize;
         }
         lines[y].type = type;
         lines[y].data = data;
     }
-
     header.color &= ~ALPHA;
+}
+
+static void eliminateColor(void) {
+    if (!(header.color & TRUECOLOR)) return;
+    size_t sampleSize = header.depth / 8;
+    size_t pixelSize = ((header.color & ALPHA) ? 4 : 3) * sampleSize;
+    for (uint32_t y = 0; y < header.height; ++y) {
+        for (uint32_t x = 0; x < header.width; ++x) {
+            if (
+                0 != memcmp(
+                    &lines[y].data[x * pixelSize],
+                    &lines[y].data[x * pixelSize + 1 * sampleSize],
+                    sampleSize
+                )
+            ) return;
+            if (
+                0 != memcmp(
+                    &lines[y].data[x * pixelSize + 1 * sampleSize],
+                    &lines[y].data[x * pixelSize + 2 * sampleSize],
+                    sampleSize
+                )
+            ) return;
+        }
+    }
+
+    uint8_t *ptr = data;
+    for (uint32_t y = 0; y < header.height; ++y) {
+        uint8_t *type = ptr++;
+        uint8_t *data = ptr;
+        *type = *lines[y].type;
+        for (uint32_t x = 0; x < header.width; ++x) {
+            memcpy(ptr, &lines[y].data[x * pixelSize], sampleSize);
+            ptr += sampleSize;
+            if (header.color & ALPHA) {
+                memcpy(
+                    ptr,
+                    &lines[y].data[x * pixelSize + 3 * sampleSize],
+                    sampleSize
+                );
+                ptr += sampleSize;
+            }
+        }
+        lines[y].type = type;
+        lines[y].data = data;
+    }
+    header.color &= ~TRUECOLOR;
 }
 
 static void optimize(const char *inPath, const char *outPath) {
@@ -421,6 +463,7 @@ static void optimize(const char *inPath, const char *outPath) {
     scanlines();
     reconData();
     eliminateAlpha();
+    eliminateColor();
     filterData();
     free(lines);
 
