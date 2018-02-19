@@ -529,7 +529,7 @@ static void optimize(const char *inPath, const char *outPath) {
 
     if (outPath) {
         path = outPath;
-        file = fopen(path, "wx");
+        file = fopen(path, "w");
         if (!file) err(EX_CANTCREAT, "%s", path);
     } else {
         path = "(stdout)";
@@ -548,7 +548,27 @@ static void optimize(const char *inPath, const char *outPath) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) return EX_USAGE;
-    optimize(argv[1], NULL);
+    bool stdio = false;
+    char *output = NULL;
+
+    int opt;
+    while (0 < (opt = getopt(argc, argv, "co:"))) {
+        switch (opt) {
+            case 'c': stdio = true; break;
+            case 'o': output = optarg; break;
+            default: return EX_USAGE;
+        }
+    }
+
+    if (optind < argc) {
+        if (output || stdio) {
+            optimize(argv[optind], output);
+        } else {
+            optimize(argv[optind], argv[optind]);
+        }
+    } else {
+        optimize(NULL, output);
+    }
+
     return EX_OK;
 }

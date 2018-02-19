@@ -86,6 +86,10 @@ PNG optimizer. Does not support interlaced PNGs.
  - Applies a simple filter type heuristic
  - Applies zlib's best compression
 
+    pngo foo.png
+    pngo -o bar.png foo.png
+    pngo -c foo.png | xx
+
                                   wake
 
 Broadcasts a wake-on-LAN packet to one of my machines.
