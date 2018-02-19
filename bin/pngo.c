@@ -113,7 +113,6 @@ enum PACKED Color {
     GRAYSCALE_ALPHA = 4,
     TRUECOLOR_ALPHA = 6
 };
-#define ALPHA (0x04)
 
 static struct PACKED {
     uint32_t width;
@@ -200,6 +199,22 @@ static struct {
     uint8_t entries[256][3];
 } palette;
 
+static uint16_t paletteIndex(const uint8_t *rgb) {
+    uint16_t i;
+    for (i = 0; i < palette.len; ++i) {
+        if (0 == memcmp(palette.entries[i], rgb, 3)) break;
+    }
+    return i;
+}
+
+static bool paletteAdd(const uint8_t *rgb) {
+    uint16_t i = paletteIndex(rgb);
+    if (i < palette.len) return true;
+    if (i == 256) return false;
+    memcpy(palette.entries[palette.len++], rgb, 3);
+    return true;
+}
+
 static void readPalette(void) {
     struct Chunk chunk;
     for (;;) {
@@ -231,10 +246,12 @@ static void writePalette(void) {
 
 static uint8_t *data;
 
-static void readData(void) {
+static void allocData(void) {
     data = malloc(dataSize());
     if (!data) err(EX_OSERR, "malloc(%zu)", dataSize());
+}
 
+static void readData(void) {
     struct z_stream_s stream = { .next_out = data, .avail_out = dataSize() };
     int error = inflateInit(&stream);
     if (error != Z_OK) errx(EX_SOFTWARE, "%s: inflateInit: %s", path, stream.msg);
@@ -345,10 +362,12 @@ static struct {
     uint8_t *data;
 } *lines;
 
-static void scanlines(void) {
+static void allocLines(void) {
     lines = calloc(header.height, sizeof(*lines));
     if (!lines) err(EX_OSERR, "calloc(%u, %zu)", header.height, sizeof(*lines));
+}
 
+static void scanlines(void) {
     size_t stride = 1 + lineSize();
     for (uint32_t y = 0; y < header.height; ++y) {
         lines[y].type = &data[y * stride];
@@ -399,113 +418,78 @@ static void filterData(void) {
 }
 
 static void discardAlpha(void) {
-    if (!(header.color & ALPHA)) return;
+    if (header.color != GRAYSCALE_ALPHA && header.color != TRUECOLOR_ALPHA) return;
     size_t sampleSize = header.depth / 8;
-    size_t pixelSize = 4 * sampleSize;
+    size_t pixelSize = sampleSize * (header.color == GRAYSCALE_ALPHA ? 2 : 4);
+    size_t colorSize = pixelSize - sampleSize;
     for (uint32_t y = 0; y < header.height; ++y) {
         for (uint32_t x = 0; x < header.width; ++x) {
             for (size_t i = 0; i < sampleSize; ++i) {
-                if (lines[y].data[x * pixelSize + 3 * sampleSize + i] != 0xFF) return;
+                if (lines[y].data[x * pixelSize + colorSize + i] != 0xFF) return;
             }
         }
     }
 
+    header.color = (header.color == GRAYSCALE_ALPHA) ? GRAYSCALE : TRUECOLOR;
     uint8_t *ptr = data;
     for (uint32_t y = 0; y < header.height; ++y) {
-        uint8_t *type = ptr++;
-        uint8_t *data = ptr;
-        *type = *lines[y].type;
+        *ptr++ = *lines[y].type;
         for (uint32_t x = 0; x < header.width; ++x) {
-            memcpy(ptr, &lines[y].data[x * pixelSize], 3 * sampleSize);
-            ptr += 3 * sampleSize;
+            memcpy(ptr, &lines[y].data[x * pixelSize], colorSize);
+            ptr += colorSize;
         }
-        lines[y].type = type;
-        lines[y].data = data;
     }
-    header.color &= ~ALPHA;
+    scanlines();
 }
 
 static void discardColor(void) {
     if (header.color != TRUECOLOR && header.color != TRUECOLOR_ALPHA) return;
     size_t sampleSize = header.depth / 8;
-    size_t pixelSize = ((header.color & ALPHA) ? 4 : 3) * sampleSize;
+    size_t pixelSize = sampleSize * (header.color == TRUECOLOR ? 3 : 4);
     for (uint32_t y = 0; y < header.height; ++y) {
         for (uint32_t x = 0; x < header.width; ++x) {
-            if (
-                0 != memcmp(
-                    &lines[y].data[x * pixelSize],
-                    &lines[y].data[x * pixelSize + 1 * sampleSize],
-                    sampleSize
-                )
-            ) return;
-            if (
-                0 != memcmp(
-                    &lines[y].data[x * pixelSize + 1 * sampleSize],
-                    &lines[y].data[x * pixelSize + 2 * sampleSize],
-                    sampleSize
-                )
-            ) return;
+            uint8_t *r = &lines[y].data[x * pixelSize];
+            uint8_t *g = r + sampleSize;
+            uint8_t *b = g + sampleSize;
+            if (0 != memcmp(r, g, sampleSize)) return;
+            if (0 != memcmp(g, b, sampleSize)) return;
         }
     }
 
+    header.color = (header.color == TRUECOLOR) ? GRAYSCALE : GRAYSCALE_ALPHA;
     uint8_t *ptr = data;
     for (uint32_t y = 0; y < header.height; ++y) {
-        uint8_t *type = ptr++;
-        uint8_t *data = ptr;
-        *type = *lines[y].type;
+        *ptr++ = *lines[y].type;
         for (uint32_t x = 0; x < header.width; ++x) {
-            memcpy(ptr, &lines[y].data[x * pixelSize], sampleSize);
+            uint8_t *pixel = &lines[y].data[x * pixelSize];
+            memcpy(ptr, pixel, sampleSize);
             ptr += sampleSize;
-            if (header.color & ALPHA) {
-                memcpy(
-                    ptr,
-                    &lines[y].data[x * pixelSize + 3 * sampleSize],
-                    sampleSize
-                );
+            if (header.color == TRUECOLOR_ALPHA) {
+                memcpy(ptr, pixel + 3 * sampleSize, sampleSize);
                 ptr += sampleSize;
             }
         }
-        lines[y].type = type;
-        lines[y].data = data;
     }
-    header.color &= ~TRUECOLOR;
+    scanlines();
 }
 
 static void indexColor(void) {
     if (header.color != TRUECOLOR || header.depth != 8) return;
     for (uint32_t y = 0; y < header.height; ++y) {
         for (uint32_t x = 0; x < header.width; ++x) {
-            uint32_t i;
-            for (i = 0; i < palette.len; ++i) {
-                if (0 == memcmp(palette.entries[i], &lines[y].data[x * 3], 3)) {
-                    break;
-                }
-            }
-            if (i < palette.len) continue;
-            if (palette.len == 256) return;
-            memcpy(palette.entries[i], &lines[y].data[x * 3], 3);
-            palette.len++;
+            if (!paletteAdd(&lines[y].data[x * 3])) return;
         }
     }
 
+    header.color = INDEXED;
     uint8_t *ptr = data;
     for (uint32_t y = 0; y < header.height; ++y) {
-        uint8_t *type = ptr++;
-        uint8_t *data = ptr;
-        *type = *lines[y].type;
+        *ptr++ = *lines[y].type;
         for (uint32_t x = 0; x < header.width; ++x) {
-            uint32_t i;
-            for (i = 0; i < palette.len; ++i) {
-                if (0 == memcmp(palette.entries[i], &lines[y].data[x * 3], 3)) {
-                    break;
-                }
-            }
-            *ptr++ = i;
+            *ptr++ = paletteIndex(&lines[y].data[x * 3]);
         }
-        lines[y].type = type;
-        lines[y].data = data;
     }
-    header.color = INDEXED;
+    scanlines();
 }
 
 static void optimize(const char *inPath, const char *outPath) {
@@ -527,13 +511,16 @@ static void optimize(const char *inPath, const char *outPath) {
         );
     }
     if (header.color == INDEXED) readPalette();
+    allocData();
     readData();
 
     int error = fclose(file);
     if (error) err(EX_IOERR, "%s", path);
 
+    allocLines();
     scanlines();
     reconData();
+
     discardAlpha();
     discardColor();
     indexColor();
@@ -553,8 +540,8 @@ static void optimize(const char *inPath, const char *outPath) {
     writeHeader();
     if (header.color == INDEXED) writePalette();
     writeData();
-    writeEnd();
     free(data);
+    writeEnd();
 
     error = fclose(file);
     if (error) err(EX_IOERR, "%s", path);
