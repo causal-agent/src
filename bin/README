@@ -82,6 +82,7 @@ PNG optimizer. Does not support interlaced PNGs.
  - Discards ancillary chunks
  - Discards unnecessary alpha channel
  - Converts unnecessary truecolor to grayscale
+ - Indexes color if possible
  - Applies a simple filter type heuristic
  - Applies zlib's best compression
 

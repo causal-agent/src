@@ -197,9 +197,7 @@ static void writeHeader(void) {
 
 static struct {
     uint32_t len;
-    struct PACKED {
-        uint8_t r, g, b;
-    } entries[256];
+    uint8_t entries[256][3];
 } palette;
 
 static void readPalette(void) {
@@ -473,6 +471,43 @@ static void discardColor(void) {
     header.color &= ~TRUECOLOR;
 }
 
+static void indexColor(void) {
+    if (header.color != TRUECOLOR || header.depth != 8) return;
+    for (uint32_t y = 0; y < header.height; ++y) {
+        for (uint32_t x = 0; x < header.width; ++x) {
+            uint32_t i;
+            for (i = 0; i < palette.len; ++i) {
+                if (0 == memcmp(palette.entries[i], &lines[y].data[x * 3], 3)) {
+                    break;
+                }
+            }
+            if (i < palette.len) continue;
+            if (palette.len == 256) return;
+            memcpy(palette.entries[i], &lines[y].data[x * 3], 3);
+            palette.len++;
+        }
+    }
+
+    uint8_t *ptr = data;
+    for (uint32_t y = 0; y < header.height; ++y) {
+        uint8_t *type = ptr++;
+        uint8_t *data = ptr;
+        *type = *lines[y].type;
+        for (uint32_t x = 0; x < header.width; ++x) {
+            uint32_t i;
+            for (i = 0; i < palette.len; ++i) {
+                if (0 == memcmp(palette.entries[i], &lines[y].data[x * 3], 3)) {
+                    break;
+                }
+            }
+            *ptr++ = i;
+        }
+        lines[y].type = type;
+        lines[y].data = data;
+    }
+    header.color = INDEXED;
+}
+
 static void optimize(const char *inPath, const char *outPath) {
     if (inPath) {
         path = inPath;
@@ -501,6 +536,7 @@ static void optimize(const char *inPath, const char *outPath) {
     reconData();
     discardAlpha();
     discardColor();
+    indexColor();
     filterData();
     free(lines);
 
