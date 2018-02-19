@@ -195,6 +195,42 @@ static void writeHeader(void) {
     header.height = ntohl(header.height);
 }
 
+static struct {
+    uint32_t len;
+    struct PACKED {
+        uint8_t r, g, b;
+    } entries[256];
+} palette;
+
+static void readPalette(void) {
+    struct Chunk chunk;
+    for (;;) {
+        chunk = readChunk();
+        if (0 == memcmp(chunk.type, "PLTE", 4)) {
+            break;
+        } else if (!(chunk.type[0] & 0x20)) {
+            errx(
+                EX_DATAERR, "%s: expected PLTE chunk, found %s",
+                path, typeStr(chunk)
+            );
+        }
+    }
+    if (chunk.size % 3) {
+        errx(EX_DATAERR, "%s: PLTE size %u not divisible by 3", path, chunk.size);
+    }
+
+    palette.len = chunk.size / 3;
+    readExpect(palette.entries, chunk.size, "palette data");
+    readCrc();
+}
+
+static void writePalette(void) {
+    struct Chunk plte = { .size = 3 * palette.len, .type = { 'P', 'L', 'T', 'E' } };
+    writeChunk(plte);
+    writeExpect(palette.entries, plte.size);
+    writeCrc();
+}
+
 static uint8_t *data;
 
 static void readData(void) {
@@ -392,7 +428,7 @@ static void discardAlpha(void) {
 }
 
 static void discardColor(void) {
-    if (!(header.color & TRUECOLOR)) return;
+    if (header.color != TRUECOLOR && header.color != TRUECOLOR_ALPHA) return;
     size_t sampleSize = header.depth / 8;
     size_t pixelSize = ((header.color & ALPHA) ? 4 : 3) * sampleSize;
     for (uint32_t y = 0; y < header.height; ++y) {
@@ -455,6 +491,7 @@ static void optimize(const char *inPath, const char *outPath) {
             path, header.interlace
         );
     }
+    if (header.color == INDEXED) readPalette();
     readData();
 
     int error = fclose(file);
@@ -478,6 +515,7 @@ static void optimize(const char *inPath, const char *outPath) {
 
     writeSignature();
     writeHeader();
+    if (header.color == INDEXED) writePalette();
     writeData();
     writeEnd();
     free(data);
