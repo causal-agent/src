@@ -438,7 +438,6 @@ static void discardAlpha(void) {
         }
     }
 
-    header.color = (header.color == GRAYSCALE_ALPHA) ? GRAYSCALE : TRUECOLOR;
     uint8_t *ptr = data;
     for (uint32_t y = 0; y < header.height; ++y) {
         *ptr++ = *lines[y].type;
@@ -447,6 +446,7 @@ static void discardAlpha(void) {
             ptr += colorSize;
         }
     }
+    header.color = (header.color == GRAYSCALE_ALPHA) ? GRAYSCALE : TRUECOLOR;
     scanlines();
 }
 
@@ -464,7 +464,6 @@ static void discardColor(void) {
         }
     }
 
-    header.color = (header.color == TRUECOLOR) ? GRAYSCALE : GRAYSCALE_ALPHA;
     uint8_t *ptr = data;
     for (uint32_t y = 0; y < header.height; ++y) {
         *ptr++ = *lines[y].type;
@@ -478,6 +477,7 @@ static void discardColor(void) {
             }
         }
     }
+    header.color = (header.color == TRUECOLOR) ? GRAYSCALE : GRAYSCALE_ALPHA;
     scanlines();
 }
 
@@ -489,7 +489,6 @@ static void indexColor(void) {
         }
     }
 
-    header.color = INDEXED;
     uint8_t *ptr = data;
     for (uint32_t y = 0; y < header.height; ++y) {
         *ptr++ = *lines[y].type;
@@ -497,7 +496,109 @@ static void indexColor(void) {
             *ptr++ = paletteIndex(&lines[y].data[x * 3]);
         }
     }
+    header.color = INDEXED;
     scanlines();
+}
+
+static void reduceDepth8(void) {
+    if (header.color != GRAYSCALE && header.color != INDEXED) return;
+    if (header.depth != 8) return;
+    if (header.color == GRAYSCALE) {
+        for (uint32_t y = 0; y < header.height; ++y) {
+            for (size_t i = 0; i < lineSize(); ++i) {
+                uint8_t a = lines[y].data[i];
+                if ((a >> 4) != (a & 0x0F)) return;
+            }
+        }
+    } else if (palette.len > 16) {
+        return;
+    }
+
+    uint8_t *ptr = data;
+    for (uint32_t y = 0; y < header.height; ++y) {
+        *ptr++ = *lines[y].type;
+        for (size_t i = 0; i < lineSize(); i += 2) {
+            uint8_t iByte = lines[y].data[i];
+            uint8_t jByte = (i + 1 < lineSize()) ? lines[y].data[i + 1] : 0;
+            uint8_t a = iByte & 0x0F;
+            uint8_t b = jByte & 0x0F;
+            *ptr++ = a << 4 | b;
+        }
+    }
+    header.depth = 4;
+    scanlines();
+}
+
+static void reduceDepth4(void) {
+    if (header.depth != 4) return;
+    if (header.color == GRAYSCALE) {
+        for (uint32_t y = 0; y < header.height; ++y) {
+            for (size_t i = 0; i < lineSize(); ++i) {
+                uint8_t a = lines[y].data[i] >> 4;
+                uint8_t b = lines[y].data[i] & 0x0F;
+                if ((a >> 2) != (a & 0x03)) return;
+                if ((b >> 2) != (b & 0x03)) return;
+            }
+        }
+    } else if (palette.len > 4) {
+        return;
+    }
+
+    uint8_t *ptr = data;
+    for (uint32_t y = 0; y < header.height; ++y) {
+        *ptr++ = *lines[y].type;
+        for (size_t i = 0; i < lineSize(); i += 2) {
+            uint8_t iByte = lines[y].data[i];
+            uint8_t jByte = (i + 1 < lineSize()) ? lines[y].data[i + 1] : 0;
+            uint8_t a = iByte >> 4 & 0x03, b = iByte & 0x03;
+            uint8_t c = jByte >> 4 & 0x03, d = jByte & 0x03;
+            *ptr++ = a << 6 | b << 4 | c << 2 | d;
+        }
+    }
+    header.depth = 2;
+    scanlines();
+}
+
+static void reduceDepth2(void) {
+    if (header.depth != 2) return;
+    if (header.color == GRAYSCALE) {
+        for (uint32_t y = 0; y < header.height; ++y) {
+            for (size_t i = 0; i < lineSize(); ++i) {
+                uint8_t a = lines[y].data[i] >> 6;
+                uint8_t b = lines[y].data[i] >> 4 & 0x03;
+                uint8_t c = lines[y].data[i] >> 2 & 0x03;
+                uint8_t d = lines[y].data[i] & 0x03;
+                if ((a >> 1) != (a & 0x01)) return;
+                if ((b >> 1) != (b & 0x01)) return;
+                if ((c >> 1) != (c & 0x01)) return;
+                if ((d >> 1) != (d & 0x01)) return;
+            }
+        }
+    } else if (palette.len > 2) {
+        return;
+    }
+
+    uint8_t *ptr = data;
+    for (uint32_t y = 0; y < header.height; ++y) {
+        *ptr++ = *lines[y].type;
+        for (size_t i = 0; i < lineSize(); i += 2) {
+            uint8_t iByte = lines[y].data[i];
+            uint8_t jByte = (i + 1 < lineSize()) ? lines[y].data[i + 1] : 0;
+            uint8_t a = iByte >> 6 & 0x01, b = iByte >> 4 & 0x01;
+            uint8_t c = iByte >> 2 & 0x01, d = iByte & 0x01;
+            uint8_t e = jByte >> 6 & 0x01, f = jByte >> 4 & 0x01;
+            uint8_t g = jByte >> 2 & 0x01, h = jByte & 0x01;
+            *ptr++ = a << 7 | b << 6 | c << 5 | d << 4 | e << 3 | f << 2 | g << 1 | h;
+        }
+    }
+    header.depth = 1;
+    scanlines();
+}
+
+static void reduceDepth(void) {
+    reduceDepth8();
+    reduceDepth4();
+    reduceDepth2();
 }
 
 static void optimize(const char *inPath, const char *outPath) {
@@ -532,6 +633,7 @@ static void optimize(const char *inPath, const char *outPath) {
     discardAlpha();
     discardColor();
     indexColor();
+    reduceDepth();
     filterData();
     free(lines);
 
