@@ -670,11 +670,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (optind < argc) {
-        if (output || stdio) {
-            optimize(argv[optind], output);
-        } else {
-            optimize(argv[optind], argv[optind]);
+    if (argc - optind == 1 && (output || stdio)) {
+        optimize(argv[optind], output);
+    } else if (optind < argc) {
+        for (int i = optind; i < argc; ++i) {
+            optimize(argv[i], argv[i]);
         }
     } else {
         optimize(NULL, output);
