@@ -402,11 +402,19 @@ static void reconData(void) {
 
 static void filterData(void) {
     for (uint32_t y = header.height - 1; y < header.height; --y) {
+        if (header.color == INDEXED || header.depth < 8) {
+            *lines[y].type = NONE;
+            for (size_t i = lineSize() - 1; i < lineSize(); --i) {
+                lines[y].data[i] = filt(NONE, origBytes(y, i));
+            }
+            continue;
+        }
+
         uint8_t filter[FILTER_COUNT][lineSize()];
         uint32_t heuristic[FILTER_COUNT] = { 0 };
         enum Filter minType = NONE;
         for (enum Filter type = NONE; type < FILTER_COUNT; ++type) {
-            for (uint32_t i = 0; i < lineSize(); ++i) {
+            for (size_t i = 0; i < lineSize(); ++i) {
                 filter[type][i] = filt(type, origBytes(y, i));
                 heuristic[type] += abs((int8_t)filter[type][i]);
             }
