@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
+#include <unistd.h>
 #include <zlib.h>
 
 #define PACKED __attribute__((packed))
