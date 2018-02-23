@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 
     struct winsize window;
     error = ioctl(STDERR_FILENO, TIOCGWINSZ, &window);
-    if (error) err(EX_IOERR, "ioctl(%d, TIOCGWINSZ, ...)", STDERR_FILENO);
+    if (error) err(EX_IOERR, "TIOCGWINSZ");
 
     int pty;
     pid_t pid = forkpty(&pty, NULL, NULL, &window);
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
 
         int status;
         pid_t dead = waitpid(pid, &status, WNOHANG);
-        if (dead < 0) err(EX_OSERR, "waitpid(%d, ...)", pid);
+        if (dead < 0) err(EX_OSERR, "waitpid(%d)", pid);
         if (dead) return WIFEXITED(status) ? WEXITSTATUS(status) : EX_SOFTWARE;
     }
     err(EX_IOERR, "poll");

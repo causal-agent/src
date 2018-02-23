@@ -138,7 +138,7 @@ static int dtch(int argc, char *argv[]) {
     if (error) err(EX_IOERR, "%s", addr.sun_path);
 
     error = fcntl(server, F_SETFD, FD_CLOEXEC);
-    if (error) err(EX_IOERR, "fcntl(%d)", server);
+    if (error) err(EX_IOERR, "fcntl");
 
     int pty;
     pid_t pid = forkpty(&pty, NULL, NULL, NULL);
@@ -154,13 +154,13 @@ static int dtch(int argc, char *argv[]) {
 
     for (;;) {
         int client = accept(server, NULL, NULL);
-        if (client < 0) err(EX_IOERR, "accept(%d)", server);
+        if (client < 0) err(EX_IOERR, "accept");
 
         ssize_t size = sendFd(client, pty);
-        if (size < 0) warn("sendmsg(%d)", client);
+        if (size < 0) warn("sendmsg");
 
         size = recv(client, &z, sizeof(z), 0);
-        if (size < 0) warn("recv(%d)", client);
+        if (size < 0) warn("recv");
 
         close(client);
 
@@ -195,7 +195,7 @@ static int atch(int argc, char *argv[]) {
     if (error) err(EX_NOINPUT, "%s", addr.sun_path);
 
     int pty = recvFd(client);
-    if (pty < 0) err(EX_IOERR, "recvmsg(%d)", client);
+    if (pty < 0) err(EX_IOERR, "recvmsg");
 
     struct winsize window;
     error = ioctl(STDERR_FILENO, TIOCGWINSZ, &window);
