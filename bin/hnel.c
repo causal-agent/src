@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 
     if (!pid) {
         execvp(argv[3], &argv[3]);
-        err(EX_NOPERM, "%s", argv[3]);
+        err(EX_NOINPUT, "%s", argv[3]);
     }
 
     bool enable = true;
