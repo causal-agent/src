@@ -124,8 +124,7 @@ static int dtch(int argc, char *argv[]) {
     error = mkdirat(home, ".dtch", 0700);
     if (error && errno != EEXIST) err(EX_CANTCREAT, "%s/.dtch", user->pw_dir);
 
-    error = close(home);
-    if (error) err(EX_IOERR, "%s", user->pw_dir);
+    close(home);
 
     int server = socket(PF_LOCAL, SOCK_STREAM, 0);
     if (server < 0) err(EX_OSERR, "socket");
@@ -163,8 +162,7 @@ static int dtch(int argc, char *argv[]) {
         size = recv(client, &z, sizeof(z), 0);
         if (size < 0) warn("recv(%d)", client);
 
-        error = close(client);
-        if (error) warn("close(%d)", client);
+        close(client);
 
         int status;
         pid_t dead = waitpid(pid, &status, WNOHANG);
