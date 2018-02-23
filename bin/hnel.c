@@ -33,19 +33,9 @@
 #include <util.h>
 #endif
 
-static ssize_t writeAll(int fd, const char *buf, size_t len) {
-    ssize_t writeLen;
-    while (0 < (writeLen = write(fd, buf, len))) {
-        buf += writeLen;
-        len -= writeLen;
-    }
-    return writeLen;
-}
-
 static struct termios saveTerm;
-
 static void restoreTerm(void) {
-    tcsetattr(STDERR_FILENO, TCSADRAIN, &saveTerm);
+    tcsetattr(STDIN_FILENO, TCSADRAIN, &saveTerm);
 }
 
 int main(int argc, char *argv[]) {
@@ -70,34 +60,32 @@ int main(int argc, char *argv[]) {
 
     struct winsize window;
     error = ioctl(STDERR_FILENO, TIOCGWINSZ, &window);
-    if (error) err(EX_IOERR, "ioctl(%d, TIOCGWINSZ)", STDERR_FILENO);
+    if (error) err(EX_IOERR, "ioctl(%d, TIOCGWINSZ, ...)", STDERR_FILENO);
 
-    int master;
-    pid_t pid = forkpty(&master, NULL, NULL, &window);
+    int pty;
+    pid_t pid = forkpty(&pty, NULL, NULL, &window);
     if (pid < 0) err(EX_OSERR, "forkpty");
 
     if (!pid) {
-        execvp(argv[3], argv + 3);
-        err(EX_OSERR, "%s", argv[1]);
+        execvp(argv[3], &argv[3]);
+        err(EX_NOPERM, "%s", argv[3]);
     }
 
     bool enable = true;
 
+    char buf[4096];
     struct pollfd fds[2] = {
         { .fd = STDIN_FILENO, .events = POLLIN },
-        { .fd = master, .events = POLLIN },
+        { .fd = pty, .events = POLLIN },
     };
     while (0 < poll(fds, 2, -1)) {
-        char buf[4096];
-        ssize_t len;
+        if (fds[0].revents == POLLIN) {
+            ssize_t readSize = read(STDIN_FILENO, buf, sizeof(buf));
+            if (readSize < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
 
-        if (fds[0].revents) {
-            len = read(STDIN_FILENO, buf, sizeof(buf));
-            if (len < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
-
-            if (len == 1) {
+            if (readSize == 1) {
                 if (buf[0] == CTRL('S')) {
-                    enable = !enable;
+                    enable ^= true;
                     continue;
                 }
 
@@ -105,20 +93,25 @@ int main(int argc, char *argv[]) {
                 if (enable && table[c]) buf[0] = table[c];
             }
 
-            len = writeAll(master, buf, len);
-            if (len < 0) err(EX_IOERR, "write(%d)", master);
+            ssize_t writeSize = write(pty, buf, readSize);
+            if (writeSize < 0) err(EX_IOERR, "write(%d)", pty);
+            if (writeSize < readSize) errx(EX_IOERR, "short write(%d)", pty);
         }
 
-        if (fds[1].revents) {
-            len = read(master, buf, sizeof(buf));
-            if (len < 0) err(EX_IOERR, "read(%d)", master);
-            len = writeAll(STDOUT_FILENO, buf, len);
-            if (len < 0) err(EX_IOERR, "write(%d)", STDOUT_FILENO);
+        if (fds[1].revents == POLLIN) {
+            ssize_t readSize = read(pty, buf, sizeof(buf));
+            if (readSize < 0) err(EX_IOERR, "read(%d)", pty);
+
+            ssize_t writeSize = write(STDOUT_FILENO, buf, readSize);
+            if (writeSize < 0) err(EX_IOERR, "write(%d)", STDOUT_FILENO);
+            if (writeSize < readSize) {
+                errx(EX_IOERR, "short write(%d)", STDOUT_FILENO);
+            }
         }
 
         int status;
         pid_t dead = waitpid(pid, &status, WNOHANG);
-        if (dead < 0) err(EX_OSERR, "waitpid(%d)", pid);
+        if (dead < 0) err(EX_OSERR, "waitpid(%d, ...)", pid);
         if (dead) return WIFEXITED(status) ? WEXITSTATUS(status) : EX_SOFTWARE;
     }
     err(EX_IOERR, "poll");
