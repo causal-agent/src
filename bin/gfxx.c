@@ -326,7 +326,7 @@ static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
         }
     }
 
-    size_t dataSize = compressBound(sizeof(filt));
+    uLong dataSize = compressBound(sizeof(filt));
     uint8_t data[dataSize];
     error = compress(data, &dataSize, filt, sizeof(filt));
     if (error != Z_OK) errx(EX_SOFTWARE, "compress: %d", error);

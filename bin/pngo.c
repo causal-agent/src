@@ -79,14 +79,14 @@ static struct Chunk readChunk(void) {
     struct Chunk chunk;
     readExpect(&chunk, sizeof(chunk), "chunk");
     chunk.size = ntohl(chunk.size);
-    crc = crc32(CRC_INIT, (Bytef *)chunk.type, sizeof(chunk.type));
+    crc = crc32(CRC_INIT, (Byte *)chunk.type, sizeof(chunk.type));
     return chunk;
 }
 
 static void writeChunk(struct Chunk chunk) {
     chunk.size = htonl(chunk.size);
     writeExpect(&chunk, sizeof(chunk));
-    crc = crc32(CRC_INIT, (Bytef *)chunk.type, sizeof(chunk.type));
+    crc = crc32(CRC_INIT, (Byte *)chunk.type, sizeof(chunk.type));
 }
 
 static void readCrc(void) {
@@ -112,7 +112,7 @@ enum PACKED Color {
     TRUECOLOR       = 2,
     INDEXED         = 3,
     GRAYSCALE_ALPHA = 4,
-    TRUECOLOR_ALPHA = 6
+    TRUECOLOR_ALPHA = 6,
 };
 
 static struct PACKED {
@@ -288,14 +288,14 @@ static void readData(void) {
 
     if (stream.total_out != dataSize()) {
         errx(
-            EX_DATAERR, "%s: expected data size %zu, found %zu",
+            EX_DATAERR, "%s: expected data size %zu, found %lu",
             path, dataSize(), stream.total_out
         );
     }
 }
 
 static void writeData(void) {
-    size_t size = compressBound(dataSize());
+    uLong size = compressBound(dataSize());
     uint8_t deflate[size];
     int error = compress2(deflate, &size, data, dataSize(), Z_BEST_COMPRESSION);
     if (error != Z_OK) errx(EX_SOFTWARE, "%s: compress2: %d", path, error);
