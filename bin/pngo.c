@@ -132,6 +132,7 @@ static size_t lineSize(void) {
         case INDEXED:         return (header.width * 1 * header.depth + 7) / 8;
         case GRAYSCALE_ALPHA: return (header.width * 2 * header.depth + 7) / 8;
         case TRUECOLOR_ALPHA: return (header.width * 4 * header.depth + 7) / 8;
+        default: abort();
     }
 }
 
@@ -345,6 +346,7 @@ static uint8_t recon(enum Filter type, struct Bytes f) {
         case UP:      return f.x + f.b;
         case AVERAGE: return f.x + ((uint32_t)f.a + (uint32_t)f.b) / 2;
         case PAETH:   return f.x + paethPredictor(f);
+        default:      abort();
     }
 }
 
@@ -355,6 +357,7 @@ static uint8_t filt(enum Filter type, struct Bytes f) {
         case UP:      return f.x - f.b;
         case AVERAGE: return f.x - ((uint32_t)f.a + (uint32_t)f.b) / 2;
         case PAETH:   return f.x - paethPredictor(f);
+        default:      abort();
     }
 }
 
