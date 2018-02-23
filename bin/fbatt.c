@@ -53,18 +53,18 @@ int main() {
         if (entry->d_name[0] == '.') continue;
 
         error = chdir(CLASS);
-        if (error) err(EX_IOERR, "%s", CLASS);
+        if (error) err(EX_OSFILE, "%s", CLASS);
 
         error = chdir(entry->d_name);
-        if (error) err(EX_IOERR, "%s/%s", CLASS, entry->d_name);
+        if (error) err(EX_OSFILE, "%s/%s", CLASS, entry->d_name);
 
         chargeFull = fopen("charge_full", "r");
         chargeNow = fopen("charge_now", "r");
         if (chargeFull && chargeNow) break;
     }
     if (!chargeFull || !chargeNow) {
-        if (errno) err(EX_IOERR, "%s", CLASS);
-        errx(EX_CONFIG, "empty %s", CLASS);
+        if (errno) err(EX_OSFILE, "%s", CLASS);
+        errx(EX_CONFIG, "%s: empty", CLASS);
     }
     closedir(dir);
 
