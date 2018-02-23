@@ -34,14 +34,14 @@ int main(int argc, char *argv[]) {
     if (error) err(EX_OSFILE, "%s", CLASS);
 
     DIR *dir = opendir(".");
-    if (!dir) err(EX_NOPERM, "%s", CLASS);
+    if (!dir) err(EX_OSFILE, "%s", CLASS);
 
     struct dirent *entry;
     while (NULL != (errno = 0, entry = readdir(dir))) {
         if (entry->d_name[0] == '.') continue;
 
         error = chdir(entry->d_name);
-        if (error) err(EX_NOPERM, "%s/%s", CLASS, entry->d_name);
+        if (error) err(EX_OSFILE, "%s/%s", CLASS, entry->d_name);
         break;
     }
     if (!entry) {
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     }
 
     FILE *actual = fopen("actual_brightness", "r");
-    if (!actual) err(EX_NOPERM, "%s/actual_brightness", CLASS);
+    if (!actual) err(EX_OSFILE, "%s/actual_brightness", CLASS);
 
     unsigned value;
     int match = fscanf(actual, "%u", &value);
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     }
 
     FILE *brightness = fopen("brightness", "w");
-    if (!brightness) err(EX_NOPERM, "%s/brightness", CLASS);
+    if (!brightness) err(EX_OSFILE, "%s/brightness", CLASS);
 
     int size = fprintf(brightness, "%u", value);
     if (size < 0) err(EX_IOERR, "brightness");
