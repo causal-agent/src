@@ -23,9 +23,9 @@
 #include <sysexits.h>
 #include <unistd.h>
 
-static bool zero(const uint8_t *buf, size_t len) {
-    for (size_t i = 0; i < len; ++i) {
-        if (buf[i]) return false;
+static bool zero(const uint8_t *ptr, size_t size) {
+    for (size_t i = 0; i < size; ++i) {
+        if (ptr[i]) return false;
     }
     return true;
 }
@@ -43,10 +43,13 @@ static void dump(FILE *file) {
 
     uint8_t buf[options.cols];
     size_t offset = 0;
-    for (size_t len; (len = fread(buf, 1, sizeof(buf), file)); offset += len) {
-
+    for (
+        size_t size;
+        (size = fread(buf, 1, sizeof(buf), file));
+        offset += size
+    ) {
         if (options.skip) {
-            if (zero(buf, len)) {
+            if (zero(buf, size)) {
                 if (!skip) printf("*\n");
                 skip = true;
                 continue;
@@ -65,7 +68,7 @@ static void dump(FILE *file) {
                     printf(" ");
                 }
             }
-            if (i < len) {
+            if (i < size) {
                 printf("%02hhx ", buf[i]);
             } else {
                 printf("   ");
@@ -74,7 +77,7 @@ static void dump(FILE *file) {
 
         if (options.ascii) {
             printf(" ");
-            for (size_t i = 0; i < len; ++i) {
+            for (size_t i = 0; i < size; ++i) {
                 if (options.group) {
                     if (i && !(i % options.group)) {
                         printf(" ");
@@ -91,7 +94,7 @@ static void dump(FILE *file) {
 static void undump(FILE *file) {
     uint8_t byte;
     int match;
-    while (1 == (match = fscanf(file, " %hhx", &byte))) {
+    while (0 < (match = fscanf(file, " %hhx", &byte))) {
         printf("%c", byte);
     }
     if (!match) errx(EX_DATAERR, "invalid input");
@@ -99,7 +102,7 @@ static void undump(FILE *file) {
 
 int main(int argc, char *argv[]) {
     bool reverse = false;
-    char *path = NULL;
+    const char *path = NULL;
 
     int opt;
     while (0 < (opt = getopt(argc, argv, "ac:g:rsz"))) {
@@ -124,7 +127,7 @@ int main(int argc, char *argv[]) {
     } else {
         dump(file);
     }
-
     if (ferror(file)) err(EX_IOERR, "%s", path);
+
     return EX_OK;
 }
