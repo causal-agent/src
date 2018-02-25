@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef uint8_t Card;
+
 #define MASK_RANK   (0x0F)
 #define MASK_SUIT   (0x30)
 #define MASK_COLOR  (0x10)
@@ -37,22 +39,22 @@ enum {
 };
 
 struct Stack {
-    uint8_t data[52];
+    Card data[52];
     uint8_t index;
 };
 #define EMPTY { .data = {0}, .index = 52 }
 
-static void push(struct Stack *stack, uint8_t value) {
+static void push(struct Stack *stack, Card card) {
     assert(stack->index > 0);
-    stack->data[--stack->index] = value;
+    stack->data[--stack->index] = card;
 }
 
-static uint8_t pop(struct Stack *stack) {
+static Card pop(struct Stack *stack) {
     assert(stack->index < 52);
     return stack->data[stack->index++];
 }
 
-static uint8_t get(const struct Stack *stack, uint8_t i) {
+static Card get(const struct Stack *stack, uint8_t i) {
     if (stack->index + i > 51) return 0;
     return stack->data[stack->index + i];
 }
@@ -61,12 +63,14 @@ static uint8_t len(const struct Stack *stack) {
     return 52 - stack->index;
 }
 
-static struct {
+struct State {
     struct Stack stock;
     struct Stack waste;
     struct Stack found[4];
     struct Stack table[7];
-} save, g = {
+};
+
+static struct State g = {
     .stock = {
         .data = {
             0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -87,12 +91,14 @@ static struct {
     },
 };
 
+static struct State save;
+
 static void checkpoint(void) {
-    memcpy(&save, &g, sizeof(g));
+    memcpy(&save, &g, sizeof(struct State));
 }
 
 static void undo(void) {
-    memcpy(&g, &save, sizeof(g));
+    memcpy(&g, &save, sizeof(struct State));
 }
 
 static void shuffle(void) {
@@ -143,13 +149,13 @@ static void transfer(struct Stack *dest, struct Stack *src, uint8_t n) {
     }
 }
 
-static bool canFound(const struct Stack *found, uint8_t card) {
+static bool canFound(const struct Stack *found, Card card) {
     if (!get(found, 0)) return (card & MASK_RANK) == 1;
     if ((card & MASK_SUIT) != (get(found, 0) & MASK_SUIT)) return false;
     return (card & MASK_RANK) == (get(found, 0) & MASK_RANK) + 1;
 }
 
-static bool canTable(const struct Stack *table, uint8_t card) {
+static bool canTable(const struct Stack *table, Card card) {
     if (!get(table, 0)) return (card & MASK_RANK) == 13;
     if ((card & MASK_COLOR) == (get(table, 0) & MASK_COLOR)) return false;
     return (card & MASK_RANK) == (get(table, 0) & MASK_RANK) - 1;
@@ -175,9 +181,9 @@ static void curse(void) {
     start_color();
     assume_default_colors(-1, -1);
     init_pair(PAIR_EMPTY, COLOR_WHITE, COLOR_BLACK);
-    init_pair(PAIR_BACK, COLOR_WHITE, COLOR_BLUE);
+    init_pair(PAIR_BACK,  COLOR_WHITE, COLOR_BLUE);
     init_pair(PAIR_BLACK, COLOR_BLACK, COLOR_WHITE);
-    init_pair(PAIR_RED, COLOR_RED, COLOR_WHITE);
+    init_pair(PAIR_RED,   COLOR_RED,   COLOR_WHITE);
 }
 
 static const char rank[] = "\0A23456789TJQK";
@@ -188,7 +194,7 @@ static const char *suit[] = {
     [SUIT_SPADE]   = "♠",
 };
 
-static void renderCard(int y, int x, uint8_t card) {
+static void renderCard(int y, int x, Card card) {
     if (card & MASK_UP) {
         bkgdset(
             COLOR_PAIR(card & MASK_COLOR ? PAIR_RED : PAIR_BLACK)
@@ -250,34 +256,37 @@ static void render(void) {
     }
 }
 
-static struct Stack *src;
-static uint8_t depth;
+static struct {
+    struct Stack *stack;
+    uint8_t depth;
+} input;
 
 static void deepen(void) {
-    assert(src);
-    if (depth == len(src)) return;
-    if (!(get(src, depth) & MASK_UP)) return;
-    src->data[src->index + depth] |= MASK_SELECT;
-    depth++;
+    assert(input.stack);
+    if (input.depth == len(input.stack)) return;
+    if (!(get(input.stack, input.depth) & MASK_UP)) return;
+    input.stack->data[input.stack->index + input.depth] |= MASK_SELECT;
+    input.depth++;
 }
 
 static void select(struct Stack *stack) {
     if (!get(stack, 0)) return;
-    src = stack;
-    depth = 0;
+    input.stack = stack;
+    input.depth = 0;
     deepen();
 }
 
 static void commit(struct Stack *dest) {
-    assert(src);
-    for (int i = 0; i < depth; ++i) {
-        src->data[src->index + i] &= ~MASK_SELECT;
+    assert(input.stack);
+    for (int i = 0; i < input.depth; ++i) {
+        input.stack->data[input.stack->index + i] &= ~MASK_SELECT;
     }
     if (dest) {
         checkpoint();
-        transfer(dest, src, depth);
+        transfer(dest, input.stack, input.depth);
     }
-    src = NULL;
+    input.stack = NULL;
+    input.depth = 0;
 }
 
 int main() {
@@ -292,7 +301,7 @@ int main() {
         render();
 
         int c = getch();
-        if (!src) {
+        if (!input.stack) {
             if (c == 'q') {
                 break;
             } else if (c == 'u') {
@@ -315,25 +324,25 @@ int main() {
         } else {
             if (c >= '1' && c <= '7') {
                 struct Stack *table = &g.table[c - '1'];
-                if (src == table) {
+                if (input.stack == table) {
                     deepen();
-                } else if (canTable(table, get(src, depth - 1))) {
+                } else if (canTable(table, get(input.stack, input.depth - 1))) {
                     commit(table);
                 } else {
                     commit(NULL);
                 }
-            } else if (depth == 1 && c >= 'a' && c <= 'd') {
+            } else if (input.depth == 1 && c >= 'a' && c <= 'd') {
                 struct Stack *found = &g.found[c - 'a'];
-                if (canFound(found, get(src, 0))) {
+                if (canFound(found, get(input.stack, 0))) {
                     commit(found);
                 } else {
                     commit(NULL);
                 }
-            } else if (depth == 1 && (c == 'f' || c == '\n')) {
+            } else if (input.depth == 1 && (c == 'f' || c == '\n')) {
                 struct Stack *found;
                 for (int i = 0; i < 4; ++i) {
                     found = &g.found[i];
-                    if (canFound(found, get(src, 0))) break;
+                    if (canFound(found, get(input.stack, 0))) break;
                     found = NULL;
                 }
                 commit(found);
