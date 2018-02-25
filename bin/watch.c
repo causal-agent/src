@@ -26,7 +26,7 @@
 
 static void watch(int kq, char *path) {
     int fd = open(path, O_RDONLY);
-    if (fd < 0) err(EX_IOERR, "%s", path);
+    if (fd < 0) err(EX_NOINPUT, "%s", path);
 
     struct kevent event = {
         .ident = fd,
@@ -36,7 +36,7 @@ static void watch(int kq, char *path) {
         .udata = path,
     };
     int nevents = kevent(kq, &event, 1, NULL, 0, NULL);
-    if (nevents < 0) err(EX_IOERR, "kevent");
+    if (nevents < 0) err(EX_OSERR, "kevent");
 }
 
 static void exec(char *const argv[]) {
@@ -44,8 +44,8 @@ static void exec(char *const argv[]) {
     if (pid < 0) err(EX_OSERR, "fork");
 
     if (!pid) {
-        execvp(argv[0], argv);
-        err(EX_OSERR, "%s", argv[0]);
+        execvp(*argv, argv);
+        err(EX_NOINPUT, "%s", *argv);
     }
 
     int status;
@@ -67,27 +67,27 @@ int main(int argc, char *argv[]) {
     int kq = kqueue();
     if (kq < 0) err(EX_OSERR, "kqueue");
 
-    int index;
-    for (index = 1; index < argc - 1; ++index) {
-        if (argv[index][0] == '-') {
-            index++;
+    int i;
+    for (i = 1; i < argc - 1; ++i) {
+        if (argv[i][0] == '-') {
+            i++;
             break;
         }
-        watch(kq, argv[index]);
+        watch(kq, argv[i]);
     }
 
-    exec(&argv[index]);
+    exec(&argv[i]);
 
     for (;;) {
         struct kevent event;
         int nevents = kevent(kq, NULL, 0, &event, 1, NULL);
-        if (nevents < 0) err(EX_IOERR, "kevent");
+        if (nevents < 0) err(EX_OSERR, "kevent");
 
         if (event.fflags & NOTE_DELETE) {
             close(event.ident);
             watch(kq, event.udata);
         }
 
-        exec(&argv[index]);
+        exec(&argv[i]);
     }
 }
