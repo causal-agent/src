@@ -1,5 +1,5 @@
 ANY_BINS = atch dtch gfxx hnel pbcopy pbd pbpaste pngo wake xx
-BSD_BINS = jrp klon watch
+BSD_BINS = klon watch
 LIN_BINS = bri fbatt fbclock
 ALL_BINS = $(ANY_BINS) $(BSD_BINS) $(LIN_BINS)
 GFX ?= none

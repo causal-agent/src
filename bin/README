@@ -39,18 +39,6 @@ alternate keyboard layouts. Toggle remapping with ^S.
 
     hnel '[]{}' '{}[]' vi
 
-                                  jrp
-
-JIT RPN calculator for x86_64. Mostly just to be overkill.
-
-    B   bin    O   oct    D   dec    X   hex
-    ;   drop   :   dup    \   swap
-    _   neg    +   add    -   sub
-    *   mul    /   div    %   rem
-    &   and    |   or     ^   xor
-    ~   not    <   shl    >   shr
-    '   quot   ,   prch   .   prnt
-
                                   klon
 
 Klondike solitaire for curses. BSD-only for arc4random_uniform.
