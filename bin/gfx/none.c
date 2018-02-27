@@ -14,10 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <err.h>
 #include <sysexits.h>
 
 #include "gfx.h"
 
 int main() {
-    return EX_CONFIG;
+    errx(EX_CONFIG, "no gfx frontend");
 }
