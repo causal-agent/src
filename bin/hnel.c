@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
         { .fd = pty, .events = POLLIN },
     };
     while (0 < poll(fds, 2, -1)) {
-        if (fds[0].revents == POLLIN) {
+        if (fds[0].revents & POLLIN) {
             ssize_t readSize = read(STDIN_FILENO, buf, sizeof(buf));
             if (readSize < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
 
@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
             if (writeSize < readSize) errx(EX_IOERR, "short write(%d)", pty);
         }
 
-        if (fds[1].revents == POLLIN) {
+        if (fds[1].revents & POLLIN) {
             ssize_t readSize = read(pty, buf, sizeof(buf));
             if (readSize < 0) err(EX_IOERR, "read(%d)", pty);
 
