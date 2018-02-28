@@ -28,6 +28,8 @@
 #include <unistd.h>
 #include <zlib.h>
 
+#include "gfx/gfx.h"
+
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MASK(b) ((1 << (b)) - 1)
 
@@ -38,10 +40,44 @@ static enum {
     COLOR_INDEXED,
     COLOR_GRAYSCALE,
     COLOR_RGB,
-    COLOR__MAX,
+    COLOR__COUNT,
 } space = COLOR_RGB;
-static const char *COLOR__STR[COLOR__MAX] = { "indexed", "grayscale", "rgb" };
-static uint32_t palette[256];
+static const char *COLOR__STR[COLOR__COUNT] = { "indexed", "grayscale", "rgb" };
+
+static uint32_t palette[256] = {
+    0xFF0000, 0xFF0600, 0xFF0C00, 0xFF1200, 0xFF1800, 0xFF1E00, 0xFF2400, 0xFF2A00,
+    0xFF3000, 0xFF3600, 0xFF3C00, 0xFF4200, 0xFF4800, 0xFF4E00, 0xFF5400, 0xFF5A00,
+    0xFF6000, 0xFF6600, 0xFF6C00, 0xFF7200, 0xFF7800, 0xFF7E00, 0xFF8300, 0xFF8900,
+    0xFF8F00, 0xFF9500, 0xFF9B00, 0xFFA100, 0xFFA700, 0xFFAD00, 0xFFB300, 0xFFB900,
+    0xFFBF00, 0xFFC500, 0xFFCB00, 0xFFD100, 0xFFD700, 0xFFDD00, 0xFFE300, 0xFFE900,
+    0xFFEF00, 0xFFF500, 0xFFFB00, 0xFDFF00, 0xF7FF00, 0xF1FF00, 0xEBFF00, 0xE5FF00,
+    0xDFFF00, 0xD9FF00, 0xD3FF00, 0xCDFF00, 0xC7FF00, 0xC1FF00, 0xBBFF00, 0xB5FF00,
+    0xAFFF00, 0xA9FF00, 0xA3FF00, 0x9DFF00, 0x97FF00, 0x91FF00, 0x8BFF00, 0x85FF00,
+    0x80FF00, 0x7AFF00, 0x74FF00, 0x6EFF00, 0x68FF00, 0x62FF00, 0x5CFF00, 0x56FF00,
+    0x50FF00, 0x4AFF00, 0x44FF00, 0x3EFF00, 0x38FF00, 0x32FF00, 0x2CFF00, 0x26FF00,
+    0x20FF00, 0x1AFF00, 0x14FF00, 0x0EFF00, 0x08FF00, 0x02FF00, 0x00FF04, 0x00FF0A,
+    0x00FF10, 0x00FF16, 0x00FF1C, 0x00FF22, 0x00FF28, 0x00FF2E, 0x00FF34, 0x00FF3A,
+    0x00FF40, 0x00FF46, 0x00FF4C, 0x00FF52, 0x00FF58, 0x00FF5E, 0x00FF64, 0x00FF6A,
+    0x00FF70, 0x00FF76, 0x00FF7C, 0x00FF81, 0x00FF87, 0x00FF8D, 0x00FF93, 0x00FF99,
+    0x00FF9F, 0x00FFA5, 0x00FFAB, 0x00FFB1, 0x00FFB7, 0x00FFBD, 0x00FFC3, 0x00FFC9,
+    0x00FFCF, 0x00FFD5, 0x00FFDB, 0x00FFE1, 0x00FFE7, 0x00FFED, 0x00FFF3, 0x00FFF9,
+    0x00FFFF, 0x00F9FF, 0x00F3FF, 0x00EDFF, 0x00E7FF, 0x00E1FF, 0x00DBFF, 0x00D5FF,
+    0x00CFFF, 0x00C9FF, 0x00C3FF, 0x00BDFF, 0x00B7FF, 0x00B1FF, 0x00ABFF, 0x00A5FF,
+    0x009FFF, 0x0099FF, 0x0093FF, 0x008DFF, 0x0087FF, 0x0081FF, 0x007CFF, 0x0076FF,
+    0x0070FF, 0x006AFF, 0x0064FF, 0x005EFF, 0x0058FF, 0x0052FF, 0x004CFF, 0x0046FF,
+    0x0040FF, 0x003AFF, 0x0034FF, 0x002EFF, 0x0028FF, 0x0022FF, 0x001CFF, 0x0016FF,
+    0x0010FF, 0x000AFF, 0x0004FF, 0x0200FF, 0x0800FF, 0x0E00FF, 0x1400FF, 0x1A00FF,
+    0x2000FF, 0x2600FF, 0x2C00FF, 0x3200FF, 0x3800FF, 0x3E00FF, 0x4400FF, 0x4A00FF,
+    0x5000FF, 0x5600FF, 0x5C00FF, 0x6200FF, 0x6800FF, 0x6E00FF, 0x7400FF, 0x7A00FF,
+    0x7F00FF, 0x8500FF, 0x8B00FF, 0x9100FF, 0x9700FF, 0x9D00FF, 0xA300FF, 0xA900FF,
+    0xAF00FF, 0xB500FF, 0xBB00FF, 0xC100FF, 0xC700FF, 0xCD00FF, 0xD300FF, 0xD900FF,
+    0xDF00FF, 0xE500FF, 0xEB00FF, 0xF100FF, 0xF700FF, 0xFD00FF, 0xFF00FB, 0xFF00F5,
+    0xFF00EF, 0xFF00E9, 0xFF00E3, 0xFF00DD, 0xFF00D7, 0xFF00D1, 0xFF00CB, 0xFF00C5,
+    0xFF00BF, 0xFF00B9, 0xFF00B3, 0xFF00AD, 0xFF00A7, 0xFF00A1, 0xFF009B, 0xFF0095,
+    0xFF008F, 0xFF0089, 0xFF0083, 0xFF007E, 0xFF0078, 0xFF0072, 0xFF006C, 0xFF0066,
+    0xFF0060, 0xFF005A, 0xFF0054, 0xFF004E, 0xFF0048, 0xFF0042, 0xFF003C, 0xFF0036,
+    0xFF0030, 0xFF002A, 0xFF0024, 0xFF001E, 0xFF0018, 0xFF0012, 0xFF000C, 0xFF0006,
+};
 
 static enum {
     ENDIAN_LITTLE,
@@ -113,8 +149,7 @@ int init(int argc, char *argv[]) {
         fread(palette, 4, 256, file);
         if (ferror(file)) err(EX_IOERR, "%s", pal);
 
-        int error = fclose(file);
-        if (error) err(EX_IOERR, "%s", pal);
+        fclose(file);
     }
 
     if (path) {
@@ -135,7 +170,7 @@ int init(int argc, char *argv[]) {
         if (!data) err(EX_OSERR, "malloc(%zu)", size);
 
         size = fread(data, 1, size, stdin);
-        if (ferror(stdin)) err(EX_IOERR, "stdin");
+        if (ferror(stdin)) err(EX_IOERR, "(stdin)");
     }
 
     return EX_OK;
@@ -144,13 +179,12 @@ int init(int argc, char *argv[]) {
 static char options[128];
 static void formatOptions(void) {
     snprintf(
-        options,
-        sizeof(options),
-        "gfxx -c %s -e%c -E%c -b %c%c%c%c -n %#zx %s%s-w %zu -z %zu",
+        options, sizeof(options),
+        "gfxx -c %s -e%c -E%c -b %hhu%hhu%hhu%hhu -n %#zx %s%s-w %zu -z %zu",
         COLOR__STR[space],
         "lb"[byteOrder],
         "lb"[bitOrder],
-        bits[PAD] + '0', bits[R] + '0', bits[G] + '0', bits[B] + '0',
+        bits[PAD], bits[R], bits[G], bits[B],
         offset,
         flip ? "-f " : "",
         mirror ? "-m " : "",
@@ -275,7 +309,7 @@ static void drawBytes(struct Iter *it) {
         uint32_t n = 0;
         for (size_t b = 0; b < bytes; ++b) {
             n <<= 8;
-            n |= (byteOrder == ENDIAN_BIG) ? data[i+b] : data[i+bytes-b-1];
+            n |= (byteOrder == ENDIAN_BIG) ? data[i + b] : data[i + bytes - b - 1];
         }
 
         if (space == COLOR_INDEXED) {
@@ -290,78 +324,92 @@ static void drawBytes(struct Iter *it) {
     }
 }
 
-static unsigned counter = 1;
-static char pngPath[FILENAME_MAX];
-static FILE *png;
+static struct {
+    unsigned counter;
+    char path[FILENAME_MAX];
+    FILE *file;
+} out;
+static void outOpen(const char *ext) {
+    snprintf(out.path, sizeof(out.path), "%s%04u.%s", prefix, ++out.counter, ext);
+    out.file = fopen(out.path, "wx");
+    if (out.file) {
+        printf("%s\n", out.path);
+    } else {
+        warn("%s", out.path);
+    }
+}
 
 static uint32_t crc;
-static void pngWrite(const void *data, size_t size) {
-    crc = crc32(crc, data, size);
-    size_t count = fwrite(data, 1, size, png);
-    if (count < size) err(EX_IOERR, "%s", pngPath);
+static void pngWrite(const void *ptr, size_t size) {
+    fwrite(ptr, size, 1, out.file);
+    if (ferror(out.file)) err(EX_IOERR, "%s", out.path);
+    crc = crc32(crc, ptr, size);
 }
-static void pngUint32(uint32_t data) {
-    uint32_t net = htonl(data);
+static void pngUint(uint32_t host) {
+    uint32_t net = htonl(host);
     pngWrite(&net, 4);
 }
-
-#define ONCE(before, after) for (int _once = ((before), 1); _once; (after), --_once)
-#define PNG_CHUNK(type, size) ONCE( \
-    (pngUint32((size)), crc = crc32(0, Z_NULL, 0), pngWrite((type), 4)), \
-    pngUint32(crc) \
-)
+static void pngChunk(const char *type, uint32_t size) {
+    pngUint(size);
+    crc = crc32(0, Z_NULL, 0);
+    pngWrite(type, 4);
+}
 
 static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
     int error;
 
-    size_t scanline = 1 + 3 * srcWidth;
-    uint8_t filt[scanline * srcHeight];
+    size_t stride = 1 + 3 * srcWidth;
+    uint8_t data[stride * srcHeight];
     for (size_t y = 0; y < srcHeight; ++y) {
-        filt[y * scanline] = 0; // None
+        data[y * stride] = 0;
         for (size_t x = 0; x < srcWidth; ++x) {
-            uint8_t *filtPixel = &filt[y * scanline + 1 + 3 * x];
-            filtPixel[0] = src[y * srcWidth + x] >> 16;
-            filtPixel[1] = src[y * srcWidth + x] >> 8;
-            filtPixel[2] = src[y * srcWidth + x];
+            uint8_t *p = &data[y * stride + 1 + 3 * x];
+            p[0] = src[y * srcWidth + x] >> 16;
+            p[1] = src[y * srcWidth + x] >> 8;
+            p[2] = src[y * srcWidth + x];
         }
     }
 
-    uLong dataSize = compressBound(sizeof(filt));
-    uint8_t data[dataSize];
-    error = compress(data, &dataSize, filt, sizeof(filt));
+    uLong deflateSize = compressBound(sizeof(data));
+    uint8_t deflate[deflateSize];
+    error = compress(deflate, &deflateSize, data, sizeof(data));
     if (error != Z_OK) errx(EX_SOFTWARE, "compress: %d", error);
 
-    snprintf(pngPath, sizeof(pngPath), "%s%04u.png", prefix, counter++);
-    png = fopen(pngPath, "wx");
-    if (!png) { warn("%s", pngPath); return; }
-    printf("%s\n", pngPath);
+    outOpen("png");
+    if (!out.file) return;
 
     const uint8_t SIGNATURE[] = { 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' };
     const uint8_t HEADER[] = { 8, 2, 0, 0, 0 }; // 8-bit truecolor
     const char SOFTWARE[] = "Software";
     formatOptions();
+    uint8_t sbit[3] = { MAX(bits[R], 1), MAX(bits[G], 1), MAX(bits[B], 1) };
 
     pngWrite(SIGNATURE, sizeof(SIGNATURE));
-    PNG_CHUNK("IHDR", 4 + 4 + sizeof(HEADER)) {
-        pngUint32(srcWidth);
-        pngUint32(srcHeight);
-        pngWrite(HEADER, sizeof(HEADER));
-    }
-    PNG_CHUNK("tEXt", sizeof(SOFTWARE) + strlen(options)) {
-        pngWrite(SOFTWARE, sizeof(SOFTWARE));
-        pngWrite(options, strlen(options));
-    }
-    PNG_CHUNK("sBIT", 3) {
-        uint8_t sbit[] = { MAX(bits[R], 1), MAX(bits[G], 1), MAX(bits[B], 1) };
-        pngWrite(sbit, sizeof(sbit));
-    }
-    PNG_CHUNK("IDAT", dataSize) {
-        pngWrite(data, dataSize);
-    }
-    PNG_CHUNK("IEND", 0);
 
-    error = fclose(png);
-    if (error) err(EX_IOERR, "%s", pngPath);
+    pngChunk("IHDR", 4 + 4 + sizeof(HEADER));
+    pngUint(srcWidth);
+    pngUint(srcHeight);
+    pngWrite(HEADER, sizeof(HEADER));
+    pngUint(crc);
+
+    pngChunk("tEXt", sizeof(SOFTWARE) + strlen(options));
+    pngWrite(SOFTWARE, sizeof(SOFTWARE));
+    pngWrite(options, strlen(options));
+    pngUint(crc);
+
+    pngChunk("sBIT", sizeof(sbit));
+    pngWrite(sbit, sizeof(sbit));
+    pngUint(crc);
+
+    pngChunk("IDAT", deflateSize);
+    pngWrite(deflate, deflateSize);
+    pngUint(crc);
+
+    pngChunk("IEND", 0);
+    pngUint(crc);
+
+    error = fclose(out.file);
+    if (error) err(EX_IOERR, "%s", out.path);
 }
 
 static enum {
@@ -390,14 +438,14 @@ static void palSample(void) {
 }
 
 static void palDump(void) {
-    size_t count = fwrite(palette, 4, 256, stdout);
-    if (count < 256) err(EX_IOERR, "stdout");
-}
+    outOpen("dat");
+    if (!out.file) return;
 
-static uint8_t bit = 0;
-static void setBit(char in) {
-    bits[bit++] = in - '0';
-    bit &= 3;
+    fwrite(palette, 4, 256, out.file);
+    if (ferror(out.file)) err(EX_IOERR, "%s", out.path);
+
+    int error = fclose(out.file);
+    if (error) err(EX_IOERR, "%s", out.path);
 }
 
 static const uint8_t PRESETS[][4] = {
@@ -416,10 +464,16 @@ static const uint8_t PRESETS[][4] = {
 
 static uint8_t preset = PRESETS_LEN - 1;
 static void setPreset(void) {
-    for (int i = 0; i < 4; ++i) {
-        bits[i] = PRESETS[preset][i];
-    }
-    bit = 0;
+    bits[PAD] = PRESETS[preset][PAD];
+    bits[R] = PRESETS[preset][R];
+    bits[G] = PRESETS[preset][G];
+    bits[B] = PRESETS[preset][B];
+}
+
+static void setBit(char in) {
+    static uint8_t bit = 0;
+    bits[bit++] = in - '0';
+    bit &= 3;
 }
 
 bool input(char in) {
@@ -430,8 +484,8 @@ bool input(char in) {
         break; case 'x': dump = DUMP_ONE;
         break; case 'X': dump ^= DUMP_ALL;
         break; case 'o': formatOptions(); printf("%s\n", options);
-        break; case '[': if (!space--) space = COLOR__MAX - 1;
-        break; case ']': if (++space == COLOR__MAX) space = 0;
+        break; case '[': if (!space--) space = COLOR__COUNT - 1;
+        break; case ']': if (++space == COLOR__COUNT) space = 0;
         break; case 'p': palSample();
         break; case 'P': palDump();
         break; case '{': if (!preset--) preset = PRESETS_LEN - 1; setPreset();
