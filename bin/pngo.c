@@ -27,7 +27,7 @@
 #include <zlib.h>
 
 #define PACKED __attribute__((packed))
-#define BYTE_PAIR(a, b) ((uint16_t)(a) << 8 | (uint16_t)(b))
+#define PAIR(a, b) ((uint16_t)(a) << 8 | (uint16_t)(b))
 
 #define CRC_INIT (crc32(0, Z_NULL, 0))
 
@@ -69,6 +69,10 @@ struct PACKED Chunk {
     char type[4];
 };
 
+static bool ancillary(struct Chunk chunk) {
+    return chunk.type[0] & 0x20;
+}
+
 static const char *typeStr(struct Chunk chunk) {
     static char buf[5];
     memcpy(buf, chunk.type, 4);
@@ -81,6 +85,11 @@ static struct Chunk readChunk(void) {
     chunk.size = ntohl(chunk.size);
     crc = crc32(CRC_INIT, (Byte *)chunk.type, sizeof(chunk.type));
     return chunk;
+}
+
+static void skipChunk(struct Chunk chunk) {
+    int error = fseek(file, chunk.size + 4, SEEK_CUR);
+    if (error) err(EX_IOERR, "%s", path);
 }
 
 static void writeChunk(struct Chunk chunk) {
@@ -96,7 +105,7 @@ static void readCrc(void) {
     found = ntohl(found);
     if (found != expected) {
         errx(
-            EX_DATAERR, "%s: expected CRC32 %08x, found %08x",
+            EX_DATAERR, "%s: expected CRC32 %08X, found %08X",
             path, expected, found
         );
     }
@@ -107,19 +116,17 @@ static void writeCrc(void) {
     writeExpect(&net, sizeof(net));
 }
 
-enum PACKED Color {
-    GRAYSCALE       = 0,
-    TRUECOLOR       = 2,
-    INDEXED         = 3,
-    GRAYSCALE_ALPHA = 4,
-    TRUECOLOR_ALPHA = 6,
-};
-
 static struct PACKED {
     uint32_t width;
     uint32_t height;
     uint8_t depth;
-    enum Color color;
+    enum PACKED {
+        GRAYSCALE       = 0,
+        TRUECOLOR       = 2,
+        INDEXED         = 3,
+        GRAYSCALE_ALPHA = 4,
+        TRUECOLOR_ALPHA = 6,
+    } color;
     enum PACKED { DEFLATE } compression;
     enum PACKED { ADAPTIVE } filter;
     enum PACKED { PROGRESSIVE, ADAM7 } interlace;
@@ -159,12 +166,23 @@ static void readHeader(void) {
 
     if (!header.width) errx(EX_DATAERR, "%s: invalid width 0", path);
     if (!header.height) errx(EX_DATAERR, "%s: invalid height 0", path);
-    switch (BYTE_PAIR(header.color, header.depth)) {
-        case 0x0001: case 0x0002: case 0x0004: case 0x0008: case 0x0010: break;
-        case 0x0208: case 0x0210:                                        break;
-        case 0x0301: case 0x0302: case 0x0304: case 0x0308:              break;
-        case 0x0408: case 0x0410:                                        break;
-        case 0x0608: case 0x0610:                                        break;
+    switch (PAIR(header.color, header.depth)) {
+        case PAIR(GRAYSCALE, 1):
+        case PAIR(GRAYSCALE, 2):
+        case PAIR(GRAYSCALE, 4):
+        case PAIR(GRAYSCALE, 8):
+        case PAIR(GRAYSCALE, 16):
+        case PAIR(TRUECOLOR, 8):
+        case PAIR(TRUECOLOR, 16):
+        case PAIR(INDEXED, 1):
+        case PAIR(INDEXED, 2):
+        case PAIR(INDEXED, 4):
+        case PAIR(INDEXED, 8):
+        case PAIR(GRAYSCALE_ALPHA, 8):
+        case PAIR(GRAYSCALE_ALPHA, 16):
+        case PAIR(TRUECOLOR_ALPHA, 8):
+        case PAIR(TRUECOLOR_ALPHA, 16):
+            break;
         default:
             errx(
                 EX_DATAERR, "%s: invalid color type %hhu and bit depth %hhu",
@@ -186,7 +204,7 @@ static void readHeader(void) {
 }
 
 static void writeHeader(void) {
-    struct Chunk ihdr = { .size = sizeof(header), .type = { 'I', 'H', 'D', 'R' } };
+    struct Chunk ihdr = { .size = sizeof(header), .type = "IHDR" };
     writeChunk(ihdr);
     header.width = htonl(header.width);
     header.height = htonl(header.height);
@@ -223,7 +241,9 @@ static void readPalette(void) {
         chunk = readChunk();
         if (0 == memcmp(chunk.type, "PLTE", 4)) {
             break;
-        } else if (!(chunk.type[0] & 0x20)) {
+        } else if (ancillary(chunk)) {
+            skipChunk(chunk);
+        } else {
             errx(
                 EX_DATAERR, "%s: expected PLTE chunk, found %s",
                 path, typeStr(chunk)
@@ -240,7 +260,7 @@ static void readPalette(void) {
 }
 
 static void writePalette(void) {
-    struct Chunk plte = { .size = 3 * palette.len, .type = { 'P', 'L', 'T', 'E' } };
+    struct Chunk plte = { .size = 3 * palette.len, .type = "PLTE" };
     writeChunk(plte);
     writeExpect(palette.entries, plte.size);
     writeCrc();
@@ -260,33 +280,30 @@ static void readData(void) {
 
     for (;;) {
         struct Chunk chunk = readChunk();
-        if (0 == memcmp(chunk.type, "IEND", 4)) {
+        if (0 == memcmp(chunk.type, "IDAT", 4)) {
+            uint8_t idat[chunk.size];
+            readExpect(idat, sizeof(idat), "image data");
+            readCrc();
+
+            stream.next_in = idat;
+            stream.avail_in = sizeof(idat);
+            int error = inflate(&stream, Z_SYNC_FLUSH);
+            if (error == Z_STREAM_END) break;
+            if (error != Z_OK) errx(EX_DATAERR, "%s: inflate: %s", path, stream.msg);
+
+        } else if (0 == memcmp(chunk.type, "IEND", 4)) {
             errx(EX_DATAERR, "%s: missing IDAT chunk", path);
-        }
-        if (0 != memcmp(chunk.type, "IDAT", 4)) {
-            if (chunk.type[0] & 0x20) {
-                int error = fseek(file, chunk.size + 4, SEEK_CUR);
-                if (error) err(EX_IOERR, "%s", path);
-                continue;
-            }
+        } else if (ancillary(chunk)) {
+            skipChunk(chunk);
+        } else {
             errx(
                 EX_CONFIG, "%s: unsupported critical chunk %s",
                 path, typeStr(chunk)
             );
         }
-
-        uint8_t idat[chunk.size];
-        readExpect(idat, sizeof(idat), "image data");
-        readCrc();
-
-        stream.next_in = idat;
-        stream.avail_in = chunk.size;
-        int error = inflate(&stream, Z_SYNC_FLUSH);
-        if (error == Z_STREAM_END) break;
-        if (error != Z_OK) errx(EX_DATAERR, "%s: inflate: %s", path, stream.msg);
     }
-    inflateEnd(&stream);
 
+    inflateEnd(&stream);
     if (stream.total_out != dataSize()) {
         errx(
             EX_DATAERR, "%s: expected data size %zu, found %lu",
@@ -301,14 +318,14 @@ static void writeData(void) {
     int error = compress2(deflate, &size, data, dataSize(), Z_BEST_COMPRESSION);
     if (error != Z_OK) errx(EX_SOFTWARE, "%s: compress2: %d", path, error);
 
-    struct Chunk idat = { .size = size, .type = { 'I', 'D', 'A', 'T' } };
+    struct Chunk idat = { .size = size, .type = "IDAT" };
     writeChunk(idat);
     writeExpect(deflate, size);
     writeCrc();
 }
 
 static void writeEnd(void) {
-    struct Chunk iend = { .size = 0, .type = { 'I', 'E', 'N', 'D' } };
+    struct Chunk iend = { .size = 0, .type = "IEND" };
     writeChunk(iend);
     writeCrc();
 }
@@ -361,10 +378,10 @@ static uint8_t filt(enum Filter type, struct Bytes f) {
     }
 }
 
-static struct {
-    enum Filter *type;
-    uint8_t *data;
-} *lines;
+static struct Line {
+    enum Filter type;
+    uint8_t data[];
+} **lines;
 
 static void allocLines(void) {
     lines = calloc(header.height, sizeof(*lines));
@@ -374,10 +391,9 @@ static void allocLines(void) {
 static void scanlines(void) {
     size_t stride = 1 + lineSize();
     for (uint32_t y = 0; y < header.height; ++y) {
-        lines[y].type = &data[y * stride];
-        lines[y].data = &data[y * stride + 1];
-        if (*lines[y].type >= FILTER_COUNT) {
-            errx(EX_DATAERR, "%s: invalid filter type %hhu", path, *lines[y].type);
+        lines[y] = (struct Line *)&data[y * stride];
+        if (lines[y]->type >= FILTER_COUNT) {
+            errx(EX_DATAERR, "%s: invalid filter type %hhu", path, lines[y]->type);
         }
     }
 }
@@ -387,35 +403,28 @@ static struct Bytes origBytes(uint32_t y, size_t i) {
     if (!pixelSize) pixelSize = 1;
     bool a = (i >= pixelSize), b = (y > 0), c = (a && b);
     return (struct Bytes) {
-        .x = lines[y].data[i],
-        .a = a ? lines[y].data[i - pixelSize] : 0,
-        .b = b ? lines[y - 1].data[i] : 0,
-        .c = c ? lines[y - 1].data[i - pixelSize] : 0,
+        .x = lines[y]->data[i],
+        .a = a ? lines[y]->data[i - pixelSize] : 0,
+        .b = b ? lines[y - 1]->data[i] : 0,
+        .c = c ? lines[y - 1]->data[i - pixelSize] : 0,
     };
 }
 
 static void reconData(void) {
     for (uint32_t y = 0; y < header.height; ++y) {
         for (size_t i = 0; i < lineSize(); ++i) {
-            lines[y].data[i] =
-                recon(*lines[y].type, origBytes(y, i));
+            lines[y]->data[i] =
+                recon(lines[y]->type, origBytes(y, i));
         }
-        *lines[y].type = NONE;
+        lines[y]->type = NONE;
     }
 }
 
 static void filterData(void) {
+    if (header.color == INDEXED || header.depth < 8) return;
     for (uint32_t y = header.height - 1; y < header.height; --y) {
-        if (header.color == INDEXED || header.depth < 8) {
-            *lines[y].type = NONE;
-            for (size_t i = lineSize() - 1; i < lineSize(); --i) {
-                lines[y].data[i] = filt(NONE, origBytes(y, i));
-            }
-            continue;
-        }
-
         uint8_t filter[FILTER_COUNT][lineSize()];
-        uint32_t heuristic[FILTER_COUNT] = { 0 };
+        uint32_t heuristic[FILTER_COUNT] = {0};
         enum Filter minType = NONE;
         for (enum Filter type = NONE; type < FILTER_COUNT; ++type) {
             for (size_t i = 0; i < lineSize(); ++i) {
@@ -424,8 +433,8 @@ static void filterData(void) {
             }
             if (heuristic[type] < heuristic[minType]) minType = type;
         }
-        *lines[y].type = minType;
-        memcpy(lines[y].data, filter[minType], lineSize());
+        lines[y]->type = minType;
+        memcpy(lines[y]->data, filter[minType], lineSize());
     }
 }
 
@@ -437,16 +446,16 @@ static void discardAlpha(void) {
     for (uint32_t y = 0; y < header.height; ++y) {
         for (uint32_t x = 0; x < header.width; ++x) {
             for (size_t i = 0; i < sampleSize; ++i) {
-                if (lines[y].data[x * pixelSize + colorSize + i] != 0xFF) return;
+                if (lines[y]->data[x * pixelSize + colorSize + i] != 0xFF) return;
             }
         }
     }
 
     uint8_t *ptr = data;
     for (uint32_t y = 0; y < header.height; ++y) {
-        *ptr++ = *lines[y].type;
+        *ptr++ = lines[y]->type;
         for (uint32_t x = 0; x < header.width; ++x) {
-            memcpy(ptr, &lines[y].data[x * pixelSize], colorSize);
+            memcpy(ptr, &lines[y]->data[x * pixelSize], colorSize);
             ptr += colorSize;
         }
     }
@@ -460,7 +469,7 @@ static void discardColor(void) {
     size_t pixelSize = sampleSize * (header.color == TRUECOLOR ? 3 : 4);
     for (uint32_t y = 0; y < header.height; ++y) {
         for (uint32_t x = 0; x < header.width; ++x) {
-            uint8_t *r = &lines[y].data[x * pixelSize];
+            uint8_t *r = &lines[y]->data[x * pixelSize];
             uint8_t *g = r + sampleSize;
             uint8_t *b = g + sampleSize;
             if (0 != memcmp(r, g, sampleSize)) return;
@@ -470,9 +479,9 @@ static void discardColor(void) {
 
     uint8_t *ptr = data;
     for (uint32_t y = 0; y < header.height; ++y) {
-        *ptr++ = *lines[y].type;
+        *ptr++ = lines[y]->type;
         for (uint32_t x = 0; x < header.width; ++x) {
-            uint8_t *pixel = &lines[y].data[x * pixelSize];
+            uint8_t *pixel = &lines[y]->data[x * pixelSize];
             memcpy(ptr, pixel, sampleSize);
             ptr += sampleSize;
             if (header.color == TRUECOLOR_ALPHA) {
@@ -489,15 +498,15 @@ static void indexColor(void) {
     if (header.color != TRUECOLOR || header.depth != 8) return;
     for (uint32_t y = 0; y < header.height; ++y) {
         for (uint32_t x = 0; x < header.width; ++x) {
-            if (!paletteAdd(&lines[y].data[x * 3])) return;
+            if (!paletteAdd(&lines[y]->data[x * 3])) return;
         }
     }
 
     uint8_t *ptr = data;
     for (uint32_t y = 0; y < header.height; ++y) {
-        *ptr++ = *lines[y].type;
+        *ptr++ = lines[y]->type;
         for (uint32_t x = 0; x < header.width; ++x) {
-            *ptr++ = paletteIndex(&lines[y].data[x * 3]);
+            *ptr++ = paletteIndex(&lines[y]->data[x * 3]);
         }
     }
     header.color = INDEXED;
@@ -510,7 +519,7 @@ static void reduceDepth8(void) {
     if (header.color == GRAYSCALE) {
         for (uint32_t y = 0; y < header.height; ++y) {
             for (size_t i = 0; i < lineSize(); ++i) {
-                uint8_t a = lines[y].data[i];
+                uint8_t a = lines[y]->data[i];
                 if ((a >> 4) != (a & 0x0F)) return;
             }
         }
@@ -520,10 +529,10 @@ static void reduceDepth8(void) {
 
     uint8_t *ptr = data;
     for (uint32_t y = 0; y < header.height; ++y) {
-        *ptr++ = *lines[y].type;
+        *ptr++ = lines[y]->type;
         for (size_t i = 0; i < lineSize(); i += 2) {
-            uint8_t iByte = lines[y].data[i];
-            uint8_t jByte = (i + 1 < lineSize()) ? lines[y].data[i + 1] : 0;
+            uint8_t iByte = lines[y]->data[i];
+            uint8_t jByte = (i + 1 < lineSize()) ? lines[y]->data[i + 1] : 0;
             uint8_t a = iByte & 0x0F;
             uint8_t b = jByte & 0x0F;
             *ptr++ = a << 4 | b;
@@ -538,8 +547,8 @@ static void reduceDepth4(void) {
     if (header.color == GRAYSCALE) {
         for (uint32_t y = 0; y < header.height; ++y) {
             for (size_t i = 0; i < lineSize(); ++i) {
-                uint8_t a = lines[y].data[i] >> 4;
-                uint8_t b = lines[y].data[i] & 0x0F;
+                uint8_t a = lines[y]->data[i] >> 4;
+                uint8_t b = lines[y]->data[i] & 0x0F;
                 if ((a >> 2) != (a & 0x03)) return;
                 if ((b >> 2) != (b & 0x03)) return;
             }
@@ -550,10 +559,10 @@ static void reduceDepth4(void) {
 
     uint8_t *ptr = data;
     for (uint32_t y = 0; y < header.height; ++y) {
-        *ptr++ = *lines[y].type;
+        *ptr++ = lines[y]->type;
         for (size_t i = 0; i < lineSize(); i += 2) {
-            uint8_t iByte = lines[y].data[i];
-            uint8_t jByte = (i + 1 < lineSize()) ? lines[y].data[i + 1] : 0;
+            uint8_t iByte = lines[y]->data[i];
+            uint8_t jByte = (i + 1 < lineSize()) ? lines[y]->data[i + 1] : 0;
             uint8_t a = iByte >> 4 & 0x03, b = iByte & 0x03;
             uint8_t c = jByte >> 4 & 0x03, d = jByte & 0x03;
             *ptr++ = a << 6 | b << 4 | c << 2 | d;
@@ -568,10 +577,10 @@ static void reduceDepth2(void) {
     if (header.color == GRAYSCALE) {
         for (uint32_t y = 0; y < header.height; ++y) {
             for (size_t i = 0; i < lineSize(); ++i) {
-                uint8_t a = lines[y].data[i] >> 6;
-                uint8_t b = lines[y].data[i] >> 4 & 0x03;
-                uint8_t c = lines[y].data[i] >> 2 & 0x03;
-                uint8_t d = lines[y].data[i] & 0x03;
+                uint8_t a = lines[y]->data[i] >> 6;
+                uint8_t b = lines[y]->data[i] >> 4 & 0x03;
+                uint8_t c = lines[y]->data[i] >> 2 & 0x03;
+                uint8_t d = lines[y]->data[i] & 0x03;
                 if ((a >> 1) != (a & 0x01)) return;
                 if ((b >> 1) != (b & 0x01)) return;
                 if ((c >> 1) != (c & 0x01)) return;
@@ -584,10 +593,10 @@ static void reduceDepth2(void) {
 
     uint8_t *ptr = data;
     for (uint32_t y = 0; y < header.height; ++y) {
-        *ptr++ = *lines[y].type;
+        *ptr++ = lines[y]->type;
         for (size_t i = 0; i < lineSize(); i += 2) {
-            uint8_t iByte = lines[y].data[i];
-            uint8_t jByte = (i + 1 < lineSize()) ? lines[y].data[i + 1] : 0;
+            uint8_t iByte = lines[y]->data[i];
+            uint8_t jByte = (i + 1 < lineSize()) ? lines[y]->data[i + 1] : 0;
             uint8_t a = iByte >> 6 & 0x01, b = iByte >> 4 & 0x01;
             uint8_t c = iByte >> 2 & 0x01, d = iByte & 0x01;
             uint8_t e = jByte >> 6 & 0x01, f = jByte >> 4 & 0x01;
@@ -626,9 +635,7 @@ static void optimize(const char *inPath, const char *outPath) {
     if (header.color == INDEXED) readPalette();
     allocData();
     readData();
-
-    int error = fclose(file);
-    if (error) err(EX_IOERR, "%s", path);
+    fclose(file);
 
     allocLines();
     scanlines();
@@ -654,10 +661,10 @@ static void optimize(const char *inPath, const char *outPath) {
     writeHeader();
     if (header.color == INDEXED) writePalette();
     writeData();
-    free(data);
     writeEnd();
+    free(data);
 
-    error = fclose(file);
+    int error = fclose(file);
     if (error) err(EX_IOERR, "%s", path);
 }
 
