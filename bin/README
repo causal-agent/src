@@ -30,7 +30,40 @@ Clock panel for the Linux framebuffer. Renders PSF2 bitmap fonts.
 
                                   gfxx
 
-Work in progress.
+Graphics data explorer. Build with GFX={cocoa,fb,x11}. Dumps PNGs.
+
+    -c {indexed,grayscale,rgb}    set color space
+    -p PATH                       load palette
+    -e {l,b}                      set byte order
+    -E {l,b}                      set bit order
+    -b NNNN                       set pad, R, G, B bits
+    -n N                          set offset
+    -f                            flip
+    -m                            mirror
+    -w N                          set width
+    -z N                          set scale
+    -o PREFIX                     set output prefix
+
+    q      quit
+    x      dump one frame
+    X      dump each frame
+    o      print options
+    []     switch color spaces
+    p      sample palette
+    P      dump palette
+    {}     switch bits presets
+    e      swap byte order
+    E      swap bit order
+    hl     offset by byte
+    jk     offset by pixel
+    HL     offset by row
+    JK     offset by square
+    ,.     adjust width
+    <>     half/double width
+    f      flip
+    m      mirror
+    -+     zoom
+    0-9    set bits
 
                                   hnel
 
