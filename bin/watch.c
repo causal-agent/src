@@ -25,7 +25,7 @@
 #include <unistd.h>
 
 static void watch(int kq, char *path) {
-    int fd = open(path, O_RDONLY);
+    int fd = open(path, O_CLOEXEC);
     if (fd < 0) err(EX_NOINPUT, "%s", path);
 
     struct kevent event = {
