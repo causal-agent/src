@@ -455,7 +455,7 @@ static void discardAlpha(void) {
     for (uint32_t y = 0; y < header.height; ++y) {
         *ptr++ = lines[y]->type;
         for (uint32_t x = 0; x < header.width; ++x) {
-            memcpy(ptr, &lines[y]->data[x * pixelSize], colorSize);
+            memmove(ptr, &lines[y]->data[x * pixelSize], colorSize);
             ptr += colorSize;
         }
     }
@@ -482,10 +482,10 @@ static void discardColor(void) {
         *ptr++ = lines[y]->type;
         for (uint32_t x = 0; x < header.width; ++x) {
             uint8_t *pixel = &lines[y]->data[x * pixelSize];
-            memcpy(ptr, pixel, sampleSize);
+            memmove(ptr, pixel, sampleSize);
             ptr += sampleSize;
             if (header.color == TRUECOLOR_ALPHA) {
-                memcpy(ptr, pixel + 3 * sampleSize, sampleSize);
+                memmove(ptr, pixel + 3 * sampleSize, sampleSize);
                 ptr += sampleSize;
             }
         }
