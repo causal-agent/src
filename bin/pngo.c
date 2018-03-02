@@ -70,10 +70,6 @@ struct PACKED Chunk {
     char type[4];
 };
 
-static bool ancillary(struct Chunk chunk) {
-    return chunk.type[0] & 0x20;
-}
-
 static const char *typeStr(struct Chunk chunk) {
     static char buf[5];
     memcpy(buf, chunk.type, 4);
@@ -113,6 +109,9 @@ static void writeCrc(void) {
 }
 
 static void skipChunk(struct Chunk chunk) {
+    if (!(chunk.type[0] & 0x20)) {
+        errx(EX_CONFIG, "%s: unsupported critical chunk %s", path, typeStr(chunk));
+    }
     uint8_t discard[chunk.size];
     readExpect(discard, sizeof(discard), "chunk data");
     readCrc();
@@ -263,16 +262,8 @@ static void readPalette(void) {
     struct Chunk chunk;
     for (;;) {
         chunk = readChunk();
-        if (0 == memcmp(chunk.type, "PLTE", 4)) {
-            break;
-        } else if (ancillary(chunk)) {
-            skipChunk(chunk);
-        } else {
-            errx(
-                EX_DATAERR, "%s: expected PLTE chunk, found %s",
-                path, typeStr(chunk)
-            );
-        }
+        if (0 == memcmp(chunk.type, "PLTE", 4)) break;
+        skipChunk(chunk);
     }
     if (chunk.size % 3) {
         errx(EX_DATAERR, "%s: PLTE size %u not divisible by 3", path, chunk.size);
@@ -322,13 +313,8 @@ static void readData(void) {
 
         } else if (0 == memcmp(chunk.type, "IEND", 4)) {
             errx(EX_DATAERR, "%s: missing IDAT chunk", path);
-        } else if (ancillary(chunk)) {
-            skipChunk(chunk);
         } else {
-            errx(
-                EX_CONFIG, "%s: unsupported critical chunk %s",
-                path, typeStr(chunk)
-            );
+            skipChunk(chunk);
         }
     }
 
