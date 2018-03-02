@@ -31,6 +31,7 @@
 
 #define CRC_INIT (crc32(0, Z_NULL, 0))
 
+static bool verbose;
 static const char *path;
 static FILE *file;
 static uint32_t crc;
@@ -147,6 +148,23 @@ static size_t dataSize(void) {
     return (1 + lineSize()) * header.height;
 }
 
+static const char *COLOR_STR[] = {
+    [GRAYSCALE] = "grayscale",
+    [TRUECOLOR] = "truecolor",
+    [INDEXED] = "indexed",
+    [GRAYSCALE_ALPHA] = "grayscale alpha",
+    [TRUECOLOR_ALPHA] = "truecolor alpha",
+};
+static void printHeader(void) {
+    fprintf(
+        stderr,
+        "%s: %ux%u %hhu-bit %s\n",
+        path,
+        header.width, header.height,
+        header.depth, COLOR_STR[header.color]
+    );
+}
+
 static void readHeader(void) {
     struct Chunk ihdr = readChunk();
     if (0 != memcmp(ihdr.type, "IHDR", 4)) {
@@ -201,15 +219,20 @@ static void readHeader(void) {
     if (header.interlace > ADAM7) {
         errx(EX_DATAERR, "%s: invalid interlace method %hhu", path, header.interlace);
     }
+
+    if (verbose) printHeader();
 }
 
 static void writeHeader(void) {
+    if (verbose) printHeader();
+
     struct Chunk ihdr = { .size = sizeof(header), .type = "IHDR" };
     writeChunk(ihdr);
     header.width = htonl(header.width);
     header.height = htonl(header.height);
     writeExpect(&header, sizeof(header));
     writeCrc();
+
     header.width = ntohl(header.width);
     header.height = ntohl(header.height);
 }
@@ -257,9 +280,12 @@ static void readPalette(void) {
     palette.len = chunk.size / 3;
     readExpect(palette.entries, chunk.size, "palette data");
     readCrc();
+
+    if (verbose) fprintf(stderr, "%s: palette length %u\n", path, palette.len);
 }
 
 static void writePalette(void) {
+    if (verbose) fprintf(stderr, "%s: palette length %u\n", path, palette.len);
     struct Chunk plte = { .size = 3 * palette.len, .type = "PLTE" };
     writeChunk(plte);
     writeExpect(palette.entries, plte.size);
@@ -274,6 +300,8 @@ static void allocData(void) {
 }
 
 static void readData(void) {
+    if (verbose) fprintf(stderr, "%s: data size %zu\n", path, dataSize());
+
     struct z_stream_s stream = { .next_out = data, .avail_out = dataSize() };
     int error = inflateInit(&stream);
     if (error != Z_OK) errx(EX_SOFTWARE, "%s: inflateInit: %s", path, stream.msg);
@@ -310,9 +338,13 @@ static void readData(void) {
             path, dataSize(), stream.total_out
         );
     }
+
+    if (verbose) fprintf(stderr, "%s: deflate size %lu\n", path, stream.total_in);
 }
 
 static void writeData(void) {
+    if (verbose) fprintf(stderr, "%s: data size %zu\n", path, dataSize());
+
     uLong size = compressBound(dataSize());
     uint8_t deflate[size];
     int error = compress2(deflate, &size, data, dataSize(), Z_BEST_COMPRESSION);
@@ -322,6 +354,8 @@ static void writeData(void) {
     writeChunk(idat);
     writeExpect(deflate, size);
     writeCrc();
+
+    if (verbose) fprintf(stderr, "%s: deflate size %lu\n", path, size);
 }
 
 static void writeEnd(void) {
@@ -673,10 +707,11 @@ int main(int argc, char *argv[]) {
     char *output = NULL;
 
     int opt;
-    while (0 < (opt = getopt(argc, argv, "co:"))) {
+    while (0 < (opt = getopt(argc, argv, "co:v"))) {
         switch (opt) {
             case 'c': stdio = true; break;
             case 'o': output = optarg; break;
+            case 'v': verbose = true; break;
             default: return EX_USAGE;
         }
     }
