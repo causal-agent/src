@@ -265,10 +265,10 @@ enum PACKED Filter {
 
 static struct {
     bool brokenPaeth;
-    bool forceDeclareFilter;
-    bool forceApplyFilter;
-    enum Filter declareFilter;
-    enum Filter applyFilter;
+    uint8_t declareFilter;
+    uint8_t applyFilter;
+    enum Filter declareFilters[255];
+    enum Filter applyFilters[255];
 } options;
 
 struct Bytes {
@@ -366,14 +366,15 @@ static void filterData(void) {
             if (heuristic[type] < heuristic[minType]) minType = type;
         }
 
-        if (options.forceDeclareFilter) {
-            lines[y]->type = options.declareFilter;
+        if (options.declareFilter) {
+            lines[y]->type = options.declareFilters[y % options.declareFilter];
         } else {
             lines[y]->type = minType;
         }
 
-        if (options.forceApplyFilter) {
-            memcpy(lines[y]->data, filter[options.applyFilter], lineSize());
+        if (options.applyFilter) {
+            enum Filter type = options.applyFilters[y % options.applyFilter];
+            memcpy(lines[y]->data, filter[type], lineSize());
         } else {
             memcpy(lines[y]->data, filter[minType], lineSize());
         }
@@ -421,7 +422,7 @@ static void glitch(const char *inPath, const char *outPath) {
     if (error) err(EX_IOERR, "%s", path);
 }
 
-enum Filter parseFilter(const char *s) {
+static enum Filter parseFilter(const char *s) {
     switch (s[0]) {
         case 'N': case 'n': return NONE;
         case 'S': case 's': return SUB;
@@ -432,6 +433,15 @@ enum Filter parseFilter(const char *s) {
     }
 }
 
+static uint8_t parseFilters(enum Filter *filters, const char *s) {
+    uint8_t len = 0;
+    do {
+        filters[len++] = parseFilter(s);
+        s = strchr(s, ',');
+    } while (s++);
+    return len;
+}
+
 int main(int argc, char *argv[]) {
     bool stdio = false;
     char *output = NULL;
@@ -440,13 +450,11 @@ int main(int argc, char *argv[]) {
     while (0 < (opt = getopt(argc, argv, "a:cd:o:p"))) {
         switch (opt) {
             case 'a': {
-                options.forceApplyFilter = true;
-                options.applyFilter = parseFilter(optarg);
+                options.applyFilter = parseFilters(options.applyFilters, optarg);
             } break;
             case 'c': stdio = true; break;
             case 'd': {
-                options.forceDeclareFilter = true;
-                options.declareFilter = parseFilter(optarg);
+                options.declareFilter = parseFilters(options.declareFilters, optarg);
             } break;
             case 'o': output = optarg; break;
             case 'p': options.brokenPaeth = true; break;
