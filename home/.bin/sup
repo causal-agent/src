@@ -3,5 +3,6 @@ set -o errexit -o nounset -o pipefail
 
 dir=$(mktemp -d)
 screencapture -i "$dir/capture.png"
+pngo "$dir/capture.png"
 up "$dir/capture.png"
 rm -r "$dir"
