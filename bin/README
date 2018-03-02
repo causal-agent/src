@@ -65,6 +65,18 @@ Graphics data explorer. Build with GFX={cocoa,fb,x11}. Dumps PNGs.
     -+     zoom
     0-9    set bits
 
+                                 glitch
+
+PNG glitcher based on pngo.
+
+    -c         write to stdout
+    -o PATH    write to file
+    -p         broken Paeth predictor
+    -f         filter when reconstructing
+    -r         reconstruct when filtering
+    -d LIST    declare pattern of comma-separated filters
+    -a LIST    apply pattern of comma-separated filters
+
                                   hnel
 
 The tr(1) of PTYs, for remapping keys. Originally for preserving HJKL in
