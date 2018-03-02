@@ -265,6 +265,8 @@ enum PACKED Filter {
 
 static struct {
     bool brokenPaeth;
+    bool filt;
+    bool recon;
     uint8_t declareFilter;
     uint8_t applyFilter;
     enum Filter declareFilters[255];
@@ -347,7 +349,11 @@ static struct Bytes origBytes(uint32_t y, size_t i) {
 static void reconData(void) {
     for (uint32_t y = 0; y < header.height; ++y) {
         for (size_t i = 0; i < lineSize(); ++i) {
-            lines[y]->data[i] = recon(lines[y]->type, origBytes(y, i));
+            if (options.filt) {
+                lines[y]->data[i] = filt(lines[y]->type, origBytes(y, i));
+            } else {
+                lines[y]->data[i] = recon(lines[y]->type, origBytes(y, i));
+            }
         }
         lines[y]->type = NONE;
     }
@@ -360,7 +366,11 @@ static void filterData(void) {
         enum Filter minType = NONE;
         for (enum Filter type = NONE; type < FILTER_COUNT; ++type) {
             for (size_t i = 0; i < lineSize(); ++i) {
-                filter[type][i] = filt(type, origBytes(y, i));
+                if (options.recon) {
+                    filter[type][i] = recon(type, origBytes(y, i));
+                } else {
+                    filter[type][i] = filt(type, origBytes(y, i));
+                }
                 heuristic[type] += abs((int8_t)filter[type][i]);
             }
             if (heuristic[type] < heuristic[minType]) minType = type;
@@ -447,7 +457,7 @@ int main(int argc, char *argv[]) {
     char *output = NULL;
 
     int opt;
-    while (0 < (opt = getopt(argc, argv, "a:cd:o:p"))) {
+    while (0 < (opt = getopt(argc, argv, "a:cd:fo:pr"))) {
         switch (opt) {
             case 'a': {
                 options.applyFilter = parseFilters(options.applyFilters, optarg);
@@ -456,8 +466,10 @@ int main(int argc, char *argv[]) {
             case 'd': {
                 options.declareFilter = parseFilters(options.declareFilters, optarg);
             } break;
+            case 'f': options.filt = true; break;
             case 'o': output = optarg; break;
             case 'p': options.brokenPaeth = true; break;
+            case 'r': options.recon = true; break;
             default: return EX_USAGE;
         }
     }
