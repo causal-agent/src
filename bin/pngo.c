@@ -88,11 +88,6 @@ static struct Chunk readChunk(void) {
     return chunk;
 }
 
-static void skipChunk(struct Chunk chunk) {
-    int error = fseek(file, chunk.size + 4, SEEK_CUR);
-    if (error) err(EX_IOERR, "%s", path);
-}
-
 static void writeChunk(struct Chunk chunk) {
     chunk.size = htonl(chunk.size);
     writeExpect(&chunk, sizeof(chunk));
@@ -115,6 +110,12 @@ static void readCrc(void) {
 static void writeCrc(void) {
     uint32_t net = htonl(crc);
     writeExpect(&net, sizeof(net));
+}
+
+static void skipChunk(struct Chunk chunk) {
+    uint8_t discard[chunk.size];
+    readExpect(discard, sizeof(discard), "chunk data");
+    readCrc();
 }
 
 static struct PACKED {
