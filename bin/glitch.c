@@ -270,6 +270,14 @@ enum PACKED Filter {
 };
 #define FILTER_COUNT (PAETH + 1)
 
+static struct {
+    bool brokenPaeth;
+    bool forceDeclareFilter;
+    bool forceApplyFilter;
+    enum Filter declareFilter;
+    enum Filter applyFilter;
+} options;
+
 struct Bytes {
     uint8_t x;
     uint8_t a;
@@ -283,7 +291,11 @@ static uint8_t paethPredictor(struct Bytes f) {
     int32_t pb = abs(p - (int32_t)f.b);
     int32_t pc = abs(p - (int32_t)f.c);
     if (pa <= pb && pa <= pc) return f.a;
-    if (pb <= pc) return f.b;
+    if (options.brokenPaeth) {
+        if (pb < pc) return f.b;
+    } else {
+        if (pb <= pc) return f.b;
+    }
     return f.c;
 }
 
@@ -363,8 +375,16 @@ static void filterData(void) {
             }
             if (heuristic[type] < heuristic[minType]) minType = type;
         }
-        lines[y]->type = minType;
-        memcpy(lines[y]->data, filter[minType], lineSize());
+        if (options.forceDeclareFilter) {
+            lines[y]->type = options.declareFilter;
+        } else {
+            lines[y]->type = minType;
+        }
+        if (options.forceApplyFilter) {
+            memcpy(lines[y]->data, filter[options.applyFilter], lineSize());
+        } else {
+            memcpy(lines[y]->data, filter[minType], lineSize());
+        }
     }
 }
 
@@ -412,15 +432,35 @@ static void glitch(const char *inPath, const char *outPath) {
     if (error) err(EX_IOERR, "%s", path);
 }
 
+enum Filter parseFilter(const char *s) {
+    switch (s[0]) {
+        case 'N': case 'n': return NONE;
+        case 'S': case 's': return SUB;
+        case 'U': case 'u': return UP;
+        case 'A': case 'a': return AVERAGE;
+        case 'P': case 'p': return PAETH;
+        default: errx(EX_USAGE, "invalid filter type %s", s);
+    }
+}
+
 int main(int argc, char *argv[]) {
     bool stdio = false;
     char *output = NULL;
 
     int opt;
-    while (0 < (opt = getopt(argc, argv, "co:"))) {
+    while (0 < (opt = getopt(argc, argv, "a:cd:o:p"))) {
         switch (opt) {
+            case 'a': {
+                options.forceApplyFilter = true;
+                options.applyFilter = parseFilter(optarg);
+            } break;
             case 'c': stdio = true; break;
+            case 'd': {
+                options.forceDeclareFilter = true;
+                options.declareFilter = parseFilter(optarg);
+            } break;
             case 'o': output = optarg; break;
+            case 'p': options.brokenPaeth = true; break;
             default: return EX_USAGE;
         }
     }
