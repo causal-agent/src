@@ -156,10 +156,8 @@ static void readHeader(void) {
     }
     readExpect(&header, sizeof(header), "header");
     readCrc();
-
     header.width = ntohl(header.width);
     header.height = ntohl(header.height);
-
     if (!header.width) errx(EX_DATAERR, "%s: invalid width 0", path);
     if (!header.height) errx(EX_DATAERR, "%s: invalid height 0", path);
 }
@@ -184,11 +182,8 @@ static void readPalette(void) {
     struct Chunk chunk;
     for (;;) {
         chunk = readChunk();
-        if (0 == memcmp(chunk.type, "PLTE", 4)) {
-            break;
-        } else {
-            skipChunk(chunk);
-        }
+        if (0 == memcmp(chunk.type, "PLTE", 4)) break;
+        skipChunk(chunk);
     }
     palette.len = chunk.size / 3;
     readExpect(palette.entries, chunk.size, "palette data");
@@ -204,12 +199,10 @@ static void writePalette(void) {
 
 static uint8_t *data;
 
-static void allocData(void) {
+static void readData(void) {
     data = malloc(dataSize());
     if (!data) err(EX_OSERR, "malloc(%zu)", dataSize());
-}
 
-static void readData(void) {
     struct z_stream_s stream = { .next_out = data, .avail_out = dataSize() };
     int error = inflateInit(&stream);
     if (error != Z_OK) errx(EX_SOFTWARE, "%s: inflateInit: %s", path, stream.msg);
@@ -246,7 +239,7 @@ static void readData(void) {
 static void writeData(void) {
     uLong size = compressBound(dataSize());
     uint8_t deflate[size];
-    int error = compress2(deflate, &size, data, dataSize(), Z_BEST_COMPRESSION);
+    int error = compress2(deflate, &size, data, dataSize(), Z_BEST_SPEED);
     if (error != Z_OK) errx(EX_SOFTWARE, "%s: compress2: %d", path, error);
 
     struct Chunk idat = { .size = size, .type = "IDAT" };
@@ -326,12 +319,10 @@ static struct Line {
     uint8_t data[];
 } **lines;
 
-static void allocLines(void) {
+static void scanlines(void) {
     lines = calloc(header.height, sizeof(*lines));
     if (!lines) err(EX_OSERR, "calloc(%u, %zu)", header.height, sizeof(*lines));
-}
 
-static void scanlines(void) {
     size_t stride = 1 + lineSize();
     for (uint32_t y = 0; y < header.height; ++y) {
         lines[y] = (struct Line *)&data[y * stride];
@@ -356,8 +347,7 @@ static struct Bytes origBytes(uint32_t y, size_t i) {
 static void reconData(void) {
     for (uint32_t y = 0; y < header.height; ++y) {
         for (size_t i = 0; i < lineSize(); ++i) {
-            lines[y]->data[i] =
-                recon(lines[y]->type, origBytes(y, i));
+            lines[y]->data[i] = recon(lines[y]->type, origBytes(y, i));
         }
         lines[y]->type = NONE;
     }
@@ -375,11 +365,13 @@ static void filterData(void) {
             }
             if (heuristic[type] < heuristic[minType]) minType = type;
         }
+
         if (options.forceDeclareFilter) {
             lines[y]->type = options.declareFilter;
         } else {
             lines[y]->type = minType;
         }
+
         if (options.forceApplyFilter) {
             memcpy(lines[y]->data, filter[options.applyFilter], lineSize());
         } else {
@@ -401,14 +393,11 @@ static void glitch(const char *inPath, const char *outPath) {
     readSignature();
     readHeader();
     if (header.color == INDEXED) readPalette();
-    allocData();
     readData();
     fclose(file);
 
-    allocLines();
     scanlines();
     reconData();
-
     filterData();
     free(lines);
 
