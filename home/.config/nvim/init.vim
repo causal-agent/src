@@ -22,4 +22,4 @@ autocmd TermOpen * setlocal nonumber statusline=%{b:term_title}
 autocmd BufEnter term://* startinsert
 tmap <C-w> <C-\><C-n><C-w>
 
-nmap <leader>h :0/^#include/,$?^#include?sort<CR>
+nmap <leader>h :0/^#include </,$?^#include <?sort<CR>:nohlsearch<CR>
