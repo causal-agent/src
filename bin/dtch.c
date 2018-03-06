@@ -201,6 +201,13 @@ static int atch(int argc, char *argv[]) {
     error = ioctl(STDERR_FILENO, TIOCGWINSZ, &window);
     if (error) err(EX_IOERR, "ioctl(%d, TIOCGWINSZ)", STDERR_FILENO);
 
+    struct winsize redraw = window;
+    redraw.ws_row = 1;
+    redraw.ws_col = 1;
+
+    error = ioctl(pty, TIOCSWINSZ, &redraw);
+    if (error) err(EX_IOERR, "iotctl(%d, TIOCSWINSZ)", pty);
+
     error = ioctl(pty, TIOCSWINSZ, &window);
     if (error) err(EX_IOERR, "ioctl(%d, TIOCSWINSZ)", pty);
 
@@ -212,10 +219,6 @@ static int atch(int argc, char *argv[]) {
     cfmakeraw(&raw);
     error = tcsetattr(STDERR_FILENO, TCSADRAIN, &raw);
     if (error) err(EX_IOERR, "tcsetattr(%d)", STDERR_FILENO);
-
-    char c = CTRL('L');
-    ssize_t size = write(pty, &c, 1);
-    if (size < 0) err(EX_IOERR, "write(%d)", pty);
 
     char buf[4096];
     struct pollfd fds[2] = {
