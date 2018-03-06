@@ -132,13 +132,8 @@ static int dtch(int argc, char *argv[]) {
     addr = sockAddr(user->pw_dir, name);
     error = bind(server, (struct sockaddr *)&addr, sizeof(addr));
     if (error) err(EX_CANTCREAT, "%s", addr.sun_path);
+    fcntl(server, F_SETFD, FD_CLOEXEC);
     atexit(unlinkAddr);
-
-    error = chmod(addr.sun_path, 0600);
-    if (error) err(EX_IOERR, "%s", addr.sun_path);
-
-    error = fcntl(server, F_SETFD, FD_CLOEXEC);
-    if (error) err(EX_IOERR, "fcntl");
 
     int pty;
     pid_t pid = forkpty(&pty, NULL, NULL, NULL);
@@ -173,9 +168,8 @@ static int dtch(int argc, char *argv[]) {
 
 static struct termios saveTerm;
 static void restoreTerm(void) {
-    tcsetattr(STDERR_FILENO, TCSADRAIN, &saveTerm);
-    fprintf(
-        stderr,
+    tcsetattr(STDIN_FILENO, TCSADRAIN, &saveTerm);
+    printf(
         "\x1b[?1049l" // rmcup
         "\x1b\x63\x1b[!p\x1b[?3;4l\x1b[4l\x1b>" // reset
     );
@@ -198,27 +192,24 @@ static int atch(int argc, char *argv[]) {
     if (pty < 0) err(EX_IOERR, "recvmsg");
 
     struct winsize window;
-    error = ioctl(STDERR_FILENO, TIOCGWINSZ, &window);
-    if (error) err(EX_IOERR, "ioctl(%d, TIOCGWINSZ)", STDERR_FILENO);
+    error = ioctl(STDIN_FILENO, TIOCGWINSZ, &window);
+    if (error) err(EX_IOERR, "TIOCGWINSZ");
 
-    struct winsize redraw = window;
-    redraw.ws_row = 1;
-    redraw.ws_col = 1;
-
+    struct winsize redraw = { .ws_row = 1, .ws_col = 1 };
     error = ioctl(pty, TIOCSWINSZ, &redraw);
-    if (error) err(EX_IOERR, "iotctl(%d, TIOCSWINSZ)", pty);
+    if (error) err(EX_IOERR, "TIOCSWINSZ");
 
     error = ioctl(pty, TIOCSWINSZ, &window);
-    if (error) err(EX_IOERR, "ioctl(%d, TIOCSWINSZ)", pty);
+    if (error) err(EX_IOERR, "TIOCSWINSZ");
 
-    error = tcgetattr(STDERR_FILENO, &saveTerm);
-    if (error) err(EX_IOERR, "tcgetattr(%d)", STDERR_FILENO);
+    error = tcgetattr(STDIN_FILENO, &saveTerm);
+    if (error) err(EX_IOERR, "tcgetattr");
     atexit(restoreTerm);
 
     struct termios raw;
     cfmakeraw(&raw);
-    error = tcsetattr(STDERR_FILENO, TCSADRAIN, &raw);
-    if (error) err(EX_IOERR, "tcsetattr(%d)", STDERR_FILENO);
+    error = tcsetattr(STDIN_FILENO, TCSADRAIN, &raw);
+    if (error) err(EX_IOERR, "tcsetattr");
 
     char buf[4096];
     struct pollfd fds[2] = {
@@ -226,26 +217,22 @@ static int atch(int argc, char *argv[]) {
         { .fd = pty, .events = POLLIN },
     };
     while (0 < poll(fds, 2, -1)) {
-        if (fds[0].revents & POLLIN) {
-            ssize_t readSize = read(STDIN_FILENO, buf, sizeof(buf));
-            if (readSize < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
+        if (fds[0].revents) {
+            ssize_t size = read(STDIN_FILENO, buf, sizeof(buf));
+            if (size < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
 
-            if (readSize == 1 && buf[0] == CTRL('Q')) return EX_OK;
+            if (size == 1 && buf[0] == CTRL('Q')) return EX_OK;
 
-            ssize_t writeSize = write(pty, buf, readSize);
-            if (writeSize < 0) err(EX_IOERR, "write(%d)", pty);
-            if (writeSize < readSize) errx(EX_IOERR, "short write(%d)", pty);
+            size = write(pty, buf, size);
+            if (size < 0) err(EX_IOERR, "write(%d)", pty);
         }
 
-        if (fds[1].revents & POLLIN) {
-            ssize_t readSize = read(pty, buf, sizeof(buf));
-            if (readSize < 0) err(EX_IOERR, "read(%d)", pty);
+        if (fds[1].revents) {
+            ssize_t size = read(pty, buf, sizeof(buf));
+            if (size < 0) err(EX_IOERR, "read(%d)", pty);
 
-            ssize_t writeSize = write(STDOUT_FILENO, buf, readSize);
-            if (writeSize < 0) err(EX_IOERR, "write(%d)", STDOUT_FILENO);
-            if (writeSize < readSize) {
-                errx(EX_IOERR, "short write(%d)", STDOUT_FILENO);
-            }
+            size = write(STDOUT_FILENO, buf, size);
+            if (size < 0) err(EX_IOERR, "write(%d)", STDOUT_FILENO);
         }
     }
     err(EX_IOERR, "poll");
