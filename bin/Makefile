@@ -15,6 +15,12 @@ bsd: any $(BSD_BINS)
 
 linux: any $(LIN_BINS)
 
+.gitignore: Makefile
+	echo '*.o' tags $(ALL_BINS) | tr ' ' '\n' > .gitignore
+
+tags: *.c
+	ctags -w *.c
+
 atch: dtch
 	ln -f dtch atch
 
@@ -36,11 +42,3 @@ link:
 
 unlink:
 	rm -f $(ALL_BINS:%=~/.bin/%)
-
-.gitignore: Makefile
-	echo '*.o' tags $(ALL_BINS) | tr ' ' '\n' > .gitignore
-
-tags: *.c
-	ctags -w *.c
-
-.PHONY: any bsd linux setuid clean link unlink
