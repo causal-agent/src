@@ -1,0 +1,17 @@
+.bin/sup
+.bin/tup
+.bin/up
+.config/git/config
+.config/git/ignore
+.config/htop/htoprc
+.config/nvim/colors/trivial.vim
+.config/nvim/init.vim
+.config/nvim/syntax/nasm.vim
+.gdbinit
+.gnupg/gpg-agent.conf
+.hushlogin
+.inputrc
+.lldbinit
+.psqlrc
+.ssh/config
+.zshrc
