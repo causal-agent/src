@@ -1,28 +1,17 @@
 #!/bin/sh
-set -eu
+set -e -u
 
-common='gdb gnupg htop nasm sl the_silver_searcher tree'
+any='gnupg htop nasm neovim sl the_silver_searcher tree'
+brew="$any ddate git openssh"
+pkg="$any curl ddate sudo zsh"
+pacman="$any base-devel ctags gdb openssh zsh"
 
-homebrew=https://raw.githubusercontent.com/Homebrew/install/master/install
-macos() {
+homebrew='https://raw.githubusercontent.com/Homebrew/install/master/install'
+if [ "$(uname)" = 'Darwin' ]; then
     xcode-select --install || true
-    [ ! -f /usr/local/bin/brew ] && ruby -e "`curl -fsSL $homebrew`"
-    brew install $common
-    brew install ddate git neovim/neovim/neovim openssh
-}
+    [ -f /usr/local/bin/brew ] || ruby -e "$(curl -fsSL "$homebrew")"
+    exec brew install $brew
+fi
 
-freebsd() {
-    pkg install $common
-    pkg install curl ddate neovim sudo zsh
-}
-
-arch() {
-    pacman -Sy
-    pacman -S --needed base-devel
-    pacman -S --needed $common
-    pacman -S --needed neovim openssh zsh
-}
-
-[ "$(uname)" = 'Darwin' ] && macos
-[ -f /usr/local/sbin/pkg ] && freebsd
-[ -f /usr/bin/pacman ] && arch
+[ -f /usr/local/sbin/pkg ] && exec pkg install $pkg
+[ -f /usr/bin/pacman ] && pacman -Sy && exec pacman -S --needed $pacman
