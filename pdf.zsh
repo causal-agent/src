@@ -20,3 +20,5 @@ intel intel-64-sdm-vol-1.pdf a4/60/253665-sdm-vol-1.pdf
 intel intel-64-sdm-vol-2.pdf a4/60/325383-sdm-vol-2abcd.pdf
 intel intel-64-sdm-vol-3.pdf a4/60/325384-sdm-vol-3abcd.pdf
 intel intel-64-sdm-vol-4.pdf 22/0d/335592-sdm-vol-4.pdf
+
+chmod 444 pdf/*.pdf
