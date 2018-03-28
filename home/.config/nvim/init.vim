@@ -24,3 +24,4 @@ tmap <C-w> <C-\><C-n><C-w>
 
 nmap <leader>h :0/^#include </,$?^#include <?sort<CR>:nohlsearch<CR>
 nmap <leader>u :0/^use/,$?^use?sort<CR>:nohlsearch<CR>
+nmap <leader>c :0/extern crate/,$?extern crate?sort<CR>:nohlsearch<CR>
