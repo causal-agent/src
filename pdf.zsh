@@ -9,8 +9,12 @@ fetch() {
     echo "pdf/$1"
 }
 
-elf() { fetch "$1" "http://refspecs.linuxbase.org/elf/$2" }
-intel() { fetch "$1" "https://software.intel.com/sites/default/files/managed/$2" }
+elf() {
+    fetch "$1" "http://refspecs.linuxbase.org/elf/$2"
+}
+intel() {
+    fetch "$1" "https://software.intel.com/sites/default/files/managed/$2"
+}
 
 elf abi.pdf x86_64-abi-0.99.pdf
 elf elf.pdf elf.pdf

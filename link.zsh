@@ -5,15 +5,15 @@ if [[ $# -eq 1 ]]; then
     linkPath="$1"
     filePath="$PWD/home/${linkPath#$HOME/}"
     [[ ! -f "$filePath" ]]
-    mkdir -p $(dirname "$filePath")
+    mkdir -p "$(dirname "$filePath")"
     mv "$linkPath" "$filePath"
 fi
 
-find home -type f | while read findPath; do
+find home -type f | while read -r findPath; do
     filePath="$PWD/$findPath"
     linkPath="$HOME/${findPath#home/}"
     [[ -L "$linkPath" ]] && continue
-    mkdir -p $(dirname "$linkPath")
+    mkdir -p "$(dirname "$linkPath")"
     ln -s "$filePath" "$linkPath"
     echo "$linkPath"
 done
