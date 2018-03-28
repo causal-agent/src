@@ -26,6 +26,7 @@ export NETHACKOPTIONS='name:June, role:Valkyrie, race:Human, gender:female,
   align:neutral, dogname:Moro, catname:Baron, pickup_types:$!?+/=, color,
   DECgraphics'
 
+alias ll='ls -lh'
 alias gs='git status --short --branch' gd='git diff'
 alias gsh='git show' gl='git log --graph --pretty=log'
 alias gco='git checkout' gb='git branch' gm='git merge' gst='git stash'
