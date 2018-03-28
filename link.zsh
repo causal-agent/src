@@ -12,8 +12,7 @@ fi
 find home -type f | while read -r findPath; do
     filePath="$PWD/$findPath"
     linkPath="$HOME/${findPath#home/}"
-    [[ -L "$linkPath" ]] && continue
     mkdir -p "$(dirname "$linkPath")"
-    ln -s "$filePath" "$linkPath"
-    echo "$linkPath"
+    [[ ( -f "$linkPath" && -L "$linkPath" ) || ! -f "$linkPath" ]]
+    ln -s -f "$filePath" "$linkPath"
 done
