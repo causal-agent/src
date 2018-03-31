@@ -117,17 +117,15 @@ int init(int argc, char *argv[]) {
         fclose(file);
     } else {
         for (int i = 0; i < 256; ++i) {
-            double h = i * 360.0 / 256.0 / 60.0, s = 1.0, v = 1.0;
-            double c = v * s;
-            double x = c * (1.0 - fabs(fmod(h, 2.0) - 1.0));
-            double r = v - c, g = v - c, b = v - c;
-            if (h <= 1.0)      { r += c; g += x; }
-            else if (h <= 2.0) { r += x; g += c; }
-            else if (h <= 3.0) { g += c; b += x; }
-            else if (h <= 4.0) { g += x; b += c; }
-            else if (h <= 5.0) { r += x; b += c; }
-            else if (h <= 6.0) { r += c; b += x; }
-            r *= 255.0; g *= 255.0; b *= 255.0;
+            double h = i / 256.0 * 6.0;
+            double x = 1.0 - fabs(fmod(h, 2.0) - 1.0);
+            double r = 255.0, g = 255.0, b = 255.0;
+            if      (h <= 1.0) { g *= x; b = 0.0; }
+            else if (h <= 2.0) { r *= x; b = 0.0; }
+            else if (h <= 3.0) { r = 0.0; b *= x; }
+            else if (h <= 4.0) { r = 0.0; g *= x; }
+            else if (h <= 5.0) { r *= x; g = 0.0; }
+            else if (h <= 6.0) { g = 0.0; b *= x; }
             palette[i] = (uint32_t)r << 16 | (uint32_t)g << 8 | (uint32_t)b;
         }
     }
