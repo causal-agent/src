@@ -147,19 +147,19 @@ static struct Ansi genAnsi(void) {
         .light = {
             [BLACK]   = p(R, +45.0, 0.3, 0.3),
             [RED]     = p(R, +10.0, 0.9, 0.8),
-            [GREEN]   = p(G, -55.0, 0.9, 0.7),
-            [YELLOW]  = p(Y, -15.0, 0.9, 0.9),
-            [BLUE]    = p(B, -55.0, 0.4, 0.6),
+            [GREEN]   = p(G, -55.0, 0.8, 0.6),
+            [YELLOW]  = p(Y, -20.0, 0.8, 0.8),
+            [BLUE]    = p(B, -55.0, 0.4, 0.5),
             [MAGENTA] = p(M, +45.0, 0.4, 0.6),
-            [CYAN]    = p(C, -45.0, 0.5, 0.7),
-            [WHITE]   = p(R, +45.0, 0.3, 0.9),
+            [CYAN]    = p(C, -55.0, 0.5, 0.6),
+            [WHITE]   = p(R, +45.0, 0.3, 0.8),
         },
     };
     ansi.dark[BLACK] = p(ansi.light[BLACK], 0.0, 1.0, 0.3);
+    ansi.dark[WHITE] = p(ansi.light[WHITE], 0.0, 1.0, 0.6);
     for (int i = RED; i < WHITE; ++i) {
         ansi.dark[i] = p(ansi.light[i], 0.0, 1.0, 0.7);
     }
-    ansi.dark[WHITE] = p(ansi.light[WHITE], 0.0, 1.0, 0.6);
     return ansi;
 }
 
@@ -169,7 +169,7 @@ static struct Terminal genTerminal(struct Ansi ansi) {
         .background = p(ansi.dark[BLACK],    0.0, 1.0, 0.9),
         .text       = p(ansi.light[WHITE],   0.0, 1.0, 0.9),
         .bold       = p(ansi.light[WHITE],   0.0, 1.0, 1.0),
-        .selection  = p(ansi.light[RED],   +10.0, 1.0, 1.0),
+        .selection  = p(ansi.light[RED],   +10.0, 1.0, 0.8),
         .cursor     = p(ansi.dark[WHITE],    0.0, 1.0, 0.7),
     };
 }
