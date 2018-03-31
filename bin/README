@@ -124,6 +124,15 @@ PNG optimizer. Does not support interlaced PNGs.
     pngo -o bar.png foo.png
     pngo -c foo.png | xx
 
+                                 scheme
+
+Color scheme for terminals.
+
+    -a  generate ANSI palette
+    -t  generate Terminal.app palette
+    -x  output hex
+    -g  output PNG
+
                                   wake
 
 Broadcasts a wake-on-LAN packet to one of my machines.
