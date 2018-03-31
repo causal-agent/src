@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
+#include <unistd.h>
 #include <zlib.h>
 
 struct Hsv {
@@ -65,7 +66,7 @@ static void pngChunk(const char *type, uint32_t size) {
 }
 enum { NONE, SUB, UP, AVERAGE, PAETH };
 
-static void png(const struct Hsv *hsv, uint8_t len) {
+static void png(const struct Hsv *scheme, uint8_t len) {
     uint32_t swatchWidth = 64;
     uint32_t swatchHeight = 64;
     uint32_t columns = 8;
@@ -83,7 +84,7 @@ static void png(const struct Hsv *hsv, uint8_t len) {
 
     pngChunk("PLTE", 3 * len);
     for (uint8_t i = 0; i < len; ++i) {
-        struct Rgb rgb = toRgb(hsv[i]);
+        struct Rgb rgb = toRgb(scheme[i]);
         pngWrite(&rgb, 3);
     }
     pngInt(crc);
@@ -112,8 +113,26 @@ static void png(const struct Hsv *hsv, uint8_t len) {
     pngInt(crc);
 }
 
-int main() {
-    struct Hsv scheme[16] = {
+static void hex(const struct Hsv *scheme, uint8_t len) {
+    for (uint8_t i = 0; i < len; ++i) {
+        struct Rgb rgb = toRgb(scheme[i]);
+        printf("%02x%02x%02x\n", rgb.r, rgb.g, rgb.b);
+    }
+}
+
+int main(int argc, char *argv[]) {
+    enum { HEX, PNG } output = HEX;
+
+    int opt;
+    while (0 < (opt = getopt(argc, argv, "gx"))) {
+        switch (opt) {
+            case 'g': output = PNG; break;
+            case 'x': output = HEX; break;
+            default: return EX_USAGE;
+        }
+    }
+
+    struct Hsv scheme[] = {
         { 0.0,   1.0, 1.0 },
         { 45.0,  1.0, 1.0 },
         { 90.0,  1.0, 1.0 },
@@ -131,6 +150,12 @@ int main() {
         { 270.0, 0.5, 1.0 },
         { 315.0, 0.5, 1.0 },
     };
-    png(scheme, 16);
+    size_t len = sizeof(scheme) / sizeof(scheme[0]);
+
+    switch (output) {
+        case HEX: hex(scheme, len); break;
+        case PNG: png(scheme, len); break;
+    }
+
     return EX_OK;
 }
