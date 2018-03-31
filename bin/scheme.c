@@ -1,5 +1,4 @@
-/*
- * Copyright (C) 2018  June McEnroe <june@causal.agency>
+/* Copyright (C) 2018  June McEnroe <june@causal.agency>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -120,7 +119,39 @@ static void hex(const struct Hsv *scheme, uint8_t len) {
     }
 }
 
+enum {
+    BLACK,
+    RED,
+    GREEN,
+    YELLOW,
+    BLUE,
+    MAGENTA,
+    CYAN,
+    WHITE,
+};
+struct Ansi {
+    struct Hsv dark[8];
+    struct Hsv light[8];
+};
+
 int main(int argc, char *argv[]) {
+    struct Ansi scheme = {
+        .light = {
+            [BLACK]   = { 0.0,   0.0, 0.2 },
+            [RED]     = { 0.0,   1.0, 1.0 },
+            [GREEN]   = { 120.0, 1.0, 1.0 },
+            [YELLOW]  = { 60.0,  1.0, 1.0 },
+            [BLUE]    = { 240.0, 1.0, 1.0 },
+            [MAGENTA] = { 300.0, 1.0, 1.0 },
+            [CYAN]    = { 180.0, 1.0, 1.0 },
+            [WHITE]   = { 360.0, 0.0, 1.0 },
+        },
+    };
+    for (int i = 0; i < 8; ++i) {
+        scheme.dark[i] = scheme.light[i];
+        scheme.dark[i].v /= 2.0;
+    }
+
     enum { HEX, PNG } output = HEX;
 
     int opt;
@@ -132,29 +163,10 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    struct Hsv scheme[] = {
-        { 0.0,   1.0, 1.0 },
-        { 45.0,  1.0, 1.0 },
-        { 90.0,  1.0, 1.0 },
-        { 135.0, 1.0, 1.0 },
-        { 180.0, 1.0, 1.0 },
-        { 225.0, 1.0, 1.0 },
-        { 270.0, 1.0, 1.0 },
-        { 315.0, 1.0, 1.0 },
-        { 0.0,   0.5, 1.0 },
-        { 45.0,  0.5, 1.0 },
-        { 90.0,  0.5, 1.0 },
-        { 135.0, 0.5, 1.0 },
-        { 180.0, 0.5, 1.0 },
-        { 225.0, 0.5, 1.0 },
-        { 270.0, 0.5, 1.0 },
-        { 315.0, 0.5, 1.0 },
-    };
-    size_t len = sizeof(scheme) / sizeof(scheme[0]);
-
+    size_t len = sizeof(scheme) / sizeof(struct Hsv);
     switch (output) {
-        case HEX: hex(scheme, len); break;
-        case PNG: png(scheme, len); break;
+        case HEX: hex((struct Hsv *)&scheme, len); break;
+        case PNG: png((struct Hsv *)&scheme, len); break;
     }
 
     return EX_OK;
