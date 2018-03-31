@@ -151,7 +151,7 @@ static struct Ansi genAnsi(void) {
             [YELLOW]  = p(Y, -20.0, 0.8, 0.8),
             [BLUE]    = p(B, -55.0, 0.4, 0.5),
             [MAGENTA] = p(M, +45.0, 0.4, 0.6),
-            [CYAN]    = p(C, -55.0, 0.5, 0.6),
+            [CYAN]    = p(C, -60.0, 0.3, 0.6),
             [WHITE]   = p(R, +45.0, 0.3, 0.8),
         },
     };
