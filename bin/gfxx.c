@@ -117,11 +117,10 @@ int init(int argc, char *argv[]) {
         fclose(file);
     } else {
         for (int i = 0; i < 256; ++i) {
-            double h = i * 360.0 / 256.0 / 60.0, s = 1.0, l = 0.5;
-            double c = (1.0 - fabs(2.0 * l - 1.0)) * s;
+            double h = i * 360.0 / 256.0 / 60.0, s = 1.0, v = 1.0;
+            double c = v * s;
             double x = c * (1.0 - fabs(fmod(h, 2.0) - 1.0));
-            double m = (l - c / 2.0);
-            double r = m, g = m, b = m;
+            double r = v - c, g = v - c, b = v - c;
             if (h <= 1.0)      { r += c; g += x; }
             else if (h <= 2.0) { r += x; g += c; }
             else if (h <= 3.0) { g += c; b += x; }
