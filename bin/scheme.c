@@ -158,7 +158,7 @@ static struct Ansi genAnsi(void) {
     ansi.dark[BLACK] = p(ansi.light[BLACK], 0.0, 1.0, 0.3);
     ansi.dark[WHITE] = p(ansi.light[WHITE], 0.0, 1.0, 0.6);
     for (int i = RED; i < WHITE; ++i) {
-        ansi.dark[i] = p(ansi.light[i], 0.0, 1.0, 0.7);
+        ansi.dark[i] = p(ansi.light[i], 0.0, 1.0, 0.8);
     }
     return ansi;
 }
