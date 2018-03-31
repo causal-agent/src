@@ -16,7 +16,7 @@ bsd: any $(BSD_BINS)
 linux: any $(LIN_BINS)
 
 .gitignore: Makefile
-	echo '*.o' tags $(ALL_BINS) | tr ' ' '\n' > .gitignore
+	echo '*.o' tags $(ALL_BINS) scheme.png | tr ' ' '\n' > .gitignore
 
 tags: *.c
 	ctags -w *.c
@@ -29,6 +29,9 @@ gfxx: gfxx.o gfx/$(GFX).o
 
 pbcopy pbpaste: pbd
 	ln -f pbd $@
+
+scheme.png: scheme
+	./scheme -t -g > scheme.png
 
 setuid: bri
 	chown root bri
