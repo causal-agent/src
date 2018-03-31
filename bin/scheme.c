@@ -119,54 +119,95 @@ static void hex(const struct Hsv *scheme, uint8_t len) {
     }
 }
 
-enum {
-    BLACK,
-    RED,
-    GREEN,
-    YELLOW,
-    BLUE,
-    MAGENTA,
-    CYAN,
-    WHITE,
-};
+static const struct Hsv R = {   0.0, 1.0, 1.0 };
+static const struct Hsv Y = {  60.0, 1.0, 1.0 };
+static const struct Hsv G = { 120.0, 1.0, 1.0 };
+static const struct Hsv C = { 180.0, 1.0, 1.0 };
+static const struct Hsv B = { 240.0, 1.0, 1.0 };
+static const struct Hsv M = { 300.0, 1.0, 1.0 };
+
+static struct Hsv p(struct Hsv o, double hd, double sf, double vf) {
+    return (struct Hsv) { o.h + hd, o.s * sf, o.v * vf };
+}
+
+enum { BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE };
 struct Ansi {
     struct Hsv dark[8];
     struct Hsv light[8];
 };
+struct Terminal {
+    struct Ansi ansi;
+    struct Hsv background, text, bold, selection, cursor;
+};
 
-int main(int argc, char *argv[]) {
-    struct Ansi scheme = {
+#define HSV_LEN(x) (sizeof(x) / sizeof(struct Hsv))
+
+static struct Ansi genAnsi(void) {
+    struct Ansi ansi = {
         .light = {
-            [BLACK]   = { 0.0,   0.0, 0.2 },
-            [RED]     = { 0.0,   1.0, 1.0 },
-            [GREEN]   = { 120.0, 1.0, 1.0 },
-            [YELLOW]  = { 60.0,  1.0, 1.0 },
-            [BLUE]    = { 240.0, 1.0, 1.0 },
-            [MAGENTA] = { 300.0, 1.0, 1.0 },
-            [CYAN]    = { 180.0, 1.0, 1.0 },
-            [WHITE]   = { 360.0, 0.0, 1.0 },
+            [BLACK]   = p(R, +45.0, 0.3, 0.3),
+            [RED]     = p(R, +10.0, 0.9, 0.8),
+            [GREEN]   = p(G, -55.0, 0.9, 0.7),
+            [YELLOW]  = p(Y, -15.0, 0.9, 0.9),
+            [BLUE]    = p(B, -55.0, 0.4, 0.6),
+            [MAGENTA] = p(M, +45.0, 0.4, 0.6),
+            [CYAN]    = p(C, -45.0, 0.5, 0.7),
+            [WHITE]   = p(R, +45.0, 0.3, 0.9),
         },
     };
-    for (int i = 0; i < 8; ++i) {
-        scheme.dark[i] = scheme.light[i];
-        scheme.dark[i].v /= 2.0;
+    ansi.dark[BLACK] = p(ansi.light[BLACK], 0.0, 1.0, 0.3);
+    for (int i = RED; i < WHITE; ++i) {
+        ansi.dark[i] = p(ansi.light[i], 0.0, 1.0, 0.7);
     }
+    ansi.dark[WHITE] = p(ansi.light[WHITE], 0.0, 1.0, 0.6);
+    return ansi;
+}
 
+static struct Terminal genTerminal(struct Ansi ansi) {
+    return (struct Terminal) {
+        .ansi       = ansi,
+        .background = p(ansi.dark[BLACK],    0.0, 1.0, 0.9),
+        .text       = p(ansi.light[WHITE],   0.0, 1.0, 0.9),
+        .bold       = p(ansi.light[WHITE],   0.0, 1.0, 1.0),
+        .selection  = p(ansi.light[RED],   +10.0, 1.0, 1.0),
+        .cursor     = p(ansi.dark[WHITE],    0.0, 1.0, 0.7),
+    };
+}
+
+int main(int argc, char *argv[]) {
+    enum { ANSI, TERMINAL } generate = ANSI;
     enum { HEX, PNG } output = HEX;
 
     int opt;
-    while (0 < (opt = getopt(argc, argv, "gx"))) {
+    while (0 < (opt = getopt(argc, argv, "agtx"))) {
         switch (opt) {
+            case 'a': generate = ANSI; break;
             case 'g': output = PNG; break;
+            case 't': generate = TERMINAL; break;
             case 'x': output = HEX; break;
             default: return EX_USAGE;
         }
     }
 
-    size_t len = sizeof(scheme) / sizeof(struct Hsv);
+    struct Ansi ansi = genAnsi();
+    struct Terminal terminal = genTerminal(ansi);
+
+    const struct Hsv *scheme;
+    uint8_t len;
+    switch (generate) {
+        case ANSI: {
+            scheme = (struct Hsv *)&ansi;
+            len = HSV_LEN(ansi);
+        } break;
+        case TERMINAL: {
+            scheme = (struct Hsv *)&terminal;
+            len = HSV_LEN(terminal);
+        } break;
+    }
+
     switch (output) {
-        case HEX: hex((struct Hsv *)&scheme, len); break;
-        case PNG: png((struct Hsv *)&scheme, len); break;
+        case HEX: hex(scheme, len); break;
+        case PNG: png(scheme, len); break;
     }
 
     return EX_OK;
