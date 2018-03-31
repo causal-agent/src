@@ -170,7 +170,7 @@ static struct Terminal genTerminal(struct Ansi ansi) {
         .text       = p(ansi.light[WHITE],   0.0, 1.0, 0.9),
         .bold       = p(ansi.light[WHITE],   0.0, 1.0, 1.0),
         .selection  = p(ansi.light[RED],   +10.0, 1.0, 0.8),
-        .cursor     = p(ansi.dark[WHITE],    0.0, 1.0, 0.7),
+        .cursor     = p(ansi.dark[WHITE],    0.0, 1.0, 0.8),
     };
 }
 
