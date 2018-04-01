@@ -112,6 +112,14 @@ static void png(const struct Hsv *scheme, uint8_t len) {
     pngInt(crc);
 }
 
+static void linux(const struct Hsv *scheme, uint8_t len) {
+    if (len > 16) len = 16;
+    for (uint8_t i = 0; i < len; ++i) {
+        struct Rgb rgb = toRgb(scheme[i]);
+        printf("\x1B]P%x%02x%02x%02x", i, rgb.r, rgb.g, rgb.b);
+    }
+}
+
 static void hex(const struct Hsv *scheme, uint8_t len) {
     for (uint8_t i = 0; i < len; ++i) {
         struct Rgb rgb = toRgb(scheme[i]);
@@ -176,13 +184,14 @@ static struct Terminal genTerminal(struct Ansi ansi) {
 
 int main(int argc, char *argv[]) {
     enum { ANSI, TERMINAL } generate = ANSI;
-    enum { HEX, PNG } output = HEX;
+    enum { HEX, LINUX, PNG } output = HEX;
 
     int opt;
-    while (0 < (opt = getopt(argc, argv, "agtx"))) {
+    while (0 < (opt = getopt(argc, argv, "agltx"))) {
         switch (opt) {
             case 'a': generate = ANSI; break;
             case 'g': output = PNG; break;
+            case 'l': output = LINUX; break;
             case 't': generate = TERMINAL; break;
             case 'x': output = HEX; break;
             default: return EX_USAGE;
@@ -207,6 +216,7 @@ int main(int argc, char *argv[]) {
 
     switch (output) {
         case HEX: hex(scheme, len); break;
+        case LINUX: linux(scheme, len); break;
         case PNG: png(scheme, len); break;
     }
 
