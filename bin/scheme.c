@@ -65,7 +65,7 @@ static void pngChunk(const char *type, uint32_t size) {
 }
 enum { NONE, SUB, UP, AVERAGE, PAETH };
 
-static void png(const struct Hsv *scheme, uint8_t len) {
+static void png(const struct Hsv *scheme, uint32_t len) {
     uint32_t swatchWidth = 64;
     uint32_t swatchHeight = 64;
     uint32_t columns = 8;
@@ -82,7 +82,7 @@ static void png(const struct Hsv *scheme, uint8_t len) {
     pngInt(crc);
 
     pngChunk("PLTE", 3 * len);
-    for (uint8_t i = 0; i < len; ++i) {
+    for (uint32_t i = 0; i < len; ++i) {
         struct Rgb rgb = toRgb(scheme[i]);
         pngWrite(&rgb, 3);
     }
@@ -93,7 +93,7 @@ static void png(const struct Hsv *scheme, uint8_t len) {
     for (uint32_t y = 0; y < height; ++y) {
         data[y][0] = (y % swatchHeight) ? UP : SUB;
     }
-    for (uint8_t i = 0; i < len; ++i) {
+    for (uint32_t i = 0; i < len; ++i) {
         uint32_t y = swatchHeight * (i / columns);
         uint32_t x = swatchWidth * (i % columns);
         data[y][1 + x] = x ? 1 : i;
@@ -112,22 +112,22 @@ static void png(const struct Hsv *scheme, uint8_t len) {
     pngInt(crc);
 }
 
-static void hsv(const struct Hsv *scheme, uint8_t len) {
-    for (uint8_t i = 0; i < len; ++i) {
+static void hsv(const struct Hsv *scheme, uint32_t len) {
+    for (uint32_t i = 0; i < len; ++i) {
         printf("%g,%g,%g\n", scheme[i].h, scheme[i].s, scheme[i].v);
     }
 }
 
-static void hex(const struct Hsv *scheme, uint8_t len) {
-    for (uint8_t i = 0; i < len; ++i) {
+static void hex(const struct Hsv *scheme, uint32_t len) {
+    for (uint32_t i = 0; i < len; ++i) {
         struct Rgb rgb = toRgb(scheme[i]);
         printf("%02x%02x%02x\n", rgb.r, rgb.g, rgb.b);
     }
 }
 
-static void linux(const struct Hsv *scheme, uint8_t len) {
+static void linux(const struct Hsv *scheme, uint32_t len) {
     if (len > 16) len = 16;
-    for (uint8_t i = 0; i < len; ++i) {
+    for (uint32_t i = 0; i < len; ++i) {
         struct Rgb rgb = toRgb(scheme[i]);
         printf("\x1B]P%x%02x%02x%02x", i, rgb.r, rgb.g, rgb.b);
     }
@@ -209,7 +209,7 @@ int main(int argc, char *argv[]) {
     struct Terminal terminal = genTerminal(ansi);
 
     const struct Hsv *scheme;
-    uint8_t len;
+    uint32_t len;
     switch (generate) {
         case ANSI: {
             scheme = (struct Hsv *)&ansi;
