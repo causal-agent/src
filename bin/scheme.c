@@ -25,9 +25,80 @@
 #include <unistd.h>
 #include <zlib.h>
 
-struct Hsv { double h, s, v; };
-struct Rgb { uint8_t r, g, b; };
+static const struct Hsv { double h, s, v; }
+    R = {   0.0, 1.0, 1.0 },
+    Y = {  60.0, 1.0, 1.0 },
+    G = { 120.0, 1.0, 1.0 },
+    C = { 180.0, 1.0, 1.0 },
+    B = { 240.0, 1.0, 1.0 },
+    M = { 300.0, 1.0, 1.0 };
 
+static struct Hsv x(struct Hsv o, double hd, double sf, double vf) {
+    return (struct Hsv) { o.h + hd, o.s * sf, o.v * vf };
+}
+
+struct Ansi {
+    enum { BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE };
+    struct Hsv dark[8];
+    struct Hsv light[8];
+};
+
+struct Terminal {
+    struct Ansi ansi;
+    struct Hsv background, text, bold, selection, cursor;
+};
+
+#define HSV_LEN(x) (sizeof(x) / sizeof(struct Hsv))
+struct Scheme {
+    size_t len;
+    union {
+        struct Hsv hsv;
+        struct Ansi ansi;
+        struct Terminal terminal;
+    };
+};
+
+static struct Scheme ansi(void) {
+    struct Ansi a = {
+        .light = {
+            [BLACK]   = x(R, +45.0, 0.3, 0.3),
+            [RED]     = x(R, +10.0, 0.9, 0.8),
+            [GREEN]   = x(G, -55.0, 0.8, 0.6),
+            [YELLOW]  = x(Y, -20.0, 0.8, 0.8),
+            [BLUE]    = x(B, -55.0, 0.4, 0.5),
+            [MAGENTA] = x(M, +45.0, 0.4, 0.6),
+            [CYAN]    = x(C, -60.0, 0.3, 0.6),
+            [WHITE]   = x(R, +45.0, 0.3, 0.8),
+        },
+    };
+    a.dark[BLACK] = x(a.light[BLACK], 0.0, 1.0, 0.3);
+    a.dark[WHITE] = x(a.light[WHITE], 0.0, 1.0, 0.6);
+    for (int i = RED; i < WHITE; ++i) {
+        a.dark[i] = x(a.light[i], 0.0, 1.0, 0.8);
+    }
+    return (struct Scheme) { .len = HSV_LEN(a), .ansi = a };
+}
+
+static struct Scheme terminal(void) {
+    struct Ansi a = ansi().ansi;
+    struct Terminal t = {
+        .ansi       = a,
+        .background = x(a.dark[BLACK],    0.0, 1.0, 0.9),
+        .text       = x(a.light[WHITE],   0.0, 1.0, 0.9),
+        .bold       = x(a.light[WHITE],   0.0, 1.0, 1.0),
+        .selection  = x(a.light[RED],   +10.0, 1.0, 0.8),
+        .cursor     = x(a.dark[WHITE],    0.0, 1.0, 0.8),
+    };
+    return (struct Scheme) { .len = HSV_LEN(t), .terminal = t };
+}
+
+static void hsv(const struct Hsv *hsv, size_t len) {
+    for (size_t i = 0; i < len; ++i) {
+        printf("%g,%g,%g\n", hsv[i].h, hsv[i].s, hsv[i].v);
+    }
+}
+
+struct Rgb { uint8_t r, g, b; };
 static struct Rgb toRgb(struct Hsv hsv) {
     double c = hsv.v * hsv.s;
     double h = hsv.h / 60.0;
@@ -41,6 +112,21 @@ static struct Rgb toRgb(struct Hsv hsv) {
     else if (h <= 5.0) { r += x; b += c; }
     else if (h <= 6.0) { r += c; b += x; }
     return (struct Rgb) { r * 255.0, g * 255.0, b * 255.0 };
+}
+
+static void hex(const struct Hsv *hsv, size_t len) {
+    for (size_t i = 0; i < len; ++i) {
+        struct Rgb rgb = toRgb(hsv[i]);
+        printf("%02x%02x%02x\n", rgb.r, rgb.g, rgb.b);
+    }
+}
+
+static void linux(const struct Hsv *hsv, size_t len) {
+    if (len > 16) len = 16;
+    for (size_t i = 0; i < len; ++i) {
+        struct Rgb rgb = toRgb(hsv[i]);
+        printf("\x1B]P%zx%02x%02x%02x", i, rgb.r, rgb.g, rgb.b);
+    }
 }
 
 static uint32_t crc;
@@ -58,9 +144,9 @@ static void pngChunk(const char *type, uint32_t size) {
     crc = crc32(0, Z_NULL, 0);
     pngWrite(type, 4);
 }
-enum { NONE, SUB, UP, AVERAGE, PAETH };
 
-static void outPng(const struct Hsv *scheme, uint32_t len) {
+static void png(const struct Hsv *hsv, size_t len) {
+    if (len > 256) len = 256;
     uint32_t swatchWidth = 64;
     uint32_t swatchHeight = 64;
     uint32_t columns = 8;
@@ -78,7 +164,7 @@ static void outPng(const struct Hsv *scheme, uint32_t len) {
 
     pngChunk("PLTE", 3 * len);
     for (uint32_t i = 0; i < len; ++i) {
-        struct Rgb rgb = toRgb(scheme[i]);
+        struct Rgb rgb = toRgb(hsv[i]);
         pngWrite(&rgb, 3);
     }
     pngInt(crc);
@@ -86,6 +172,7 @@ static void outPng(const struct Hsv *scheme, uint32_t len) {
     uint8_t data[height][1 + width];
     memset(data, 0, sizeof(data));
     for (uint32_t y = 0; y < height; ++y) {
+        enum { NONE, SUB, UP, AVERAGE, PAETH };
         data[y][0] = (y % swatchHeight) ? UP : SUB;
     }
     for (uint32_t i = 0; i < len; ++i) {
@@ -107,115 +194,22 @@ static void outPng(const struct Hsv *scheme, uint32_t len) {
     pngInt(crc);
 }
 
-static void outHsv(const struct Hsv *scheme, uint32_t len) {
-    for (uint32_t i = 0; i < len; ++i) {
-        printf("%g,%g,%g\n", scheme[i].h, scheme[i].s, scheme[i].v);
-    }
-}
-
-static void outHex(const struct Hsv *scheme, uint32_t len) {
-    for (uint32_t i = 0; i < len; ++i) {
-        struct Rgb rgb = toRgb(scheme[i]);
-        printf("%02x%02x%02x\n", rgb.r, rgb.g, rgb.b);
-    }
-}
-
-static void outLinux(const struct Hsv *scheme, uint32_t len) {
-    if (len > 16) len = 16;
-    for (uint32_t i = 0; i < len; ++i) {
-        struct Rgb rgb = toRgb(scheme[i]);
-        printf("\x1B]P%x%02x%02x%02x", i, rgb.r, rgb.g, rgb.b);
-    }
-}
-
-static const struct Hsv R = {   0.0, 1.0, 1.0 };
-static const struct Hsv Y = {  60.0, 1.0, 1.0 };
-static const struct Hsv G = { 120.0, 1.0, 1.0 };
-static const struct Hsv C = { 180.0, 1.0, 1.0 };
-static const struct Hsv B = { 240.0, 1.0, 1.0 };
-static const struct Hsv M = { 300.0, 1.0, 1.0 };
-
-static struct Hsv p(struct Hsv o, double hd, double sf, double vf) {
-    return (struct Hsv) { o.h + hd, o.s * sf, o.v * vf };
-}
-
-struct Ansi {
-    enum { BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE };
-    struct Hsv dark[8];
-    struct Hsv light[8];
-};
-
-struct Terminal {
-    struct Ansi ansi;
-    struct Hsv background, text, bold, selection, cursor;
-};
-
-#define HSV_LEN(x) (sizeof(x) / sizeof(struct Hsv))
-struct Scheme {
-    uint32_t len;
-    union {
-        struct Hsv hsv;
-        struct Ansi ansi;
-        struct Terminal terminal;
-    };
-};
-
-static struct Scheme genAnsi(void) {
-    struct Ansi ansi = {
-        .light = {
-            [BLACK]   = p(R, +45.0, 0.3, 0.3),
-            [RED]     = p(R, +10.0, 0.9, 0.8),
-            [GREEN]   = p(G, -55.0, 0.8, 0.6),
-            [YELLOW]  = p(Y, -20.0, 0.8, 0.8),
-            [BLUE]    = p(B, -55.0, 0.4, 0.5),
-            [MAGENTA] = p(M, +45.0, 0.4, 0.6),
-            [CYAN]    = p(C, -60.0, 0.3, 0.6),
-            [WHITE]   = p(R, +45.0, 0.3, 0.8),
-        },
-    };
-    ansi.dark[BLACK] = p(ansi.light[BLACK], 0.0, 1.0, 0.3);
-    ansi.dark[WHITE] = p(ansi.light[WHITE], 0.0, 1.0, 0.6);
-    for (int i = RED; i < WHITE; ++i) {
-        ansi.dark[i] = p(ansi.light[i], 0.0, 1.0, 0.8);
-    }
-    return (struct Scheme) { .len = HSV_LEN(ansi), .ansi = ansi };
-}
-
-static struct Scheme genTerminal(void) {
-    struct Ansi ansi = genAnsi().ansi;
-    struct Terminal terminal = {
-        .ansi       = ansi,
-        .background = p(ansi.dark[BLACK],    0.0, 1.0, 0.9),
-        .text       = p(ansi.light[WHITE],   0.0, 1.0, 0.9),
-        .bold       = p(ansi.light[WHITE],   0.0, 1.0, 1.0),
-        .selection  = p(ansi.light[RED],   +10.0, 1.0, 0.8),
-        .cursor     = p(ansi.dark[WHITE],    0.0, 1.0, 0.8),
-    };
-    return (struct Scheme) {
-        .len = HSV_LEN(terminal),
-        .terminal = terminal,
-    };
-}
-
 int main(int argc, char *argv[]) {
-    struct Scheme (*gen)(void) = genAnsi;
-    void (*out)(const struct Hsv *, uint32_t len) = outHex;
-
+    struct Scheme (*gen)(void) = ansi;
+    void (*out)(const struct Hsv *, size_t len) = hex;
     int opt;
     while (0 < (opt = getopt(argc, argv, "aghltx"))) {
         switch (opt) {
-            case 'a': gen = genAnsi; break;
-            case 'g': out = outPng; break;
-            case 'h': out = outHsv; break;
-            case 'l': out = outLinux; break;
-            case 't': gen = genTerminal; break;
-            case 'x': out = outHex; break;
+            case 'a': gen = ansi; break;
+            case 'g': out = png; break;
+            case 'h': out = hsv; break;
+            case 'l': out = linux; break;
+            case 't': gen = terminal; break;
+            case 'x': out = hex; break;
             default: return EX_USAGE;
         }
     }
-
     struct Scheme scheme = gen();
     out(&scheme.hsv, scheme.len);
-
     return EX_OK;
 }
