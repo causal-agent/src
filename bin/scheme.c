@@ -144,8 +144,8 @@ static struct Hsv p(struct Hsv o, double hd, double sf, double vf) {
     return (struct Hsv) { o.h + hd, o.s * sf, o.v * vf };
 }
 
-enum { BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE };
 struct Ansi {
+    enum { BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE };
     struct Hsv dark[8];
     struct Hsv light[8];
 };
@@ -154,9 +154,17 @@ struct Terminal {
     struct Hsv background, text, bold, selection, cursor;
 };
 
+struct Scheme {
+    uint32_t len;
+    union {
+        struct Hsv hsv;
+        struct Ansi ansi;
+        struct Terminal terminal;
+    };
+};
 #define HSV_LEN(x) (sizeof(x) / sizeof(struct Hsv))
 
-static struct Ansi genAnsi(void) {
+static struct Scheme genAnsi(void) {
     struct Ansi ansi = {
         .light = {
             [BLACK]   = p(R, +45.0, 0.3, 0.3),
@@ -168,23 +176,29 @@ static struct Ansi genAnsi(void) {
             [CYAN]    = p(C, -60.0, 0.3, 0.6),
             [WHITE]   = p(R, +45.0, 0.3, 0.8),
         },
+        .dark[BLACK] = ansi.light[BLACK],
     };
     ansi.dark[BLACK] = p(ansi.light[BLACK], 0.0, 1.0, 0.3);
     ansi.dark[WHITE] = p(ansi.light[WHITE], 0.0, 1.0, 0.6);
     for (int i = RED; i < WHITE; ++i) {
         ansi.dark[i] = p(ansi.light[i], 0.0, 1.0, 0.8);
     }
-    return ansi;
+    return (struct Scheme) { .len = HSV_LEN(ansi), .ansi = ansi };
 }
 
-static struct Terminal genTerminal(struct Ansi ansi) {
-    return (struct Terminal) {
+static struct Scheme genTerminal(void) {
+    struct Ansi ansi = genAnsi().ansi;
+    struct Terminal terminal = {
         .ansi       = ansi,
         .background = p(ansi.dark[BLACK],    0.0, 1.0, 0.9),
         .text       = p(ansi.light[WHITE],   0.0, 1.0, 0.9),
         .bold       = p(ansi.light[WHITE],   0.0, 1.0, 1.0),
         .selection  = p(ansi.light[RED],   +10.0, 1.0, 0.8),
         .cursor     = p(ansi.dark[WHITE],    0.0, 1.0, 0.8),
+    };
+    return (struct Scheme) {
+        .len = HSV_LEN(terminal),
+        .terminal = terminal,
     };
 }
 
@@ -205,27 +219,17 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    struct Ansi ansi = genAnsi();
-    struct Terminal terminal = genTerminal(ansi);
-
-    const struct Hsv *scheme;
-    uint32_t len;
+    struct Scheme scheme;
     switch (generate) {
-        case ANSI: {
-            scheme = (struct Hsv *)&ansi;
-            len = HSV_LEN(ansi);
-        } break;
-        case TERMINAL: {
-            scheme = (struct Hsv *)&terminal;
-            len = HSV_LEN(terminal);
-        } break;
+        case ANSI: scheme = genAnsi(); break;
+        case TERMINAL: scheme = genTerminal(); break;
     }
 
     switch (output) {
-        case HSV: hsv(scheme, len); break;
-        case HEX: hex(scheme, len); break;
-        case LINUX: linux(scheme, len); break;
-        case PNG: png(scheme, len); break;
+        case HSV: hsv(&scheme.hsv, scheme.len); break;
+        case HEX: hex(&scheme.hsv, scheme.len); break;
+        case LINUX: linux(&scheme.hsv, scheme.len); break;
+        case PNG: png(&scheme.hsv, scheme.len); break;
     }
 
     return EX_OK;
