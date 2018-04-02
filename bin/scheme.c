@@ -34,7 +34,11 @@ static const struct Hsv { double h, s, v; }
     M = { 300.0, 1.0, 1.0 };
 
 static struct Hsv x(struct Hsv o, double hd, double sf, double vf) {
-    return (struct Hsv) { o.h + hd, o.s * sf, o.v * vf };
+    return (struct Hsv) {
+        fmod(o.h + hd, 360.0),
+        fmin(o.s * sf, 1.0),
+        fmin(o.v * vf, 1.0),
+    };
 }
 
 struct Ansi {
