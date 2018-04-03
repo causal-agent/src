@@ -36,7 +36,7 @@ hi link StorageClass Statement
 hi link Structure StorageClass
 hi link Typedef Structure
 
-hi! link Special Statement
+hi! link Special Normal
 hi SpecialComment ctermfg=LightBlue
 hi SpecialKey ctermfg=DarkMagenta
 
