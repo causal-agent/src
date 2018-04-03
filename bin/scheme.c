@@ -167,7 +167,7 @@ static void png(const struct Hsv *hsv, size_t len) {
     pngInt(crc);
 
     pngChunk("PLTE", 3 * len);
-    for (uint32_t i = 0; i < len; ++i) {
+    for (size_t i = 0; i < len; ++i) {
         struct Rgb rgb = toRgb(hsv[i]);
         pngWrite(&rgb, 3);
     }
@@ -179,7 +179,7 @@ static void png(const struct Hsv *hsv, size_t len) {
         enum { NONE, SUB, UP, AVERAGE, PAETH };
         data[y][0] = (y % swatchHeight) ? UP : SUB;
     }
-    for (uint32_t i = 0; i < len; ++i) {
+    for (size_t i = 0; i < len; ++i) {
         uint32_t y = swatchHeight * (i / columns);
         uint32_t x = swatchWidth * (i % columns);
         data[y][1 + x] = x ? 1 : i;
