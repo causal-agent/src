@@ -41,7 +41,8 @@ clean:
 	rm -f tags *.o gfx/*.o $(ALL_BINS)
 
 link:
-	ln -s -f $(ALL_BINS:%=$(PWD)/%) ~/.bin
+	mkdir -p ~/.local/bin
+	ln -s -f $(ALL_BINS:%=$(PWD)/%) ~/.local/bin
 
 unlink:
-	rm -f $(ALL_BINS:%=~/.bin/%)
+	rm -f $(ALL_BINS:%=~/.local/bin/%)

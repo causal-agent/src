@@ -10,7 +10,7 @@ bindkey -v
 KEYTIMEOUT=1
 
 OLDPATH=$PATH
-path=({,/usr/local,/usr}/{s,}bin ~/.bin ~/.cargo/bin)
+path=({,/usr/local,/usr,~/.local}/{s,}bin)
 
 export PAGER=less MANPAGER=less EDITOR=vim GIT_EDITOR=vim
 type nvim > /dev/null \
