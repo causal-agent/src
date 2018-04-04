@@ -1,3 +1,4 @@
+- [Broken Social Scene — Anthems for a Seventeen-Year Old Girl][47]
 - [Shinsei Kamattechan — Yuugure no tori][46]
 - [Petite Meller — The Flute][45]
 - [King Gizzard and the Lizard Wizard — Flying Microtonal Banana][44]
@@ -101,3 +102,4 @@
 [44]: https://youtu.be/D0BsgJxw208
 [45]: https://youtu.be/BLwgeV7dXOI
 [46]: https://youtu.be/sUW4dDWiz-A
+[47]: https://youtu.be/DDqNL0js0iU
