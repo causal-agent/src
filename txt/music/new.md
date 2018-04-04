@@ -1,3 +1,4 @@
+- [Shinsei Kamattechan — Yuugure no tori][46]
 - [Petite Meller — The Flute][45]
 - [King Gizzard and the Lizard Wizard — Flying Microtonal Banana][44]
 - [rook&nomie — DAYDREAM][43]
@@ -99,3 +100,4 @@
 [43]: https://youtu.be/00TdaTffFeY
 [44]: https://youtu.be/D0BsgJxw208
 [45]: https://youtu.be/BLwgeV7dXOI
+[46]: https://youtu.be/sUW4dDWiz-A
