@@ -132,6 +132,7 @@ static struct PACKED {
     enum PACKED { ADAPTIVE } filter;
     enum PACKED { PROGRESSIVE, ADAM7 } interlace;
 } header;
+static_assert(13 == sizeof(header), "header size");
 
 static size_t lineSize(void) {
     switch (header.color) {

@@ -127,6 +127,7 @@ static struct PACKED {
     uint8_t filter;
     uint8_t interlace;
 } header;
+static_assert(13 == sizeof(header), "header size");
 
 static size_t lineSize(void) {
     switch (header.color) {
