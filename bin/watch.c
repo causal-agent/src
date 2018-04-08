@@ -85,6 +85,7 @@ int main(int argc, char *argv[]) {
 
         if (event.fflags & NOTE_DELETE) {
             close(event.ident);
+            sleep(1);
             watch(kq, event.udata);
         }
 
