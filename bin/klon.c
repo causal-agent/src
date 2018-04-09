@@ -25,11 +25,13 @@
 
 typedef uint8_t Card;
 
-#define MASK_RANK   (0x0F)
-#define MASK_SUIT   (0x30)
-#define MASK_COLOR  (0x10)
-#define MASK_UP     (0x40)
-#define MASK_SELECT (0x80)
+enum {
+    MASK_RANK   = 0x0F,
+    MASK_SUIT   = 0x30,
+    MASK_COLOR  = 0x10,
+    MASK_UP     = 0x40,
+    MASK_SELECT = 0x80,
+};
 
 enum {
     SUIT_CLUB    = 0x00,

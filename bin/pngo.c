@@ -358,8 +358,8 @@ enum PACKED Filter {
     UP,
     AVERAGE,
     PAETH,
+    FILTER_COUNT,
 };
-#define FILTER_COUNT (PAETH + 1)
 
 struct Bytes {
     uint8_t x;

@@ -261,8 +261,8 @@ enum PACKED Filter {
     UP,
     AVERAGE,
     PAETH,
+    FILTER_COUNT,
 };
-#define FILTER_COUNT (PAETH + 1)
 
 static struct {
     bool brokenPaeth;
