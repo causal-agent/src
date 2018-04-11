@@ -49,7 +49,7 @@ void draw(uint32_t *buf, size_t width, size_t height) {
         double complex zy = ((double)y / (double)height - 0.5) * cimag(scale) * I;
         for (size_t x = 0; x < width; ++x) {
             double complex zx = ((double)x / (double)width - 0.5) * creal(scale);
-            uint64_t n = mandelbrot((origin + zx + zy) * rotate);
+            uint64_t n = mandelbrot(origin + (zx + zy) * rotate);
             uint32_t g = (double)n / (double)depth * 255.0;
             buf[y * width + x] = g << 16 | g << 8 | g;
         }
@@ -57,16 +57,22 @@ void draw(uint32_t *buf, size_t width, size_t height) {
 }
 
 bool input(char in) {
+    const double PI = acos(-1.0);
+    double complex realTrans = 0.01 * creal(scale) * rotate;
+    double complex imagTrans = 0.01 * cimag(scale) * I * rotate;
+    double complex rotation = cexp(0.01 * PI * I);
     switch (in) {
         case 'q': return false;
         case '.': depth++; break;
         case ',': if (depth) depth--; break;
         case '+': scale *= 0.9; break;
         case '-': scale *= 1.1; break;
-        case 'l': origin += creal(scale) * 0.01; break;
-        case 'h': origin -= creal(scale) * 0.01; break;
-        case 'j': origin += cimag(scale) * 0.01 * I; break;
-        case 'k': origin -= cimag(scale) * 0.01 * I; break;
+        case 'l': origin += realTrans; break;
+        case 'h': origin -= realTrans; break;
+        case 'j': origin += imagTrans; break;
+        case 'k': origin -= imagTrans; break;
+        case 'u': rotate *= rotation; break;
+        case 'i': rotate /= rotation; break;
     }
     return true;
 }
@@ -75,10 +81,11 @@ const char *status(void) {
     static char buf[256];
     snprintf(
         buf, sizeof(buf),
-        "(%u) (%g + %gi) (%g + %gi)",
+        "%u %g+%gi %g+%gi %g+%gi",
         depth,
         creal(origin), cimag(origin),
-        creal(scale), cimag(scale)
+        creal(scale), cimag(scale),
+        creal(rotate), cimag(rotate)
     );
     return buf;
 }
