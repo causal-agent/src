@@ -1,4 +1,4 @@
-ANY_BINS = atch dtch gfxx glitch hnel pbcopy pbd pbpaste pngo scheme wake xx
+ANY_BINS = atch brot dtch gfxx glitch hnel pbcopy pbd pbpaste pngo scheme wake xx
 BSD_BINS = klon watch
 LIN_BINS = bri fbatt fbclock
 ALL_BINS = $(ANY_BINS) $(BSD_BINS) $(LIN_BINS)
@@ -23,6 +23,9 @@ tags: *.c
 
 atch: dtch
 	ln -f dtch atch
+
+brot: brot.o gfx/$(GFX).o
+	$(CC) $(LDFLAGS) brot.o gfx/$(GFX).o $(LDLIBS) $(LDLIBS_$(GFX)) -o $@
 
 gfxx: gfxx.o gfx/$(GFX).o
 	$(CC) $(LDFLAGS) gfxx.o gfx/$(GFX).o $(LDLIBS) $(LDLIBS_$(GFX)) -o $@
