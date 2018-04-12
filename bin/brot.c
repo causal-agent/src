@@ -62,23 +62,25 @@ void draw(uint32_t *buf, size_t width, size_t height) {
     }
 }
 
+static uint32_t depthDelta = 1;
+static double translateDelta = 0.01;
+static double rotateDelta = 0.01;
+static double scaleFactor = 1.1;
+
 bool input(char in) {
     const double PI = acos(-1.0);
-    double complex realTrans = 0.01 * scale * rotate;
-    double complex imagTrans = 0.01*I * scale * rotate;
-    double complex theta = cexp(0.01 * PI * I);
     switch (in) {
         case 'q': return false;
-        case '.': depth++; break;
-        case ',': if (depth) depth--; break;
-        case '+': scale *= 0.9; break;
-        case '-': scale *= 1.1; break;
-        case 'l': translate += realTrans; break;
-        case 'h': translate -= realTrans; break;
-        case 'j': translate += imagTrans; break;
-        case 'k': translate -= imagTrans; break;
-        case 'u': rotate *= theta; break;
-        case 'i': rotate /= theta; break;
+        case '.': depth += depthDelta; break;
+        case ',': if (depth > depthDelta) depth -= depthDelta; break;
+        case 'l': translate += translateDelta * scale * rotate; break;
+        case 'h': translate -= translateDelta * scale * rotate; break;
+        case 'j': translate += translateDelta * I * scale * rotate; break;
+        case 'k': translate -= translateDelta * I * scale * rotate; break;
+        case 'u': rotate *= cexp(rotateDelta * PI * I); break;
+        case 'i': rotate /= cexp(rotateDelta * PI * I); break;
+        case '+': scale /= scaleFactor; break;
+        case '-': scale *= scaleFactor; break;
     }
     return true;
 }
@@ -87,7 +89,7 @@ const char *status(void) {
     static char buf[256];
     snprintf(
         buf, sizeof(buf),
-        "%u %g+%gi %g+%gi %g",
+        "-d %u -t %g+%gi -r %g+%gi -z %g",
         depth,
         creal(translate), cimag(translate),
         creal(rotate), cimag(rotate),
