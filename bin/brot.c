@@ -40,39 +40,45 @@ static uint32_t mandelbrot(double complex c) {
     return 0;
 }
 
-static double complex origin = -0.75 + 0.0 * I;
-static double complex scale = 3.5 + 2.0 * I;
-static double complex rotate = 1;
+static uint32_t color(uint32_t n) {
+    uint32_t gray = (double)n / (double)depth * 255.0;
+    return gray << 16 | gray << 8 | gray;
+}
+
+static double complex translate = -0.75;
+static double complex rotate = 1.0;
+static double scale = 2.5;
 
 void draw(uint32_t *buf, size_t width, size_t height) {
+    double yRatio = (height > width) ? (double)height / (double)width : 1.0;
+    double xRatio = (width > height) ? (double)width / (double)height : 1.0;
     for (size_t y = 0; y < height; ++y) {
-        double complex zy = ((double)y / (double)height - 0.5) * cimag(scale) * I;
         for (size_t x = 0; x < width; ++x) {
-            double complex zx = ((double)x / (double)width - 0.5) * creal(scale);
-            uint64_t n = mandelbrot(origin + (zx + zy) * rotate);
-            uint32_t g = (double)n / (double)depth * 255.0;
-            buf[y * width + x] = g << 16 | g << 8 | g;
+            double zx = ((double)x / (double)width - 0.5) * xRatio;
+            double zy = ((double)y / (double)height - 0.5) * yRatio;
+            uint32_t n = mandelbrot((zx + zy * I) * scale * rotate + translate);
+            buf[y * width + x] = color(n);
         }
     }
 }
 
 bool input(char in) {
     const double PI = acos(-1.0);
-    double complex realTrans = 0.01 * creal(scale) * rotate;
-    double complex imagTrans = 0.01 * cimag(scale) * I * rotate;
-    double complex rotation = cexp(0.01 * PI * I);
+    double complex realTrans = 0.01 * scale * rotate;
+    double complex imagTrans = 0.01*I * scale * rotate;
+    double complex theta = cexp(0.01 * PI * I);
     switch (in) {
         case 'q': return false;
         case '.': depth++; break;
         case ',': if (depth) depth--; break;
         case '+': scale *= 0.9; break;
         case '-': scale *= 1.1; break;
-        case 'l': origin += realTrans; break;
-        case 'h': origin -= realTrans; break;
-        case 'j': origin += imagTrans; break;
-        case 'k': origin -= imagTrans; break;
-        case 'u': rotate *= rotation; break;
-        case 'i': rotate /= rotation; break;
+        case 'l': translate += realTrans; break;
+        case 'h': translate -= realTrans; break;
+        case 'j': translate += imagTrans; break;
+        case 'k': translate -= imagTrans; break;
+        case 'u': rotate *= theta; break;
+        case 'i': rotate /= theta; break;
     }
     return true;
 }
@@ -81,11 +87,11 @@ const char *status(void) {
     static char buf[256];
     snprintf(
         buf, sizeof(buf),
-        "%u %g+%gi %g+%gi %g+%gi",
+        "%u %g+%gi %g+%gi %g",
         depth,
-        creal(origin), cimag(origin),
-        creal(scale), cimag(scale),
-        creal(rotate), cimag(rotate)
+        creal(translate), cimag(translate),
+        creal(rotate), cimag(rotate),
+        scale
     );
     return buf;
 }
