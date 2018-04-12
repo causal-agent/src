@@ -46,8 +46,7 @@ static uint32_t color(uint32_t n) {
 }
 
 static double complex translate = -0.75;
-static double complex rotate = 1.0;
-static double scale = 2.5;
+static double complex transform = 2.5;
 
 void draw(uint32_t *buf, size_t width, size_t height) {
     double yRatio = (height > width) ? (double)height / (double)width : 1.0;
@@ -56,7 +55,7 @@ void draw(uint32_t *buf, size_t width, size_t height) {
         for (size_t x = 0; x < width; ++x) {
             double zx = ((double)x / (double)width - 0.5) * xRatio;
             double zy = ((double)y / (double)height - 0.5) * yRatio;
-            uint32_t n = mandelbrot((zx + zy * I) * scale * rotate + translate);
+            uint32_t n = mandelbrot((zx + zy * I) * transform + translate);
             buf[y * width + x] = color(n);
         }
     }
@@ -73,14 +72,14 @@ bool input(char in) {
         case 'q': return false;
         case '.': depth += depthDelta; break;
         case ',': if (depth > depthDelta) depth -= depthDelta; break;
-        case 'l': translate += translateDelta * scale * rotate; break;
-        case 'h': translate -= translateDelta * scale * rotate; break;
-        case 'j': translate += translateDelta * I * scale * rotate; break;
-        case 'k': translate -= translateDelta * I * scale * rotate; break;
-        case 'u': rotate *= cexp(rotateDelta * PI * I); break;
-        case 'i': rotate /= cexp(rotateDelta * PI * I); break;
-        case '+': scale /= scaleFactor; break;
-        case '-': scale *= scaleFactor; break;
+        case 'l': translate += translateDelta * transform; break;
+        case 'h': translate -= translateDelta * transform; break;
+        case 'j': translate += translateDelta * I * transform; break;
+        case 'k': translate -= translateDelta * I * transform; break;
+        case 'u': transform *= cexp(rotateDelta * PI * I); break;
+        case 'i': transform /= cexp(rotateDelta * PI * I); break;
+        case '+': transform /= scaleFactor; break;
+        case '-': transform *= scaleFactor; break;
     }
     return true;
 }
@@ -89,11 +88,10 @@ const char *status(void) {
     static char buf[256];
     snprintf(
         buf, sizeof(buf),
-        "-d %u -t %g+%gi -r %g+%gi -z %g",
+        "-i %u -t %g+%gi -f %g+%gi",
         depth,
         creal(translate), cimag(translate),
-        creal(rotate), cimag(rotate),
-        scale
+        creal(transform), cimag(transform)
     );
     return buf;
 }
