@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sysexits.h>
+#include <unistd.h>
 
 #include "gfx/gfx.h"
 
@@ -61,25 +62,24 @@ void draw(uint32_t *buf, size_t width, size_t height) {
     }
 }
 
-static uint32_t depthDelta = 1;
-static double translateDelta = 0.01;
-static double rotateDelta = 0.01;
-static double scaleFactor = 1.1;
+static double translateStep = 1.0 / 128.0;
+static double rotateStep = 1.0 / 128.0;
+static double scaleStep = 1.0 / 32.0;
 
 bool input(char in) {
     const double PI = acos(-1.0);
     switch (in) {
         case 'q': return false;
-        case '.': depth += depthDelta; break;
-        case ',': if (depth > depthDelta) depth -= depthDelta; break;
-        case 'l': translate += translateDelta * transform; break;
-        case 'h': translate -= translateDelta * transform; break;
-        case 'j': translate += translateDelta * I * transform; break;
-        case 'k': translate -= translateDelta * I * transform; break;
-        case 'u': transform *= cexp(rotateDelta * PI * I); break;
-        case 'i': transform /= cexp(rotateDelta * PI * I); break;
-        case '+': transform /= scaleFactor; break;
-        case '-': transform *= scaleFactor; break;
+        break; case '.': depth++;
+        break; case ',': if (depth) depth--;
+        break; case 'l': translate += translateStep * transform;
+        break; case 'h': translate -= translateStep * transform;
+        break; case 'j': translate += translateStep * I * transform;
+        break; case 'k': translate -= translateStep * I * transform;
+        break; case 'u': transform *= cexp(rotateStep * PI * I);
+        break; case 'i': transform /= cexp(rotateStep * PI * I);
+        break; case '+': transform *= 1.0 - scaleStep;
+        break; case '-': transform /= 1.0 - scaleStep;
     }
     return true;
 }
@@ -88,7 +88,7 @@ const char *status(void) {
     static char buf[256];
     snprintf(
         buf, sizeof(buf),
-        "-i %u -t %g+%gi -f %g+%gi",
+        "brot -i %u -t %g%+gi -f %g%+gi",
         depth,
         creal(translate), cimag(translate),
         creal(transform), cimag(transform)
@@ -96,8 +96,27 @@ const char *status(void) {
     return buf;
 }
 
+static double complex parseComplex(const char *str) {
+    double real = 0.0, imag = 0.0;
+    real = strtod(str, (char **)&str);
+    if (str[0] == 'i') {
+        imag = real;
+        real = 0.0;
+    } else if (str[0]) {
+        imag = strtod(str, NULL);
+    }
+    return real + imag * I;
+}
+
 int init(int argc, char *argv[]) {
-    (void)argc;
-    (void)argv;
+    int opt;
+    while (0 < (opt = getopt(argc, argv, "f:i:t:"))) {
+        switch (opt) {
+            case 'f': transform = parseComplex(optarg); break;
+            case 'i': depth = strtoul(optarg, NULL, 0); break;
+            case 't': translate = parseComplex(optarg); break;
+            default: return EX_USAGE;
+        }
+    }
     return EX_OK;
 }
