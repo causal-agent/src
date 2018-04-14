@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 #include <sysexits.h>
 #include <unistd.h>
@@ -48,24 +49,38 @@ static uint32_t mandelbrot(double complex c) {
 static double complex translate = -0.75;
 static double complex transform = 2.5;
 
+static uint32_t samples = 1;
+
+static void sample(uint32_t *buf, size_t width, size_t height) {
+    double yRatio = (height > width) ? (double)height / (double)width : 1.0;
+    double xRatio = (width > height) ? (double)width / (double)height : 1.0;
+
+    memset(buf, 0, 4 * width * height);
+    size_t superWidth = width * samples;
+    size_t superHeight = height * samples;
+    for (size_t y = 0; y < superHeight; ++y) {
+        for (size_t x = 0; x < superWidth; ++x) {
+            double zx = (((double)x + 0.5) / (double)superWidth - 0.5) * xRatio;
+            double zy = (((double)y + 0.5) / (double)superHeight - 0.5) * yRatio;
+            uint32_t n = mandelbrot((zx + zy * I) * transform + translate);
+            buf[(y / samples) * width + (x / samples)] += n;
+        }
+    }
+}
+
+static void color(uint32_t *buf, size_t width, size_t height) {
+    for (size_t i = 0; i < width * height; ++i) {
+        buf[i] = GRAY(255 * buf[i] / samples / samples / depth);
+    }
+}
+
 static double frameTime;
 void draw(uint32_t *buf, size_t width, size_t height) {
     struct timeval t0, t1;
     gettimeofday(&t0, NULL);
 
-    double yRatio = (height > width) ? (double)height / (double)width : 1.0;
-    double xRatio = (width > height) ? (double)width / (double)height : 1.0;
-    for (size_t y = 0; y < height; ++y) {
-        for (size_t x = 0; x < width; ++x) {
-            double zx = (((double)x + 0.5) / (double)width - 0.5) * xRatio;
-            double zy = (((double)y + 0.5) / (double)height - 0.5) * yRatio;
-            buf[y * width + x] = mandelbrot((zx + zy * I) * transform + translate);
-        }
-    }
-
-    for (size_t i = 0; i < width * height; ++i) {
-        buf[i] = GRAY(255 * buf[i] / depth);
-    }
+    sample(buf, width, height);
+    color(buf, width, height);
 
     gettimeofday(&t1, NULL);
     frameTime = (double)(t1.tv_sec - t0.tv_sec)
@@ -90,6 +105,8 @@ bool input(char in) {
         break; case 'i': transform /= cexp(rotateStep * PI * I);
         break; case '+': transform *= 1.0 - scaleStep;
         break; case '-': transform /= 1.0 - scaleStep;
+        break; case ']': samples++;
+        break; case '[': if (samples > 1) samples--;
     }
     return true;
 }
@@ -98,8 +115,8 @@ const char *status(void) {
     static char buf[256];
     snprintf(
         buf, sizeof(buf),
-        "brot -i %u -t %g%+gi -f %g%+gi # %.6f",
-        depth,
+        "brot -s %u -i %u -t %g%+gi -f %g%+gi # %.6f",
+        samples, depth,
         creal(translate), cimag(translate),
         creal(transform), cimag(transform),
         frameTime
@@ -121,10 +138,11 @@ static double complex parseComplex(const char *str) {
 
 int init(int argc, char *argv[]) {
     int opt;
-    while (0 < (opt = getopt(argc, argv, "f:i:t:"))) {
+    while (0 < (opt = getopt(argc, argv, "f:i:s:t:"))) {
         switch (opt) {
             case 'f': transform = parseComplex(optarg); break;
             case 'i': depth = strtoul(optarg, NULL, 0); break;
+            case 's': samples = strtoul(optarg, NULL, 0); break;
             case 't': translate = parseComplex(optarg); break;
             default: return EX_USAGE;
         }
