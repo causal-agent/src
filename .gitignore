@@ -1,5 +1,5 @@
 /build
-/c
+/c/*/
 /clone
 /pdf
-/txt
+/txt/*/
