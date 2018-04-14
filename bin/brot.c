@@ -21,10 +21,14 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include <sysexits.h>
 #include <unistd.h>
 
 #include "gfx/gfx.h"
+
+#define RGB(r, g, b) ((uint32_t)(r) << 16 | (uint32_t)(g) << 8 | (uint32_t)(b))
+#define GRAY(n) RGB(n, n, n)
 
 static double absSq(double complex z) {
     return creal(z) * creal(z) + cimag(z) * cimag(z);
@@ -41,25 +45,31 @@ static uint32_t mandelbrot(double complex c) {
     return 0;
 }
 
-static uint32_t color(uint32_t n) {
-    uint32_t gray = (double)n / (double)depth * 255.0;
-    return gray << 16 | gray << 8 | gray;
-}
-
 static double complex translate = -0.75;
 static double complex transform = 2.5;
 
+static double frameTime;
 void draw(uint32_t *buf, size_t width, size_t height) {
+    struct timeval t0, t1;
+    gettimeofday(&t0, NULL);
+
     double yRatio = (height > width) ? (double)height / (double)width : 1.0;
     double xRatio = (width > height) ? (double)width / (double)height : 1.0;
     for (size_t y = 0; y < height; ++y) {
         for (size_t x = 0; x < width; ++x) {
             double zx = ((double)x / (double)width - 0.5) * xRatio;
             double zy = ((double)y / (double)height - 0.5) * yRatio;
-            uint32_t n = mandelbrot((zx + zy * I) * transform + translate);
-            buf[y * width + x] = color(n);
+            buf[y * width + x] = mandelbrot((zx + zy * I) * transform + translate);
         }
     }
+
+    for (size_t i = 0; i < width * height; ++i) {
+        buf[i] = GRAY(255 * buf[i] / depth);
+    }
+
+    gettimeofday(&t1, NULL);
+    frameTime = (double)(t1.tv_sec - t0.tv_sec)
+        + ((double)t1.tv_usec - (double)t0.tv_usec) * 0.000001;
 }
 
 static double translateStep = 1.0 / 128.0;
@@ -88,10 +98,11 @@ const char *status(void) {
     static char buf[256];
     snprintf(
         buf, sizeof(buf),
-        "brot -i %u -t %g%+gi -f %g%+gi",
+        "brot -i %u -t %g%+gi -f %g%+gi # %.6f",
         depth,
         creal(translate), cimag(translate),
-        creal(transform), cimag(transform)
+        creal(transform), cimag(transform),
+        frameTime
     );
     return buf;
 }
