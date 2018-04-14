@@ -57,8 +57,8 @@ void draw(uint32_t *buf, size_t width, size_t height) {
     double xRatio = (width > height) ? (double)width / (double)height : 1.0;
     for (size_t y = 0; y < height; ++y) {
         for (size_t x = 0; x < width; ++x) {
-            double zx = ((double)x / (double)width - 0.5) * xRatio;
-            double zy = ((double)y / (double)height - 0.5) * yRatio;
+            double zx = (((double)x + 0.5) / (double)width - 0.5) * xRatio;
+            double zy = (((double)y + 0.5) / (double)height - 0.5) * yRatio;
             buf[y * width + x] = mandelbrot((zx + zy * I) * transform + translate);
         }
     }
@@ -81,7 +81,7 @@ bool input(char in) {
     switch (in) {
         case 'q': return false;
         break; case '.': depth++;
-        break; case ',': if (depth) depth--;
+        break; case ',': if (depth > 1) depth--;
         break; case 'l': translate += translateStep * transform;
         break; case 'h': translate -= translateStep * transform;
         break; case 'j': translate += translateStep * I * transform;
