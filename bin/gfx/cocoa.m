@@ -95,8 +95,8 @@
         if (!input(in)) {
             [NSApp terminate: self];
         }
-        [self setWindowTitle];
         [self draw];
+        [self setWindowTitle];
     }
 }
 @end

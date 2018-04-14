@@ -104,8 +104,8 @@ int main(int argc, char *argv[]) {
                 KeySym sym = XLookupKeysym(&key, key.state & ShiftMask);
                 if (sym > 0x80) break;
                 if (!input(sym)) return EX_OK;
-                XStoreName(display, window, status());
                 drawWindow();
+                XStoreName(display, window, status());
             } break;
 
             case ConfigureNotify: {
