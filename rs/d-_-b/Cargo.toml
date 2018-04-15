@@ -1,8 +1,0 @@
-[package]
-name = "d-_-b"
-version = "0.0.1"
-authors = ["June McEnroe <june@causal.agency>"]
-license = "AGPL-3.0"
-description = "Look what you can do with crate names!"
-
-[dependencies]
