@@ -100,6 +100,7 @@ bool input(char in) {
         break; case 'i': transform /= cexp(rotateStep * PI * I);
         break; case '+': transform *= 1.0 - scaleStep;
         break; case '-': transform /= 1.0 - scaleStep;
+        break; case '0': translate = -0.75; transform = 2.5;
         break; case ']': samples++;
         break; case '[': if (samples > 1) samples--;
     }
