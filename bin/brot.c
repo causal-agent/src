@@ -22,8 +22,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
 #include <sysexits.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "gfx/gfx.h"
@@ -76,15 +76,10 @@ static void color(uint32_t *buf, size_t width, size_t height) {
 
 static double frameTime;
 void draw(uint32_t *buf, size_t width, size_t height) {
-    struct timeval t0, t1;
-    gettimeofday(&t0, NULL);
-
+    clock_t t0 = clock();
     sample(buf, width, height);
     color(buf, width, height);
-
-    gettimeofday(&t1, NULL);
-    frameTime = (double)(t1.tv_sec - t0.tv_sec)
-        + ((double)t1.tv_usec - (double)t0.tv_usec) * 0.000001;
+    frameTime = (double)(clock() - t0) / (double)CLOCKS_PER_SEC;
 }
 
 static double translateStep = 1.0 / 128.0;
