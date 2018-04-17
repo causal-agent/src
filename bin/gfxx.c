@@ -158,7 +158,7 @@ static char options[128];
 static void formatOptions(void) {
     snprintf(
         options, sizeof(options),
-        "gfxx -c %s -e%c -E%c -b %hhu%hhu%hhu%hhu -n %#zx %s%s-w %zu -z %zu",
+        "gfxx -c %s -e%c -E%c -b %hhu%hhu%hhu%hhu -n 0x%zX %s%s-w %zu -z %zu",
         COLOR__STR[space],
         "lb"[byteOrder],
         "lb"[bitOrder],
