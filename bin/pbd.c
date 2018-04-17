@@ -59,7 +59,7 @@ static int pbd(void) {
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
         .sin_port = htons(7062),
-        .sin_addr = { .s_addr = htonl(0x7f000001) },
+        .sin_addr = { .s_addr = htonl(0x7F000001) },
     };
     error = bind(server, (struct sockaddr *)&addr, sizeof(addr));
     if (error) err(EX_UNAVAILABLE, "bind");
@@ -93,7 +93,7 @@ static int pbdClient(void) {
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
         .sin_port = htons(7062),
-        .sin_addr = { .s_addr = htonl(0x7f000001) },
+        .sin_addr = { .s_addr = htonl(0x7F000001) },
     };
     int error = connect(client, (struct sockaddr *)&addr, sizeof(addr));
     if (error) err(EX_UNAVAILABLE, "connect");

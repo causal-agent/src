@@ -121,7 +121,7 @@ static struct Rgb toRgb(struct Hsv hsv) {
 static void hex(const struct Hsv *hsv, size_t len) {
     for (size_t i = 0; i < len; ++i) {
         struct Rgb rgb = toRgb(hsv[i]);
-        printf("%02x%02x%02x\n", rgb.r, rgb.g, rgb.b);
+        printf("%02X%02X%02X\n", rgb.r, rgb.g, rgb.b);
     }
 }
 
@@ -129,7 +129,7 @@ static void linux(const struct Hsv *hsv, size_t len) {
     if (len > 16) len = 16;
     for (size_t i = 0; i < len; ++i) {
         struct Rgb rgb = toRgb(hsv[i]);
-        printf("\x1B]P%zx%02x%02x%02x", i, rgb.r, rgb.g, rgb.b);
+        printf("\x1B]P%zX%02X%02X%02X", i, rgb.r, rgb.g, rgb.b);
     }
 }
 

@@ -59,7 +59,7 @@ static void dump(FILE *file) {
         }
 
         if (options.offset) {
-            printf("%08zx:  ", offset);
+            printf("%08zX:  ", offset);
         }
 
         for (size_t i = 0; i < sizeof(buf); ++i) {
@@ -69,7 +69,7 @@ static void dump(FILE *file) {
                 }
             }
             if (i < size) {
-                printf("%02hhx ", buf[i]);
+                printf("%02hhX ", buf[i]);
             } else {
                 printf("   ");
             }

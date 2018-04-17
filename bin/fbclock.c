@@ -61,7 +61,7 @@ int main() {
 
     if (header.magic != PSF2_MAGIC) {
         errx(
-            EX_DATAERR, "%s: invalid header magic %08x",
+            EX_DATAERR, "%s: invalid header magic %08X",
             fontPath, header.magic
         );
     }
