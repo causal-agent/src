@@ -40,8 +40,8 @@ struct Psf2Header {
     uint32_t glyphWidth;
 };
 
-static const uint32_t BG = 0x1D2021;
-static const uint32_t FG = 0xA99A84;
+static const uint32_t BG = 0x161510;
+static const uint32_t FG = 0x7A7155;
 
 int main() {
     size_t len;
