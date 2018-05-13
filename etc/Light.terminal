@@ -1407,6 +1407,8 @@
 	<false/>
 	<key>ShowRepresentedURLInTitle</key>
 	<false/>
+	<key>TerminalType</key>
+	<string>xterm</string>
 	<key>TextBoldColor</key>
 	<data>
 	YnBsaXN0MDDUAQIDBAUGKyxYJHZlcnNpb25YJG9iamVjdHNZJGFyY2hpdmVyVCR0b3AS
