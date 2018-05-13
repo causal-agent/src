@@ -96,6 +96,10 @@ Klondike solitaire for curses. BSD-only for arc4random_uniform.
     1-7 tableau
     ^M  auto-foundation
 
+                                 modem
+
+PTY wrapper with a fixed baud rate of 19.2 kbps.
+
                            pbd/pbcopy/pbpaste
 
 TCP server which pipes into macOS pbcopy(1) and from pbpaste(1), and
