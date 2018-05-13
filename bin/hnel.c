@@ -35,84 +35,84 @@
 
 static struct termios saveTerm;
 static void restoreTerm(void) {
-    tcsetattr(STDIN_FILENO, TCSADRAIN, &saveTerm);
+	tcsetattr(STDIN_FILENO, TCSADRAIN, &saveTerm);
 }
 
 int main(int argc, char *argv[]) {
-    int error;
+	int error;
 
-    if (argc < 4) return EX_USAGE;
+	if (argc < 4) return EX_USAGE;
 
-    char table[256] = {0};
-    if (strlen(argv[1]) != strlen(argv[2])) return EX_USAGE;
-    for (const char *from = argv[1], *to = argv[2]; *from; ++from, ++to) {
-        table[(unsigned)*from] = *to;
-    }
+	char table[256] = {0};
+	if (strlen(argv[1]) != strlen(argv[2])) return EX_USAGE;
+	for (const char *from = argv[1], *to = argv[2]; *from; ++from, ++to) {
+		table[(unsigned)*from] = *to;
+	}
 
-    error = tcgetattr(STDERR_FILENO, &saveTerm);
-    if (error) err(EX_IOERR, "tcgetattr");
-    atexit(restoreTerm);
+	error = tcgetattr(STDERR_FILENO, &saveTerm);
+	if (error) err(EX_IOERR, "tcgetattr");
+	atexit(restoreTerm);
 
-    struct termios raw;
-    cfmakeraw(&raw);
-    error = tcsetattr(STDERR_FILENO, TCSADRAIN, &raw);
-    if (error) err(EX_IOERR, "tcsetattr");
+	struct termios raw;
+	cfmakeraw(&raw);
+	error = tcsetattr(STDERR_FILENO, TCSADRAIN, &raw);
+	if (error) err(EX_IOERR, "tcsetattr");
 
-    struct winsize window;
-    error = ioctl(STDERR_FILENO, TIOCGWINSZ, &window);
-    if (error) err(EX_IOERR, "TIOCGWINSZ");
+	struct winsize window;
+	error = ioctl(STDERR_FILENO, TIOCGWINSZ, &window);
+	if (error) err(EX_IOERR, "TIOCGWINSZ");
 
-    int pty;
-    pid_t pid = forkpty(&pty, NULL, NULL, &window);
-    if (pid < 0) err(EX_OSERR, "forkpty");
+	int pty;
+	pid_t pid = forkpty(&pty, NULL, NULL, &window);
+	if (pid < 0) err(EX_OSERR, "forkpty");
 
-    if (!pid) {
-        execvp(argv[3], &argv[3]);
-        err(EX_NOINPUT, "%s", argv[3]);
-    }
+	if (!pid) {
+		execvp(argv[3], &argv[3]);
+		err(EX_NOINPUT, "%s", argv[3]);
+	}
 
-    bool enable = true;
+	bool enable = true;
 
-    char buf[4096];
-    struct pollfd fds[2] = {
-        { .fd = STDIN_FILENO, .events = POLLIN },
-        { .fd = pty, .events = POLLIN },
-    };
-    while (0 < poll(fds, 2, -1)) {
-        if (fds[0].revents & POLLIN) {
-            ssize_t readSize = read(STDIN_FILENO, buf, sizeof(buf));
-            if (readSize < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
+	char buf[4096];
+	struct pollfd fds[2] = {
+		{ .fd = STDIN_FILENO, .events = POLLIN },
+		{ .fd = pty, .events = POLLIN },
+	};
+	while (0 < poll(fds, 2, -1)) {
+		if (fds[0].revents & POLLIN) {
+			ssize_t readSize = read(STDIN_FILENO, buf, sizeof(buf));
+			if (readSize < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
 
-            if (readSize == 1) {
-                if (buf[0] == CTRL('S')) {
-                    enable ^= true;
-                    continue;
-                }
+			if (readSize == 1) {
+				if (buf[0] == CTRL('S')) {
+					enable ^= true;
+					continue;
+				}
 
-                unsigned char c = buf[0];
-                if (enable && table[c]) buf[0] = table[c];
-            }
+				unsigned char c = buf[0];
+				if (enable && table[c]) buf[0] = table[c];
+			}
 
-            ssize_t writeSize = write(pty, buf, readSize);
-            if (writeSize < 0) err(EX_IOERR, "write(%d)", pty);
-            if (writeSize < readSize) errx(EX_IOERR, "short write(%d)", pty);
-        }
+			ssize_t writeSize = write(pty, buf, readSize);
+			if (writeSize < 0) err(EX_IOERR, "write(%d)", pty);
+			if (writeSize < readSize) errx(EX_IOERR, "short write(%d)", pty);
+		}
 
-        if (fds[1].revents & POLLIN) {
-            ssize_t readSize = read(pty, buf, sizeof(buf));
-            if (readSize < 0) err(EX_IOERR, "read(%d)", pty);
+		if (fds[1].revents & POLLIN) {
+			ssize_t readSize = read(pty, buf, sizeof(buf));
+			if (readSize < 0) err(EX_IOERR, "read(%d)", pty);
 
-            ssize_t writeSize = write(STDOUT_FILENO, buf, readSize);
-            if (writeSize < 0) err(EX_IOERR, "write(%d)", STDOUT_FILENO);
-            if (writeSize < readSize) {
-                errx(EX_IOERR, "short write(%d)", STDOUT_FILENO);
-            }
-        }
+			ssize_t writeSize = write(STDOUT_FILENO, buf, readSize);
+			if (writeSize < 0) err(EX_IOERR, "write(%d)", STDOUT_FILENO);
+			if (writeSize < readSize) {
+				errx(EX_IOERR, "short write(%d)", STDOUT_FILENO);
+			}
+		}
 
-        int status;
-        pid_t dead = waitpid(pid, &status, WNOHANG);
-        if (dead < 0) err(EX_OSERR, "waitpid(%d)", pid);
-        if (dead) return WIFEXITED(status) ? WEXITSTATUS(status) : EX_SOFTWARE;
-    }
-    err(EX_IOERR, "poll");
+		int status;
+		pid_t dead = waitpid(pid, &status, WNOHANG);
+		if (dead < 0) err(EX_OSERR, "waitpid(%d)", pid);
+		if (dead) return WIFEXITED(status) ? WEXITSTATUS(status) : EX_SOFTWARE;
+	}
+	err(EX_IOERR, "poll");
 }

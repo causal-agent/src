@@ -35,455 +35,455 @@ static FILE *file;
 static uint32_t crc;
 
 static void readExpect(void *ptr, size_t size, const char *expect) {
-    fread(ptr, size, 1, file);
-    if (ferror(file)) err(EX_IOERR, "%s", path);
-    if (feof(file)) errx(EX_DATAERR, "%s: missing %s", path, expect);
-    crc = crc32(crc, ptr, size);
+	fread(ptr, size, 1, file);
+	if (ferror(file)) err(EX_IOERR, "%s", path);
+	if (feof(file)) errx(EX_DATAERR, "%s: missing %s", path, expect);
+	crc = crc32(crc, ptr, size);
 }
 
 static void writeExpect(const void *ptr, size_t size) {
-    fwrite(ptr, size, 1, file);
-    if (ferror(file)) err(EX_IOERR, "%s", path);
-    crc = crc32(crc, ptr, size);
+	fwrite(ptr, size, 1, file);
+	if (ferror(file)) err(EX_IOERR, "%s", path);
+	crc = crc32(crc, ptr, size);
 }
 
 static const uint8_t SIGNATURE[8] = {
-    0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'
+	0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'
 };
 
 static void readSignature(void) {
-    uint8_t signature[8];
-    readExpect(signature, 8, "signature");
-    if (0 != memcmp(signature, SIGNATURE, 8)) {
-        errx(EX_DATAERR, "%s: invalid signature", path);
-    }
+	uint8_t signature[8];
+	readExpect(signature, 8, "signature");
+	if (0 != memcmp(signature, SIGNATURE, 8)) {
+		errx(EX_DATAERR, "%s: invalid signature", path);
+	}
 }
 
 static void writeSignature(void) {
-    writeExpect(SIGNATURE, sizeof(SIGNATURE));
+	writeExpect(SIGNATURE, sizeof(SIGNATURE));
 }
 
 struct PACKED Chunk {
-    uint32_t size;
-    char type[4];
+	uint32_t size;
+	char type[4];
 };
 
 static const char *typeStr(struct Chunk chunk) {
-    static char buf[5];
-    memcpy(buf, chunk.type, 4);
-    return buf;
+	static char buf[5];
+	memcpy(buf, chunk.type, 4);
+	return buf;
 }
 
 static struct Chunk readChunk(void) {
-    struct Chunk chunk;
-    readExpect(&chunk, sizeof(chunk), "chunk");
-    chunk.size = ntohl(chunk.size);
-    crc = crc32(CRC_INIT, (Byte *)chunk.type, sizeof(chunk.type));
-    return chunk;
+	struct Chunk chunk;
+	readExpect(&chunk, sizeof(chunk), "chunk");
+	chunk.size = ntohl(chunk.size);
+	crc = crc32(CRC_INIT, (Byte *)chunk.type, sizeof(chunk.type));
+	return chunk;
 }
 
 static void writeChunk(struct Chunk chunk) {
-    chunk.size = htonl(chunk.size);
-    writeExpect(&chunk, sizeof(chunk));
-    crc = crc32(CRC_INIT, (Byte *)chunk.type, sizeof(chunk.type));
+	chunk.size = htonl(chunk.size);
+	writeExpect(&chunk, sizeof(chunk));
+	crc = crc32(CRC_INIT, (Byte *)chunk.type, sizeof(chunk.type));
 }
 
 static void readCrc(void) {
-    uint32_t expected = crc;
-    uint32_t found;
-    readExpect(&found, sizeof(found), "CRC32");
-    found = ntohl(found);
-    if (found != expected) {
-        errx(
-            EX_DATAERR, "%s: expected CRC32 %08X, found %08X",
-            path, expected, found
-        );
-    }
+	uint32_t expected = crc;
+	uint32_t found;
+	readExpect(&found, sizeof(found), "CRC32");
+	found = ntohl(found);
+	if (found != expected) {
+		errx(
+			EX_DATAERR, "%s: expected CRC32 %08X, found %08X",
+			path, expected, found
+		);
+	}
 }
 
 static void writeCrc(void) {
-    uint32_t net = htonl(crc);
-    writeExpect(&net, sizeof(net));
+	uint32_t net = htonl(crc);
+	writeExpect(&net, sizeof(net));
 }
 
 static void skipChunk(struct Chunk chunk) {
-    uint8_t discard[chunk.size];
-    readExpect(discard, sizeof(discard), "chunk data");
-    readCrc();
+	uint8_t discard[chunk.size];
+	readExpect(discard, sizeof(discard), "chunk data");
+	readCrc();
 }
 
 static struct PACKED {
-    uint32_t width;
-    uint32_t height;
-    uint8_t depth;
-    enum PACKED {
-        GRAYSCALE       = 0,
-        TRUECOLOR       = 2,
-        INDEXED         = 3,
-        GRAYSCALE_ALPHA = 4,
-        TRUECOLOR_ALPHA = 6,
-    } color;
-    uint8_t compression;
-    uint8_t filter;
-    uint8_t interlace;
+	uint32_t width;
+	uint32_t height;
+	uint8_t depth;
+	enum PACKED {
+		GRAYSCALE       = 0,
+		TRUECOLOR       = 2,
+		INDEXED         = 3,
+		GRAYSCALE_ALPHA = 4,
+		TRUECOLOR_ALPHA = 6,
+	} color;
+	uint8_t compression;
+	uint8_t filter;
+	uint8_t interlace;
 } header;
 static_assert(13 == sizeof(header), "header size");
 
 static size_t lineSize(void) {
-    switch (header.color) {
-        case GRAYSCALE:       return (header.width * 1 * header.depth + 7) / 8;
-        case TRUECOLOR:       return (header.width * 3 * header.depth + 7) / 8;
-        case INDEXED:         return (header.width * 1 * header.depth + 7) / 8;
-        case GRAYSCALE_ALPHA: return (header.width * 2 * header.depth + 7) / 8;
-        case TRUECOLOR_ALPHA: return (header.width * 4 * header.depth + 7) / 8;
-        default: abort();
-    }
+	switch (header.color) {
+		case GRAYSCALE:       return (header.width * 1 * header.depth + 7) / 8;
+		case TRUECOLOR:       return (header.width * 3 * header.depth + 7) / 8;
+		case INDEXED:         return (header.width * 1 * header.depth + 7) / 8;
+		case GRAYSCALE_ALPHA: return (header.width * 2 * header.depth + 7) / 8;
+		case TRUECOLOR_ALPHA: return (header.width * 4 * header.depth + 7) / 8;
+		default: abort();
+	}
 }
 
 static size_t dataSize(void) {
-    return (1 + lineSize()) * header.height;
+	return (1 + lineSize()) * header.height;
 }
 
 static void readHeader(void) {
-    struct Chunk ihdr = readChunk();
-    if (0 != memcmp(ihdr.type, "IHDR", 4)) {
-        errx(EX_DATAERR, "%s: expected IHDR, found %s", path, typeStr(ihdr));
-    }
-    if (ihdr.size != sizeof(header)) {
-        errx(
-            EX_DATAERR, "%s: expected IHDR size %zu, found %u",
-            path, sizeof(header), ihdr.size
-        );
-    }
-    readExpect(&header, sizeof(header), "header");
-    readCrc();
-    header.width = ntohl(header.width);
-    header.height = ntohl(header.height);
-    if (!header.width) errx(EX_DATAERR, "%s: invalid width 0", path);
-    if (!header.height) errx(EX_DATAERR, "%s: invalid height 0", path);
+	struct Chunk ihdr = readChunk();
+	if (0 != memcmp(ihdr.type, "IHDR", 4)) {
+		errx(EX_DATAERR, "%s: expected IHDR, found %s", path, typeStr(ihdr));
+	}
+	if (ihdr.size != sizeof(header)) {
+		errx(
+			EX_DATAERR, "%s: expected IHDR size %zu, found %u",
+			path, sizeof(header), ihdr.size
+		);
+	}
+	readExpect(&header, sizeof(header), "header");
+	readCrc();
+	header.width = ntohl(header.width);
+	header.height = ntohl(header.height);
+	if (!header.width) errx(EX_DATAERR, "%s: invalid width 0", path);
+	if (!header.height) errx(EX_DATAERR, "%s: invalid height 0", path);
 }
 
 static void writeHeader(void) {
-    struct Chunk ihdr = { .size = sizeof(header), .type = "IHDR" };
-    writeChunk(ihdr);
-    header.width = htonl(header.width);
-    header.height = htonl(header.height);
-    writeExpect(&header, sizeof(header));
-    writeCrc();
-    header.width = ntohl(header.width);
-    header.height = ntohl(header.height);
+	struct Chunk ihdr = { .size = sizeof(header), .type = "IHDR" };
+	writeChunk(ihdr);
+	header.width = htonl(header.width);
+	header.height = htonl(header.height);
+	writeExpect(&header, sizeof(header));
+	writeCrc();
+	header.width = ntohl(header.width);
+	header.height = ntohl(header.height);
 }
 
 static struct {
-    uint32_t len;
-    uint8_t entries[256][3];
+	uint32_t len;
+	uint8_t entries[256][3];
 } palette;
 
 static void readPalette(void) {
-    struct Chunk chunk;
-    for (;;) {
-        chunk = readChunk();
-        if (0 == memcmp(chunk.type, "PLTE", 4)) break;
-        skipChunk(chunk);
-    }
-    palette.len = chunk.size / 3;
-    readExpect(palette.entries, chunk.size, "palette data");
-    readCrc();
+	struct Chunk chunk;
+	for (;;) {
+		chunk = readChunk();
+		if (0 == memcmp(chunk.type, "PLTE", 4)) break;
+		skipChunk(chunk);
+	}
+	palette.len = chunk.size / 3;
+	readExpect(palette.entries, chunk.size, "palette data");
+	readCrc();
 }
 
 static void writePalette(void) {
-    struct Chunk plte = { .size = 3 * palette.len, .type = "PLTE" };
-    writeChunk(plte);
-    writeExpect(palette.entries, plte.size);
-    writeCrc();
+	struct Chunk plte = { .size = 3 * palette.len, .type = "PLTE" };
+	writeChunk(plte);
+	writeExpect(palette.entries, plte.size);
+	writeCrc();
 }
 
 static uint8_t *data;
 
 static void readData(void) {
-    data = malloc(dataSize());
-    if (!data) err(EX_OSERR, "malloc(%zu)", dataSize());
+	data = malloc(dataSize());
+	if (!data) err(EX_OSERR, "malloc(%zu)", dataSize());
 
-    struct z_stream_s stream = { .next_out = data, .avail_out = dataSize() };
-    int error = inflateInit(&stream);
-    if (error != Z_OK) errx(EX_SOFTWARE, "%s: inflateInit: %s", path, stream.msg);
+	struct z_stream_s stream = { .next_out = data, .avail_out = dataSize() };
+	int error = inflateInit(&stream);
+	if (error != Z_OK) errx(EX_SOFTWARE, "%s: inflateInit: %s", path, stream.msg);
 
-    for (;;) {
-        struct Chunk chunk = readChunk();
-        if (0 == memcmp(chunk.type, "IDAT", 4)) {
-            uint8_t idat[chunk.size];
-            readExpect(idat, sizeof(idat), "image data");
-            readCrc();
+	for (;;) {
+		struct Chunk chunk = readChunk();
+		if (0 == memcmp(chunk.type, "IDAT", 4)) {
+			uint8_t idat[chunk.size];
+			readExpect(idat, sizeof(idat), "image data");
+			readCrc();
 
-            stream.next_in = idat;
-            stream.avail_in = sizeof(idat);
-            int error = inflate(&stream, Z_SYNC_FLUSH);
-            if (error == Z_STREAM_END) break;
-            if (error != Z_OK) errx(EX_DATAERR, "%s: inflate: %s", path, stream.msg);
+			stream.next_in = idat;
+			stream.avail_in = sizeof(idat);
+			int error = inflate(&stream, Z_SYNC_FLUSH);
+			if (error == Z_STREAM_END) break;
+			if (error != Z_OK) errx(EX_DATAERR, "%s: inflate: %s", path, stream.msg);
 
-        } else if (0 == memcmp(chunk.type, "IEND", 4)) {
-            errx(EX_DATAERR, "%s: missing IDAT chunk", path);
-        } else {
-            skipChunk(chunk);
-        }
-    }
+		} else if (0 == memcmp(chunk.type, "IEND", 4)) {
+			errx(EX_DATAERR, "%s: missing IDAT chunk", path);
+		} else {
+			skipChunk(chunk);
+		}
+	}
 
-    inflateEnd(&stream);
-    if (stream.total_out != dataSize()) {
-        errx(
-            EX_DATAERR, "%s: expected data size %zu, found %lu",
-            path, dataSize(), stream.total_out
-        );
-    }
+	inflateEnd(&stream);
+	if (stream.total_out != dataSize()) {
+		errx(
+			EX_DATAERR, "%s: expected data size %zu, found %lu",
+			path, dataSize(), stream.total_out
+		);
+	}
 }
 
 static void writeData(void) {
-    uLong size = compressBound(dataSize());
-    uint8_t deflate[size];
-    int error = compress2(deflate, &size, data, dataSize(), Z_BEST_SPEED);
-    if (error != Z_OK) errx(EX_SOFTWARE, "%s: compress2: %d", path, error);
+	uLong size = compressBound(dataSize());
+	uint8_t deflate[size];
+	int error = compress2(deflate, &size, data, dataSize(), Z_BEST_SPEED);
+	if (error != Z_OK) errx(EX_SOFTWARE, "%s: compress2: %d", path, error);
 
-    struct Chunk idat = { .size = size, .type = "IDAT" };
-    writeChunk(idat);
-    writeExpect(deflate, size);
-    writeCrc();
+	struct Chunk idat = { .size = size, .type = "IDAT" };
+	writeChunk(idat);
+	writeExpect(deflate, size);
+	writeCrc();
 }
 
 static void writeEnd(void) {
-    struct Chunk iend = { .size = 0, .type = "IEND" };
-    writeChunk(iend);
-    writeCrc();
+	struct Chunk iend = { .size = 0, .type = "IEND" };
+	writeChunk(iend);
+	writeCrc();
 }
 
 enum PACKED Filter {
-    NONE,
-    SUB,
-    UP,
-    AVERAGE,
-    PAETH,
-    FILTER_COUNT,
+	NONE,
+	SUB,
+	UP,
+	AVERAGE,
+	PAETH,
+	FILTER_COUNT,
 };
 
 static struct {
-    bool brokenPaeth;
-    bool filt;
-    bool recon;
-    uint8_t declareFilter;
-    uint8_t applyFilter;
-    enum Filter declareFilters[255];
-    enum Filter applyFilters[255];
+	bool brokenPaeth;
+	bool filt;
+	bool recon;
+	uint8_t declareFilter;
+	uint8_t applyFilter;
+	enum Filter declareFilters[255];
+	enum Filter applyFilters[255];
 } options;
 
 struct Bytes {
-    uint8_t x;
-    uint8_t a;
-    uint8_t b;
-    uint8_t c;
+	uint8_t x;
+	uint8_t a;
+	uint8_t b;
+	uint8_t c;
 };
 
 static uint8_t paethPredictor(struct Bytes f) {
-    int32_t p = (int32_t)f.a + (int32_t)f.b - (int32_t)f.c;
-    int32_t pa = abs(p - (int32_t)f.a);
-    int32_t pb = abs(p - (int32_t)f.b);
-    int32_t pc = abs(p - (int32_t)f.c);
-    if (pa <= pb && pa <= pc) return f.a;
-    if (options.brokenPaeth) {
-        if (pb < pc) return f.b;
-    } else {
-        if (pb <= pc) return f.b;
-    }
-    return f.c;
+	int32_t p = (int32_t)f.a + (int32_t)f.b - (int32_t)f.c;
+	int32_t pa = abs(p - (int32_t)f.a);
+	int32_t pb = abs(p - (int32_t)f.b);
+	int32_t pc = abs(p - (int32_t)f.c);
+	if (pa <= pb && pa <= pc) return f.a;
+	if (options.brokenPaeth) {
+		if (pb < pc) return f.b;
+	} else {
+		if (pb <= pc) return f.b;
+	}
+	return f.c;
 }
 
 static uint8_t recon(enum Filter type, struct Bytes f) {
-    switch (type) {
-        case NONE:    return f.x;
-        case SUB:     return f.x + f.a;
-        case UP:      return f.x + f.b;
-        case AVERAGE: return f.x + ((uint32_t)f.a + (uint32_t)f.b) / 2;
-        case PAETH:   return f.x + paethPredictor(f);
-        default:      abort();
-    }
+	switch (type) {
+		case NONE:    return f.x;
+		case SUB:     return f.x + f.a;
+		case UP:      return f.x + f.b;
+		case AVERAGE: return f.x + ((uint32_t)f.a + (uint32_t)f.b) / 2;
+		case PAETH:   return f.x + paethPredictor(f);
+		default:      abort();
+	}
 }
 
 static uint8_t filt(enum Filter type, struct Bytes f) {
-    switch (type) {
-        case NONE:    return f.x;
-        case SUB:     return f.x - f.a;
-        case UP:      return f.x - f.b;
-        case AVERAGE: return f.x - ((uint32_t)f.a + (uint32_t)f.b) / 2;
-        case PAETH:   return f.x - paethPredictor(f);
-        default:      abort();
-    }
+	switch (type) {
+		case NONE:    return f.x;
+		case SUB:     return f.x - f.a;
+		case UP:      return f.x - f.b;
+		case AVERAGE: return f.x - ((uint32_t)f.a + (uint32_t)f.b) / 2;
+		case PAETH:   return f.x - paethPredictor(f);
+		default:      abort();
+	}
 }
 
 static struct Line {
-    enum Filter type;
-    uint8_t data[];
+	enum Filter type;
+	uint8_t data[];
 } **lines;
 
 static void scanlines(void) {
-    lines = calloc(header.height, sizeof(*lines));
-    if (!lines) err(EX_OSERR, "calloc(%u, %zu)", header.height, sizeof(*lines));
+	lines = calloc(header.height, sizeof(*lines));
+	if (!lines) err(EX_OSERR, "calloc(%u, %zu)", header.height, sizeof(*lines));
 
-    size_t stride = 1 + lineSize();
-    for (uint32_t y = 0; y < header.height; ++y) {
-        lines[y] = (struct Line *)&data[y * stride];
-        if (lines[y]->type >= FILTER_COUNT) {
-            errx(EX_DATAERR, "%s: invalid filter type %hhu", path, lines[y]->type);
-        }
-    }
+	size_t stride = 1 + lineSize();
+	for (uint32_t y = 0; y < header.height; ++y) {
+		lines[y] = (struct Line *)&data[y * stride];
+		if (lines[y]->type >= FILTER_COUNT) {
+			errx(EX_DATAERR, "%s: invalid filter type %hhu", path, lines[y]->type);
+		}
+	}
 }
 
 static struct Bytes origBytes(uint32_t y, size_t i) {
-    size_t pixelSize = lineSize() / header.width;
-    if (!pixelSize) pixelSize = 1;
-    bool a = (i >= pixelSize), b = (y > 0), c = (a && b);
-    return (struct Bytes) {
-        .x = lines[y]->data[i],
-        .a = a ? lines[y]->data[i - pixelSize] : 0,
-        .b = b ? lines[y - 1]->data[i] : 0,
-        .c = c ? lines[y - 1]->data[i - pixelSize] : 0,
-    };
+	size_t pixelSize = lineSize() / header.width;
+	if (!pixelSize) pixelSize = 1;
+	bool a = (i >= pixelSize), b = (y > 0), c = (a && b);
+	return (struct Bytes) {
+		.x = lines[y]->data[i],
+		.a = a ? lines[y]->data[i - pixelSize] : 0,
+		.b = b ? lines[y - 1]->data[i] : 0,
+		.c = c ? lines[y - 1]->data[i - pixelSize] : 0,
+	};
 }
 
 static void reconData(void) {
-    for (uint32_t y = 0; y < header.height; ++y) {
-        for (size_t i = 0; i < lineSize(); ++i) {
-            if (options.filt) {
-                lines[y]->data[i] = filt(lines[y]->type, origBytes(y, i));
-            } else {
-                lines[y]->data[i] = recon(lines[y]->type, origBytes(y, i));
-            }
-        }
-        lines[y]->type = NONE;
-    }
+	for (uint32_t y = 0; y < header.height; ++y) {
+		for (size_t i = 0; i < lineSize(); ++i) {
+			if (options.filt) {
+				lines[y]->data[i] = filt(lines[y]->type, origBytes(y, i));
+			} else {
+				lines[y]->data[i] = recon(lines[y]->type, origBytes(y, i));
+			}
+		}
+		lines[y]->type = NONE;
+	}
 }
 
 static void filterData(void) {
-    for (uint32_t y = header.height - 1; y < header.height; --y) {
-        uint8_t filter[FILTER_COUNT][lineSize()];
-        uint32_t heuristic[FILTER_COUNT] = {0};
-        enum Filter minType = NONE;
-        for (enum Filter type = NONE; type < FILTER_COUNT; ++type) {
-            for (size_t i = 0; i < lineSize(); ++i) {
-                if (options.recon) {
-                    filter[type][i] = recon(type, origBytes(y, i));
-                } else {
-                    filter[type][i] = filt(type, origBytes(y, i));
-                }
-                heuristic[type] += abs((int8_t)filter[type][i]);
-            }
-            if (heuristic[type] < heuristic[minType]) minType = type;
-        }
+	for (uint32_t y = header.height - 1; y < header.height; --y) {
+		uint8_t filter[FILTER_COUNT][lineSize()];
+		uint32_t heuristic[FILTER_COUNT] = {0};
+		enum Filter minType = NONE;
+		for (enum Filter type = NONE; type < FILTER_COUNT; ++type) {
+			for (size_t i = 0; i < lineSize(); ++i) {
+				if (options.recon) {
+					filter[type][i] = recon(type, origBytes(y, i));
+				} else {
+					filter[type][i] = filt(type, origBytes(y, i));
+				}
+				heuristic[type] += abs((int8_t)filter[type][i]);
+			}
+			if (heuristic[type] < heuristic[minType]) minType = type;
+		}
 
-        if (options.declareFilter) {
-            lines[y]->type = options.declareFilters[y % options.declareFilter];
-        } else {
-            lines[y]->type = minType;
-        }
+		if (options.declareFilter) {
+			lines[y]->type = options.declareFilters[y % options.declareFilter];
+		} else {
+			lines[y]->type = minType;
+		}
 
-        if (options.applyFilter) {
-            enum Filter type = options.applyFilters[y % options.applyFilter];
-            memcpy(lines[y]->data, filter[type], lineSize());
-        } else {
-            memcpy(lines[y]->data, filter[minType], lineSize());
-        }
-    }
+		if (options.applyFilter) {
+			enum Filter type = options.applyFilters[y % options.applyFilter];
+			memcpy(lines[y]->data, filter[type], lineSize());
+		} else {
+			memcpy(lines[y]->data, filter[minType], lineSize());
+		}
+	}
 }
 
 static void glitch(const char *inPath, const char *outPath) {
-    if (inPath) {
-        path = inPath;
-        file = fopen(path, "r");
-        if (!file) err(EX_NOINPUT, "%s", path);
-    } else {
-        path = "(stdin)";
-        file = stdin;
-    }
+	if (inPath) {
+		path = inPath;
+		file = fopen(path, "r");
+		if (!file) err(EX_NOINPUT, "%s", path);
+	} else {
+		path = "(stdin)";
+		file = stdin;
+	}
 
-    readSignature();
-    readHeader();
-    if (header.color == INDEXED) readPalette();
-    readData();
-    fclose(file);
+	readSignature();
+	readHeader();
+	if (header.color == INDEXED) readPalette();
+	readData();
+	fclose(file);
 
-    scanlines();
-    reconData();
-    filterData();
-    free(lines);
+	scanlines();
+	reconData();
+	filterData();
+	free(lines);
 
-    if (outPath) {
-        path = outPath;
-        file = fopen(path, "w");
-        if (!file) err(EX_CANTCREAT, "%s", path);
-    } else {
-        path = "(stdout)";
-        file = stdout;
-    }
+	if (outPath) {
+		path = outPath;
+		file = fopen(path, "w");
+		if (!file) err(EX_CANTCREAT, "%s", path);
+	} else {
+		path = "(stdout)";
+		file = stdout;
+	}
 
-    writeSignature();
-    writeHeader();
-    if (header.color == INDEXED) writePalette();
-    writeData();
-    writeEnd();
-    free(data);
+	writeSignature();
+	writeHeader();
+	if (header.color == INDEXED) writePalette();
+	writeData();
+	writeEnd();
+	free(data);
 
-    int error = fclose(file);
-    if (error) err(EX_IOERR, "%s", path);
+	int error = fclose(file);
+	if (error) err(EX_IOERR, "%s", path);
 }
 
 static enum Filter parseFilter(const char *s) {
-    switch (s[0]) {
-        case 'N': case 'n': return NONE;
-        case 'S': case 's': return SUB;
-        case 'U': case 'u': return UP;
-        case 'A': case 'a': return AVERAGE;
-        case 'P': case 'p': return PAETH;
-        default: errx(EX_USAGE, "invalid filter type %s", s);
-    }
+	switch (s[0]) {
+		case 'N': case 'n': return NONE;
+		case 'S': case 's': return SUB;
+		case 'U': case 'u': return UP;
+		case 'A': case 'a': return AVERAGE;
+		case 'P': case 'p': return PAETH;
+		default: errx(EX_USAGE, "invalid filter type %s", s);
+	}
 }
 
 static uint8_t parseFilters(enum Filter *filters, const char *s) {
-    uint8_t len = 0;
-    do {
-        filters[len++] = parseFilter(s);
-        s = strchr(s, ',');
-    } while (s++);
-    return len;
+	uint8_t len = 0;
+	do {
+		filters[len++] = parseFilter(s);
+		s = strchr(s, ',');
+	} while (s++);
+	return len;
 }
 
 int main(int argc, char *argv[]) {
-    bool stdio = false;
-    char *output = NULL;
+	bool stdio = false;
+	char *output = NULL;
 
-    int opt;
-    while (0 < (opt = getopt(argc, argv, "a:cd:fo:pr"))) {
-        switch (opt) {
-            case 'a': {
-                options.applyFilter = parseFilters(options.applyFilters, optarg);
-            } break;
-            case 'c': stdio = true; break;
-            case 'd': {
-                options.declareFilter = parseFilters(options.declareFilters, optarg);
-            } break;
-            case 'f': options.filt = true; break;
-            case 'o': output = optarg; break;
-            case 'p': options.brokenPaeth = true; break;
-            case 'r': options.recon = true; break;
-            default: return EX_USAGE;
-        }
-    }
+	int opt;
+	while (0 < (opt = getopt(argc, argv, "a:cd:fo:pr"))) {
+		switch (opt) {
+			case 'a': {
+				options.applyFilter = parseFilters(options.applyFilters, optarg);
+			} break;
+			case 'c': stdio = true; break;
+			case 'd': {
+				options.declareFilter = parseFilters(options.declareFilters, optarg);
+			} break;
+			case 'f': options.filt = true; break;
+			case 'o': output = optarg; break;
+			case 'p': options.brokenPaeth = true; break;
+			case 'r': options.recon = true; break;
+			default: return EX_USAGE;
+		}
+	}
 
-    if (argc - optind == 1 && (output || stdio)) {
-        glitch(argv[optind], output);
-    } else if (optind < argc) {
-        for (int i = optind; i < argc; ++i) {
-            glitch(argv[i], argv[i]);
-        }
-    } else {
-        glitch(NULL, output);
-    }
+	if (argc - optind == 1 && (output || stdio)) {
+		glitch(argv[optind], output);
+	} else if (optind < argc) {
+		for (int i = optind; i < argc; ++i) {
+			glitch(argv[i], argv[i]);
+		}
+	} else {
+		glitch(NULL, output);
+	}
 
-    return EX_OK;
+	return EX_OK;
 }

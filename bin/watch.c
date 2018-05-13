@@ -25,70 +25,70 @@
 #include <unistd.h>
 
 static void watch(int kq, char *path) {
-    int fd = open(path, O_CLOEXEC);
-    if (fd < 0) err(EX_NOINPUT, "%s", path);
+	int fd = open(path, O_CLOEXEC);
+	if (fd < 0) err(EX_NOINPUT, "%s", path);
 
-    struct kevent event = {
-        .ident = fd,
-        .filter = EVFILT_VNODE,
-        .flags = EV_ADD | EV_CLEAR,
-        .fflags = NOTE_WRITE | NOTE_DELETE,
-        .udata = path,
-    };
-    int nevents = kevent(kq, &event, 1, NULL, 0, NULL);
-    if (nevents < 0) err(EX_OSERR, "kevent");
+	struct kevent event = {
+		.ident = fd,
+		.filter = EVFILT_VNODE,
+		.flags = EV_ADD | EV_CLEAR,
+		.fflags = NOTE_WRITE | NOTE_DELETE,
+		.udata = path,
+	};
+	int nevents = kevent(kq, &event, 1, NULL, 0, NULL);
+	if (nevents < 0) err(EX_OSERR, "kevent");
 }
 
 static void exec(char *const argv[]) {
-    pid_t pid = fork();
-    if (pid < 0) err(EX_OSERR, "fork");
+	pid_t pid = fork();
+	if (pid < 0) err(EX_OSERR, "fork");
 
-    if (!pid) {
-        execvp(*argv, argv);
-        err(EX_NOINPUT, "%s", *argv);
-    }
+	if (!pid) {
+		execvp(*argv, argv);
+		err(EX_NOINPUT, "%s", *argv);
+	}
 
-    int status;
-    pid = wait(&status);
-    if (pid < 0) err(EX_OSERR, "wait");
+	int status;
+	pid = wait(&status);
+	if (pid < 0) err(EX_OSERR, "wait");
 
-    if (WIFEXITED(status)) {
-        warnx("exit %d\n", WEXITSTATUS(status));
-    } else if (WIFSIGNALED(status)) {
-        warnx("signal %d\n", WTERMSIG(status));
-    } else {
-        warnx("status %d\n", status);
-    }
+	if (WIFEXITED(status)) {
+		warnx("exit %d\n", WEXITSTATUS(status));
+	} else if (WIFSIGNALED(status)) {
+		warnx("signal %d\n", WTERMSIG(status));
+	} else {
+		warnx("status %d\n", status);
+	}
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 3) return EX_USAGE;
+	if (argc < 3) return EX_USAGE;
 
-    int kq = kqueue();
-    if (kq < 0) err(EX_OSERR, "kqueue");
+	int kq = kqueue();
+	if (kq < 0) err(EX_OSERR, "kqueue");
 
-    int i;
-    for (i = 1; i < argc - 1; ++i) {
-        if (argv[i][0] == '-') {
-            i++;
-            break;
-        }
-        watch(kq, argv[i]);
-    }
+	int i;
+	for (i = 1; i < argc - 1; ++i) {
+		if (argv[i][0] == '-') {
+			i++;
+			break;
+		}
+		watch(kq, argv[i]);
+	}
 
-    exec(&argv[i]);
+	exec(&argv[i]);
 
-    for (;;) {
-        struct kevent event;
-        int nevents = kevent(kq, NULL, 0, &event, 1, NULL);
-        if (nevents < 0) err(EX_OSERR, "kevent");
+	for (;;) {
+		struct kevent event;
+		int nevents = kevent(kq, NULL, 0, &event, 1, NULL);
+		if (nevents < 0) err(EX_OSERR, "kevent");
 
-        if (event.fflags & NOTE_DELETE) {
-            close(event.ident);
-            sleep(1);
-            watch(kq, event.udata);
-        }
+		if (event.fflags & NOTE_DELETE) {
+			close(event.ident);
+			sleep(1);
+			watch(kq, event.udata);
+		}
 
-        exec(&argv[i]);
-    }
+		exec(&argv[i]);
+	}
 }

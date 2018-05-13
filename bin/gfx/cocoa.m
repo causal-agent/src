@@ -26,78 +26,78 @@
 #define UNUSED __attribute__((unused))
 
 @interface BufferView : NSView {
-    size_t bufSize;
-    uint32_t *buf;
-    CGColorSpaceRef colorSpace;
-    CGDataProviderRef dataProvider;
+	size_t bufSize;
+	uint32_t *buf;
+	CGColorSpaceRef colorSpace;
+	CGDataProviderRef dataProvider;
 }
 @end
 
 @implementation BufferView
 - (instancetype) initWithFrame: (NSRect) frameRect {
-    colorSpace = CGColorSpaceCreateDeviceRGB();
-    return [super initWithFrame: frameRect];
+	colorSpace = CGColorSpaceCreateDeviceRGB();
+	return [super initWithFrame: frameRect];
 }
 
 - (void) setWindowTitle {
-    [[self window] setTitle: [NSString stringWithUTF8String: status()]];
+	[[self window] setTitle: [NSString stringWithUTF8String: status()]];
 }
 
 - (void) draw {
-    draw(buf, [self frame].size.width, [self frame].size.height);
-    [self setNeedsDisplay: YES];
+	draw(buf, [self frame].size.width, [self frame].size.height);
+	[self setNeedsDisplay: YES];
 }
 
 - (void) setFrameSize: (NSSize) newSize {
-    [super setFrameSize: newSize];
-    size_t newBufSize = 4 * newSize.width * newSize.height;
-    if (newBufSize > bufSize) {
-        bufSize = newBufSize;
-        buf = malloc(bufSize);
-        if (!buf) err(EX_OSERR, "malloc(%zu)", bufSize);
-        CGDataProviderRelease(dataProvider);
-        dataProvider = CGDataProviderCreateWithData(NULL, buf, bufSize, NULL);
-    }
-    [self draw];
+	[super setFrameSize: newSize];
+	size_t newBufSize = 4 * newSize.width * newSize.height;
+	if (newBufSize > bufSize) {
+		bufSize = newBufSize;
+		buf = malloc(bufSize);
+		if (!buf) err(EX_OSERR, "malloc(%zu)", bufSize);
+		CGDataProviderRelease(dataProvider);
+		dataProvider = CGDataProviderCreateWithData(NULL, buf, bufSize, NULL);
+	}
+	[self draw];
 }
 
 - (void) drawRect: (NSRect) UNUSED dirtyRect {
-    NSSize size = [self frame].size;
-    CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
-    CGImageRef image = CGImageCreate(
-        size.width, size.height,
-        8, 32, 4 * size.width,
-        colorSpace, kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
-        dataProvider,
-        NULL, false, kCGRenderingIntentDefault
-    );
-    CGContextDrawImage(ctx, [self frame], image);
-    CGImageRelease(image);
+	NSSize size = [self frame].size;
+	CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
+	CGImageRef image = CGImageCreate(
+		size.width, size.height,
+		8, 32, 4 * size.width,
+		colorSpace, kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
+		dataProvider,
+		NULL, false, kCGRenderingIntentDefault
+	);
+	CGContextDrawImage(ctx, [self frame], image);
+	CGImageRelease(image);
 }
 
 - (BOOL) acceptsFirstResponder {
-    return YES;
+	return YES;
 }
 
 - (void) keyDown: (NSEvent *) event {
-    char in;
-    BOOL converted = [
-        [event characters]
-        getBytes: &in
-        maxLength: 1
-        usedLength: NULL
-        encoding: NSASCIIStringEncoding
-        options: 0
-        range: NSMakeRange(0, 1)
-        remainingRange: NULL
-    ];
-    if (converted) {
-        if (!input(in)) {
-            [NSApp terminate: self];
-        }
-        [self draw];
-        [self setWindowTitle];
-    }
+	char in;
+	BOOL converted = [
+		[event characters]
+		getBytes: &in
+		maxLength: 1
+		usedLength: NULL
+		encoding: NSASCIIStringEncoding
+		options: 0
+		range: NSMakeRange(0, 1)
+		remainingRange: NULL
+	];
+	if (converted) {
+		if (!input(in)) {
+			[NSApp terminate: self];
+		}
+		[self draw];
+		[self setWindowTitle];
+	}
 }
 @end
 
@@ -106,57 +106,57 @@
 
 @implementation Delegate
 - (BOOL) applicationShouldTerminateAfterLastWindowClosed:
-    (NSApplication *) UNUSED sender {
-    return YES;
+	(NSApplication *) UNUSED sender {
+	return YES;
 }
 @end
 
 int main(int argc, char *argv[]) {
-    int error = init(argc, argv);
-    if (error) return error;
+	int error = init(argc, argv);
+	if (error) return error;
 
-    [NSApplication sharedApplication];
-    [NSApp setActivationPolicy: NSApplicationActivationPolicyRegular];
-    [NSApp setDelegate: [Delegate new]];
+	[NSApplication sharedApplication];
+	[NSApp setActivationPolicy: NSApplicationActivationPolicyRegular];
+	[NSApp setDelegate: [Delegate new]];
 
-    NSString *name = [[NSProcessInfo processInfo] processName];
-    NSMenu *menu = [NSMenu new];
-    [
-        menu
-        addItemWithTitle: @"Close Window"
-        action: @selector(performClose:)
-        keyEquivalent: @"w"
-    ];
-    [menu addItem: [NSMenuItem separatorItem]];
-    [
-        menu
-        addItemWithTitle: [@"Quit " stringByAppendingString: name]
-        action: @selector(terminate:)
-        keyEquivalent: @"q"
-    ];
-    NSMenuItem *menuItem = [NSMenuItem new];
-    [menuItem setSubmenu: menu];
-    [NSApp setMainMenu: [NSMenu new]];
-    [[NSApp mainMenu] addItem: menuItem];
+	NSString *name = [[NSProcessInfo processInfo] processName];
+	NSMenu *menu = [NSMenu new];
+	[
+		menu
+		addItemWithTitle: @"Close Window"
+		action: @selector(performClose:)
+		keyEquivalent: @"w"
+	];
+	[menu addItem: [NSMenuItem separatorItem]];
+	[
+		menu
+		addItemWithTitle: [@"Quit " stringByAppendingString: name]
+		action: @selector(terminate:)
+		keyEquivalent: @"q"
+	];
+	NSMenuItem *menuItem = [NSMenuItem new];
+	[menuItem setSubmenu: menu];
+	[NSApp setMainMenu: [NSMenu new]];
+	[[NSApp mainMenu] addItem: menuItem];
 
-    NSUInteger style = NSTitledWindowMask
-        | NSClosableWindowMask
-        | NSMiniaturizableWindowMask
-        | NSResizableWindowMask;
-    NSWindow *window = [
-        [NSWindow alloc]
-        initWithContentRect: NSMakeRect(0, 0, 800, 600)
-        styleMask: style
-        backing: NSBackingStoreBuffered
-        defer: YES
-    ];
-    [window center];
+	NSUInteger style = NSTitledWindowMask
+		| NSClosableWindowMask
+		| NSMiniaturizableWindowMask
+		| NSResizableWindowMask;
+	NSWindow *window = [
+		[NSWindow alloc]
+		initWithContentRect: NSMakeRect(0, 0, 800, 600)
+		styleMask: style
+		backing: NSBackingStoreBuffered
+		defer: YES
+	];
+	[window center];
 
-    BufferView *view = [[BufferView alloc] initWithFrame: [window frame]];
-    [window setContentView: view];
-    [view setWindowTitle];
+	BufferView *view = [[BufferView alloc] initWithFrame: [window frame]];
+	[window setContentView: view];
+	[view setWindowTitle];
 
-    [window makeKeyAndOrderFront: nil];
-    [NSApp activateIgnoringOtherApps: YES];
-    [NSApp run];
+	[window makeKeyAndOrderFront: nil];
+	[NSApp activateIgnoringOtherApps: YES];
+	[NSApp run];
 }

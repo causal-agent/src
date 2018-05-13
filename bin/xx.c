@@ -24,110 +24,110 @@
 #include <unistd.h>
 
 static bool zero(const uint8_t *ptr, size_t size) {
-    for (size_t i = 0; i < size; ++i) {
-        if (ptr[i]) return false;
-    }
-    return true;
+	for (size_t i = 0; i < size; ++i) {
+		if (ptr[i]) return false;
+	}
+	return true;
 }
 
 static struct {
-    size_t cols;
-    size_t group;
-    bool ascii;
-    bool offset;
-    bool skip;
+	size_t cols;
+	size_t group;
+	bool ascii;
+	bool offset;
+	bool skip;
 } options = { 16, 8, true, true, false };
 
 static void dump(FILE *file) {
-    bool skip = false;
+	bool skip = false;
 
-    uint8_t buf[options.cols];
-    size_t offset = 0;
-    for (
-        size_t size;
-        (size = fread(buf, 1, sizeof(buf), file));
-        offset += size
-    ) {
-        if (options.skip) {
-            if (zero(buf, size)) {
-                if (!skip) printf("*\n");
-                skip = true;
-                continue;
-            } else {
-                skip = false;
-            }
-        }
+	uint8_t buf[options.cols];
+	size_t offset = 0;
+	for (
+		size_t size;
+		(size = fread(buf, 1, sizeof(buf), file));
+		offset += size
+	) {
+		if (options.skip) {
+			if (zero(buf, size)) {
+				if (!skip) printf("*\n");
+				skip = true;
+				continue;
+			} else {
+				skip = false;
+			}
+		}
 
-        if (options.offset) {
-            printf("%08zX:  ", offset);
-        }
+		if (options.offset) {
+			printf("%08zX:  ", offset);
+		}
 
-        for (size_t i = 0; i < sizeof(buf); ++i) {
-            if (options.group) {
-                if (i && !(i % options.group)) {
-                    printf(" ");
-                }
-            }
-            if (i < size) {
-                printf("%02hhX ", buf[i]);
-            } else {
-                printf("   ");
-            }
-        }
+		for (size_t i = 0; i < sizeof(buf); ++i) {
+			if (options.group) {
+				if (i && !(i % options.group)) {
+					printf(" ");
+				}
+			}
+			if (i < size) {
+				printf("%02hhX ", buf[i]);
+			} else {
+				printf("   ");
+			}
+		}
 
-        if (options.ascii) {
-            printf(" ");
-            for (size_t i = 0; i < size; ++i) {
-                if (options.group) {
-                    if (i && !(i % options.group)) {
-                        printf(" ");
-                    }
-                }
-                printf("%c", isprint(buf[i]) ? buf[i] : '.');
-            }
-        }
+		if (options.ascii) {
+			printf(" ");
+			for (size_t i = 0; i < size; ++i) {
+				if (options.group) {
+					if (i && !(i % options.group)) {
+						printf(" ");
+					}
+				}
+				printf("%c", isprint(buf[i]) ? buf[i] : '.');
+			}
+		}
 
-        printf("\n");
-    }
+		printf("\n");
+	}
 }
 
 static void undump(FILE *file) {
-    uint8_t byte;
-    int match;
-    while (0 < (match = fscanf(file, " %hhx", &byte))) {
-        printf("%c", byte);
-    }
-    if (!match) errx(EX_DATAERR, "invalid input");
+	uint8_t byte;
+	int match;
+	while (0 < (match = fscanf(file, " %hhx", &byte))) {
+		printf("%c", byte);
+	}
+	if (!match) errx(EX_DATAERR, "invalid input");
 }
 
 int main(int argc, char *argv[]) {
-    bool reverse = false;
-    const char *path = NULL;
+	bool reverse = false;
+	const char *path = NULL;
 
-    int opt;
-    while (0 < (opt = getopt(argc, argv, "ac:g:rsz"))) {
-        switch (opt) {
-            case 'a': options.ascii ^= true; break;
-            case 'c': options.cols = strtoul(optarg, NULL, 0); break;
-            case 'g': options.group = strtoul(optarg, NULL, 0); break;
-            case 'r': reverse = true; break;
-            case 's': options.offset ^= true; break;
-            case 'z': options.skip ^= true; break;
-            default: return EX_USAGE;
-        }
-    }
-    if (argc > optind) path = argv[optind];
-    if (!options.cols) return EX_USAGE;
+	int opt;
+	while (0 < (opt = getopt(argc, argv, "ac:g:rsz"))) {
+		switch (opt) {
+			case 'a': options.ascii ^= true; break;
+			case 'c': options.cols = strtoul(optarg, NULL, 0); break;
+			case 'g': options.group = strtoul(optarg, NULL, 0); break;
+			case 'r': reverse = true; break;
+			case 's': options.offset ^= true; break;
+			case 'z': options.skip ^= true; break;
+			default: return EX_USAGE;
+		}
+	}
+	if (argc > optind) path = argv[optind];
+	if (!options.cols) return EX_USAGE;
 
-    FILE *file = path ? fopen(path, "r") : stdin;
-    if (!file) err(EX_NOINPUT, "%s", path);
+	FILE *file = path ? fopen(path, "r") : stdin;
+	if (!file) err(EX_NOINPUT, "%s", path);
 
-    if (reverse) {
-        undump(file);
-    } else {
-        dump(file);
-    }
-    if (ferror(file)) err(EX_IOERR, "%s", path);
+	if (reverse) {
+		undump(file);
+	} else {
+		dump(file);
+	}
+	if (ferror(file)) err(EX_IOERR, "%s", path);
 
-    return EX_OK;
+	return EX_OK;
 }

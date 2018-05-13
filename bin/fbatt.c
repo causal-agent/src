@@ -40,88 +40,88 @@ static const uint32_t YELLOW = 0xA37720;
 static const uint32_t RED    = 0xA32810;
 
 int main() {
-    int error;
+	int error;
 
-    DIR *dir = opendir(CLASS);
-    if (!dir) err(EX_OSFILE, "%s", CLASS);
+	DIR *dir = opendir(CLASS);
+	if (!dir) err(EX_OSFILE, "%s", CLASS);
 
-    FILE *chargeFull = NULL;
-    FILE *chargeNow = NULL;
+	FILE *chargeFull = NULL;
+	FILE *chargeNow = NULL;
 
-    const struct dirent *entry;
-    while (NULL != (errno = 0, entry = readdir(dir))) {
-        if (entry->d_name[0] == '.') continue;
+	const struct dirent *entry;
+	while (NULL != (errno = 0, entry = readdir(dir))) {
+		if (entry->d_name[0] == '.') continue;
 
-        error = chdir(CLASS);
-        if (error) err(EX_OSFILE, "%s", CLASS);
+		error = chdir(CLASS);
+		if (error) err(EX_OSFILE, "%s", CLASS);
 
-        error = chdir(entry->d_name);
-        if (error) err(EX_OSFILE, "%s/%s", CLASS, entry->d_name);
+		error = chdir(entry->d_name);
+		if (error) err(EX_OSFILE, "%s/%s", CLASS, entry->d_name);
 
-        chargeFull = fopen("charge_full", "r");
-        chargeNow = fopen("charge_now", "r");
-        if (chargeFull && chargeNow) break;
-    }
-    if (!chargeFull || !chargeNow) {
-        if (errno) err(EX_OSFILE, "%s", CLASS);
-        errx(EX_CONFIG, "%s: empty", CLASS);
-    }
-    closedir(dir);
+		chargeFull = fopen("charge_full", "r");
+		chargeNow = fopen("charge_now", "r");
+		if (chargeFull && chargeNow) break;
+	}
+	if (!chargeFull || !chargeNow) {
+		if (errno) err(EX_OSFILE, "%s", CLASS);
+		errx(EX_CONFIG, "%s: empty", CLASS);
+	}
+	closedir(dir);
 
-    const char *path = getenv("FRAMEBUFFER");
-    if (!path) path = "/dev/fb0";
+	const char *path = getenv("FRAMEBUFFER");
+	if (!path) path = "/dev/fb0";
 
-    int fb = open(path, O_RDWR);
-    if (fb < 0) err(EX_OSFILE, "%s", path);
+	int fb = open(path, O_RDWR);
+	if (fb < 0) err(EX_OSFILE, "%s", path);
 
-    struct fb_var_screeninfo info;
-    error = ioctl(fb, FBIOGET_VSCREENINFO, &info);
-    if (error) err(EX_IOERR, "%s", path);
+	struct fb_var_screeninfo info;
+	error = ioctl(fb, FBIOGET_VSCREENINFO, &info);
+	if (error) err(EX_IOERR, "%s", path);
 
-    size_t size = 4 * info.xres * info.yres;
-    uint32_t *buf = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0);
-    if (buf == MAP_FAILED) err(EX_IOERR, "%s", path);
+	size_t size = 4 * info.xres * info.yres;
+	uint32_t *buf = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0);
+	if (buf == MAP_FAILED) err(EX_IOERR, "%s", path);
 
-    for (;;) {
-        int match;
+	for (;;) {
+		int match;
 
-        rewind(chargeFull);
-        fflush(chargeFull);
-        uint32_t full;
-        match = fscanf(chargeFull, "%u", &full);
-        if (match == EOF) err(EX_IOERR, "charge_full");
-        if (match < 1) errx(EX_DATAERR, "charge_full");
+		rewind(chargeFull);
+		fflush(chargeFull);
+		uint32_t full;
+		match = fscanf(chargeFull, "%u", &full);
+		if (match == EOF) err(EX_IOERR, "charge_full");
+		if (match < 1) errx(EX_DATAERR, "charge_full");
 
-        rewind(chargeNow);
-        fflush(chargeNow);
-        uint32_t now;
-        match = fscanf(chargeNow, "%u", &now);
-        if (match == EOF) err(EX_IOERR, "charge_now");
-        if (match < 1) errx(EX_DATAERR, "charge_now");
+		rewind(chargeNow);
+		fflush(chargeNow);
+		uint32_t now;
+		match = fscanf(chargeNow, "%u", &now);
+		if (match == EOF) err(EX_IOERR, "charge_now");
+		if (match < 1) errx(EX_DATAERR, "charge_now");
 
-        uint32_t percent = 100 * now / full;
-        uint32_t height = 16 * now / full;
+		uint32_t percent = 100 * now / full;
+		uint32_t height = 16 * now / full;
 
-        for (int i = 0; i < 60; ++i, sleep(1)) {
-            uint32_t left = info.xres - RIGHT - WIDTH;
+		for (int i = 0; i < 60; ++i, sleep(1)) {
+			uint32_t left = info.xres - RIGHT - WIDTH;
 
-            for (uint32_t y = 0; y <= HEIGHT; ++y) {
-                buf[y * info.xres + left - 1] = BORDER;
-                buf[y * info.xres + left + WIDTH] = BORDER;
-            }
-            for (uint32_t x = left; x < left + WIDTH; ++x) {
-                buf[HEIGHT * info.xres + x] = BORDER;
-            }
+			for (uint32_t y = 0; y <= HEIGHT; ++y) {
+				buf[y * info.xres + left - 1] = BORDER;
+				buf[y * info.xres + left + WIDTH] = BORDER;
+			}
+			for (uint32_t x = left; x < left + WIDTH; ++x) {
+				buf[HEIGHT * info.xres + x] = BORDER;
+			}
 
-            for (uint32_t y = 0; y < HEIGHT; ++y) {
-                for (uint32_t x = left; x < left + WIDTH; ++x) {
-                    buf[y * info.xres + x] =
-                        (HEIGHT - 1 - y > height) ? BG
-                        : (percent <= 10) ? RED
-                        : (percent <= 30) ? YELLOW
-                        : GRAY;
-                }
-            }
-        }
-    }
+			for (uint32_t y = 0; y < HEIGHT; ++y) {
+				for (uint32_t x = left; x < left + WIDTH; ++x) {
+					buf[y * info.xres + x] =
+						(HEIGHT - 1 - y > height) ? BG
+						: (percent <= 10) ? RED
+						: (percent <= 30) ? YELLOW
+						: GRAY;
+				}
+			}
+		}
+	}
 }

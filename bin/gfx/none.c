@@ -20,5 +20,5 @@
 #include "gfx.h"
 
 int main() {
-    errx(EX_CONFIG, "no gfx frontend");
+	errx(EX_CONFIG, "no gfx frontend");
 }
