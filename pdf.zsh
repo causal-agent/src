@@ -4,16 +4,16 @@ set -o errexit -o nounset -o pipefail
 mkdir -p pdf
 
 fetch() {
-    [[ -f "pdf/$1" ]] && return
-    curl --silent --show-error --output "pdf/$1" "$2"
-    echo "pdf/$1"
+	[[ -f "pdf/$1" ]] && return
+	curl --silent --show-error --output "pdf/$1" "$2"
+	echo "pdf/$1"
 }
 
 elf() {
-    fetch "$1" "http://refspecs.linuxbase.org/elf/$2"
+	fetch "$1" "http://refspecs.linuxbase.org/elf/$2"
 }
 intel() {
-    fetch "$1" "https://software.intel.com/sites/default/files/managed/$2"
+	fetch "$1" "https://software.intel.com/sites/default/files/managed/$2"
 }
 
 elf abi.pdf x86_64-abi-0.99.pdf

@@ -8,9 +8,9 @@ pacman="$any base-devel ctags gdb openssh zsh"
 
 homebrew='https://raw.githubusercontent.com/Homebrew/install/master/install'
 if [ "$(uname)" = 'Darwin' ]; then
-    xcode-select --install || true
-    [ -f /usr/local/bin/brew ] || ruby -e "$(curl -fsSL "$homebrew")"
-    exec brew install $brew
+	xcode-select --install || true
+	[ -f /usr/local/bin/brew ] || ruby -e "$(curl -fsSL "$homebrew")"
+	exec brew install $brew
 fi
 
 [ -f /usr/local/sbin/pkg ] && exec pkg install $pkg
