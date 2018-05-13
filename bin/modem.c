@@ -65,30 +65,22 @@ int main(int argc, char *argv[]) {
 		err(EX_NOINPUT, "%s", argv[1]);
 	}
 
-	for (;;) {
-		usleep(8 * 1000000 / BAUD_RATE);
-
-		struct pollfd fds[2] = {
-			{ .events = POLLIN, .fd = STDIN_FILENO },
-			{ .events = POLLIN, .fd = pty },
-		};
-		int n = poll(fds, 2, -1);
-		if (n < 0) err(EX_IOERR, "poll");
-
+	char c;
+	struct pollfd fds[2] = {
+		{ .events = POLLIN, .fd = STDIN_FILENO },
+		{ .events = POLLIN, .fd = pty },
+	};
+	while (usleep(8 * 1000000 / BAUD_RATE), 0 < poll(fds, 2, -1)) {
 		if (fds[0].revents) {
-			char c;
 			ssize_t size = read(STDIN_FILENO, &c, 1);
 			if (size < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
-
 			size = write(pty, &c, 1);
 			if (size < 0) err(EX_IOERR, "write(%d)", pty);
 		}
 
 		if (fds[1].revents) {
-			char c;
 			ssize_t size = read(pty, &c, 1);
 			if (size < 0) err(EX_IOERR, "read(%d)", pty);
-
 			size = write(STDOUT_FILENO, &c, 1);
 			if (size < 0) err(EX_IOERR, "write(%d)", STDOUT_FILENO);
 		}
@@ -98,4 +90,5 @@ int main(int argc, char *argv[]) {
 		if (dead < 0) err(EX_OSERR, "waitpid");
 		if (dead) return WIFEXITED(status) ? WEXITSTATUS(status) : EX_SOFTWARE;
 	}
+	err(EX_IOERR, "poll");
 }
