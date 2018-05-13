@@ -7,7 +7,7 @@ command! W w
 command! Q q
 autocmd BufNewFile,BufRead *.asm,*.mac setfiletype nasm
 
-set tabstop=8 expandtab shiftwidth=4 shiftround
+set tabstop=4 shiftwidth=4 shiftround
 set smartindent cinoptions=l1(sU1m1
 set ignorecase smartcase inccommand=nosplit
 nmap <leader><leader> :nohlsearch<CR>
@@ -16,7 +16,7 @@ set foldmethod=syntax foldlevel=99
 set title
 set scrolloff=1
 set number colorcolumn=80,100
-set list listchars=tab:»\ ,trail:·
+set list listchars=tab:\ \ ,trail:·
 colorscheme trivial
 
 autocmd TermOpen * setlocal nonumber statusline=%{b:term_title}
