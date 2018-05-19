@@ -47,7 +47,7 @@ static struct passwd *getUser(void) {
 }
 
 static struct sockaddr_un sockAddr(const char *home, const char *name) {
-	struct sockaddr_un addr = { .sun_family = AF_LOCAL };
+	struct sockaddr_un addr = { .sun_family = AF_UNIX };
 	snprintf(addr.sun_path, sizeof(addr.sun_path), "%s/.dtch/%s", home, name);
 	return addr;
 }
@@ -126,7 +126,7 @@ static int dtch(int argc, char *argv[]) {
 
 	close(home);
 
-	int server = socket(PF_LOCAL, SOCK_STREAM, 0);
+	int server = socket(PF_UNIX, SOCK_STREAM, 0);
 	if (server < 0) err(EX_OSERR, "socket");
 
 	addr = sockAddr(user->pw_dir, name);
@@ -181,7 +181,7 @@ static int atch(int argc, char *argv[]) {
 	const struct passwd *user = getUser();
 	const char *name = (argc > 1) ? argv[1] : user->pw_name;
 
-	int client = socket(PF_LOCAL, SOCK_STREAM, 0);
+	int client = socket(PF_UNIX, SOCK_STREAM, 0);
 	if (client < 0) err(EX_OSERR, "socket");
 
 	struct sockaddr_un addr = sockAddr(user->pw_dir, name);
