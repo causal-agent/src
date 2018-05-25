@@ -74,36 +74,39 @@ int init(int argc, char *argv[]) {
 	int opt;
 	while (0 < (opt = getopt(argc, argv, "c:p:b:e:E:n:fmw:z:o:"))) {
 		switch (opt) {
-			case 'c': switch (optarg[0]) {
-				case 'i': space = COLOR_INDEXED; break;
-				case 'g': space = COLOR_GRAYSCALE; break;
-				case 'r': space = COLOR_RGB; break;
-				default: return EX_USAGE;
-			} break;
-			case 'p': pal = optarg; break;
-			case 'e': switch (optarg[0]) {
-				case 'l': byteOrder = ENDIAN_LITTLE; break;
-				case 'b': byteOrder = ENDIAN_BIG; break;
-				default: return EX_USAGE;
-			} break;
-			case 'E': switch (optarg[0]) {
-				case 'l': bitOrder = ENDIAN_LITTLE; break;
-				case 'b': bitOrder = ENDIAN_BIG; break;
-				default: return EX_USAGE;
-			} break;
-			case 'b': {
+			break; case 'c':
+				switch (optarg[0]) {
+					break; case 'i': space = COLOR_INDEXED;
+					break; case 'g': space = COLOR_GRAYSCALE;
+					break; case 'r': space = COLOR_RGB;
+					break; default: return EX_USAGE;
+				}
+			break; case 'p': pal = optarg;
+			break; case 'e':
+				switch (optarg[0]) {
+					break; case 'l': byteOrder = ENDIAN_LITTLE;
+					break; case 'b': byteOrder = ENDIAN_BIG;
+					break; default: return EX_USAGE;
+				}
+			break; case 'E':
+				switch (optarg[0]) {
+					break; case 'l': bitOrder = ENDIAN_LITTLE;
+					break; case 'b': bitOrder = ENDIAN_BIG;
+					break; default: return EX_USAGE;
+				}
+			break; case 'b': {
 				if (strlen(optarg) < 4) return EX_USAGE;
 				for (int i = 0; i < 4; ++i) {
 					bits[i] = optarg[i] - '0';
 				}
-			} break;
-			case 'n': offset  = strtoul(optarg, NULL, 0); break;
-			case 'f': flip   ^= true; break;
-			case 'm': mirror ^= true; break;
-			case 'w': width   = strtoul(optarg, NULL, 0); break;
-			case 'z': scale   = strtoul(optarg, NULL, 0); break;
-			case 'o': prefix  = optarg; break;
-			default: return EX_USAGE;
+			}
+			break; case 'n': offset = strtoul(optarg, NULL, 0);
+			break; case 'f': flip ^= true;
+			break; case 'm': mirror ^= true;
+			break; case 'w': width = strtoul(optarg, NULL, 0);
+			break; case 'z': scale = strtoul(optarg, NULL, 0);
+			break; case 'o': prefix = optarg;
+			break; default: return EX_USAGE;
 		}
 	}
 	if (argc > optind) path = argv[optind];
@@ -458,35 +461,35 @@ bool input(char in) {
 	size_t pixel = (BITS_TOTAL + 7) / 8;
 	size_t row = width * BITS_TOTAL / 8;
 	switch (in) {
-		case 'q': return false;
-				  break; case 'x': dump = DUMP_ONE;
-				  break; case 'X': dump ^= DUMP_ALL;
-				  break; case 'o': formatOptions(); printf("%s\n", options);
-				  break; case '[': if (!space--) space = COLOR__COUNT - 1;
-				  break; case ']': if (++space == COLOR__COUNT) space = 0;
-				  break; case 'p': palSample();
-				  break; case 'P': palDump();
-				  break; case '{': if (!preset--) preset = PRESETS_LEN - 1; setPreset();
-				  break; case '}': if (++preset == PRESETS_LEN) preset = 0; setPreset();
-				  break; case 'e': byteOrder ^= ENDIAN_BIG;
-				  break; case 'E': bitOrder ^= ENDIAN_BIG;
-				  break; case 'h': if (offset) offset--;
-				  break; case 'j': offset += pixel;
-				  break; case 'k': if (offset >= pixel) offset -= pixel;
-				  break; case 'l': offset++;
-				  break; case 'H': if (offset >= row) offset -= row;
-				  break; case 'J': offset += width * row;
-				  break; case 'K': if (offset >= width * row) offset -= width * row;
-				  break; case 'L': offset += row;
-				  break; case '.': width++;
-				  break; case ',': if (width > 1) width--;
-				  break; case '>': width *= 2;
-				  break; case '<': if (width > 1) width /= 2;
-				  break; case 'f': flip ^= true;
-				  break; case 'm': mirror ^= true;
-				  break; case '+': scale++;
-				  break; case '-': if (scale > 1) scale--;
-				  break; default: if (in >= '0' && in <= '9') setBit(in);
+		break; case 'q': return false;
+		break; case 'x': dump = DUMP_ONE;
+		break; case 'X': dump ^= DUMP_ALL;
+		break; case 'o': formatOptions(); printf("%s\n", options);
+		break; case '[': if (!space--) space = COLOR__COUNT - 1;
+		break; case ']': if (++space == COLOR__COUNT) space = 0;
+		break; case 'p': palSample();
+		break; case 'P': palDump();
+		break; case '{': if (!preset--) preset = PRESETS_LEN - 1; setPreset();
+		break; case '}': if (++preset == PRESETS_LEN) preset = 0; setPreset();
+		break; case 'e': byteOrder ^= ENDIAN_BIG;
+		break; case 'E': bitOrder ^= ENDIAN_BIG;
+		break; case 'h': if (offset) offset--;
+		break; case 'j': offset += pixel;
+		break; case 'k': if (offset >= pixel) offset -= pixel;
+		break; case 'l': offset++;
+		break; case 'H': if (offset >= row) offset -= row;
+		break; case 'J': offset += width * row;
+		break; case 'K': if (offset >= width * row) offset -= width * row;
+		break; case 'L': offset += row;
+		break; case '.': width++;
+		break; case ',': if (width > 1) width--;
+		break; case '>': width *= 2;
+		break; case '<': if (width > 1) width /= 2;
+		break; case 'f': flip ^= true;
+		break; case 'm': mirror ^= true;
+		break; case '+': scale++;
+		break; case '-': if (scale > 1) scale--;
+		break; default: if (in >= '0' && in <= '9') setBit(in);
 	}
 	return true;
 }

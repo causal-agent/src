@@ -107,13 +107,13 @@ int main(int argc, char *argv[]) {
 	int opt;
 	while (0 < (opt = getopt(argc, argv, "ac:g:rsz"))) {
 		switch (opt) {
-			case 'a': options.ascii ^= true; break;
-			case 'c': options.cols = strtoul(optarg, NULL, 0); break;
-			case 'g': options.group = strtoul(optarg, NULL, 0); break;
-			case 'r': reverse = true; break;
-			case 's': options.offset ^= true; break;
-			case 'z': options.skip ^= true; break;
-			default: return EX_USAGE;
+			break; case 'a': options.ascii ^= true;
+			break; case 'c': options.cols = strtoul(optarg, NULL, 0);
+			break; case 'g': options.group = strtoul(optarg, NULL, 0);
+			break; case 'r': reverse = true;
+			break; case 's': options.offset ^= true;
+			break; case 'z': options.skip ^= true;
+			break; default: return EX_USAGE;
 		}
 	}
 	if (argc > optind) path = argv[optind];

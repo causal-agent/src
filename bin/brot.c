@@ -89,20 +89,20 @@ static double scaleStep = 1.0 / 32.0;
 bool input(char in) {
 	const double PI = acos(-1.0);
 	switch (in) {
-		case 'q': return false;
-				  break; case '.': depth++;
-				  break; case ',': if (depth > 1) depth--;
-				  break; case 'l': translate += translateStep * transform;
-				  break; case 'h': translate -= translateStep * transform;
-				  break; case 'j': translate += translateStep * I * transform;
-				  break; case 'k': translate -= translateStep * I * transform;
-				  break; case 'u': transform *= cexp(rotateStep * PI * I);
-				  break; case 'i': transform /= cexp(rotateStep * PI * I);
-				  break; case '+': transform *= 1.0 - scaleStep;
-				  break; case '-': transform /= 1.0 - scaleStep;
-				  break; case '0': translate = -0.75; transform = 2.5;
-				  break; case ']': samples++;
-				  break; case '[': if (samples > 1) samples--;
+		break; case 'q': return false;
+		break; case '.': depth++;
+		break; case ',': if (depth > 1) depth--;
+		break; case 'l': translate += translateStep * transform;
+		break; case 'h': translate -= translateStep * transform;
+		break; case 'j': translate += translateStep * I * transform;
+		break; case 'k': translate -= translateStep * I * transform;
+		break; case 'u': transform *= cexp(rotateStep * PI * I);
+		break; case 'i': transform /= cexp(rotateStep * PI * I);
+		break; case '+': transform *= 1.0 - scaleStep;
+		break; case '-': transform /= 1.0 - scaleStep;
+		break; case '0': translate = -0.75; transform = 2.5;
+		break; case ']': samples++;
+		break; case '[': if (samples > 1) samples--;
 	}
 	return true;
 }
@@ -136,11 +136,11 @@ int init(int argc, char *argv[]) {
 	int opt;
 	while (0 < (opt = getopt(argc, argv, "f:i:s:t:"))) {
 		switch (opt) {
-			case 'f': transform = parseComplex(optarg); break;
-			case 'i': depth = strtoul(optarg, NULL, 0); break;
-			case 's': samples = strtoul(optarg, NULL, 0); break;
-			case 't': translate = parseComplex(optarg); break;
-			default: return EX_USAGE;
+			break; case 'f': transform = parseComplex(optarg);
+			break; case 'i': depth = strtoul(optarg, NULL, 0);
+			break; case 's': samples = strtoul(optarg, NULL, 0);
+			break; case 't': translate = parseComplex(optarg);
+			break; default: return EX_USAGE;
 		}
 	}
 	return EX_OK;

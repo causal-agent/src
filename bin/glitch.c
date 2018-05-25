@@ -460,18 +460,16 @@ int main(int argc, char *argv[]) {
 	int opt;
 	while (0 < (opt = getopt(argc, argv, "a:cd:fo:pr"))) {
 		switch (opt) {
-			case 'a': {
+			break; case 'a':
 				options.applyFilter = parseFilters(options.applyFilters, optarg);
-			} break;
-			case 'c': stdio = true; break;
-			case 'd': {
+			break; case 'c': stdio = true;
+			break; case 'd':
 				options.declareFilter = parseFilters(options.declareFilters, optarg);
-			} break;
-			case 'f': options.filt = true; break;
-			case 'o': output = optarg; break;
-			case 'p': options.brokenPaeth = true; break;
-			case 'r': options.recon = true; break;
-			default: return EX_USAGE;
+			break; case 'f': options.filt = true;
+			break; case 'o': output = optarg;
+			break; case 'p': options.brokenPaeth = true;
+			break; case 'r': options.recon = true;
+			break; default: return EX_USAGE;
 		}
 	}
 

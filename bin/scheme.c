@@ -204,13 +204,13 @@ int main(int argc, char *argv[]) {
 	int opt;
 	while (0 < (opt = getopt(argc, argv, "aghltx"))) {
 		switch (opt) {
-			case 'a': gen = ansi; break;
-			case 'g': out = png; break;
-			case 'h': out = hsv; break;
-			case 'l': out = linux; break;
-			case 't': gen = terminal; break;
-			case 'x': out = hex; break;
-			default: return EX_USAGE;
+			break; case 'a': gen = ansi;
+			break; case 'g': out = png;
+			break; case 'h': out = hsv;
+			break; case 'l': out = linux;
+			break; case 't': gen = terminal;
+			break; case 'x': out = hex;
+			break; default: return EX_USAGE;
 		}
 	}
 	struct Scheme scheme = gen();

@@ -697,10 +697,10 @@ int main(int argc, char *argv[]) {
 	int opt;
 	while (0 < (opt = getopt(argc, argv, "co:v"))) {
 		switch (opt) {
-			case 'c': stdio = true; break;
-			case 'o': output = optarg; break;
-			case 'v': verbose = true; break;
-			default: return EX_USAGE;
+			break; case 'c': stdio = true;
+			break; case 'o': output = optarg;
+			break; case 'v': verbose = true;
+			break; default: return EX_USAGE;
 		}
 	}
 
