@@ -14,173 +14,120 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <curses.h>
 #include <err.h>
-#include <fcntl.h>
-#include <locale.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
+#include <string.h>
 #include <sysexits.h>
-#include <unistd.h>
 
-struct Span {
-	char *ptr;
-	size_t len;
-};
-
-static struct Span spanBefore(struct Span span, size_t index) {
-	return (struct Span) { span.ptr, index };
-}
-static struct Span spanAfter(struct Span span, size_t index) {
-	return (struct Span) { span.ptr + index, span.len - index };
+static struct Span {
+	size_t at;
+	size_t to;
+} Span(size_t at, size_t to) {
+	return (struct Span) { at, to };
 }
 
-static struct Table {
+static bool spanStartsIn(struct Span a, struct Span b) {
+	return a.at >= b.at && a.at < b.to;
+}
+static bool spanEndsIn(struct Span a, struct Span b) {
+	return a.to > b.at && a.to <= b.to;
+}
+static bool spanContains(struct Span a, struct Span b) {
+	return a.at <= b.at && a.to >= b.to;
+}
+
+static struct Seg {
+	struct Span span;
+	char *data;
+} Seg(struct Span span, char *data) {
+	return (struct Seg) { span, data };
+}
+
+static struct Seg segBefore(struct Seg seg, size_t at) {
+	return Seg(Span(seg.span.at, at), seg.data);
+}
+static struct Seg segAfter(struct Seg seg, size_t at) {
+	return Seg(Span(at, seg.span.to), seg.data + (at - seg.span.at));
+}
+
+struct Table {
 	struct Table *next;
 	struct Table *prev;
 	size_t len;
-	struct Span span[];
-} *table;
+	struct Seg seg[];
+};
 
 static struct Table *tableNew(size_t cap) {
-	struct Table *next = malloc(sizeof(*next) + cap * sizeof(struct Span));
-	if (!next) err(EX_OSERR, "malloc");
-	next->next = NULL;
-	next->prev = NULL;
-	next->len = 0;
-	return next;
+	size_t size = sizeof(struct Table) + cap * sizeof(struct Seg);
+	struct Table *table = malloc(size);
+	if (!table) err(EX_OSERR, "malloc");
+	memset(table, 0, size);
+	return table;
 }
 
-static struct Table *tableSpan(struct Span span) {
-	struct Table *next = tableNew(1);
-	next->len = 1;
-	next->span[0] = span;
-	return next;
-}
-
-static void tableUndo(void) {
-	if (table->prev) table = table->prev;
-}
-static void tableRedo(void) {
-	if (table->next) table = table->next;
-}
-
-static void tableDiscard(void) {
-	struct Table *it = table->next;
-	table->next = NULL;
-	while (it) {
-		struct Table *next = it->next;
-		free(it);
-		it = next;
-	}
-}
-
-static void tablePush(struct Table *next) {
-	tableDiscard();
-	table->next = next;
-	next->prev = table;
-	table = next;
-}
-
-static struct Span *tableInsert(size_t atStart, struct Span span) {
-	// TODO: Handle table->len == 0
-	struct Table *next = tableNew(table->len + 2);
-	struct Span *insert = NULL;
-
-	size_t start = 0;
-	struct Span *nextSpan = next->span;
-	for (size_t i = 0; i < table->len; ++i) {
-		struct Span prevSpan = table->span[i];
-		size_t end = start + prevSpan.len;
-
-		if (atStart > start && atStart < end) {
-			insert = nextSpan + 1;
-			*nextSpan++ = spanBefore(prevSpan, atStart - start);
-			*nextSpan++ = span;
-			*nextSpan++ = spanAfter(prevSpan, atStart - start);
-		} else if (atStart == start) {
-			insert = nextSpan;
-			*nextSpan++ = span;
-			*nextSpan++ = prevSpan;
-		} else {
-			*nextSpan++ = prevSpan;
-		}
-
-		start = end;
-	}
-	next->len = nextSpan - next->span;
-
-	tablePush(next);
-	return insert;
-}
-
-static void tableDelete(size_t atStart, size_t atEnd) {
-	struct Table *next = tableNew(table->len + 1);
-
-	size_t start = 0;
-	struct Span *nextSpan = next->span;
-	for (size_t i = 0; i < table->len; ++i) {
-		struct Span prevSpan = table->span[i];
-		size_t end = start + prevSpan.len;
-
-		if (atStart > start && atEnd < end) {
-			*nextSpan++ = spanBefore(prevSpan, atStart - start);
-			*nextSpan++ = spanAfter(prevSpan, atEnd - start);
-		} else if (atStart > start && atStart < end && atEnd >= end) {
-			*nextSpan++ = spanBefore(prevSpan, atStart - start);
-		} else if (atStart <= start && atEnd < end && atEnd > start) {
-			*nextSpan++ = spanAfter(prevSpan, atEnd - start);
-		} else if (atStart <= start && atEnd >= end) {
-		} else {
-			*nextSpan++ = prevSpan;
-		}
-
-		start = end;
-	}
-	next->len = nextSpan - next->span;
-
-	tablePush(next);
-}
-
-static void curse(void) {
-	setlocale(LC_CTYPE, "");
-	initscr();
-	cbreak();
-	noecho();
-	keypad(stdscr, true);
-	set_escdelay(100);
-}
-
-static void draw(void) {
-	move(0, 0);
-	for (size_t i = 0; i < table->len; ++i) {
-		addnstr(table->span[i].ptr, (int)table->span[i].len);
-	}
-}
-
-int main(int argc, char *argv[]) {
-	if (argc < 2) return EX_USAGE;
-
-	const char *path = argv[1];
-	int fd = open(path, O_RDWR | O_CREAT, 0644);
-	if (fd < 0) err(EX_CANTCREAT, "%s", path);
-
-	struct stat stat;
-	int error = fstat(fd, &stat);
-	if (error) err(EX_IOERR, "%s", path);
-
-	if (stat.st_size) {
-		char *file = mmap(NULL, stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-		if (file == MAP_FAILED) err(EX_IOERR, "%s", path);
-		table = tableSpan((struct Span) { file, stat.st_size });
+static void tableAdd(struct Table *table, struct Seg seg) {
+	// FIXME: Make this clearer.
+	size_t len = seg.span.to - seg.span.at;
+	if (table->len) {
+		struct Seg last = table->seg[table->len - 1];
+		seg.span = Span(last.span.to, last.span.to + len);
 	} else {
-		table = tableSpan((struct Span) { NULL, 0 });
+		seg.span = Span(0, len);
 	}
+	table->seg[table->len++] = seg;
+}
 
-	curse();
-	draw();
-	getch();
-	endwin();
+static struct Table *tableInsert(struct Table *prev, struct Seg seg) {
+	struct Table *next = tableNew(prev->len + 2);
+	if (!prev->len) {
+		tableAdd(next, seg);
+		return next;
+	}
+	for (size_t i = 0; i < prev->len; ++i) {
+		if (seg.span.at == prev->seg[i].span.at) {
+			tableAdd(next, seg);
+			tableAdd(next, prev->seg[i]);
+		} else if (spanStartsIn(seg.span, prev->seg[i].span)) {
+			tableAdd(next, segBefore(prev->seg[i], seg.span.at));
+			tableAdd(next, seg);
+			tableAdd(next, segAfter(prev->seg[i], seg.span.at));
+		} else {
+			tableAdd(next, prev->seg[i]);
+		}
+	}
+	return next;
+}
+
+static struct Table *tableDelete(struct Table *prev, struct Span span) {
+	struct Table *next = tableNew(prev->len + 1);
+	for (size_t i = 0; i < prev->len; ++i) {
+		if (spanContains(span, prev->seg[i].span)) {
+			// drop
+		} else if (spanContains(prev->seg[i].span, span)) {
+			tableAdd(next, segBefore(prev->seg[i], span.at));
+			tableAdd(next, segAfter(prev->seg[i], span.to));
+		} else if (spanStartsIn(span, prev->seg[i].span)) {
+			tableAdd(next, segBefore(prev->seg[i], span.at));
+		} else if (spanEndsIn(span, prev->seg[i].span)) {
+			tableAdd(next, segAfter(prev->seg[i], span.to));
+		} else {
+			tableAdd(next, prev->seg[i]);
+		}
+	}
+	return next;
+}
+
+int main() {
+	struct Table *table = tableNew(0);
+	table = tableInsert(table, Seg(Span(0, 13), "Hello, world!"));
+	table = tableDelete(table, Span(1, 5));
+	table = tableInsert(table, Seg(Span(1, 5), "owdy"));
+	table = tableDelete(table, Span(3, 6));
+	table = tableInsert(table, Seg(Span(3, 6), " do"));
+
+	for (size_t i = 0; i < table->len; ++i) {
+		printf("%.*s", table->seg[i].span.to - table->seg[i].span.at, table->seg[i].data);
+	}
 }
