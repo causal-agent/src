@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
+#include <wchar.h>
 
 static struct Span {
 	size_t at;
@@ -138,6 +139,42 @@ static struct Table *tableDelete(struct Table *prev, struct Span span) {
 	return next;
 }
 
+static struct CharIter {
+	struct TableIter in;
+	struct Seg seg;
+	struct Span span;
+	wchar_t ch;
+	int len;
+} CharIter(struct Table *table, size_t at) {
+	struct TableIter in;
+	for (in = TableIter(table); in.len; tableNext(&in)) {
+		if (at >= in.span.at && at < in.span.to) break;
+	}
+	struct CharIter it = {
+		in,
+		segTail(*in.seg, at - in.span.at),
+		Span(at, in.span.to),
+		0,
+		0,
+	};
+	it.len = mbtowc(&it.ch, it.seg.ptr, it.seg.len);
+	if (it.len < 0) err(EX_DATAERR, "mbtowc");
+	return it;
+}
+
+static void charNext(struct CharIter *it) {
+	it->seg.ptr += it->len;
+	it->seg.len -= it->len;
+	it->span.at += it->len;
+	if (!it->seg.len && it->in.len) {
+		tableNext(&it->in);
+		it->seg = *it->in.seg;
+		it->span = it->in.span;
+	}
+	it->len = mbtowc(&it->ch, it->seg.ptr, it->seg.len);
+	if (it->len < 0) err(EX_DATAERR, "mbtowc");
+}
+
 int main() {
 	struct Table *table = Table(0);
 	table = tableInsert(table, 0, Seg("Hello, world!\n", 14));
@@ -146,7 +183,7 @@ int main() {
 	table = tableDelete(table, Span(3, 6));
 	table = tableInsert(table, 3, Seg(" do", 3));
 
-	for (size_t i = 0; i < table->len; ++i) {
-		printf("%.*s", (int)table->seg[i].len, table->seg[i].ptr);
+	for (struct CharIter it = CharIter(table, 0); it.seg.len; charNext(&it)) {
+		printf("%C", it.ch);
 	}
 }
