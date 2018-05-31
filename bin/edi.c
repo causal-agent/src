@@ -14,7 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define _XOPEN_SOURCE_EXTENDED
+
+#include <curses.h>
 #include <err.h>
+#include <locale.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,7 +146,7 @@ static struct Table *tableDelete(struct Table *prev, struct Span span) {
 static struct CharIter {
 	struct TableIter in;
 	struct Seg seg;
-	struct Span span;
+	size_t at;
 	wchar_t ch;
 	int len;
 } CharIter(struct Table *table, size_t at) {
@@ -150,13 +154,7 @@ static struct CharIter {
 	for (in = TableIter(table); in.len; tableNext(&in)) {
 		if (at >= in.span.at && at < in.span.to) break;
 	}
-	struct CharIter it = {
-		in,
-		segTail(*in.seg, at - in.span.at),
-		Span(at, in.span.to),
-		0,
-		0,
-	};
+	struct CharIter it = { in, segTail(*in.seg, at - in.span.at), at, 0, 0 };
 	it.len = mbtowc(&it.ch, it.seg.ptr, it.seg.len);
 	if (it.len < 0) err(EX_DATAERR, "mbtowc");
 	return it;
@@ -165,25 +163,54 @@ static struct CharIter {
 static void charNext(struct CharIter *it) {
 	it->seg.ptr += it->len;
 	it->seg.len -= it->len;
-	it->span.at += it->len;
+	it->at += it->len;
 	if (!it->seg.len && it->in.len) {
 		tableNext(&it->in);
 		it->seg = *it->in.seg;
-		it->span = it->in.span;
+		it->at = it->in.span.at;
 	}
 	it->len = mbtowc(&it->ch, it->seg.ptr, it->seg.len);
 	if (it->len < 0) err(EX_DATAERR, "mbtowc");
 }
 
+static void curse(void) {
+	setlocale(LC_CTYPE, "");
+	initscr();
+	cbreak();
+	noecho();
+	keypad(stdscr, true);
+	set_escdelay(100);
+}
+
+static void curseChar(wchar_t ch, attr_t attr, short color) {
+	cchar_t cc;
+	wchar_t ws[] = { ch, 0 };
+	setcchar(&cc, ws, attr, color, NULL);
+	add_wch(&cc);
+}
+
+static void draw(struct Table *table, size_t at, struct Span cursor) {
+	move(0, 0);
+	int y, x;
+	for (struct CharIter it = CharIter(table, at); it.seg.len; charNext(&it)) {
+		if (it.at == cursor.at) getyx(stdscr, y, x);
+		attr_t attr = A_NORMAL;
+		if (it.at >= cursor.at && it.at < cursor.to) attr = A_REVERSE;
+		curseChar(it.ch, attr, 0);
+	}
+	move(y, x);
+}
+
 int main() {
 	struct Table *table = Table(0);
-	table = tableInsert(table, 0, Seg("Hello, world!\n", 14));
+	table = tableInsert(table, 0, Seg("Hello, world!\nGoodbye, world!\n", 30));
 	table = tableDelete(table, Span(1, 5));
-	table = tableInsert(table, 1, Seg("owdy", 5));
+	table = tableInsert(table, 1, Seg("owdy", 4));
 	table = tableDelete(table, Span(3, 6));
 	table = tableInsert(table, 3, Seg(" do", 3));
 
-	for (struct CharIter it = CharIter(table, 0); it.seg.len; charNext(&it)) {
-		printf("%C", it.ch);
-	}
+	curse();
+	draw(table, 0, Span(1, 3));
+	getch();
+	endwin();
 }
