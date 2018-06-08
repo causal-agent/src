@@ -20,6 +20,7 @@
 #include <err.h>
 #include <locale.h>
 #include <stdbool.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,16 +53,15 @@ static struct Vec {
 	return (struct Vec) { ptr, len };
 }
 
-static struct Vec vecHead(struct Vec vec, size_t at) {
-	return Vec(vec.ptr, at);
+static struct Vec vecHead(struct Vec vec, struct Span span, size_t at) {
+	return Vec(vec.ptr, at - span.at);
 }
-static struct Vec vecTail(struct Vec vec, size_t at) {
-	return Vec(vec.ptr + at, vec.len - at);
+static struct Vec vecTail(struct Vec vec, struct Span span, size_t at) {
+	return Vec(vec.ptr + (at - span.at), vec.len - (at - span.at));
 }
 
 static struct Table {
 	struct Table *next, *prev;
-	struct Span span;
 	size_t len;
 	struct Vec vec[];
 } *Table(size_t cap) {
@@ -73,32 +73,24 @@ static struct Table {
 }
 
 static struct TableIter {
-	size_t next, prev;
-	struct Vec *vec;
+	struct Table *table;
+	size_t i;
+	struct Vec vec;
 	struct Span span;
 } TableIter(struct Table *table) {
-	if (!table->len) return (struct TableIter) { 0, 0, NULL, Span(0, 0) };
-	return (struct TableIter) {
-		table->len, 0,
-		&table->vec[0],
-		Span(0, table->vec[0].len),
-	};
+	return (struct TableIter) { table, 0, Vec(NULL, 0), Span(0, 0) };
 }
-static void tableNext(struct TableIter *it) {
-	it->next--;
-	it->prev++;
-	if (it->next) {
-		it->vec++;
-		it->span = Span(it->span.to, it->span.to + it->vec->len);
-	}
+static bool tableNext(struct TableIter *it) {
+	if (it->i == it->table->len) return false;
+	it->vec = it->table->vec[it->i++];
+	it->span = Span(it->span.to, it->span.to + it->vec.len);
+	return true;
 }
-static void tablePrev(struct TableIter *it) {
-	it->next++;
-	it->prev--;
-	if (it->prev) {
-		it->vec--;
-		it->span = Span(it->span.at - it->vec->len, it->span.at);
-	}
+static bool tablePrev(struct TableIter *it) {
+	if (!it->i) return false;
+	it->vec = it->table->vec[--it->i];
+	it->span = Span(it->span.at - it->vec.len, it->span.at);
+	return true;
 }
 
 static struct Table *tableInsert(struct Table *prev, size_t at, struct Vec vec) {
@@ -108,16 +100,16 @@ static struct Table *tableInsert(struct Table *prev, size_t at, struct Vec vec) 
 		return next;
 	}
 	struct Span span = Span(at, at + vec.len);
-	for (struct TableIter it = TableIter(prev); it.next; tableNext(&it)) {
+	for (struct TableIter it = TableIter(prev); tableNext(&it); (void)it) {
 		if (it.span.at == at) {
 			next->vec[next->len++] = vec;
-			next->vec[next->len++] = *it.vec;
+			next->vec[next->len++] = it.vec;
 		} else if (spanHeadIn(span, it.span)) {
-			next->vec[next->len++] = vecHead(*it.vec, at - it.span.at);
+			next->vec[next->len++] = vecHead(it.vec, it.span, at);
 			next->vec[next->len++] = vec;
-			next->vec[next->len++] = vecTail(*it.vec, at - it.span.at);
+			next->vec[next->len++] = vecTail(it.vec, it.span, at);
 		} else {
-			next->vec[next->len++] = *it.vec;
+			next->vec[next->len++] = it.vec;
 		}
 	}
 	return next;
@@ -125,101 +117,88 @@ static struct Table *tableInsert(struct Table *prev, size_t at, struct Vec vec) 
 
 static struct Table *tableDelete(struct Table *prev, struct Span span) {
 	struct Table *next = Table(prev->len + 1);
-	for (struct TableIter it = TableIter(prev); it.next; tableNext(&it)) {
+	for (struct TableIter it = TableIter(prev); tableNext(&it); (void)it) {
 		if (spanIn(it.span, span) || spanEqual(it.span, span)) {
 			// drop
 		} else if (spanIn(span, it.span)) {
-			next->vec[next->len++] = vecHead(*it.vec, span.at - it.span.at);
-			next->vec[next->len++] = vecTail(*it.vec, span.to - it.span.at);
+			next->vec[next->len++] = vecHead(it.vec, it.span, span.at);
+			next->vec[next->len++] = vecTail(it.vec, it.span, span.to);
 		} else if (spanHeadIn(span, it.span)) {
-			next->vec[next->len++] = vecHead(*it.vec, span.at - it.span.at);
+			next->vec[next->len++] = vecHead(it.vec, it.span, span.at);
 		} else if (spanTailIn(span, it.span)) {
-			next->vec[next->len++] = vecTail(*it.vec, span.to - it.span.at);
+			next->vec[next->len++] = vecTail(it.vec, it.span, span.to);
 		} else {
-			next->vec[next->len++] = *it.vec;
+			next->vec[next->len++] = it.vec;
 		}
 	}
 	return next;
 }
 
 static struct VecIter {
-	size_t next, prev;
-	char *ptr;
-	int len;
+	struct Vec vec;
+	size_t i;
 	wchar_t ch;
-} VecIter(struct Vec vec, size_t at) {
-	struct VecIter it = {
-		vec.len - at, at,
-		vec.ptr + at,
-		0, 0,
-	};
-	it.len = mbtowc(&it.ch, it.ptr, it.next);
-	if (it.len < 0) errx(EX_DATAERR, "mbtowc");
-	return it;
+} VecIter(struct Vec vec, size_t i) {
+	return (struct VecIter) { vec, i, 0 };
 }
-static void vecNext(struct VecIter *it) {
-	it->next -= it->len;
-	it->prev += it->len;
-	if (it->next) {
-		it->ptr += it->len;
-		it->len = mbtowc(&it->ch, it->ptr, it->next);
-		if (it->len < 0) errx(EX_DATAERR, "mbtowc");
-	}
+static bool vecNext(struct VecIter *it) {
+	if (it->i >= it->vec.len) return false;
+	int len = mbtowc(&it->ch, &it->vec.ptr[it->i], it->vec.len - it->i);
+	if (len < 0) errx(EX_DATAERR, "mbtowc");
+	it->i += len;
+	return true;
 }
-static void vecPrev(struct VecIter *it) {
-	it->next += it->len;
-	it->prev -= it->len;
-	if (it->prev) {
-		for (int n = 1; n < MB_CUR_MAX; ++n) {
-			it->len = mbtowc(&it->ch, it->ptr - n, n);
-			if (it->len > 0) break;
-		}
-		if (it->len < 0) errx(EX_DATAERR, "mbtowc");
-		it->ptr -= it->len;
+static bool vecPrev(struct VecIter *it) {
+	if (!it->i) return false;
+	int len;
+	for (int n = 1; n < MB_CUR_MAX; ++n) {
+		len = mbtowc(&it->ch, &it->vec.ptr[it->i - n], n);
+		if (len > 0) break;
 	}
+	if (len < 0) errx(EX_DATAERR, "mbtowc");
+	it->i -= len;
+	return true;
 }
 
-static void curse(void) {
-	setlocale(LC_CTYPE, "");
-	initscr();
-	cbreak();
-	noecho();
-	keypad(stdscr, true);
-	set_escdelay(100);
-}
-
-static void curseChar(wchar_t ch, attr_t attr, short color) {
-	cchar_t cc;
-	wchar_t ws[] = { ch, 0 };
-	setcchar(&cc, ws, attr, color, NULL);
-	add_wch(&cc);
-}
+//static void curse(void) {
+//	setlocale(LC_CTYPE, "");
+//	initscr();
+//	cbreak();
+//	noecho();
+//	keypad(stdscr, true);
+//	set_escdelay(100);
+//}
+//
+//static void curseChar(wchar_t ch, attr_t attr, short color) {
+//	cchar_t cc;
+//	wchar_t ws[] = { ch, 0 };
+//	setcchar(&cc, ws, attr, color, NULL);
+//	add_wch(&cc);
+//}
 
 static void draw(struct Table *table) {
-	move(0, 0);
-	struct VecIter it;
-	for (it = VecIter(table->vec[0], 0); it.next; vecNext(&it)) {
-		curseChar(it.ch, A_NORMAL, 0);
-	}
-	for (; it.prev; vecPrev(&it)) {
-		curseChar(it.ch, A_NORMAL, 0);
-	}
-	for (; it.next; vecNext(&it)) {
-		curseChar(it.ch, A_NORMAL, 0);
-	}
+	//move(0, 0);
+	struct TableIter it = TableIter(table);
+	tableNext(&it);
+	printf("(%zu,%zu)%.*s", it.span.at, it.span.to, (int)it.vec.len, it.vec.ptr);
+	tableNext(&it);
+	printf("(%zu,%zu)%.*s", it.span.at, it.span.to, (int)it.vec.len, it.vec.ptr);
+	tablePrev(&it);
+	printf("(%zu,%zu)%.*s", it.span.at, it.span.to, (int)it.vec.len, it.vec.ptr);
+	tablePrev(&it);
+	printf("(%zu,%zu)%.*s", it.span.at, it.span.to, (int)it.vec.len, it.vec.ptr);
 }
 
 int main() {
 	struct Table *table = Table(0);
-	table = tableInsert(table, 0, Vec("«…»", 7));
-	//table = tableInsert(table, 0, Vec("Hello, world!\nGoodbye, world!\n", 30));
-	//table = tableDelete(table, Span(1, 5));
-	//table = tableInsert(table, 1, Vec("owdy", 4));
-	//table = tableDelete(table, Span(3, 6));
-	//table = tableInsert(table, 3, Vec(" Ω", 3));
+	table = tableInsert(table, 0, Vec("Hello, world!\nGoodbye, world!\n", 30));
+	table = tableDelete(table, Span(1, 5));
+	table = tableInsert(table, 1, Vec("owdy", 4));
+	table = tableDelete(table, Span(3, 6));
+	table = tableInsert(table, 3, Vec(" Ω", 3));
 
-	curse();
+	//curse();
 	draw(table);
-	getch();
-	endwin();
+	//getch();
+	//endwin();
 }
