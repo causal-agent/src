@@ -1,3 +1,4 @@
+- [SOPHIE — OIL OF EVERY PEARL'S UN-INSIDES][50]
 - [Rosetta — Utopioid][49]
 - [Desire — Under Your Spell][48]
 - [Broken Social Scene — Anthems for a Seventeen-Year Old Girl][47]
@@ -107,3 +108,4 @@
 [47]: https://youtu.be/DDqNL0js0iU
 [48]: https://youtu.be/9K7rmxjk5RQ
 [49]: https://theanaesthete.bandcamp.com/album/utopioid
+[50]: http://smarturl.it/SOPHIEALBUM
