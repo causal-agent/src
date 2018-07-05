@@ -1,3 +1,4 @@
+- [rook — shed blood][51]
 - [SOPHIE — OIL OF EVERY PEARL'S UN-INSIDES][50]
 - [Rosetta — Utopioid][49]
 - [Desire — Under Your Spell][48]
@@ -109,3 +110,4 @@
 [48]: https://youtu.be/9K7rmxjk5RQ
 [49]: https://theanaesthete.bandcamp.com/album/utopioid
 [50]: http://smarturl.it/SOPHIEALBUM
+[51]: https://rooksfeather.bandcamp.com/album/shed-blood
