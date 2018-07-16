@@ -239,7 +239,9 @@ static void readData(void) {
 
 static void writeData(void) {
 	uLong size = compressBound(dataSize());
-	uint8_t deflate[size];
+	uint8_t *deflate = malloc(size);
+	if (!deflate) err(EX_OSERR, "malloc");
+
 	int error = compress2(deflate, &size, data, dataSize(), Z_BEST_SPEED);
 	if (error != Z_OK) errx(EX_SOFTWARE, "%s: compress2: %d", path, error);
 
@@ -247,6 +249,8 @@ static void writeData(void) {
 	writeChunk(idat);
 	writeExpect(deflate, size);
 	writeCrc();
+
+	free(deflate);
 }
 
 static void writeEnd(void) {
