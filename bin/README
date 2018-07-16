@@ -76,6 +76,7 @@ PNG glitcher based on pngo.
     -r         reconstruct when filtering
     -d LIST    declare pattern of comma-separated filters
     -a LIST    apply pattern of comma-separated filters
+    -m         mirror scanlines after filtering
 
                                   hnel
 

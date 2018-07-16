@@ -276,6 +276,7 @@ static struct {
 	uint8_t applyFilter;
 	enum Filter declareFilters[255];
 	enum Filter applyFilters[255];
+	bool mirror;
 } options;
 
 struct Bytes {
@@ -396,6 +397,16 @@ static void filterData(void) {
 	}
 }
 
+static void mirror(void) {
+	for (uint32_t y = 0; y < header.height; ++y) {
+		for (size_t i = 0, j = lineSize() - 1; i < j; ++i, --j) {
+			uint8_t t = lines[y]->data[i];
+			lines[y]->data[i] = lines[y]->data[j];
+			lines[y]->data[j] = t;
+		}
+	}
+}
+
 static void glitch(const char *inPath, const char *outPath) {
 	if (inPath) {
 		path = inPath;
@@ -415,6 +426,7 @@ static void glitch(const char *inPath, const char *outPath) {
 	scanlines();
 	reconData();
 	filterData();
+	if (options.mirror) mirror();
 	free(lines);
 
 	if (outPath) {
@@ -462,7 +474,7 @@ int main(int argc, char *argv[]) {
 	char *output = NULL;
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "a:cd:fo:pr"))) {
+	while (0 < (opt = getopt(argc, argv, "a:cd:fmo:pr"))) {
 		switch (opt) {
 			break; case 'a':
 				options.applyFilter = parseFilters(options.applyFilters, optarg);
@@ -470,6 +482,7 @@ int main(int argc, char *argv[]) {
 			break; case 'd':
 				options.declareFilter = parseFilters(options.declareFilters, optarg);
 			break; case 'f': options.filt = true;
+			break; case 'm': options.mirror = true;
 			break; case 'o': output = optarg;
 			break; case 'p': options.brokenPaeth = true;
 			break; case 'r': options.recon = true;
