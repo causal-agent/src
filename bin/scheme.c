@@ -26,23 +26,23 @@
 #include <zlib.h>
 
 static const struct Hsv { double h, s, v; }
-R = {   0.0, 1.0, 1.0 },
-  Y = {  60.0, 1.0, 1.0 },
-  G = { 120.0, 1.0, 1.0 },
-  C = { 180.0, 1.0, 1.0 },
-  B = { 240.0, 1.0, 1.0 },
-  M = { 300.0, 1.0, 1.0 };
+	R = {   0.0, 1.0, 1.0 },
+	Y = {  60.0, 1.0, 1.0 },
+	G = { 120.0, 1.0, 1.0 },
+	C = { 180.0, 1.0, 1.0 },
+	B = { 240.0, 1.0, 1.0 },
+	M = { 300.0, 1.0, 1.0 };
 
 static struct Hsv x(struct Hsv o, double hd, double sf, double vf) {
 	return (struct Hsv) {
 		fmod(o.h + hd, 360.0),
-			fmin(o.s * sf, 1.0),
-			fmin(o.v * vf, 1.0),
+		fmin(o.s * sf, 1.0),
+		fmin(o.v * vf, 1.0),
 	};
 }
 
+enum { BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE };
 struct Ansi {
-	enum { BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE };
 	struct Hsv dark[8];
 	struct Hsv light[8];
 };
