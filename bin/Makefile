@@ -5,7 +5,7 @@ ALL_BINS = $(ANY_BINS) $(BSD_BINS) $(LIN_BINS)
 GFX ?= none
 
 CFLAGS += -Wall -Wextra -Wpedantic
-LDLIBS = -ledit -lm -lcurses -lutil -lz
+LDLIBS = -lcurses -ledit -lm -lutil -lz
 LDLIBS_cocoa = -framework Cocoa
 LDLIBS_x11 = -lX11
 
