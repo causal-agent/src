@@ -28,13 +28,16 @@ static void watch(int kq, char *path) {
 	int fd = open(path, O_CLOEXEC);
 	if (fd < 0) err(EX_NOINPUT, "%s", path);
 
-	struct kevent event = {
-		.ident = fd,
-		.filter = EVFILT_VNODE,
-		.flags = EV_ADD | EV_CLEAR,
-		.fflags = NOTE_WRITE | NOTE_DELETE,
-		.udata = path,
-	};
+	struct kevent event;
+	EV_SET(
+		&event,
+		fd,
+		EVFILT_VNODE,
+		EV_ADD | EV_CLEAR,
+		NOTE_WRITE | NOTE_DELETE,
+		0,
+		path
+	);
 	int nevents = kevent(kq, &event, 1, NULL, 0, NULL);
 	if (nevents < 0) err(EX_OSERR, "kevent");
 }
@@ -86,7 +89,7 @@ int main(int argc, char *argv[]) {
 		if (event.fflags & NOTE_DELETE) {
 			close(event.ident);
 			sleep(1);
-			watch(kq, event.udata);
+			watch(kq, (char *)event.udata);
 		}
 
 		exec(&argv[i]);
