@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e -u
 
-any='gnupg htop nasm neovim sl the_silver_searcher tree'
+any='gnupg htop neovim sl the_silver_searcher tree'
 brew="$any ddate git openssh"
 pkg="$any curl ddate sudo zsh"
 pacman="$any base-devel ctags gdb openssh zsh"
