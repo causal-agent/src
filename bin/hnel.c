@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
 	if (error) err(EX_IOERR, "tcgetattr");
 	atexit(restoreTerm);
 
-	struct termios raw;
+	struct termios raw = saveTerm;
 	cfmakeraw(&raw);
 	error = tcsetattr(STDERR_FILENO, TCSADRAIN, &raw);
 	if (error) err(EX_IOERR, "tcsetattr");

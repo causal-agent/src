@@ -206,7 +206,7 @@ static int atch(int argc, char *argv[]) {
 	if (error) err(EX_IOERR, "tcgetattr");
 	atexit(restoreTerm);
 
-	struct termios raw;
+	struct termios raw = saveTerm;
 	cfmakeraw(&raw);
 	error = tcsetattr(STDIN_FILENO, TCSADRAIN, &raw);
 	if (error) err(EX_IOERR, "tcsetattr");
