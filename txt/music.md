@@ -1,3 +1,4 @@
+- [Neckbeard Deathcamp — White Nationalism is for Basement Dwelling Losers][52]
 - [rook — shed blood][51]
 - [SOPHIE — OIL OF EVERY PEARL'S UN-INSIDES][50]
 - [Rosetta — Utopioid][49]
@@ -111,3 +112,4 @@
 [49]: https://theanaesthete.bandcamp.com/album/utopioid
 [50]: http://smarturl.it/SOPHIEALBUM
 [51]: https://rooksfeather.bandcamp.com/album/shed-blood
+[52]: https://neckbearddeathcamp.bandcamp.com/album/white-nationalism-is-for-basement-dwelling-losers
