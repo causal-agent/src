@@ -1,35 +1,34 @@
 hi clear
 syntax reset
 let colors_name = 'trivial'
-let &t_Co = 8
 
 hi Normal ctermbg=NONE ctermfg=NONE
 
-hi ColorColumn ctermbg=Black
-hi EndOfBuffer ctermfg=DarkGray
-hi VertSplit cterm=NONE ctermbg=NONE ctermfg=DarkGray
-hi LineNr ctermfg=DarkGray
-hi MatchParen ctermbg=NONE ctermfg=DarkYellow
-hi ModeMsg ctermfg=DarkGray
-hi NonText ctermfg=DarkGray
-hi Search ctermbg=NONE ctermfg=Yellow
-hi StatusLine cterm=NONE ctermbg=Black ctermfg=LightGray
-hi StatusLineNC cterm=NONE ctermbg=Black ctermfg=DarkGray
-hi Folded ctermbg=Black ctermfg=DarkGray
+hi ColorColumn ctermbg=0
+hi EndOfBuffer ctermfg=8
+hi VertSplit cterm=NONE ctermbg=NONE ctermfg=8
+hi LineNr ctermfg=8
+hi MatchParen ctermbg=NONE ctermfg=3
+hi ModeMsg ctermfg=8
+hi NonText ctermfg=8
+hi Search cterm=bold ctermbg=NONE ctermfg=3
+hi StatusLine cterm=NONE ctermbg=0 ctermfg=7
+hi StatusLineNC cterm=NONE ctermbg=0 ctermfg=8
+hi Folded ctermbg=0 ctermfg=8
 hi Visual cterm=inverse ctermbg=NONE
 
-hi Comment ctermfg=DarkBlue
+hi Comment ctermfg=4
 
 hi! link Constant Normal
-hi String ctermfg=DarkCyan
+hi String ctermfg=6
 hi link Character String
 
 hi! link Identifier Normal
 
-hi Statement ctermfg=LightGray
+hi Statement ctermfg=7
 hi link Operator Normal
 
-hi PreProc ctermfg=DarkGreen
+hi PreProc ctermfg=2
 
 hi! link Type Normal
 hi link StorageClass Statement
@@ -37,18 +36,18 @@ hi link Structure StorageClass
 hi link Typedef Structure
 
 hi! link Special Normal
-hi SpecialComment ctermfg=LightBlue
-hi SpecialKey ctermfg=DarkMagenta
+hi SpecialComment cterm=bold ctermfg=4
+hi SpecialKey ctermfg=5
 
 hi Underlined ctermfg=NONE
-hi Error ctermbg=NONE ctermfg=LightRed
-hi SpellBad ctermbg=NONE ctermfg=DarkRed
+hi Error cterm=bold ctermbg=NONE ctermfg=1
+hi SpellBad ctermbg=NONE ctermfg=1
 hi! link Todo SpecialComment
 
 " Language-specifics.
 
-hi diffAdded ctermfg=Green
-hi diffRemoved ctermfg=Red
+hi diffAdded cterm=bold ctermfg=2
+hi diffRemoved cterm=bold ctermfg=1
 
 hi link rustModPath Identifier
 
