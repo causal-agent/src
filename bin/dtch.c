@@ -169,10 +169,7 @@ static int dtch(int argc, char *argv[]) {
 static struct termios saveTerm;
 static void restoreTerm(void) {
 	tcsetattr(STDIN_FILENO, TCSADRAIN, &saveTerm);
-	printf(
-		"\x1b[?1049l" // rmcup
-		"\x1b\x63\x1b[!p\x1b[?3;4l\x1b[4l\x1b>" // reset
-	);
+	printf("\x1B\x63"); // rs1
 }
 
 static int atch(int argc, char *argv[]) {
