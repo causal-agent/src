@@ -125,7 +125,7 @@ static void hex(const struct Hsv *hsv, size_t len) {
 	}
 }
 
-static void linux(const struct Hsv *hsv, size_t len) {
+static void console(const struct Hsv *hsv, size_t len) {
 	if (len > 16) len = 16;
 	for (size_t i = 0; i < len; ++i) {
 		struct Rgb rgb = toRgb(hsv[i]);
@@ -207,7 +207,7 @@ int main(int argc, char *argv[]) {
 			break; case 'a': gen = ansi;
 			break; case 'g': out = png;
 			break; case 'h': out = hsv;
-			break; case 'l': out = linux;
+			break; case 'l': out = console;
 			break; case 't': gen = terminal;
 			break; case 'x': out = hex;
 			break; default: return EX_USAGE;
