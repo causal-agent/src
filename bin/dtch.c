@@ -56,7 +56,7 @@ static char z;
 static struct iovec iov = { .iov_base = &z, .iov_len = 1 };
 
 static ssize_t sendFd(int sock, int fd) {
-	size_t size = CMSG_LEN(sizeof(int));
+	size_t size = CMSG_SPACE(sizeof(int));
 	char buf[size];
 	struct msghdr msg = {
 		.msg_iov = &iov,
@@ -66,7 +66,7 @@ static ssize_t sendFd(int sock, int fd) {
 	};
 
 	struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
-	cmsg->cmsg_len = size;
+	cmsg->cmsg_len = CMSG_LEN(sizeof(int));
 	cmsg->cmsg_level = SOL_SOCKET;
 	cmsg->cmsg_type = SCM_RIGHTS;
 	*(int *)CMSG_DATA(cmsg) = fd;
@@ -75,7 +75,7 @@ static ssize_t sendFd(int sock, int fd) {
 }
 
 static int recvFd(int sock) {
-	size_t size = CMSG_LEN(sizeof(int));
+	size_t size = CMSG_SPACE(sizeof(int));
 	char buf[size];
 	struct msghdr msg = {
 		.msg_iov = &iov,
