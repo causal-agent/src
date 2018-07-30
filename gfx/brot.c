@@ -26,7 +26,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "gfx/gfx.h"
+#include "gfx.h"
 
 #define RGB(r, g, b) ((uint32_t)(r) << 16 | (uint32_t)(g) << 8 | (uint32_t)(b))
 #define GRAY(n) RGB(n, n, n)

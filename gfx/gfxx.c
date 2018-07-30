@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <zlib.h>
 
-#include "gfx/gfx.h"
+#include "gfx.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MASK(b) ((1 << (b)) - 1)
