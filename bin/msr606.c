@@ -23,165 +23,171 @@
 #include <termios.h>
 #include <unistd.h>
 
-static int tty = -1;
-
-static void ttyWrite(const uint8_t *ptr, size_t size) {
-	ssize_t ret = write(tty, ptr, size);
-	if (ret < 0) err(EX_IOERR, "write");
-}
-static void ttyRead(uint8_t *ptr, size_t size) {
+static void writeAll(int fd, const uint8_t *ptr, size_t size) {
 	while (size) {
-		ssize_t ret = read(tty, ptr, size);
+		ssize_t ret = write(fd, ptr, size);
+		if (ret < 0) err(EX_IOERR, "write");
+		ptr += ret;
+		size -= ret;
+	}
+}
+static void readAll(int fd, uint8_t *ptr, size_t size) {
+	while (size) {
+		ssize_t ret = read(fd, ptr, size);
 		if (ret < 0) err(EX_IOERR, "read");
+		if (!ret) errx(EX_DATAERR, "unexpected eof");
 		ptr += ret;
 		size -= ret;
 	}
 }
 
-static void reset(void) {
-	uint8_t buf[] = { 0x1B, 'a' };
-	ttyWrite(buf, 2);
+static void req2(int fd, uint8_t c) {
+	uint8_t buf[] = { 0x1B, c };
+	writeAll(fd, buf, 2);
 }
-
-static void test(void) {
-	uint8_t buf[3] = { 0x1B, 'e' };
-	ttyWrite(buf, 2);
-	ttyRead(buf, 2);
-	if (buf[1] != 'y') errx(EX_PROTOCOL, "test fail %hhX", buf[1]);
-
-	buf[1] = 0x87;
-	ttyWrite(buf, 2);
-	ttyRead(buf, 2);
-	if (buf[1] != '0') errx(EX_PROTOCOL, "ram fail %hhX", buf[1]);
-
-	buf[1] = 't';
-	ttyWrite(buf, 2);
-	ttyRead(buf, 3);
-	printf("model: %c%c\n", buf[1], buf[2]);
-
-	buf[1] = 'v';
-	ttyWrite(buf, 2);
-	ttyRead(buf, 2);
-	printf("firmware: %hhu\n", buf[1]);
-}
-
-static void sensorTest(void) {
-	uint8_t buf[] = { 0x1B, 0x86 };
-	ttyWrite(buf, 2);
-	ttyRead(buf, 2);
-	if (buf[1] != '0') errx(EX_PROTOCOL, "sensor fail %hhX", buf[1]);
-}
-
-static char led;
-static void setLed(void) {
-	uint8_t buf[2] = { 0x1B };
-	switch (led) {
-		break; case 'a': buf[1] = 0x82;
-		break; case 'g': buf[1] = 0x83;
-		break; case 'y': buf[1] = 0x84;
-		break; case 'r': buf[1] = 0x85;
-		break; default:  buf[1] = 0x81;
-	}
-	ttyWrite(buf, 2);
-}
-
-static void status(void) {
+static uint8_t res2(int fd) {
 	uint8_t buf[2];
-	ttyRead(buf, 2);
-	switch (buf[1]) {
+	readAll(fd, buf, 2);
+	if (buf[0] != 0x1B) errx(EX_PROTOCOL, "response fail %hhX", buf[0]);
+	return buf[1];
+}
+
+static void req3(int fd, uint8_t c, uint8_t d) {
+	uint8_t buf[] = { 0x1B, c, d };
+	writeAll(fd, buf, 3);
+}
+static struct Res3 { uint8_t c, d; } res3(int fd) {
+	uint8_t buf[3];
+	readAll(fd, buf, 3);
+	if (buf[0] != 0x1B) errx(EX_PROTOCOL, "response fail %hhX", buf[0]);
+	return (struct Res3) { buf[1], buf[2] };
+}
+
+static void reset(int tty) {
+	req2(tty, 'a');
+}
+
+static void test(int tty) {
+	uint8_t res;
+
+	req2(tty, 'e');
+	res = res2(tty);
+	if (res != 'y') errx(EX_PROTOCOL, "test fail %hhX", res);
+
+	req2(tty, 0x87);
+	res = res2(tty);
+	if (res != '0') errx(EX_PROTOCOL, "ram fail %hhX", res);
+
+	req2(tty, 't');
+	struct Res3 model = res3(tty);
+	printf("model: %c%c\n", model.c, model.d);
+
+	req2(tty, 'v');
+	res = res2(tty);
+	printf("firmware: %hhu\n", res);
+}
+
+static void sensorTest(int tty) {
+	req2(tty, 0x86);
+	uint8_t res = res2(tty);
+	if (res != '0') errx(EX_PROTOCOL, "sensor fail %hhX", res);
+}
+
+static void led(int tty, char c) {
+	switch (c) {
+		break; case 'a': req2(tty, 0x82);
+		break; case 'g': req2(tty, 0x83);
+		break; case 'y': req2(tty, 0x84);
+		break; case 'r': req2(tty, 0x85);
+		break; default:  req2(tty, 0x81);
+	}
+}
+
+static void status(int tty) {
+	uint8_t res = res2(tty);
+	switch (res) {
 		break; case '0': return;
 		break; case '1': errx(EX_DATAERR, "read/write error");
 		break; case '2': errx(EX_DATAERR, "command format error");
 		break; case '4': errx(EX_DATAERR, "invalid command");
 		break; case '9': errx(EX_DATAERR, "invalid card swipe");
-		break; default:  errx(EX_PROTOCOL, "status fail %hhX", buf[1]);
+		break; default:  errx(EX_PROTOCOL, "status fail %hhX", res);
 	}
 }
 
-static void readCard(void) {
-	uint8_t buf[] = { 0x1B, 'r' };
-	ttyWrite(buf, 2);
-	ttyRead(buf, 2);
-	if (buf[1] != 's') errx(EX_PROTOCOL, "read fail %hhX", buf[1]);
+static void readCard(int tty) {
+	req2(tty, 'r');
+	uint8_t res = res2(tty);
+	if (res != 's') errx(EX_PROTOCOL, "read fail %hhX", res);
 	for (;;) {
-		ttyRead(buf, 1);
-		if (buf[0] == '?') {
-			ttyRead(buf, 1);
-			if (buf[0] == 0x1C) break;
+		readAll(tty, &res, 1);
+		if (res == '?') {
+			readAll(tty, &res, 1);
+			if (res == 0x1C) break;
 			printf("?");
 		} else {
-			printf("%c", buf[0]);
+			printf("%c", res);
 		}
 	}
-	status();
+	status(tty);
 }
 
-static void writeCard(void) {
-	uint8_t buf[] = { 0x1B, 'w', 0x1B, 's' };
-	ttyWrite(buf, 4);
+static void writeCard(int tty) {
+	req2(tty, 'w');
+	req2(tty, 's');
+	uint8_t buf[2];
 	ssize_t size;
-	while (0 < (size = read(STDIN_FILENO, buf, 1))) {
-		ttyWrite(buf, 1);
+	while (0 < (size = read(STDIN_FILENO, buf, 2))) {
+		writeAll(tty, buf, 2);
 	}
 	if (size < 0) err(EX_IOERR, "(stdin)");
 	buf[0] = '?';
 	buf[1] = 0x1C;
-	ttyWrite(buf, 2);
-	status();
+	writeAll(tty, buf, 2);
+	status(tty);
 }
 
-static char erase;
-static void eraseCard(void) {
-	uint8_t buf[] = { 0x1B, 'c', erase - '0' };
-	ttyWrite(buf, 3);
-	ttyRead(buf, 2);
-	if (buf[1] != '0') errx(EX_DATAERR, "erase fail %hhX", buf[1]);
+static void eraseCard(int tty, char c) {
+	req3(tty, 'c', c - '0');
+	uint8_t res = res2(tty);
+	if (res != '0') errx(EX_PROTOCOL, "erase fail %hhX", res);
 }
 
-static void setHiCo(void) {
-	uint8_t buf[] = { 0x1B, 'x' };
-	ttyWrite(buf, 2);
-	ttyRead(buf, 2);
-	if (buf[1] != '0') errx(EX_PROTOCOL, "hi-co fail %hhX", buf[1]);
+static void setHiCo(int tty) {
+	req2(tty, 'x');
+	uint8_t res = res2(tty);
+	if (res != '0') errx(EX_PROTOCOL, "hi-co fail %hhX", res);
 }
-static void setLoCo(void) {
-	uint8_t buf[] = { 0x1B, 'y' };
-	ttyWrite(buf, 2);
-	ttyRead(buf, 2);
-	if (buf[1] != '0') errx(EX_PROTOCOL, "lo-co fail %hhX", buf[1]);
+static void setLoCo(int tty) {
+	req2(tty, 'y');
+	uint8_t res = res2(tty);
+	if (res != '0') errx(EX_PROTOCOL, "lo-co fail %hhX", res);
 }
-static void getCo(void) {
-	uint8_t buf[] = { 0x1B, 'd' };
-	ttyWrite(buf, 2);
-	ttyRead(buf, 2);
-	if (buf[1] == 'h') printf("hi-co\n");
-	else if (buf[1] == 'l') printf("lo-co\n");
-	else errx(EX_PROTOCOL, "get co fail %hhX", buf[1]);
+static void getCo(int tty) {
+	req2(tty, 'd');
+	uint8_t res = res2(tty);
+	switch (res) {
+		break; case 'h': printf("hi-co\n");
+		break; case 'l': printf("lo-co\n");
+		break; default:  errx(EX_PROTOCOL, "get co fail %hhX", res);
+	}
 }
 
 int main(int argc, char *argv[]) {
 	const char *file = "/dev/ttyUSB0";
-	void (*func)(void) = test;
+	char func = 't';
+	const char *arg = NULL;
 
 	int opt;
 	while (0 < (opt = getopt(argc, argv, "L:RTce:f:hlrtw"))) {
 		switch (opt) {
-			break; case 'L': led = optarg[0]; func = setLed;
-			break; case 'R': func = reset;
-			break; case 'T': func = sensorTest;
-			break; case 'c': func = getCo;
-			break; case 'e': erase = optarg[0]; func = eraseCard;
 			break; case 'f': file = optarg;
-			break; case 'h': func = setHiCo;
-			break; case 'l': func = setLoCo;
-			break; case 'r': func = readCard;
-			break; case 't': func = test;
-			break; case 'w': func = writeCard;
-			break; default: return EX_USAGE;
+			break; case '?': return EX_USAGE;
+			break; default:  func = opt; arg = optarg;
 		}
 	}
 
-	tty = open(file, O_RDWR);
+	int tty = open(file, O_RDWR);
 	if (tty < 0) err(EX_NOINPUT, "%s", file);
 
 	struct termios attr;
@@ -192,5 +198,17 @@ int main(int argc, char *argv[]) {
 	error = tcsetattr(tty, TCSANOW, &attr);
 	if (error) err(EX_IOERR, "tcsetattr");
 
-	func();
+	switch (func) {
+		break; case 'L': led(tty, arg[0]);
+		break; case 'R': reset(tty);
+		break; case 'T': sensorTest(tty);
+		break; case 'c': getCo(tty);
+		break; case 'e': eraseCard(tty, arg[0]);
+		break; case 'h': setHiCo(tty);
+		break; case 'l': setLoCo(tty);
+		break; case 'r': readCard(tty);
+		break; case 't': test(tty);
+		break; case 'w': writeCard(tty);
+		break; default:  return EX_USAGE;
+	}
 }
