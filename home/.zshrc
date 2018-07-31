@@ -34,6 +34,7 @@ alias ga='git add' gmv='git mv' grm='git rm'
 alias gc='git commit' gca='gc --amend' gt='git tag'
 alias gp='git push' gu='git pull' gf='git fetch'
 alias gr='git rebase' gra='gr --abort' grc='gr --continue' grs='gr --skip'
+alias rand='openssl rand -base64 33'
 
 nasd() {
   local tmp=$(mktemp)
