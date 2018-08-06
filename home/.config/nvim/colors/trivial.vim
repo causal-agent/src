@@ -11,7 +11,7 @@ hi LineNr ctermfg=8
 hi MatchParen ctermbg=NONE ctermfg=3
 hi ModeMsg ctermfg=8
 hi NonText ctermfg=8
-hi Search cterm=bold ctermbg=NONE ctermfg=3
+hi Search ctermbg=NONE ctermfg=11
 hi StatusLine cterm=NONE ctermbg=0 ctermfg=7
 hi StatusLineNC cterm=NONE ctermbg=0 ctermfg=8
 hi Folded ctermbg=0 ctermfg=8
@@ -36,18 +36,18 @@ hi link Structure StorageClass
 hi link Typedef Structure
 
 hi! link Special Normal
-hi SpecialComment cterm=bold ctermfg=4
+hi SpecialComment ctermfg=12
 hi SpecialKey ctermfg=5
 
 hi Underlined ctermfg=NONE
-hi Error cterm=bold ctermbg=NONE ctermfg=1
+hi Error ctermbg=NONE ctermfg=9
 hi SpellBad ctermbg=NONE ctermfg=1
 hi! link Todo SpecialComment
 
 " Language-specifics.
 
-hi diffAdded cterm=bold ctermfg=2
-hi diffRemoved cterm=bold ctermfg=1
+hi diffAdded ctermfg=10
+hi diffRemoved ctermfg=9
 
 hi link rustModPath Identifier
 
