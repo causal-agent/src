@@ -49,8 +49,10 @@ hi! link Todo SpecialComment
 hi diffAdded ctermfg=10
 hi diffRemoved ctermfg=9
 
-hi link rustModPath Identifier
+hi manUnderline cterm=NONE
 
 hi link rubyDefine Structure
 hi link rubyStringDelimiter String
 hi link rubySymbol String
+
+hi link rustModPath Identifier
