@@ -49,7 +49,7 @@ hi! link Todo SpecialComment
 hi diffAdded ctermfg=10
 hi diffRemoved ctermfg=9
 
-hi manUnderline cterm=NONE
+hi! link manUnderline Normal
 
 hi link rubyDefine Structure
 hi link rubyStringDelimiter String
