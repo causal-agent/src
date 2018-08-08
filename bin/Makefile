@@ -1,4 +1,4 @@
-ANY_BINS = atch dtch glitch hnel modem pbcopy pbd pbpaste pngo scheme wake xx
+ANY_BINS = atch dtch glitch hnel modem open pbcopy pbd pbpaste pngo scheme wake xx
 BSD_BINS = klon watch
 LIN_BINS = bri fbatt fbclock
 ALL_BINS = $(ANY_BINS) $(BSD_BINS) $(LIN_BINS)
@@ -21,7 +21,7 @@ tags: *.c
 atch: dtch
 	ln -f dtch atch
 
-pbcopy pbpaste: pbd
+open pbcopy pbpaste: pbd
 	ln -f pbd $@
 
 scheme.png: scheme
