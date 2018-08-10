@@ -1,7 +1,7 @@
 set hidden
 set undofile
 set shortmess=atI
-set wildmode=list:longest
+set wildmode=list:longest wildignore=*.o
 set splitbelow splitright
 command! W w
 command! Q q
