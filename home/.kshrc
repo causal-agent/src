@@ -16,7 +16,9 @@ fi
 export GPG_TTY=$(tty)
 
 export CLICOLOR=1
-# TODO: GNU aliases.
+if [[ $(uname) = 'Linux' ]]; then
+	alias ls='ls --color=auto' grep='grep --color' rm='rm -I'
+fi
 
 export NETHACKOPTIONS='
 	name:June, role:Valkyrie, race:Human, gender:female, align:neutral,
