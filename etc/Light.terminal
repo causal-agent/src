@@ -227,7 +227,7 @@
 	<key>UseBrightBold</key>
 	<true/>
 	<key>VisualBell</key>
-	<true/>
+	<false/>
 	<key>VisualBellOnlyWhenMuted</key>
 	<false/>
 	<key>name</key>

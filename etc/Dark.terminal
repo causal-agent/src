@@ -239,7 +239,7 @@
 	<key>UseBrightBold</key>
 	<true/>
 	<key>VisualBell</key>
-	<true/>
+	<false/>
 	<key>VisualBellOnlyWhenMuted</key>
 	<false/>
 	<key>WindowTitle</key>
@@ -267,5 +267,7 @@
 	<integer>1</integer>
 	<key>type</key>
 	<string>Window Settings</string>
+	<key>useOptionAsMetaKey</key>
+	<false/>
 </dict>
 </plist>
