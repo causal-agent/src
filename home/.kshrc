@@ -1,6 +1,6 @@
 set -o nounset -o noclobber -o braceexpand -o emacs
 HISTFILE=~/.ksh_history HISTSIZE=5000
-GPG_TTY=$(tty)
+export GPG_TTY=$(tty)
 
 function colonize {
 	IFS=:
