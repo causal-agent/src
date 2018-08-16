@@ -1,10 +1,10 @@
-#!/usr/bin/env zsh
-set -o errexit -o nounset -o pipefail
+#!/bin/sh
+set -e -u
 
 mkdir -p pdf
 
 fetch() {
-	[[ -f "pdf/$1" ]] && return
+	[ -f "pdf/$1" ] && return
 	curl --silent --show-error --output "pdf/$1" "$2"
 	echo "pdf/$1"
 }
