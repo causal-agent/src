@@ -6,7 +6,7 @@ function colonize {
 	IFS=:
 	print "$*"
 }
-system_path=$PATH
+systemPath=$PATH
 PATH=$(colonize {,/usr{/local,/pkg,},$HOME/.local}/{s,}bin /usr/games)
 CDPATH=:$HOME
 
@@ -60,22 +60,24 @@ function branch {
 	fi
 }
 
+type realpath > /dev/null && HOME=$(realpath "$HOME")
 function prompt {
-	typeset status=$? title left right path color cols
+	typeset status=$?
+	typeset path title right color left cols
 
 	[[ ${PWD#$HOME} != $PWD ]] && path="~${PWD#$HOME}" || path=$PWD
 	title=${path##*/}
-	right="$path$(branch)"
+	right="${path}$(branch)"
 
 	[[ -n ${SSH_CLIENT:-} ]] && color=${fg[5]} || color=${fg[7]}
 	(( status )) && color=${fg[1]}
-	left="\01$color\01\$\01$fg\01 "
+	left="\01${color}\01\$\01${fg}\01 "
 
-	[[ $TERM = xterm* ]] && title="\033]0;$title\07" || title=''
+	[[ $TERM = xterm* ]] && title="\033]0;${title}\07" || title=''
 	[[ -n ${COLUMNS:-} ]] && cols=$COLUMNS || cols=$(tput cols)
 	typeset -R $(( cols / 2 )) right
 	typeset -R $(( cols - 1 )) right
-	print "\01\r\01$title\01\n\01${fg[7]}$right$fg\r\01$left"
+	print "\01\r\01${title}\01\n\01${fg[7]}${right}${fg}\r\01${left}"
 }
 
 PS1='$(prompt)'
