@@ -1,25 +1,24 @@
-set -o nounset -o noclobber -o braceexpand -o vi
+set -o nounset -o noclobber -o braceexpand -o emacs
 HISTFILE=~/.ksh_history HISTSIZE=5000
+GPG_TTY=$(tty)
 
-function colon {
+function colonize {
 	IFS=:
 	print "$*"
 }
 system_path=$PATH
-PATH=$(colon {,/usr{/local,/pkg,},$HOME/.local}/{s,}bin /usr/games)
+PATH=$(colonize {,/usr{/local,/pkg,},$HOME/.local}/{s,}bin /usr/games)
+CDPATH=:$HOME
 
-export PAGER=less MANPAGER=less EDITOR=vim GIT_EDITOR=vim
+export PAGER=less
+export EDITOR=vim
 if type nvim > /dev/null; then
-	EDITOR=nvim GIT_EDITOR=nvim MANPAGER="nvim -c 'set ft=man' -"
+	EDITOR=nvim
 	alias vim=nvim
+	export MANPAGER="nvim -c 'set ft=man' -"
 fi
-export GPG_TTY=$(tty)
-
+export GIT_EDITOR=$EDITOR
 export CLICOLOR=1
-if [[ $(uname) = 'Linux' ]]; then
-	alias ls='ls --color=auto' grep='grep --color' rm='rm -I'
-fi
-
 export NETHACKOPTIONS='
 	name:June, role:Valkyrie, race:Human, gender:female, align:neutral,
 	dogname:Moro, catname: Baron, pickup_types:$!?+/=,
@@ -35,19 +34,16 @@ alias gc='git commit' gca='gc --amend' gt='git tag'
 alias gp='git push' gu='git pull' gf='git fetch'
 alias gr='git rebase' gra='gr --abort' grc='gr --continue' grs='gr --skip'
 alias rand='openssl rand -base64 33'
+if [[ $(uname) = 'Linux' ]]; then
+	alias ls='ls --color=auto' grep='grep --color' rm='rm -I'
+fi
 
 function colors {
 	typeset sgr0=sgr0 setaf=setaf
 	[[ -f /usr/share/misc/termcap ]] && sgr0=me setaf=AF
 	set -A fg \
-		$(tput $sgr0) \
-		$(tput $setaf 1) \
-		$(tput $setaf 2) \
-		$(tput $setaf 3) \
-		$(tput $setaf 4) \
-		$(tput $setaf 5) \
-		$(tput $setaf 6) \
-		$(tput $setaf 7)
+		$(tput $sgr0) $(tput $setaf 1) $(tput $setaf 2) $(tput $setaf 3) \
+		$(tput $setaf 4) $(tput $setaf 5) $(tput $setaf 6) $(tput $setaf 7)
 }
 colors
 
@@ -79,6 +75,7 @@ function prompt {
 	[[ -n ${COLUMNS:-} ]] && cols=$COLUMNS || cols=$(tput cols)
 	typeset -R $(( cols / 2 )) right
 	typeset -R $(( cols - 1 )) right
-	print "\01\r\01$title\01\n\01${fg[7]}\01$right\01$fg\01\r$left"
+	print "\01\r\01$title\01\n\01${fg[7]}$right$fg\r\01$left"
 }
+
 PS1='$(prompt)'
