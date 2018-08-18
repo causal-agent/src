@@ -12,7 +12,7 @@ CDPATH=:$HOME
 
 export PAGER=less
 export EDITOR=vim
-if type nvim > /dev/null; then
+if whence nvim > /dev/null; then
 	EDITOR=nvim
 	alias vim=nvim
 	export MANPAGER="nvim -c 'set ft=man' -"
@@ -61,7 +61,7 @@ function branch {
 	fi
 }
 
-type realpath > /dev/null && HOME=$(realpath "$HOME")
+whence realpath > /dev/null && HOME=$(realpath "$HOME")
 function prompt {
 	typeset status=$?
 	typeset path title right color left cols
