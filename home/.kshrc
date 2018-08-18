@@ -26,6 +26,9 @@ export NETHACKOPTIONS='
 '
 
 alias ll='ls -lh'
+if [[ $(uname) = 'Linux' ]]; then
+	alias ls='ls --color=auto' grep='grep --color' rm='rm -I'
+fi
 alias gs='git status --short --branch' gd='git diff'
 alias gsh='git show' gl='git log --graph --pretty=log'
 alias gco='git checkout' gb='git branch' gm='git merge' gst='git stash'
@@ -34,9 +37,7 @@ alias gc='git commit' gca='gc --amend' gt='git tag'
 alias gp='git push' gu='git pull' gf='git fetch'
 alias gr='git rebase' gra='gr --abort' grc='gr --continue' grs='gr --skip'
 alias rand='openssl rand -base64 33'
-if [[ $(uname) = 'Linux' ]]; then
-	alias ls='ls --color=auto' grep='grep --color' rm='rm -I'
-fi
+alias private='eval "$(gpg -d ~/.private)"'
 
 function colors {
 	typeset sgr0=sgr0 setaf=setaf
