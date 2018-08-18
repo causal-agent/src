@@ -76,7 +76,9 @@ function prompt {
 
 	[[ $TERM = xterm* ]] && title="\033]0;${title}\07" || title=''
 	[[ -n ${COLUMNS:-} ]] && cols=$COLUMNS || cols=$(tput cols)
-	typeset -R $(( cols / 2 )) right
+	while (( ${#right} > (cols / 2) )); do
+		right=${right#*/}
+	done
 	typeset -R $(( cols - 1 )) right
 	print "\01\r\01${title}\01\n\01${fg[7]}${right}${fg}\r\01${left}"
 }
