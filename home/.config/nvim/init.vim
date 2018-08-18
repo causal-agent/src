@@ -26,5 +26,6 @@ tmap <C-w> <C-\><C-n><C-w>
 let g:clipboard = {'copy':{'+':'pbcopy'},'paste':{'+':'pbpaste'}}
 
 nmap <leader>h :0/^#include </,$?^#include <?sort<CR>:nohlsearch<CR>
+nmap <leader>a ?^#include <<CR>:nohlsearch<CR>o#include <
 nmap <leader>u :0/^use/,$?^use?sort<CR>:nohlsearch<CR>
 nmap <leader>c :0/extern crate/,$?extern crate?sort<CR>:nohlsearch<CR>
