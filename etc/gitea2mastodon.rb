@@ -23,6 +23,7 @@ client = Mastodon::REST::Client.new(
 )
 
 payload['commits'].reverse.each do |commit|
+	next unless commit['message'].include?("\n\n")
 	message = commit['message']
 		.split("\n\n")
 		.map {|p| p.split("\n").join(' ') }
