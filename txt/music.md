@@ -1,3 +1,4 @@
+- [Blondie — Heart of Glass][54]
 - [Suuns — Watch You, Watch Me][53]
 - [Neckbeard Deathcamp — White Nationalism is for Basement Dwelling Losers][52]
 - [rook — shed blood][51]
@@ -115,3 +116,4 @@
 [51]: https://rooksfeather.bandcamp.com/album/shed-blood
 [52]: https://neckbearddeathcamp.bandcamp.com/album/white-nationalism-is-for-basement-dwelling-losers
 [53]: https://suuns.bandcamp.com/track/watch-you-watch-me
+[54]: https://youtu.be/fWPhhlKHM80
