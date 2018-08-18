@@ -17,6 +17,7 @@ if whence nvim > /dev/null; then
 	alias vim=nvim
 	export MANPAGER="nvim -c 'set ft=man' -"
 fi
+FCEDIT=$EDITOR
 export GIT_EDITOR=$EDITOR
 export CLICOLOR=1
 export NETHACKOPTIONS='
