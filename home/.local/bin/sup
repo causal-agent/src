@@ -1,8 +1,8 @@
-#!/usr/bin/env zsh
-set -o errexit -o nounset -o pipefail
+#!/bin/sh
+set -e -u
 
 dir=$(mktemp -d)
 screencapture -i "$dir/capture.png"
-pngo "$dir/capture.png"
+type pngo > /dev/null && pngo "$dir/capture.png"
 up "$dir/capture.png"
 rm -r "$dir"

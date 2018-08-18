@@ -1,5 +1,5 @@
-#!/usr/bin/env zsh
-set -o errexit -o nounset -o pipefail
+#!/bin/sh
+set -e -u
 
 ts=$(date +%s)
 rand=$(openssl rand -hex 4)
@@ -9,4 +9,4 @@ url=$(printf 'temp.causal.agency/%x%s.%s' "$ts" "$rand" "$ext")
 scp -q "$1" "temp.causal.agency:/usr/local/www/$url"
 
 echo "https://$url"
-type pbcopy > /dev/null && echo -n "https://$url" | pbcopy
+type pbcopy > /dev/null && printf "https://$url" | pbcopy
