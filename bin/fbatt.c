@@ -27,17 +27,19 @@
 #include <sysexits.h>
 #include <unistd.h>
 
+#include "scheme.h"
+
 static const char *CLASS = "/sys/class/power_supply";
 
 static const uint32_t RIGHT  = 5 * 8 + 1; // fbclock width.
 static const uint32_t WIDTH  = 8;
 static const uint32_t HEIGHT = 16;
 
-static const uint32_t BG     = 0x161510;
-static const uint32_t BORDER = 0x7A7155;
-static const uint32_t GRAY   = 0x4C4635;
-static const uint32_t YELLOW = 0xA37720;
-static const uint32_t RED    = 0xA32810;
+static const uint32_t BG     = SCHEME.darkBlack;
+static const uint32_t BORDER = SCHEME.darkWhite;
+static const uint32_t GRAY   = SCHEME.lightBlack;
+static const uint32_t YELLOW = SCHEME.darkYellow;
+static const uint32_t RED    = SCHEME.darkRed;
 
 int main() {
 	int error;

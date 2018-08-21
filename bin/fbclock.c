@@ -28,6 +28,8 @@
 #include <unistd.h>
 #include <zlib.h>
 
+#include "scheme.h"
+
 static const uint32_t PSF2_MAGIC = 0x864AB572;
 struct Psf2Header {
 	uint32_t magic;
@@ -40,8 +42,8 @@ struct Psf2Header {
 	uint32_t glyphWidth;
 };
 
-static const uint32_t BG = 0x161510;
-static const uint32_t FG = 0x7A7155;
+static const uint32_t BG = SCHEME.darkBlack;
+static const uint32_t FG = SCHEME.darkWhite;
 
 int main() {
 	size_t len;

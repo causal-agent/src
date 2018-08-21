@@ -21,6 +21,8 @@ tags: *.c
 scheme.h: scheme
 	./scheme -c > scheme.h
 
+fbatt.o fbclock.o: scheme.h
+
 atch: dtch
 	ln -f dtch atch
 
