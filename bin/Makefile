@@ -13,10 +13,13 @@ bsd: any $(BSD_BINS)
 linux: any $(LIN_BINS)
 
 .gitignore: Makefile
-	echo tags $(ALL_BINS) scheme.png | tr ' ' '\n' > .gitignore
+	echo tags scheme.h *.o $(ALL_BINS) scheme.png | tr ' ' '\n' > .gitignore
 
 tags: *.c
 	ctags -w *.c
+
+scheme.h: scheme
+	./scheme -c > scheme.h
 
 atch: dtch
 	ln -f dtch atch

@@ -1,4 +1,6 @@
 tags
+scheme.h
+*.o
 atch
 dtch
 glitch
