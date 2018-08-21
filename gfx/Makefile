@@ -14,6 +14,10 @@ all: .gitignore tags $(BINS)
 tags: *.h *.c
 	ctags -w *.h *.c
 
+brot.o gfxx.o: gfx.h
+
+cocoa.o fb.o x11.o: gfx.h
+
 brot: brot.o $(GFX).o
 	$(CC) $(LDFLAGS) brot.o $(GFX).o $(LDLIBS) $(LDLIBS_$(GFX)) -o $@
 
