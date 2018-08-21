@@ -98,8 +98,12 @@ Color scheme for terminals.
 
     -a  generate ANSI palette
     -t  generate Terminal.app palette
-    -x  output hex
+	-h  output HSV
+    -x  output RGB
     -g  output PNG
+	-c  output C
+	-l  output Linux console OSC sequences
+	-m  output Mintty theme
 
                                   wake
 
