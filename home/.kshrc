@@ -63,6 +63,7 @@ function branch {
 	fi
 }
 
+hostname=$(hostname)
 whence realpath > /dev/null && HOME=$(realpath "$HOME")
 function prompt {
 	typeset status=$?
@@ -72,7 +73,11 @@ function prompt {
 	title=${path##*/}
 	right="${path}$(branch)"
 
-	[[ -n ${SSH_CLIENT:-} ]] && color=${fg[5]} || color=${fg[7]}
+	color=${fg[7]}
+	if [[ -n ${SSH_CLIENT:-} ]]; then
+		color=${fg[5]}
+		title="${hostname%%.*}:${title}"
+	fi
 	(( status )) && color=${fg[1]}
 	left="\01${color}\01\$\01${fg}\01 "
 
