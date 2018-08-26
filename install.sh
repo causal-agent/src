@@ -1,10 +1,11 @@
 #!/bin/sh
 set -e -u
 
-any='gnupg htop mksh neovim sl the_silver_searcher tree'
-brew="$any ddate git openssh"
-pkg="$any curl ddate sudo"
-pacman="$any base-devel ctags gdb openssh"
+any='gnupg htop mksh sl the_silver_searcher tree'
+brew="$any ddate git neovim openssh"
+pkg="$any curl ddate neovim sudo"
+pkgin="$any curl sudo vim"
+pacman="$any base-devel ctags gdb neovim openssh"
 
 homebrew='https://raw.githubusercontent.com/Homebrew/install/master/install'
 if [ "$(uname)" = 'Darwin' ]; then
@@ -18,4 +19,14 @@ if [ "$(uname)" = 'Darwin' ]; then
 fi
 
 [ -f /usr/local/sbin/pkg ] && exec pkg install $pkg
+
+if [ "$(uname)" = 'NetBSD' ]; then
+	export PKG_PATH="ftp://ftp.netbsd.org/pub/pkgsrc/packages/NetBSD/$(uname -p)/$(uname -r)/All"
+	pkg_add pkgin
+	echo "$PKG_PATH" > /usr/pkg/etc/pkgin/repositories.conf
+	pkgin update
+	pkgin install $pkgin
+	exit
+fi
+
 [ -f /usr/bin/pacman ] && pacman -Sy && exec pacman -S --needed $pacman
