@@ -24,7 +24,7 @@
 #include <sysexits.h>
 
 #define MAC 0x04, 0x7D, 0x7B, 0xD5, 0x6A, 0x53
-static const uint8_t payload[102] = {
+static const uint8_t Payload[102] = {
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 	MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC,
 	MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC,
@@ -44,7 +44,7 @@ int main() {
 		.sin_addr.s_addr = INADDR_BROADCAST,
 	};
 	ssize_t size = sendto(
-		sock, payload, sizeof(payload), 0,
+		sock, Payload, sizeof(Payload), 0,
 		(struct sockaddr *)&addr, sizeof(addr)
 	);
 	if (size < 0) err(EX_IOERR, "sendto");

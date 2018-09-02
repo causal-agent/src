@@ -30,8 +30,8 @@
 
 #include "scheme.h"
 
-static const uint32_t PSF2_MAGIC = 0x864AB572;
-struct Psf2Header {
+static const uint32_t PSF2Magic = 0x864AB572;
+struct PSF2Header {
 	uint32_t magic;
 	uint32_t version;
 	uint32_t headerSize;
@@ -42,8 +42,8 @@ struct Psf2Header {
 	uint32_t glyphWidth;
 };
 
-static const uint32_t BG = SCHEME.darkBlack;
-static const uint32_t FG = SCHEME.darkWhite;
+static const uint32_t BG = Scheme.darkBlack;
+static const uint32_t FG = Scheme.darkWhite;
 
 int main() {
 	size_t len;
@@ -56,18 +56,18 @@ int main() {
 	gzFile font = gzopen(fontPath, "r");
 	if (!font) err(EX_NOINPUT, "%s", fontPath);
 
-	struct Psf2Header header;
+	struct PSF2Header header;
 	len = gzfread(&header, sizeof(header), 1, font);
 	if (!len && gzeof(font)) errx(EX_DATAERR, "%s: missing header", fontPath);
 	if (!len) errx(EX_IOERR, "%s", gzerror(font, NULL));
 
-	if (header.magic != PSF2_MAGIC) {
+	if (header.magic != PSF2Magic) {
 		errx(
 			EX_DATAERR, "%s: invalid header magic %08X",
 			fontPath, header.magic
 		);
 	}
-	if (header.headerSize != sizeof(struct Psf2Header)) {
+	if (header.headerSize != sizeof(struct PSF2Header)) {
 		errx(
 			EX_DATAERR, "%s: weird header size %d",
 			fontPath, header.headerSize

@@ -26,18 +26,18 @@
 typedef uint8_t Card;
 
 enum {
-	MASK_RANK   = 0x0F,
-	MASK_SUIT   = 0x30,
-	MASK_COLOR  = 0x10,
-	MASK_UP     = 0x40,
-	MASK_SELECT = 0x80,
+	MaskRank   = 0x0F,
+	MaskSuit   = 0x30,
+	MaskColor  = 0x10,
+	MaskUp     = 0x40,
+	MaskSelect = 0x80,
 };
 
 enum {
-	SUIT_CLUB    = 0x00,
-	SUIT_DIAMOND = 0x10,
-	SUIT_SPADE   = 0x20,
-	SUIT_HEART   = 0x30,
+	SuitClub    = 0x00,
+	SuitDiamond = 0x10,
+	SuitSpade   = 0x20,
+	SuitHeart   = 0x30,
 };
 
 struct Stack {
@@ -123,21 +123,21 @@ static void deal(void) {
 static void reveal(void) {
 	for (int i = 0; i < 7; ++i) {
 		if (get(&g.table[i], 0)) {
-			push(&g.table[i], pop(&g.table[i]) | MASK_UP);
+			push(&g.table[i], pop(&g.table[i]) | MaskUp);
 		}
 	}
 }
 
 static void draw(void) {
-	if (get(&g.stock, 0)) push(&g.waste, pop(&g.stock) | MASK_UP);
-	if (get(&g.stock, 0)) push(&g.waste, pop(&g.stock) | MASK_UP);
-	if (get(&g.stock, 0)) push(&g.waste, pop(&g.stock) | MASK_UP);
+	if (get(&g.stock, 0)) push(&g.waste, pop(&g.stock) | MaskUp);
+	if (get(&g.stock, 0)) push(&g.waste, pop(&g.stock) | MaskUp);
+	if (get(&g.stock, 0)) push(&g.waste, pop(&g.stock) | MaskUp);
 }
 
 static void wasted(void) {
 	uint8_t n = len(&g.waste);
 	for (int i = 0; i < n; ++i) {
-		push(&g.stock, pop(&g.waste) & ~MASK_UP);
+		push(&g.stock, pop(&g.waste) & ~MaskUp);
 	}
 }
 
@@ -152,22 +152,22 @@ static void transfer(struct Stack *dest, struct Stack *src, uint8_t n) {
 }
 
 static bool canFound(const struct Stack *found, Card card) {
-	if (!get(found, 0)) return (card & MASK_RANK) == 1;
-	if ((card & MASK_SUIT) != (get(found, 0) & MASK_SUIT)) return false;
-	return (card & MASK_RANK) == (get(found, 0) & MASK_RANK) + 1;
+	if (!get(found, 0)) return (card & MaskRank) == 1;
+	if ((card & MaskSuit) != (get(found, 0) & MaskSuit)) return false;
+	return (card & MaskRank) == (get(found, 0) & MaskRank) + 1;
 }
 
 static bool canTable(const struct Stack *table, Card card) {
-	if (!get(table, 0)) return (card & MASK_RANK) == 13;
-	if ((card & MASK_COLOR) == (get(table, 0) & MASK_COLOR)) return false;
-	return (card & MASK_RANK) == (get(table, 0) & MASK_RANK) - 1;
+	if (!get(table, 0)) return (card & MaskRank) == 13;
+	if ((card & MaskColor) == (get(table, 0) & MaskColor)) return false;
+	return (card & MaskRank) == (get(table, 0) & MaskRank) - 1;
 }
 
 enum {
-	PAIR_EMPTY = 1,
-	PAIR_BACK,
-	PAIR_BLACK,
-	PAIR_RED,
+	PairEmpty = 1,
+	PairBack,
+	PairBlack,
+	PairRed,
 };
 
 static void curse(void) {
@@ -182,44 +182,44 @@ static void curse(void) {
 
 	start_color();
 	assume_default_colors(-1, -1);
-	init_pair(PAIR_EMPTY, COLOR_WHITE, COLOR_BLACK);
-	init_pair(PAIR_BACK,  COLOR_WHITE, COLOR_BLUE);
-	init_pair(PAIR_BLACK, COLOR_BLACK, COLOR_WHITE);
-	init_pair(PAIR_RED,   COLOR_RED,   COLOR_WHITE);
+	init_pair(PairEmpty, COLOR_WHITE, COLOR_BLACK);
+	init_pair(PairBack,  COLOR_WHITE, COLOR_BLUE);
+	init_pair(PairBlack, COLOR_BLACK, COLOR_WHITE);
+	init_pair(PairRed,   COLOR_RED,   COLOR_WHITE);
 }
 
-static const char rank[] = "\0A23456789TJQK";
-static const char *suit[] = {
-	[SUIT_HEART]   = "♥",
-	[SUIT_CLUB]    = "♣",
-	[SUIT_DIAMOND] = "♦",
-	[SUIT_SPADE]   = "♠",
+static const char Rank[] = "\0A23456789TJQK";
+static const char *Suit[] = {
+	[SuitHeart]   = "♥",
+	[SuitClub]    = "♣",
+	[SuitDiamond] = "♦",
+	[SuitSpade]   = "♠",
 };
 
 static void renderCard(int y, int x, Card card) {
-	if (card & MASK_UP) {
+	if (card & MaskUp) {
 		bkgdset(
-			COLOR_PAIR(card & MASK_COLOR ? PAIR_RED : PAIR_BLACK)
-			| (card & MASK_SELECT ? A_REVERSE : A_NORMAL)
+			COLOR_PAIR(card & MaskColor ? PairRed : PairBlack)
+			| (card & MaskSelect ? A_REVERSE : A_NORMAL)
 		);
 
 		move(y, x);
-		addch(rank[card & MASK_RANK]);
-		addstr(suit[card & MASK_SUIT]);
+		addch(Rank[card & MaskRank]);
+		addstr(Suit[card & MaskSuit]);
 		addch(' ');
 
 		move(y + 1, x);
-		addstr(suit[card & MASK_SUIT]);
+		addstr(Suit[card & MaskSuit]);
 		addch(' ');
-		addstr(suit[card & MASK_SUIT]);
+		addstr(Suit[card & MaskSuit]);
 
 		move(y + 2, x);
 		addch(' ');
-		addstr(suit[card & MASK_SUIT]);
-		addch(rank[card & MASK_RANK]);
+		addstr(Suit[card & MaskSuit]);
+		addch(Rank[card & MaskRank]);
 
 	} else {
-		bkgdset(COLOR_PAIR(card ? PAIR_BACK : PAIR_EMPTY));
+		bkgdset(COLOR_PAIR(card ? PairBack : PairEmpty));
 		mvaddstr(y, x, "   ");
 		mvaddstr(y + 1, x, "   ");
 		mvaddstr(y + 2, x, "   ");
@@ -266,8 +266,8 @@ static struct {
 static void deepen(void) {
 	assert(input.stack);
 	if (input.depth == len(input.stack)) return;
-	if (!(get(input.stack, input.depth) & MASK_UP)) return;
-	input.stack->data[input.stack->index + input.depth] |= MASK_SELECT;
+	if (!(get(input.stack, input.depth) & MaskUp)) return;
+	input.stack->data[input.stack->index + input.depth] |= MaskSelect;
 	input.depth++;
 }
 
@@ -281,7 +281,7 @@ static void select(struct Stack *stack) {
 static void commit(struct Stack *dest) {
 	assert(input.stack);
 	for (int i = 0; i < input.depth; ++i) {
-		input.stack->data[input.stack->index + i] &= ~MASK_SELECT;
+		input.stack->data[input.stack->index + i] &= ~MaskSelect;
 	}
 	if (dest) {
 		checkpoint();

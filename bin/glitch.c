@@ -47,20 +47,18 @@ static void writeExpect(const void *ptr, size_t size) {
 	crc = crc32(crc, ptr, size);
 }
 
-static const uint8_t SIGNATURE[8] = {
-	0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'
-};
+static const uint8_t Signature[8] = "\x89PNG\r\n\x1A\n";
 
 static void readSignature(void) {
 	uint8_t signature[8];
 	readExpect(signature, 8, "signature");
-	if (0 != memcmp(signature, SIGNATURE, 8)) {
+	if (0 != memcmp(signature, Signature, 8)) {
 		errx(EX_DATAERR, "%s: invalid signature", path);
 	}
 }
 
 static void writeSignature(void) {
-	writeExpect(SIGNATURE, sizeof(SIGNATURE));
+	writeExpect(Signature, sizeof(Signature));
 }
 
 struct PACKED Chunk {
@@ -117,11 +115,11 @@ static struct PACKED {
 	uint32_t height;
 	uint8_t depth;
 	enum PACKED {
-		GRAYSCALE       = 0,
-		TRUECOLOR       = 2,
-		INDEXED         = 3,
-		GRAYSCALE_ALPHA = 4,
-		TRUECOLOR_ALPHA = 6,
+		Grayscale      = 0,
+		Truecolor      = 2,
+		Indexed        = 3,
+		GrayscaleAlpha = 4,
+		TruecolorAlpha = 6,
 	} color;
 	uint8_t compression;
 	uint8_t filter;
@@ -131,11 +129,11 @@ static_assert(13 == sizeof(header), "header size");
 
 static size_t lineSize(void) {
 	switch (header.color) {
-		case GRAYSCALE:       return (header.width * 1 * header.depth + 7) / 8;
-		case TRUECOLOR:       return (header.width * 3 * header.depth + 7) / 8;
-		case INDEXED:         return (header.width * 1 * header.depth + 7) / 8;
-		case GRAYSCALE_ALPHA: return (header.width * 2 * header.depth + 7) / 8;
-		case TRUECOLOR_ALPHA: return (header.width * 4 * header.depth + 7) / 8;
+		case Grayscale:      return (header.width * 1 * header.depth + 7) / 8;
+		case Truecolor:      return (header.width * 3 * header.depth + 7) / 8;
+		case Indexed:        return (header.width * 1 * header.depth + 7) / 8;
+		case GrayscaleAlpha: return (header.width * 2 * header.depth + 7) / 8;
+		case TruecolorAlpha: return (header.width * 4 * header.depth + 7) / 8;
 		default: abort();
 	}
 }
@@ -260,12 +258,12 @@ static void writeEnd(void) {
 }
 
 enum PACKED Filter {
-	NONE,
-	SUB,
-	UP,
-	AVERAGE,
-	PAETH,
-	FILTER_COUNT,
+	None,
+	Sub,
+	Up,
+	Average,
+	Paeth,
+	FilterCount,
 };
 
 static struct {
@@ -302,22 +300,22 @@ static uint8_t paethPredictor(struct Bytes f) {
 
 static uint8_t recon(enum Filter type, struct Bytes f) {
 	switch (type) {
-		case NONE:    return f.x;
-		case SUB:     return f.x + f.a;
-		case UP:      return f.x + f.b;
-		case AVERAGE: return f.x + ((uint32_t)f.a + (uint32_t)f.b) / 2;
-		case PAETH:   return f.x + paethPredictor(f);
+		case None:    return f.x;
+		case Sub:     return f.x + f.a;
+		case Up:      return f.x + f.b;
+		case Average: return f.x + ((uint32_t)f.a + (uint32_t)f.b) / 2;
+		case Paeth:   return f.x + paethPredictor(f);
 		default:      abort();
 	}
 }
 
 static uint8_t filt(enum Filter type, struct Bytes f) {
 	switch (type) {
-		case NONE:    return f.x;
-		case SUB:     return f.x - f.a;
-		case UP:      return f.x - f.b;
-		case AVERAGE: return f.x - ((uint32_t)f.a + (uint32_t)f.b) / 2;
-		case PAETH:   return f.x - paethPredictor(f);
+		case None:    return f.x;
+		case Sub:     return f.x - f.a;
+		case Up:      return f.x - f.b;
+		case Average: return f.x - ((uint32_t)f.a + (uint32_t)f.b) / 2;
+		case Paeth:   return f.x - paethPredictor(f);
 		default:      abort();
 	}
 }
@@ -334,7 +332,7 @@ static void scanlines(void) {
 	size_t stride = 1 + lineSize();
 	for (uint32_t y = 0; y < header.height; ++y) {
 		lines[y] = (struct Line *)&data[y * stride];
-		if (lines[y]->type >= FILTER_COUNT) {
+		if (lines[y]->type >= FilterCount) {
 			errx(EX_DATAERR, "%s: invalid filter type %hhu", path, lines[y]->type);
 		}
 	}
@@ -361,16 +359,16 @@ static void reconData(void) {
 				lines[y]->data[i] = recon(lines[y]->type, origBytes(y, i));
 			}
 		}
-		lines[y]->type = NONE;
+		lines[y]->type = None;
 	}
 }
 
 static void filterData(void) {
 	for (uint32_t y = header.height - 1; y < header.height; --y) {
-		uint8_t filter[FILTER_COUNT][lineSize()];
-		uint32_t heuristic[FILTER_COUNT] = {0};
-		enum Filter minType = NONE;
-		for (enum Filter type = NONE; type < FILTER_COUNT; ++type) {
+		uint8_t filter[FilterCount][lineSize()];
+		uint32_t heuristic[FilterCount] = {0};
+		enum Filter minType = None;
+		for (enum Filter type = None; type < FilterCount; ++type) {
 			for (size_t i = 0; i < lineSize(); ++i) {
 				if (options.recon) {
 					filter[type][i] = recon(type, origBytes(y, i));
@@ -419,7 +417,7 @@ static void glitch(const char *inPath, const char *outPath) {
 
 	readSignature();
 	readHeader();
-	if (header.color == INDEXED) readPalette();
+	if (header.color == Indexed) readPalette();
 	readData();
 	fclose(file);
 
@@ -440,7 +438,7 @@ static void glitch(const char *inPath, const char *outPath) {
 
 	writeSignature();
 	writeHeader();
-	if (header.color == INDEXED) writePalette();
+	if (header.color == Indexed) writePalette();
 	writeData();
 	writeEnd();
 	free(data);
@@ -451,11 +449,11 @@ static void glitch(const char *inPath, const char *outPath) {
 
 static enum Filter parseFilter(const char *s) {
 	switch (s[0]) {
-		case 'N': case 'n': return NONE;
-		case 'S': case 's': return SUB;
-		case 'U': case 'u': return UP;
-		case 'A': case 'a': return AVERAGE;
-		case 'P': case 'p': return PAETH;
+		case 'N': case 'n': return None;
+		case 'S': case 's': return Sub;
+		case 'U': case 'u': return Up;
+		case 'A': case 'a': return Average;
+		case 'P': case 'p': return Paeth;
 		default: errx(EX_USAGE, "invalid filter type %s", s);
 	}
 }

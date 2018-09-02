@@ -49,20 +49,18 @@ static void writeExpect(const void *ptr, size_t size) {
 	crc = crc32(crc, ptr, size);
 }
 
-static const uint8_t SIGNATURE[8] = {
-	0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'
-};
+static const uint8_t Signature[8] = "\x89PNG\r\n\x1A\n";
 
 static void readSignature(void) {
 	uint8_t signature[8];
 	readExpect(signature, 8, "signature");
-	if (0 != memcmp(signature, SIGNATURE, 8)) {
+	if (0 != memcmp(signature, Signature, 8)) {
 		errx(EX_DATAERR, "%s: invalid signature", path);
 	}
 }
 
 static void writeSignature(void) {
-	writeExpect(SIGNATURE, sizeof(SIGNATURE));
+	writeExpect(Signature, sizeof(Signature));
 }
 
 struct PACKED Chunk {
@@ -122,25 +120,25 @@ static struct PACKED {
 	uint32_t height;
 	uint8_t depth;
 	enum PACKED {
-		GRAYSCALE       = 0,
-		TRUECOLOR       = 2,
-		INDEXED         = 3,
-		GRAYSCALE_ALPHA = 4,
-		TRUECOLOR_ALPHA = 6,
+		Grayscale      = 0,
+		Truecolor      = 2,
+		Indexed        = 3,
+		GrayscaleAlpha = 4,
+		TruecolorAlpha = 6,
 	} color;
-	enum PACKED { DEFLATE } compression;
-	enum PACKED { ADAPTIVE } filter;
-	enum PACKED { PROGRESSIVE, ADAM7 } interlace;
+	enum PACKED { Deflate } compression;
+	enum PACKED { Adaptive } filter;
+	enum PACKED { Progressive, Adam7 } interlace;
 } header;
 static_assert(13 == sizeof(header), "header size");
 
 static size_t lineSize(void) {
 	switch (header.color) {
-		case GRAYSCALE:       return (header.width * 1 * header.depth + 7) / 8;
-		case TRUECOLOR:       return (header.width * 3 * header.depth + 7) / 8;
-		case INDEXED:         return (header.width * 1 * header.depth + 7) / 8;
-		case GRAYSCALE_ALPHA: return (header.width * 2 * header.depth + 7) / 8;
-		case TRUECOLOR_ALPHA: return (header.width * 4 * header.depth + 7) / 8;
+		case Grayscale:      return (header.width * 1 * header.depth + 7) / 8;
+		case Truecolor:      return (header.width * 3 * header.depth + 7) / 8;
+		case Indexed:        return (header.width * 1 * header.depth + 7) / 8;
+		case GrayscaleAlpha: return (header.width * 2 * header.depth + 7) / 8;
+		case TruecolorAlpha: return (header.width * 4 * header.depth + 7) / 8;
 		default: abort();
 	}
 }
@@ -149,12 +147,12 @@ static size_t dataSize(void) {
 	return (1 + lineSize()) * header.height;
 }
 
-static const char *COLOR_STR[] = {
-	[GRAYSCALE] = "grayscale",
-	[TRUECOLOR] = "truecolor",
-	[INDEXED] = "indexed",
-	[GRAYSCALE_ALPHA] = "grayscale alpha",
-	[TRUECOLOR_ALPHA] = "truecolor alpha",
+static const char *ColorStr[] = {
+	[Grayscale] = "grayscale",
+	[Truecolor] = "truecolor",
+	[Indexed] = "indexed",
+	[GrayscaleAlpha] = "grayscale alpha",
+	[TruecolorAlpha] = "truecolor alpha",
 };
 static void printHeader(void) {
 	fprintf(
@@ -162,7 +160,7 @@ static void printHeader(void) {
 		"%s: %ux%u %hhu-bit %s\n",
 		path,
 		header.width, header.height,
-		header.depth, COLOR_STR[header.color]
+		header.depth, ColorStr[header.color]
 	);
 }
 
@@ -186,21 +184,21 @@ static void readHeader(void) {
 	if (!header.width) errx(EX_DATAERR, "%s: invalid width 0", path);
 	if (!header.height) errx(EX_DATAERR, "%s: invalid height 0", path);
 	switch (PAIR(header.color, header.depth)) {
-		case PAIR(GRAYSCALE, 1):
-		case PAIR(GRAYSCALE, 2):
-		case PAIR(GRAYSCALE, 4):
-		case PAIR(GRAYSCALE, 8):
-		case PAIR(GRAYSCALE, 16):
-		case PAIR(TRUECOLOR, 8):
-		case PAIR(TRUECOLOR, 16):
-		case PAIR(INDEXED, 1):
-		case PAIR(INDEXED, 2):
-		case PAIR(INDEXED, 4):
-		case PAIR(INDEXED, 8):
-		case PAIR(GRAYSCALE_ALPHA, 8):
-		case PAIR(GRAYSCALE_ALPHA, 16):
-		case PAIR(TRUECOLOR_ALPHA, 8):
-		case PAIR(TRUECOLOR_ALPHA, 16):
+		case PAIR(Grayscale, 1):
+		case PAIR(Grayscale, 2):
+		case PAIR(Grayscale, 4):
+		case PAIR(Grayscale, 8):
+		case PAIR(Grayscale, 16):
+		case PAIR(Truecolor, 8):
+		case PAIR(Truecolor, 16):
+		case PAIR(Indexed, 1):
+		case PAIR(Indexed, 2):
+		case PAIR(Indexed, 4):
+		case PAIR(Indexed, 8):
+		case PAIR(GrayscaleAlpha, 8):
+		case PAIR(GrayscaleAlpha, 16):
+		case PAIR(TruecolorAlpha, 8):
+		case PAIR(TruecolorAlpha, 16):
 			break;
 		default:
 			errx(
@@ -208,16 +206,16 @@ static void readHeader(void) {
 				path, header.color, header.depth
 			);
 	}
-	if (header.compression != DEFLATE) {
+	if (header.compression != Deflate) {
 		errx(
 			EX_DATAERR, "%s: invalid compression method %hhu",
 			path, header.compression
 		);
 	}
-	if (header.filter != ADAPTIVE) {
+	if (header.filter != Adaptive) {
 		errx(EX_DATAERR, "%s: invalid filter method %hhu", path, header.filter);
 	}
-	if (header.interlace > ADAM7) {
+	if (header.interlace > Adam7) {
 		errx(EX_DATAERR, "%s: invalid interlace method %hhu", path, header.interlace);
 	}
 
@@ -357,12 +355,12 @@ static void writeEnd(void) {
 }
 
 enum PACKED Filter {
-	NONE,
-	SUB,
-	UP,
-	AVERAGE,
-	PAETH,
-	FILTER_COUNT,
+	None,
+	Sub,
+	Up,
+	Average,
+	Paeth,
+	FilterCount,
 };
 
 struct Bytes {
@@ -384,22 +382,22 @@ static uint8_t paethPredictor(struct Bytes f) {
 
 static uint8_t recon(enum Filter type, struct Bytes f) {
 	switch (type) {
-		case NONE:    return f.x;
-		case SUB:     return f.x + f.a;
-		case UP:      return f.x + f.b;
-		case AVERAGE: return f.x + ((uint32_t)f.a + (uint32_t)f.b) / 2;
-		case PAETH:   return f.x + paethPredictor(f);
+		case None:    return f.x;
+		case Sub:     return f.x + f.a;
+		case Up:      return f.x + f.b;
+		case Average: return f.x + ((uint32_t)f.a + (uint32_t)f.b) / 2;
+		case Paeth:   return f.x + paethPredictor(f);
 		default:      abort();
 	}
 }
 
 static uint8_t filt(enum Filter type, struct Bytes f) {
 	switch (type) {
-		case NONE:    return f.x;
-		case SUB:     return f.x - f.a;
-		case UP:      return f.x - f.b;
-		case AVERAGE: return f.x - ((uint32_t)f.a + (uint32_t)f.b) / 2;
-		case PAETH:   return f.x - paethPredictor(f);
+		case None:    return f.x;
+		case Sub:     return f.x - f.a;
+		case Up:      return f.x - f.b;
+		case Average: return f.x - ((uint32_t)f.a + (uint32_t)f.b) / 2;
+		case Paeth:   return f.x - paethPredictor(f);
 		default:      abort();
 	}
 }
@@ -418,7 +416,7 @@ static void scanlines(void) {
 	size_t stride = 1 + lineSize();
 	for (uint32_t y = 0; y < header.height; ++y) {
 		lines[y] = (struct Line *)&data[y * stride];
-		if (lines[y]->type >= FILTER_COUNT) {
+		if (lines[y]->type >= FilterCount) {
 			errx(EX_DATAERR, "%s: invalid filter type %hhu", path, lines[y]->type);
 		}
 	}
@@ -442,17 +440,17 @@ static void reconData(void) {
 			lines[y]->data[i] =
 				recon(lines[y]->type, origBytes(y, i));
 		}
-		lines[y]->type = NONE;
+		lines[y]->type = None;
 	}
 }
 
 static void filterData(void) {
-	if (header.color == INDEXED || header.depth < 8) return;
+	if (header.color == Indexed || header.depth < 8) return;
 	for (uint32_t y = header.height - 1; y < header.height; --y) {
-		uint8_t filter[FILTER_COUNT][lineSize()];
-		uint32_t heuristic[FILTER_COUNT] = {0};
-		enum Filter minType = NONE;
-		for (enum Filter type = NONE; type < FILTER_COUNT; ++type) {
+		uint8_t filter[FilterCount][lineSize()];
+		uint32_t heuristic[FilterCount] = {0};
+		enum Filter minType = None;
+		for (enum Filter type = None; type < FilterCount; ++type) {
 			for (size_t i = 0; i < lineSize(); ++i) {
 				filter[type][i] = filt(type, origBytes(y, i));
 				heuristic[type] += abs((int8_t)filter[type][i]);
@@ -465,9 +463,9 @@ static void filterData(void) {
 }
 
 static void discardAlpha(void) {
-	if (header.color != GRAYSCALE_ALPHA && header.color != TRUECOLOR_ALPHA) return;
+	if (header.color != GrayscaleAlpha && header.color != TruecolorAlpha) return;
 	size_t sampleSize = header.depth / 8;
-	size_t pixelSize = sampleSize * (header.color == GRAYSCALE_ALPHA ? 2 : 4);
+	size_t pixelSize = sampleSize * (header.color == GrayscaleAlpha ? 2 : 4);
 	size_t colorSize = pixelSize - sampleSize;
 	for (uint32_t y = 0; y < header.height; ++y) {
 		for (uint32_t x = 0; x < header.width; ++x) {
@@ -485,14 +483,14 @@ static void discardAlpha(void) {
 			ptr += colorSize;
 		}
 	}
-	header.color = (header.color == GRAYSCALE_ALPHA) ? GRAYSCALE : TRUECOLOR;
+	header.color = (header.color == GrayscaleAlpha) ? Grayscale : Truecolor;
 	scanlines();
 }
 
 static void discardColor(void) {
-	if (header.color != TRUECOLOR && header.color != TRUECOLOR_ALPHA) return;
+	if (header.color != Truecolor && header.color != TruecolorAlpha) return;
 	size_t sampleSize = header.depth / 8;
-	size_t pixelSize = sampleSize * (header.color == TRUECOLOR ? 3 : 4);
+	size_t pixelSize = sampleSize * (header.color == Truecolor ? 3 : 4);
 	for (uint32_t y = 0; y < header.height; ++y) {
 		for (uint32_t x = 0; x < header.width; ++x) {
 			uint8_t *r = &lines[y]->data[x * pixelSize];
@@ -510,18 +508,18 @@ static void discardColor(void) {
 			uint8_t *pixel = &lines[y]->data[x * pixelSize];
 			memmove(ptr, pixel, sampleSize);
 			ptr += sampleSize;
-			if (header.color == TRUECOLOR_ALPHA) {
+			if (header.color == TruecolorAlpha) {
 				memmove(ptr, pixel + 3 * sampleSize, sampleSize);
 				ptr += sampleSize;
 			}
 		}
 	}
-	header.color = (header.color == TRUECOLOR) ? GRAYSCALE : GRAYSCALE_ALPHA;
+	header.color = (header.color == Truecolor) ? Grayscale : GrayscaleAlpha;
 	scanlines();
 }
 
 static void indexColor(void) {
-	if (header.color != TRUECOLOR || header.depth != 8) return;
+	if (header.color != Truecolor || header.depth != 8) return;
 	for (uint32_t y = 0; y < header.height; ++y) {
 		for (uint32_t x = 0; x < header.width; ++x) {
 			if (!paletteAdd(&lines[y]->data[x * 3])) return;
@@ -535,14 +533,14 @@ static void indexColor(void) {
 			*ptr++ = paletteIndex(&lines[y]->data[x * 3]);
 		}
 	}
-	header.color = INDEXED;
+	header.color = Indexed;
 	scanlines();
 }
 
 static void reduceDepth8(void) {
-	if (header.color != GRAYSCALE && header.color != INDEXED) return;
+	if (header.color != Grayscale && header.color != Indexed) return;
 	if (header.depth != 8) return;
-	if (header.color == GRAYSCALE) {
+	if (header.color == Grayscale) {
 		for (uint32_t y = 0; y < header.height; ++y) {
 			for (size_t i = 0; i < lineSize(); ++i) {
 				uint8_t a = lines[y]->data[i];
@@ -570,7 +568,7 @@ static void reduceDepth8(void) {
 
 static void reduceDepth4(void) {
 	if (header.depth != 4) return;
-	if (header.color == GRAYSCALE) {
+	if (header.color == Grayscale) {
 		for (uint32_t y = 0; y < header.height; ++y) {
 			for (size_t i = 0; i < lineSize(); ++i) {
 				uint8_t a = lines[y]->data[i] >> 4;
@@ -600,7 +598,7 @@ static void reduceDepth4(void) {
 
 static void reduceDepth2(void) {
 	if (header.depth != 2) return;
-	if (header.color == GRAYSCALE) {
+	if (header.color == Grayscale) {
 		for (uint32_t y = 0; y < header.height; ++y) {
 			for (size_t i = 0; i < lineSize(); ++i) {
 				uint8_t a = lines[y]->data[i] >> 6;
@@ -652,13 +650,13 @@ static void optimize(const char *inPath, const char *outPath) {
 
 	readSignature();
 	readHeader();
-	if (header.interlace != PROGRESSIVE) {
+	if (header.interlace != Progressive) {
 		errx(
 			EX_CONFIG, "%s: unsupported interlace method %hhu",
 			path, header.interlace
 		);
 	}
-	if (header.color == INDEXED) readPalette();
+	if (header.color == Indexed) readPalette();
 	allocData();
 	readData();
 	fclose(file);
@@ -685,7 +683,7 @@ static void optimize(const char *inPath, const char *outPath) {
 
 	writeSignature();
 	writeHeader();
-	if (header.color == INDEXED) writePalette();
+	if (header.color == Indexed) writePalette();
 	writeData();
 	writeEnd();
 	free(data);

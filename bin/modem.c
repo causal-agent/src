@@ -31,7 +31,7 @@
 #include <util.h>
 #endif
 
-static const int BAUD_RATE = 19200;
+static const int BaudRate = 19200;
 
 static struct termios saveTerm;
 static void restoreTerm(void) {
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 		{ .events = POLLIN, .fd = STDIN_FILENO },
 		{ .events = POLLIN, .fd = pty },
 	};
-	while (usleep(8 * 1000000 / BAUD_RATE), 0 < poll(fds, 2, -1)) {
+	while (usleep(8 * 1000000 / BaudRate), 0 < poll(fds, 2, -1)) {
 		if (fds[0].revents) {
 			ssize_t size = read(STDIN_FILENO, &c, 1);
 			if (size < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);

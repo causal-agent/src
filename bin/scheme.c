@@ -59,7 +59,7 @@ static struct Rgb {
 	return (struct Rgb) { r * 255.0, g * 255.0, b * 255.0 };
 }
 
-enum { BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE };
+enum { Black, Red, Green, Yellow, Blue, Magenta, Cyan, White };
 static struct {
 	struct Hsv dark[8];
 	struct Hsv light[8];
@@ -67,36 +67,36 @@ static struct {
 } scheme;
 
 static void generate(void) {
-	scheme.light[BLACK]   = x(R, +45.0, 0.3, 0.3);
-	scheme.light[RED]     = x(R, +10.0, 0.9, 0.8);
-	scheme.light[GREEN]   = x(G, -55.0, 0.8, 0.6);
-	scheme.light[YELLOW]  = x(Y, -20.0, 0.8, 0.8);
-	scheme.light[BLUE]    = x(B, -55.0, 0.4, 0.5);
-	scheme.light[MAGENTA] = x(M, +45.0, 0.4, 0.6);
-	scheme.light[CYAN]    = x(C, -60.0, 0.3, 0.6);
-	scheme.light[WHITE]   = x(R, +45.0, 0.3, 0.8);
+	scheme.light[Black]   = x(R, +45.0, 0.3, 0.3);
+	scheme.light[Red]     = x(R, +10.0, 0.9, 0.8);
+	scheme.light[Green]   = x(G, -55.0, 0.8, 0.6);
+	scheme.light[Yellow]  = x(Y, -20.0, 0.8, 0.8);
+	scheme.light[Blue]    = x(B, -55.0, 0.4, 0.5);
+	scheme.light[Magenta] = x(M, +45.0, 0.4, 0.6);
+	scheme.light[Cyan]    = x(C, -60.0, 0.3, 0.6);
+	scheme.light[White]   = x(R, +45.0, 0.3, 0.8);
 
-	scheme.dark[BLACK] = x(scheme.light[BLACK], 0.0, 1.0, 0.3);
-	scheme.dark[WHITE] = x(scheme.light[WHITE], 0.0, 1.0, 0.6);
-	for (int i = RED; i < WHITE; ++i) {
+	scheme.dark[Black] = x(scheme.light[Black], 0.0, 1.0, 0.3);
+	scheme.dark[White] = x(scheme.light[White], 0.0, 1.0, 0.6);
+	for (int i = Red; i < White; ++i) {
 		scheme.dark[i] = x(scheme.light[i], 0.0, 1.0, 0.8);
 	}
 
-	scheme.background = x(scheme.dark[BLACK],    0.0, 1.0, 0.9);
-	scheme.text       = x(scheme.light[WHITE],   0.0, 1.0, 0.9);
-	scheme.bold       = x(scheme.light[WHITE],   0.0, 1.0, 1.0);
-	scheme.selection  = x(scheme.light[RED],   +10.0, 1.0, 0.8);
-	scheme.cursor     = x(scheme.dark[WHITE],    0.0, 1.0, 0.8);
+	scheme.background = x(scheme.dark[Black],    0.0, 1.0, 0.9);
+	scheme.text       = x(scheme.light[White],   0.0, 1.0, 0.9);
+	scheme.bold       = x(scheme.light[White],   0.0, 1.0, 1.0);
+	scheme.selection  = x(scheme.light[Red],   +10.0, 1.0, 0.8);
+	scheme.cursor     = x(scheme.dark[White],    0.0, 1.0, 0.8);
 }
 
 static void printHsv(struct Hsv hsv) {
 	printf("%g,%g,%g\n", hsv.h, hsv.s, hsv.v);
 }
 static void hsv(bool ansi) {
-	for (int i = BLACK; i <= WHITE; ++i) {
+	for (int i = Black; i <= White; ++i) {
 		printHsv(scheme.dark[i]);
 	}
-	for (int i = BLACK; i <= WHITE; ++i) {
+	for (int i = Black; i <= White; ++i) {
 		printHsv(scheme.light[i]);
 	}
 	if (ansi) return;
@@ -112,10 +112,10 @@ static void printHex(struct Hsv hsv) {
 	printf("%02X%02X%02X\n", rgb.r, rgb.g, rgb.b);
 }
 static void hex(bool ansi) {
-	for (int i = BLACK; i <= WHITE; ++i) {
+	for (int i = Black; i <= White; ++i) {
 		printHex(scheme.dark[i]);
 	}
-	for (int i = BLACK; i <= WHITE; ++i) {
+	for (int i = Black; i <= White; ++i) {
 		printHex(scheme.light[i]);
 	}
 	if (ansi) return;
@@ -140,12 +140,12 @@ static void header(void) {
 		"\tuint32_t lightBlack, lightRed, lightGreen, lightYellow;\n"
 		"\tuint32_t lightBlue, lightMagenta, lightCyan, lightWhite;\n"
 		"\tuint32_t background, text, bold, selection, cursor;\n"
-		"} SCHEME = {\n"
+		"} Scheme = {\n"
 	);
-	for (int i = BLACK; i <= WHITE; ++i) {
+	for (int i = Black; i <= White; ++i) {
 		printC(scheme.dark[i]);
 	}
-	for (int i = BLACK; i <= WHITE; ++i) {
+	for (int i = Black; i <= White; ++i) {
 		printC(scheme.light[i]);
 	}
 	printC(scheme.background);
@@ -157,11 +157,11 @@ static void header(void) {
 }
 
 static void console(void) {
-	for (int i = BLACK; i <= WHITE; ++i) {
+	for (int i = Black; i <= White; ++i) {
 		struct Rgb rgb = toRgb(scheme.dark[i]);
 		printf("\x1B]P%X%02X%02X%02X", i, rgb.r, rgb.g, rgb.b);
 	}
-	for (int i = BLACK; i <= WHITE; ++i) {
+	for (int i = Black; i <= White; ++i) {
 		struct Rgb rgb = toRgb(scheme.dark[i]);
 		printf("\x1B]P%X%02X%02X%02X", 8 + i, rgb.r, rgb.g, rgb.b);
 	}
@@ -172,23 +172,23 @@ static void printMintty(const char *key, struct Hsv hsv) {
 	printf("%s=%d,%d,%d\n", key, rgb.r, rgb.g, rgb.b);
 }
 static void mintty(void) {
-	printMintty("Black", scheme.dark[BLACK]);
-	printMintty("Red", scheme.dark[RED]);
-	printMintty("Green", scheme.dark[GREEN]);
-	printMintty("Yellow", scheme.dark[YELLOW]);
-	printMintty("Blue", scheme.dark[BLUE]);
-	printMintty("Magenta", scheme.dark[MAGENTA]);
-	printMintty("Cyan", scheme.dark[CYAN]);
-	printMintty("White", scheme.dark[WHITE]);
+	printMintty("Black", scheme.dark[Black]);
+	printMintty("Red", scheme.dark[Red]);
+	printMintty("Green", scheme.dark[Green]);
+	printMintty("Yellow", scheme.dark[Yellow]);
+	printMintty("Blue", scheme.dark[Blue]);
+	printMintty("Magenta", scheme.dark[Magenta]);
+	printMintty("Cyan", scheme.dark[Cyan]);
+	printMintty("White", scheme.dark[White]);
 
-	printMintty("BoldBlack", scheme.light[BLACK]);
-	printMintty("BoldRed", scheme.light[RED]);
-	printMintty("BoldGreen", scheme.light[GREEN]);
-	printMintty("BoldYellow", scheme.light[YELLOW]);
-	printMintty("BoldBlue", scheme.light[BLUE]);
-	printMintty("BoldMagenta", scheme.light[MAGENTA]);
-	printMintty("BoldCyan", scheme.light[CYAN]);
-	printMintty("BoldWhite", scheme.light[WHITE]);
+	printMintty("BoldBlack", scheme.light[Black]);
+	printMintty("BoldRed", scheme.light[Red]);
+	printMintty("BoldGreen", scheme.light[Green]);
+	printMintty("BoldYellow", scheme.light[Yellow]);
+	printMintty("BoldBlue", scheme.light[Blue]);
+	printMintty("BoldMagenta", scheme.light[Magenta]);
+	printMintty("BoldCyan", scheme.light[Cyan]);
+	printMintty("BoldWhite", scheme.light[White]);
 
 	printMintty("BackgroundColour", scheme.background);
 	printMintty("ForegroundColour", scheme.text);
@@ -238,8 +238,8 @@ static void png(const struct Hsv *hsv, size_t len) {
 	uint8_t data[height][1 + width];
 	memset(data, 0, sizeof(data));
 	for (uint32_t y = 0; y < height; ++y) {
-		enum { NONE, SUB, UP, AVERAGE, PAETH };
-		data[y][0] = (y % swatchHeight) ? UP : SUB;
+		enum { None, Sub, Up, Average, Paeth };
+		data[y][0] = (y % swatchHeight) ? Up : Sub;
 	}
 	for (size_t i = 0; i < len; ++i) {
 		uint32_t y = swatchHeight * (i / columns);

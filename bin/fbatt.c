@@ -29,23 +29,23 @@
 
 #include "scheme.h"
 
-static const char *CLASS = "/sys/class/power_supply";
+static const char *Class = "/sys/class/power_supply";
 
-static const uint32_t RIGHT  = 5 * 8 + 1; // fbclock width.
-static const uint32_t WIDTH  = 8;
-static const uint32_t HEIGHT = 16;
+static const uint32_t Right  = 5 * 8 + 1; // fbclock width.
+static const uint32_t Width  = 8;
+static const uint32_t Height = 16;
 
-static const uint32_t BG     = SCHEME.darkBlack;
-static const uint32_t BORDER = SCHEME.darkWhite;
-static const uint32_t GRAY   = SCHEME.lightBlack;
-static const uint32_t YELLOW = SCHEME.darkYellow;
-static const uint32_t RED    = SCHEME.darkRed;
+static const uint32_t BG     = Scheme.darkBlack;
+static const uint32_t Border = Scheme.darkWhite;
+static const uint32_t Gray   = Scheme.lightBlack;
+static const uint32_t Yellow = Scheme.darkYellow;
+static const uint32_t Red    = Scheme.darkRed;
 
 int main() {
 	int error;
 
-	DIR *dir = opendir(CLASS);
-	if (!dir) err(EX_OSFILE, "%s", CLASS);
+	DIR *dir = opendir(Class);
+	if (!dir) err(EX_OSFILE, "%s", Class);
 
 	FILE *chargeFull = NULL;
 	FILE *chargeNow = NULL;
@@ -54,19 +54,19 @@ int main() {
 	while (NULL != (errno = 0, entry = readdir(dir))) {
 		if (entry->d_name[0] == '.') continue;
 
-		error = chdir(CLASS);
-		if (error) err(EX_OSFILE, "%s", CLASS);
+		error = chdir(Class);
+		if (error) err(EX_OSFILE, "%s", Class);
 
 		error = chdir(entry->d_name);
-		if (error) err(EX_OSFILE, "%s/%s", CLASS, entry->d_name);
+		if (error) err(EX_OSFILE, "%s/%s", Class, entry->d_name);
 
 		chargeFull = fopen("charge_full", "r");
 		chargeNow = fopen("charge_now", "r");
 		if (chargeFull && chargeNow) break;
 	}
 	if (!chargeFull || !chargeNow) {
-		if (errno) err(EX_OSFILE, "%s", CLASS);
-		errx(EX_CONFIG, "%s: empty", CLASS);
+		if (errno) err(EX_OSFILE, "%s", Class);
+		errx(EX_CONFIG, "%s: empty", Class);
 	}
 	closedir(dir);
 
@@ -105,23 +105,23 @@ int main() {
 		uint32_t height = 16 * now / full;
 
 		for (int i = 0; i < 60; ++i, sleep(1)) {
-			uint32_t left = info.xres - RIGHT - WIDTH;
+			uint32_t left = info.xres - Right - Width;
 
-			for (uint32_t y = 0; y <= HEIGHT; ++y) {
-				buf[y * info.xres + left - 1] = BORDER;
-				buf[y * info.xres + left + WIDTH] = BORDER;
+			for (uint32_t y = 0; y <= Height; ++y) {
+				buf[y * info.xres + left - 1] = Border;
+				buf[y * info.xres + left + Width] = Border;
 			}
-			for (uint32_t x = left; x < left + WIDTH; ++x) {
-				buf[HEIGHT * info.xres + x] = BORDER;
+			for (uint32_t x = left; x < left + Width; ++x) {
+				buf[Height * info.xres + x] = Border;
 			}
 
-			for (uint32_t y = 0; y < HEIGHT; ++y) {
-				for (uint32_t x = left; x < left + WIDTH; ++x) {
+			for (uint32_t y = 0; y < Height; ++y) {
+				for (uint32_t x = left; x < left + Width; ++x) {
 					buf[y * info.xres + x] =
-						(HEIGHT - 1 - y > height) ? BG
-						: (percent <= 10) ? RED
-						: (percent <= 30) ? YELLOW
-						: GRAY;
+						(Height - 1 - y > height) ? BG
+						: (percent <= 10) ? Red
+						: (percent <= 30) ? Yellow
+						: Gray;
 				}
 			}
 		}

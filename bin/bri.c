@@ -23,39 +23,39 @@
 #include <sysexits.h>
 #include <unistd.h>
 
-static const char *CLASS = "/sys/class/backlight";
+static const char *Class = "/sys/class/backlight";
 
 int main(int argc, char *argv[]) {
 	int error;
 
 	const char *input = (argc > 1) ? argv[1] : NULL;
 
-	error = chdir(CLASS);
-	if (error) err(EX_OSFILE, "%s", CLASS);
+	error = chdir(Class);
+	if (error) err(EX_OSFILE, "%s", Class);
 
 	DIR *dir = opendir(".");
-	if (!dir) err(EX_OSFILE, "%s", CLASS);
+	if (!dir) err(EX_OSFILE, "%s", Class);
 
 	struct dirent *entry;
 	while (NULL != (errno = 0, entry = readdir(dir))) {
 		if (entry->d_name[0] == '.') continue;
 
 		error = chdir(entry->d_name);
-		if (error) err(EX_OSFILE, "%s/%s", CLASS, entry->d_name);
+		if (error) err(EX_OSFILE, "%s/%s", Class, entry->d_name);
 		break;
 	}
 	if (!entry) {
-		if (errno) err(EX_IOERR, "%s", CLASS);
-		errx(EX_CONFIG, "%s: empty", CLASS);
+		if (errno) err(EX_IOERR, "%s", Class);
+		errx(EX_CONFIG, "%s: empty", Class);
 	}
 
 	FILE *actual = fopen("actual_brightness", "r");
-	if (!actual) err(EX_OSFILE, "%s/actual_brightness", CLASS);
+	if (!actual) err(EX_OSFILE, "actual_brightness");
 
 	unsigned value;
 	int match = fscanf(actual, "%u", &value);
-	if (match == EOF) err(EX_IOERR, "%s/actual_brightness", CLASS);
-	if (match < 1) errx(EX_DATAERR, "%s/actual_brightness", CLASS);
+	if (match == EOF) err(EX_IOERR, "actual_brightness");
+	if (match < 1) errx(EX_DATAERR, "actual_brightness");
 
 	if (!input) {
 		printf("%u\n", value);
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	FILE *brightness = fopen("brightness", "w");
-	if (!brightness) err(EX_OSFILE, "%s/brightness", CLASS);
+	if (!brightness) err(EX_OSFILE, "brightness");
 
 	int size = fprintf(brightness, "%u", value);
 	if (size < 0) err(EX_IOERR, "brightness");
