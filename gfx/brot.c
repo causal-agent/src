@@ -28,8 +28,12 @@
 
 #include "gfx.h"
 
-#define RGB(r, g, b) ((uint32_t)(r) << 16 | (uint32_t)(g) << 8 | (uint32_t)(b))
-#define GRAY(n) RGB(n, n, n)
+static uint32_t rgb(uint8_t r, uint8_t g, uint8_t b) {
+	return (uint32_t)r << 16 | (uint32_t)g << 8 | (uint32_t)b;
+}
+static uint32_t gray(uint8_t n) {
+	return rgb(n, n, n);
+}
 
 static double absSq(double complex z) {
 	return creal(z) * creal(z) + cimag(z) * cimag(z);
@@ -70,7 +74,7 @@ static void sample(uint32_t *buf, size_t width, size_t height) {
 
 static void color(uint32_t *buf, size_t width, size_t height) {
 	for (size_t i = 0; i < width * height; ++i) {
-		buf[i] = GRAY(255 * buf[i] / samples / samples / depth);
+		buf[i] = gray(255 * buf[i] / samples / samples / depth);
 	}
 }
 

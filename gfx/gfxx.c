@@ -34,27 +34,36 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MASK(b) ((1 << (b)) - 1)
 
-#define RGB(r, g, b) ((uint32_t)(r) << 16 | (uint32_t)(g) << 8 | (uint32_t)(b))
-#define GRAY(n) RGB(n, n, n)
+static uint32_t rgb(uint8_t r, uint8_t g, uint8_t b) {
+	return (uint32_t)r << 16 | (uint32_t)g << 8 | (uint32_t)b;
+}
+static uint32_t gray(uint8_t n) {
+	return rgb(n, n, n);
+}
 
 static enum {
-	COLOR_INDEXED,
-	COLOR_GRAYSCALE,
-	COLOR_RGB,
-	COLOR__COUNT,
-} space = COLOR_RGB;
-static const char *COLOR__STR[COLOR__COUNT] = { "indexed", "grayscale", "rgb" };
+	ColorIndexed,
+	ColorGrayscale,
+	ColorRGB,
+	ColorCount,
+} space = ColorRGB;
+static const char *ColorStr[ColorCount] = { "indexed", "grayscale", "rgb" };
 static uint32_t palette[256];
 
 static enum {
-	ENDIAN_LITTLE,
-	ENDIAN_BIG,
+	EndianLittle,
+	EndianBig,
 } byteOrder, bitOrder;
 
-enum { PAD, R, G, B };
+enum { Pad, R, G, B };
 static uint8_t bits[4] = { 8, 8, 8, 8 };
-#define BITS_COLOR (bits[R] + bits[G] + bits[B])
-#define BITS_TOTAL (bits[PAD] + BITS_COLOR)
+
+static uint8_t bitsColor(void) {
+	return bits[R] + bits[G] + bits[B];
+}
+static uint8_t bitsTotal(void) {
+	return bits[Pad] + bitsColor();
+}
 
 static size_t offset;
 static size_t width = 16;
@@ -76,22 +85,22 @@ int init(int argc, char *argv[]) {
 		switch (opt) {
 			break; case 'c':
 				switch (optarg[0]) {
-					break; case 'i': space = COLOR_INDEXED;
-					break; case 'g': space = COLOR_GRAYSCALE;
-					break; case 'r': space = COLOR_RGB;
+					break; case 'i': space = ColorIndexed;
+					break; case 'g': space = ColorGrayscale;
+					break; case 'r': space = ColorRGB;
 					break; default: return EX_USAGE;
 				}
 			break; case 'p': pal = optarg;
 			break; case 'e':
 				switch (optarg[0]) {
-					break; case 'l': byteOrder = ENDIAN_LITTLE;
-					break; case 'b': byteOrder = ENDIAN_BIG;
+					break; case 'l': byteOrder = EndianLittle;
+					break; case 'b': byteOrder = EndianBig;
 					break; default: return EX_USAGE;
 				}
 			break; case 'E':
 				switch (optarg[0]) {
-					break; case 'l': bitOrder = ENDIAN_LITTLE;
-					break; case 'b': bitOrder = ENDIAN_BIG;
+					break; case 'l': bitOrder = EndianLittle;
+					break; case 'b': bitOrder = EndianBig;
 					break; default: return EX_USAGE;
 				}
 			break; case 'b': {
@@ -162,10 +171,10 @@ static void formatOptions(void) {
 	snprintf(
 		options, sizeof(options),
 		"gfxx -c %s -e%c -E%c -b %hhu%hhu%hhu%hhu -n 0x%zX %s%s-w %zu -z %zu",
-		COLOR__STR[space],
+		ColorStr[space],
 		"lb"[byteOrder],
 		"lb"[bitOrder],
-		bits[PAD], bits[R], bits[G], bits[B],
+		bits[Pad], bits[R], bits[G], bits[B],
 		offset,
 		flip ? "-f " : "",
 		mirror ? "-m " : "",
@@ -247,35 +256,35 @@ static uint8_t interp(uint8_t b, uint32_t n) {
 	return n * MASK(8) / MASK(b);
 }
 
-static uint32_t interpolate(uint32_t rgb) {
+static uint32_t interpolate(uint32_t orig) {
 	uint32_t r, g, b;
-	if (bitOrder == ENDIAN_LITTLE) {
-		b = rgb & MASK(bits[B]);
-		g = (rgb >>= bits[B]) & MASK(bits[G]);
-		r = (rgb >>= bits[G]) & MASK(bits[R]);
+	if (bitOrder == EndianLittle) {
+		b = orig & MASK(bits[B]);
+		g = (orig >>= bits[B]) & MASK(bits[G]);
+		r = (orig >>= bits[G]) & MASK(bits[R]);
 	} else {
-		r = rgb & MASK(bits[R]);
-		g = (rgb >>= bits[R]) & MASK(bits[G]);
-		b = (rgb >>= bits[G]) & MASK(bits[B]);
+		r = orig & MASK(bits[R]);
+		g = (orig >>= bits[R]) & MASK(bits[G]);
+		b = (orig >>= bits[G]) & MASK(bits[B]);
 	}
-	return RGB(interp(bits[R], r), interp(bits[G], g), interp(bits[B], b));
+	return rgb(interp(bits[R], r), interp(bits[G], g), interp(bits[B], b));
 }
 
 static void drawBits(struct Iter *it) {
 	for (size_t i = offset; i < size; ++i) {
-		for (uint8_t b = 0; b < 8; b += BITS_TOTAL) {
+		for (uint8_t b = 0; b < 8; b += bitsTotal()) {
 			uint8_t n;
-			if (byteOrder == ENDIAN_BIG) {
-				n = data[i] >> (8 - BITS_TOTAL - b) & MASK(BITS_TOTAL);
+			if (byteOrder == EndianBig) {
+				n = data[i] >> (8 - bitsTotal() - b) & MASK(bitsTotal());
 			} else {
-				n = data[i] >> b & MASK(BITS_TOTAL);
+				n = data[i] >> b & MASK(bitsTotal());
 			}
 
-			if (space == COLOR_INDEXED) {
+			if (space == ColorIndexed) {
 				put(it, palette[n]);
-			} else if (space == COLOR_GRAYSCALE) {
-				put(it, GRAY(interp(BITS_COLOR, n & MASK(BITS_COLOR))));
-			} else if (space == COLOR_RGB) {
+			} else if (space == ColorGrayscale) {
+				put(it, gray(interp(bitsColor(), n & MASK(bitsColor()))));
+			} else if (space == ColorRGB) {
 				put(it, interpolate(n));
 			}
 
@@ -285,19 +294,19 @@ static void drawBits(struct Iter *it) {
 }
 
 static void drawBytes(struct Iter *it) {
-	uint8_t bytes = (BITS_TOTAL + 7) / 8;
+	uint8_t bytes = (bitsTotal() + 7) / 8;
 	for (size_t i = offset; i + bytes <= size; i += bytes) {
 		uint32_t n = 0;
 		for (size_t b = 0; b < bytes; ++b) {
 			n <<= 8;
-			n |= (byteOrder == ENDIAN_BIG) ? data[i + b] : data[i + bytes - b - 1];
+			n |= (byteOrder == EndianBig) ? data[i + b] : data[i + bytes - b - 1];
 		}
 
-		if (space == COLOR_INDEXED) {
+		if (space == ColorIndexed) {
 			put(it, palette[n & 0xFF]);
-		} else if (space == COLOR_GRAYSCALE) {
-			put(it, GRAY(interp(BITS_COLOR, n & MASK(BITS_COLOR))));
-		} else if (space == COLOR_RGB) {
+		} else if (space == ColorGrayscale) {
+			put(it, gray(interp(bitsColor(), n & MASK(bitsColor()))));
+		} else if (space == ColorRGB) {
 			put(it, interpolate(n));
 		}
 
@@ -359,22 +368,22 @@ static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
 	outOpen("png");
 	if (!out.file) return;
 
-	const uint8_t SIGNATURE[] = { 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' };
-	const uint8_t HEADER[] = { 8, 2, 0, 0, 0 }; // 8-bit truecolor
-	const char SOFTWARE[] = "Software";
+	const uint8_t Signature[8] = "\x89PNG\r\n\x1A\n";
+	const uint8_t Header[] = { 8, 2, 0, 0, 0 }; // 8-bit truecolor
+	const char Software[] = "Software";
 	formatOptions();
 	uint8_t sbit[3] = { MAX(bits[R], 1), MAX(bits[G], 1), MAX(bits[B], 1) };
 
-	pngWrite(SIGNATURE, sizeof(SIGNATURE));
+	pngWrite(Signature, sizeof(Signature));
 
-	pngChunk("IHDR", 4 + 4 + sizeof(HEADER));
+	pngChunk("IHDR", 4 + 4 + sizeof(Header));
 	pngUint(srcWidth);
 	pngUint(srcHeight);
-	pngWrite(HEADER, sizeof(HEADER));
+	pngWrite(Header, sizeof(Header));
 	pngUint(crc);
 
-	pngChunk("tEXt", sizeof(SOFTWARE) + strlen(options));
-	pngWrite(SOFTWARE, sizeof(SOFTWARE));
+	pngChunk("tEXt", sizeof(Software) + strlen(options));
+	pngWrite(Software, sizeof(Software));
 	pngWrite(options, strlen(options));
 	pngUint(crc);
 
@@ -394,21 +403,21 @@ static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
 }
 
 static enum {
-	DUMP_NONE,
-	DUMP_ONE,
-	DUMP_ALL,
+	DumpNone,
+	DumpOne,
+	DumpAll,
 } dump;
 
 void draw(uint32_t *buf, size_t bufWidth, size_t bufHeight) {
 	memset(buf, 0, 4 * bufWidth * bufHeight);
 	struct Iter it = iter(buf, bufWidth, bufHeight);
-	if (BITS_TOTAL >= 8) {
+	if (bitsTotal() >= 8) {
 		drawBytes(&it);
 	} else {
 		drawBits(&it);
 	}
 	if (dump) pngDump(buf, bufWidth, bufHeight);
-	if (dump == DUMP_ONE) dump = DUMP_NONE;
+	if (dump == DumpOne) dump = DumpNone;
 }
 
 static void palSample(void) {
@@ -429,7 +438,7 @@ static void palDump(void) {
 	if (error) err(EX_IOERR, "%s", out.path);
 }
 
-static const uint8_t PRESETS[][4] = {
+static const uint8_t Presets[][4] = {
 	{ 0, 0, 1, 0 },
 	{ 0, 1, 1, 0 },
 	{ 1, 1, 1, 1 },
@@ -441,14 +450,14 @@ static const uint8_t PRESETS[][4] = {
 	{ 0, 8, 8, 8 },
 	{ 8, 8, 8, 8 },
 };
-#define PRESETS_LEN (sizeof(PRESETS) / sizeof(PRESETS[0]))
+static const size_t PresetsLen = sizeof(Presets) / sizeof(Presets[0]);
 
-static uint8_t preset = PRESETS_LEN - 1;
+static uint8_t preset = PresetsLen - 1;
 static void setPreset(void) {
-	bits[PAD] = PRESETS[preset][PAD];
-	bits[R] = PRESETS[preset][R];
-	bits[G] = PRESETS[preset][G];
-	bits[B] = PRESETS[preset][B];
+	bits[Pad] = Presets[preset][Pad];
+	bits[R] = Presets[preset][R];
+	bits[G] = Presets[preset][G];
+	bits[B] = Presets[preset][B];
 }
 
 static void setBit(char in) {
@@ -458,21 +467,21 @@ static void setBit(char in) {
 }
 
 bool input(char in) {
-	size_t pixel = (BITS_TOTAL + 7) / 8;
-	size_t row = width * BITS_TOTAL / 8;
+	size_t pixel = (bitsTotal() + 7) / 8;
+	size_t row = width * bitsTotal() / 8;
 	switch (in) {
 		break; case 'q': return false;
-		break; case 'x': dump = DUMP_ONE;
-		break; case 'X': dump ^= DUMP_ALL;
+		break; case 'x': dump = DumpOne;
+		break; case 'X': dump ^= DumpAll;
 		break; case 'o': formatOptions(); printf("%s\n", options);
-		break; case '[': if (!space--) space = COLOR__COUNT - 1;
-		break; case ']': if (++space == COLOR__COUNT) space = 0;
+		break; case '[': if (!space--) space = ColorCount - 1;
+		break; case ']': if (++space == ColorCount) space = 0;
 		break; case 'p': palSample();
 		break; case 'P': palDump();
-		break; case '{': if (!preset--) preset = PRESETS_LEN - 1; setPreset();
-		break; case '}': if (++preset == PRESETS_LEN) preset = 0; setPreset();
-		break; case 'e': byteOrder ^= ENDIAN_BIG;
-		break; case 'E': bitOrder ^= ENDIAN_BIG;
+		break; case '{': if (!preset--) preset = PresetsLen - 1; setPreset();
+		break; case '}': if (++preset == PresetsLen) preset = 0; setPreset();
+		break; case 'e': byteOrder ^= EndianBig;
+		break; case 'E': bitOrder ^= EndianBig;
 		break; case 'h': if (offset) offset--;
 		break; case 'j': offset += pixel;
 		break; case 'k': if (offset >= pixel) offset -= pixel;

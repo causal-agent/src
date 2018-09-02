@@ -23,8 +23,6 @@
 
 #import "gfx.h"
 
-#define UNUSED __attribute__((unused))
-
 @interface BufferView : NSView {
 	size_t bufSize;
 	uint32_t *buf;
@@ -61,7 +59,8 @@
 	[self draw];
 }
 
-- (void) drawRect: (NSRect) UNUSED dirtyRect {
+- (void) drawRect: (NSRect) dirtyRect {
+	(void)dirtyRect;
 	NSSize size = [self frame].size;
 	CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
 	CGImageRef image = CGImageCreate(
@@ -106,7 +105,8 @@
 
 @implementation Delegate
 - (BOOL) applicationShouldTerminateAfterLastWindowClosed:
-	(NSApplication *) UNUSED sender {
+	(NSApplication *) sender {
+	(void)sender;
 	return YES;
 }
 @end
