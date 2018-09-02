@@ -5,7 +5,7 @@ any='gnupg htop mksh sl the_silver_searcher tree'
 brew="$any ddate git neovim openssh"
 pkg="$any curl ddate neovim sudo"
 pkgin="$any curl sudo vim"
-pacman="$any base-devel ctags gdb neovim openssh"
+pacman="$any base-devel bc ctags gdb neovim openssh"
 
 homebrew='https://raw.githubusercontent.com/Homebrew/install/master/install'
 if [ "$(uname)" = 'Darwin' ]; then
