@@ -209,13 +209,17 @@ static void readData(void) {
 	for (;;) {
 		struct Chunk chunk = readChunk();
 		if (0 == memcmp(chunk.type, "IDAT", 4)) {
-			uint8_t idat[chunk.size];
-			readExpect(idat, sizeof(idat), "image data");
+			uint8_t *idat = malloc(chunk.size);
+			if (!idat) err(EX_OSERR, "malloc");
+
+			readExpect(idat, chunk.size, "image data");
 			readCrc();
 
 			stream.next_in = idat;
-			stream.avail_in = sizeof(idat);
+			stream.avail_in = chunk.size;
 			int error = inflate(&stream, Z_SYNC_FLUSH);
+			free(idat);
+
 			if (error == Z_STREAM_END) break;
 			if (error != Z_OK) errx(EX_DATAERR, "%s: inflate: %s", path, stream.msg);
 
