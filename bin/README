@@ -6,9 +6,9 @@ Linux and some only build on Linux. All AGPLv3, see LICENSE.
 
 Backlight brightness control for Linux through /sys/class/backlight.
 
-    bri 255
-    bri ---
-    bri ++
+	bri 255
+	bri ---
+	bri ++
 
                                dtch/atch
 
@@ -16,8 +16,8 @@ Session detach and attach. Simple implementation of part of screen(1) by
 lending out the master end of a PTY over a UNIX domain socket. Detach
 with ^Q.
 
-    dtch a nvim &
-    atch a
+	dtch a nvim &
+	atch a
 
                                  fbatt
 
@@ -32,15 +32,15 @@ Clock panel for the Linux framebuffer. Renders PSF2 bitmap fonts.
 
 PNG glitcher based on pngo.
 
-    -c         write to stdout
-    -o PATH    write to file
-    -p         broken Paeth predictor
-    -f         filter when reconstructing
-    -r         reconstruct when filtering
-    -d LIST    declare pattern of comma-separated filters
-    -a LIST    apply pattern of comma-separated filters
+	-c         write to stdout
+	-o PATH    write to file
+	-p         broken Paeth predictor
+	-f         filter when reconstructing
+	-r         reconstruct when filtering
+	-d LIST    declare pattern of comma-separated filters
+	-a LIST    apply pattern of comma-separated filters
 	-i         invert after filtering
-    -m         mirror scanlines after filtering
+	-m         mirror scanlines after filtering
 	-x         zero first pixels after filtering
 	-y         zero first scanline after filtering
 
@@ -49,19 +49,19 @@ PNG glitcher based on pngo.
 The tr(1) of PTYs, for remapping keys. Originally for preserving HJKL in
 alternate keyboard layouts. Toggle remapping with ^S.
 
-    hnel '[]{}' '{}[]' vi
+	hnel '[]{}' '{}[]' vi
 
                                   klon
 
 Klondike solitaire for curses. BSD-only for arc4random_uniform.
 
-    q   quit
-    u   undo
-    ' ' draw
-    w   waste
-    a-d foundations
-    1-7 tableau
-    ^M  auto-foundation
+	q   quit
+	u   undo
+	' ' draw
+	w   waste
+	a-d foundations
+	1-7 tableau
+	^M  auto-foundation
 
                                  modem
 
@@ -75,9 +75,9 @@ the macOS pasteboard over SSH with RemoteForward 7062 127.0.0.1:7062.
 This used to make nvim's "+ register work but they seem to have changed
 their detection.
 
-    pbd & disown
-    ssh tux.local
-    pbpaste
+	pbd & disown
+	ssh tux.local
+	pbpaste
 
                                   pngo
 
@@ -91,19 +91,19 @@ PNG optimizer. Does not support interlaced PNGs.
  - Applies a simple filter type heuristic
  - Applies zlib's best compression
 
-    pngo foo.png
-    pngo -o bar.png foo.png
-    pngo -c foo.png | xx
+	pngo foo.png
+	pngo -o bar.png foo.png
+	pngo -c foo.png | xx
 
                                  scheme
 
 Color scheme for terminals.
 
-    -a  generate ANSI palette
-    -t  generate Terminal.app palette
+	-a  generate ANSI palette
+	-t  generate Terminal.app palette
 	-h  output HSV
-    -x  output RGB
-    -g  output PNG
+	-x  output RGB
+	-g  output PNG
 	-c  output C
 	-l  output Linux console OSC sequences
 	-m  output Mintty theme
@@ -116,16 +116,16 @@ Broadcasts a wake-on-LAN packet to one of my machines.
 
 Executes a command each time files change. BSD-only for kqueue(2).
 
-    watch watch.c make
-    watch wake.c watch.c -- make wake watch
+	watch watch.c make
+	watch wake.c watch.c -- make wake watch
 
                                    xx
 
 Hexdump tool.
 
-    -a          toggle ASCII
-    -c N        set columns
-    -g N        set grouping
-    -r          reverse hexdump
-    -s          toggle offsets
-    -z          skip zeros
+	-a          toggle ASCII
+	-c N        set columns
+	-g N        set grouping
+	-r          reverse hexdump
+	-s          toggle offsets
+	-z          skip zeros
