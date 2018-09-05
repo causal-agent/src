@@ -132,15 +132,23 @@ static struct PACKED {
 } header;
 static_assert(13 == sizeof(header), "header size");
 
-static size_t lineSize(void) {
+static size_t pixelBits(void) {
 	switch (header.color) {
-		case Grayscale:      return (header.width * 1 * header.depth + 7) / 8;
-		case Truecolor:      return (header.width * 3 * header.depth + 7) / 8;
-		case Indexed:        return (header.width * 1 * header.depth + 7) / 8;
-		case GrayscaleAlpha: return (header.width * 2 * header.depth + 7) / 8;
-		case TruecolorAlpha: return (header.width * 4 * header.depth + 7) / 8;
+		case Grayscale:      return 1 * header.depth;
+		case Truecolor:      return 3 * header.depth;
+		case Indexed:        return 1 * header.depth;
+		case GrayscaleAlpha: return 2 * header.depth;
+		case TruecolorAlpha: return 4 * header.depth;
 		default: abort();
 	}
+}
+
+static size_t pixelSize(void) {
+	return (pixelBits() + 7) / 8;
+}
+
+static size_t lineSize(void) {
+	return (header.width * pixelBits() + 7) / 8;
 }
 
 static size_t dataSize(void) {
@@ -427,14 +435,12 @@ static void scanlines(void) {
 }
 
 static struct Bytes origBytes(uint32_t y, size_t i) {
-	size_t pixelSize = lineSize() / header.width;
-	if (!pixelSize) pixelSize = 1;
-	bool a = (i >= pixelSize), b = (y > 0), c = (a && b);
+	bool a = (i >= pixelSize()), b = (y > 0), c = (a && b);
 	return (struct Bytes) {
 		.x = lines[y]->data[i],
-		.a = a ? lines[y]->data[i - pixelSize] : 0,
+		.a = a ? lines[y]->data[i - pixelSize()] : 0,
 		.b = b ? lines[y - 1]->data[i] : 0,
-		.c = c ? lines[y - 1]->data[i - pixelSize] : 0,
+		.c = c ? lines[y - 1]->data[i - pixelSize()] : 0,
 	};
 }
 
@@ -469,12 +475,11 @@ static void filterData(void) {
 static void discardAlpha(void) {
 	if (header.color != GrayscaleAlpha && header.color != TruecolorAlpha) return;
 	size_t sampleSize = header.depth / 8;
-	size_t pixelSize = sampleSize * (header.color == GrayscaleAlpha ? 2 : 4);
-	size_t colorSize = pixelSize - sampleSize;
+	size_t colorSize = pixelSize() - sampleSize;
 	for (uint32_t y = 0; y < header.height; ++y) {
 		for (uint32_t x = 0; x < header.width; ++x) {
 			for (size_t i = 0; i < sampleSize; ++i) {
-				if (lines[y]->data[x * pixelSize + colorSize + i] != 0xFF) return;
+				if (lines[y]->data[x * pixelSize() + colorSize + i] != 0xFF) return;
 			}
 		}
 	}
@@ -483,7 +488,7 @@ static void discardAlpha(void) {
 	for (uint32_t y = 0; y < header.height; ++y) {
 		*ptr++ = lines[y]->type;
 		for (uint32_t x = 0; x < header.width; ++x) {
-			memmove(ptr, &lines[y]->data[x * pixelSize], colorSize);
+			memmove(ptr, &lines[y]->data[x * pixelSize()], colorSize);
 			ptr += colorSize;
 		}
 	}
@@ -494,10 +499,9 @@ static void discardAlpha(void) {
 static void discardColor(void) {
 	if (header.color != Truecolor && header.color != TruecolorAlpha) return;
 	size_t sampleSize = header.depth / 8;
-	size_t pixelSize = sampleSize * (header.color == Truecolor ? 3 : 4);
 	for (uint32_t y = 0; y < header.height; ++y) {
 		for (uint32_t x = 0; x < header.width; ++x) {
-			uint8_t *r = &lines[y]->data[x * pixelSize];
+			uint8_t *r = &lines[y]->data[x * pixelSize()];
 			uint8_t *g = r + sampleSize;
 			uint8_t *b = g + sampleSize;
 			if (0 != memcmp(r, g, sampleSize)) return;
@@ -509,7 +513,7 @@ static void discardColor(void) {
 	for (uint32_t y = 0; y < header.height; ++y) {
 		*ptr++ = lines[y]->type;
 		for (uint32_t x = 0; x < header.width; ++x) {
-			uint8_t *pixel = &lines[y]->data[x * pixelSize];
+			uint8_t *pixel = &lines[y]->data[x * pixelSize()];
 			memmove(ptr, pixel, sampleSize);
 			ptr += sampleSize;
 			if (header.color == TruecolorAlpha) {
