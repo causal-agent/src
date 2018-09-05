@@ -278,8 +278,8 @@ static struct {
 	uint8_t applyFilter;
 	enum Filter declareFilters[255];
 	enum Filter applyFilters[255];
-	bool swapX;
-	bool swapY;
+	bool zeroX;
+	bool zeroY;
 	bool invert;
 	bool mirror;
 } options;
@@ -402,23 +402,15 @@ static void filterData(void) {
 	}
 }
 
-static void swapX(void) {
+static void zeroX(void) {
 	size_t pixelSize = lineSize() / header.width;
-	uint32_t last = header.width - 1;
 	for (uint32_t y = 0; y < header.height; ++y) {
-		uint8_t pixel[pixelSize];
-		memcpy(pixel, lines[y]->data, pixelSize);
-		memcpy(lines[y]->data, &lines[y]->data[pixelSize * last], pixelSize);
-		memcpy(&lines[y]->data[pixelSize * last], pixel, pixelSize);
+		memset(lines[y]->data, 0, pixelSize);
 	}
 }
 
-static void swapY(void) {
-	uint8_t line[lineSize()];
-	uint32_t last = header.height - 1;
-	memcpy(line, lines[0]->data, lineSize());
-	memcpy(lines[0]->data, lines[last]->data, lineSize());
-	memcpy(lines[last]->data, line, lineSize());
+static void zeroY(void) {
+	memset(lines[0]->data, 0, lineSize());
 }
 
 static void invert(void) {
@@ -458,8 +450,8 @@ static void glitch(const char *inPath, const char *outPath) {
 	scanlines();
 	reconData();
 	filterData();
-	if (options.swapX) swapX();
-	if (options.swapY) swapY();
+	if (options.zeroX) zeroX();
+	if (options.zeroY) zeroY();
 	if (options.invert) invert();
 	if (options.mirror) mirror();
 	free(lines);
@@ -522,8 +514,8 @@ int main(int argc, char *argv[]) {
 			break; case 'o': output = optarg;
 			break; case 'p': options.brokenPaeth = true;
 			break; case 'r': options.recon = true;
-			break; case 'x': options.swapX = true;
-			break; case 'y': options.swapY = true;
+			break; case 'x': options.zeroX = true;
+			break; case 'y': options.zeroY = true;
 			break; default: return EX_USAGE;
 		}
 	}

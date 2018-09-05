@@ -41,8 +41,8 @@ PNG glitcher based on pngo.
     -a LIST    apply pattern of comma-separated filters
 	-i         invert after filtering
     -m         mirror scanlines after filtering
-	-y         swap first and last scanline after filtering
-	-x         swap first and last pixels of scanlines after filtering
+	-x         zero first pixels after filtering
+	-y         zero first scanline after filtering
 
                                   hnel
 
