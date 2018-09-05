@@ -278,10 +278,10 @@ static struct {
 	uint8_t applyFilter;
 	enum Filter declareFilters[255];
 	enum Filter applyFilters[255];
-	bool zeroX;
-	bool zeroY;
 	bool invert;
 	bool mirror;
+	bool zeroX;
+	bool zeroY;
 } options;
 
 struct Bytes {
@@ -402,17 +402,6 @@ static void filterData(void) {
 	}
 }
 
-static void zeroX(void) {
-	size_t pixelSize = lineSize() / header.width;
-	for (uint32_t y = 0; y < header.height; ++y) {
-		memset(lines[y]->data, 0, pixelSize);
-	}
-}
-
-static void zeroY(void) {
-	memset(lines[0]->data, 0, lineSize());
-}
-
 static void invert(void) {
 	for (uint32_t y = 0; y < header.height; ++y) {
 		for (size_t i = 0; i < lineSize(); ++i) {
@@ -429,6 +418,17 @@ static void mirror(void) {
 			lines[y]->data[j] = t;
 		}
 	}
+}
+
+static void zeroX(void) {
+	size_t pixelSize = lineSize() / header.width;
+	for (uint32_t y = 0; y < header.height; ++y) {
+		memset(lines[y]->data, 0, pixelSize);
+	}
+}
+
+static void zeroY(void) {
+	memset(lines[0]->data, 0, lineSize());
 }
 
 static void glitch(const char *inPath, const char *outPath) {
@@ -450,10 +450,10 @@ static void glitch(const char *inPath, const char *outPath) {
 	scanlines();
 	reconData();
 	filterData();
-	if (options.zeroX) zeroX();
-	if (options.zeroY) zeroY();
 	if (options.invert) invert();
 	if (options.mirror) mirror();
+	if (options.zeroX) zeroX();
+	if (options.zeroY) zeroY();
 	free(lines);
 
 	if (outPath) {
