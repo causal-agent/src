@@ -127,15 +127,23 @@ static struct PACKED {
 } header;
 static_assert(13 == sizeof(header), "header size");
 
-static size_t lineSize(void) {
+static size_t pixelBits(void) {
 	switch (header.color) {
-		case Grayscale:      return (header.width * 1 * header.depth + 7) / 8;
-		case Truecolor:      return (header.width * 3 * header.depth + 7) / 8;
-		case Indexed:        return (header.width * 1 * header.depth + 7) / 8;
-		case GrayscaleAlpha: return (header.width * 2 * header.depth + 7) / 8;
-		case TruecolorAlpha: return (header.width * 4 * header.depth + 7) / 8;
+		case Grayscale:      return 1 * header.depth;
+		case Truecolor:      return 3 * header.depth;
+		case Indexed:        return 1 * header.depth;
+		case GrayscaleAlpha: return 2 * header.depth;
+		case TruecolorAlpha: return 4 * header.depth;
 		default: abort();
 	}
+}
+
+static size_t pixelSize(void) {
+	return (pixelBits() + 7) / 8;
+}
+
+static size_t lineSize(void) {
+	return (header.width * pixelBits() + 7) / 8;
 }
 
 static size_t dataSize(void) {
@@ -346,14 +354,12 @@ static void scanlines(void) {
 }
 
 static struct Bytes origBytes(uint32_t y, size_t i) {
-	size_t pixelSize = lineSize() / header.width;
-	if (!pixelSize) pixelSize = 1;
-	bool a = (i >= pixelSize), b = (y > 0), c = (a && b);
+	bool a = (i >= pixelSize()), b = (y > 0), c = (a && b);
 	return (struct Bytes) {
 		.x = lines[y]->data[i],
-		.a = a ? lines[y]->data[i - pixelSize] : 0,
+		.a = a ? lines[y]->data[i - pixelSize()] : 0,
 		.b = b ? lines[y - 1]->data[i] : 0,
-		.c = c ? lines[y - 1]->data[i - pixelSize] : 0,
+		.c = c ? lines[y - 1]->data[i - pixelSize()] : 0,
 	};
 }
 
@@ -421,9 +427,8 @@ static void mirror(void) {
 }
 
 static void zeroX(void) {
-	size_t pixelSize = lineSize() / header.width;
 	for (uint32_t y = 0; y < header.height; ++y) {
-		memset(lines[y]->data, 0, pixelSize);
+		memset(lines[y]->data, 0, pixelSize());
 	}
 }
 
