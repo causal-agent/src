@@ -16,7 +16,7 @@ Session detach and attach. Simple implementation of part of screen(1) by
 lending out the master end of a PTY over a UNIX domain socket. Detach
 with ^Q.
 
-    dtch a nvim & disown
+    dtch a nvim &
     atch a
 
                                  fbatt
