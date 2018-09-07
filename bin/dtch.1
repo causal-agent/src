@@ -1,0 +1,42 @@
+.Dd $Mdocdate$
+.Dt DTCH 1
+.Sh NAME
+.Nm dtch
+.Nd detached sessions
+.Sh SYNOPSIS
+.Nm atch Op Ar name
+.Nm dtch Op Ar name Op Ar command ...
+.Sh DESCRIPTION
+.Nm dtch
+spawns the
+.Ar command
+(by default, the user's shell)
+inside a new PTY.
+It then lends control of the detached PTY to
+.Nm atch
+over a UNIX-domain socket.
+.Nm dtch
+should be run as a background job or with
+.Xr nohup 1 .
+.Pp
+.Nm atch
+attaches to the
+.Nm dtch
+session with the corresponding
+.Ar name .
+To detach from a session, type
+.Ic ^Q .
+.Sh FILES
+.Bl -tag -width "~/.dtch"
+.It Pa ~/.dtch
+Location of UNIX-domain sockets for each session.
+.El
+.Sh EXAMPLES
+.Bd -literal
+dtch foo vim &
+atch foo
+.Ed
+.Sh SEE ALSO
+.Xr nohup 1 ,
+.Xr screen 1 ,
+.Xr forkpty 3
