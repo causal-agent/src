@@ -1,7 +1,10 @@
+PREFIX = ~/.local
+
 ANY_BINS = atch dtch glitch hnel modem open pbcopy pbd pbpaste pngo scheme wake xx
 BSD_BINS = klon watch
 LIN_BINS = bri fbatt fbclock
 ALL_BINS = $(ANY_BINS) $(BSD_BINS) $(LIN_BINS)
+ALL_MANS = $(ALL_BINS:%=%.1)
 
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lcurses -lm -lutil -lz
@@ -40,8 +43,10 @@ clean:
 	rm -f tags $(ALL_BINS)
 
 link:
-	mkdir -p ~/.local/bin
-	ln -s -f $(ALL_BINS:%=$(PWD)/%) ~/.local/bin
+	mkdir -p $(PREFIX)/bin $(PREFIX)/share/man/man1
+	ln -s -f $(ALL_BINS:%=$(PWD)/%) $(PREFIX)/bin
+	ln -s -f $(ALL_MANS:%=$(PWD)/%) $(PREFIX)/share/man/man1
 
 unlink:
-	rm -f $(ALL_BINS:%=~/.local/bin/%)
+	rm -f $(ALL_BINS:%=$(PREFIX)/bin/%)
+	rm -f $(ALL_MANS:%=$(PREFIX)/share/man/man1/%)
