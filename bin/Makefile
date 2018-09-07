@@ -1,22 +1,29 @@
 PREFIX = ~/.local
 
-ANY_BINS = atch dtch glitch hnel modem open pbcopy pbd pbpaste pngo scheme wake xx
-BSD_BINS = klon watch
-LIN_BINS = bri fbatt fbclock
-ALL_BINS = $(ANY_BINS) $(BSD_BINS) $(LIN_BINS)
-ALL_MANS = $(ALL_BINS:%=%.1)
+BINS = atch dtch glitch hnel modem open pbcopy pbd pbpaste pngo scheme wake xx
+BINS_BSD = watch
+BINS_LINUX = bri fbatt fbclock
+BINS_ALL = $(BINS) $(BINS_BSD) $(BINS_LINUX) $(GAMES_BSD)
+
+GAMES_BSD = klon
+GAMES_ALL = $(GAMES_BSD)
+
+MAN1 = $(BINS_ALL:%=%.1)
+MAN6 = $(GAMES_ALL:%=%.6)
 
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lcurses -lm -lutil -lz
 
-any: .gitignore tags $(ANY_BINS)
+any: .gitignore tags $(BINS)
 
-bsd: any $(BSD_BINS)
+bsd: any $(BINS_BSD) $(GAMES_BSD)
 
-linux: any $(LIN_BINS)
+linux: any $(BINS_LINUX)
 
 .gitignore: Makefile
-	echo tags scheme.h *.o $(ALL_BINS) scheme.png | tr ' ' '\n' > .gitignore
+	echo tags scheme.h *.o $(BINS_ALL) $(GAMES_ALL) scheme.png \
+		| tr ' ' '\n' \
+		> .gitignore
 
 tags: *.c
 	ctags -w *.c
@@ -40,13 +47,17 @@ setuid: bri
 	chmod u+s bri
 
 clean:
-	rm -f tags $(ALL_BINS)
+	rm -f tags $(BINS_ALL) $(GAMES_ALL)
 
 link:
-	mkdir -p $(PREFIX)/bin $(PREFIX)/share/man/man1
-	ln -s -f $(ALL_BINS:%=$(PWD)/%) $(PREFIX)/bin
-	ln -s -f $(ALL_MANS:%=$(PWD)/%) $(PREFIX)/share/man/man1
+	mkdir -p $(PREFIX)/bin $(PREFIX)/share/man/man1 $(PREFIX)/share/man/man6
+	ln -s -f $(BINS_ALL:%=$(PWD)/%) $(PREFIX)/bin
+	ln -s -f $(GAMES_ALL:%=$(PWD)/%) $(PREFIX)/bin
+	ln -s -f $(MAN1:%=$(PWD)/%) $(PREFIX)/share/man/man1
+	ln -s -f $(MAN6:%=$(PWD)/%) $(PREFIX)/share/man/man6
 
 unlink:
-	rm -f $(ALL_BINS:%=$(PREFIX)/bin/%)
-	rm -f $(ALL_MANS:%=$(PREFIX)/share/man/man1/%)
+	rm -f $(BINS_ALL:%=$(PREFIX)/bin/%)
+	rm -f $(GAMES_ALL:%=$(PREFIX)/bin/%)
+	rm -f $(MAN1:%=$(PREFIX)/share/man/man1/%)
+	rm -f $(MAN6:%=$(PREFIX)/share/man/man6/%)

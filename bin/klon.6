@@ -1,0 +1,34 @@
+.Dd $Mdocdate$
+.Dt KLON 6
+.Os "Causal Agency"
+.Sh NAME
+.Nm klon
+.Nd Klondike solitaire
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+.Nm
+is a curses Klondike solitaire game.
+.Pp
+The keys are as follows:
+.Bl -tag -width Ds
+.It Ic q
+Quit.
+.It Ic u
+Undo.
+.It Ic space
+Draw from stock to waste.
+.It Ic w
+Select waste.
+.It Ic a-d
+Select foundation.
+.It Ic 1-7
+Select tableau.
+.It Ic enter
+Move to any foundation.
+.El
+.Sh CAVEATS
+.Nm
+does not support Linux
+since it uses
+.Xr arc4random_uniform 3 .
