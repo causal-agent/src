@@ -1,3 +1,4 @@
+- [Street Sects — In for a World of Hurt][56]
 - [New Order — Temptation][55]
 - [Blondie — Heart of Glass][54]
 - [Suuns — Watch You, Watch Me][53]
@@ -119,3 +120,4 @@
 [53]: https://suuns.bandcamp.com/track/watch-you-watch-me
 [54]: https://youtu.be/fWPhhlKHM80
 [55]: https://youtu.be/xxDv_RTdLQo
+[56]: https://streetsects.bandcamp.com/track/in-for-a-world-of-hurt
