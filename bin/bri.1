@@ -1,0 +1,34 @@
+.Dd $Mdocdate$
+.Dt BRI 1
+.Sh NAME
+.Nm bri
+.Nd backlight brightness control
+.Sh SYNOPSIS
+.Nm bri Op Ar brightness
+.Nm bri Cm +
+.Nm bri Cm -
+.Sh DESCRIPTION
+.Nm
+controls the backlight brightness on Linux.
+.Pp
+With no argument,
+the current brightness is printed.
+With a numerical
+.Ar brightness
+argument,
+the brightness is set.
+.Pp
+The
+.Cm +
+and
+.Cm -
+arguments
+may be repeated any number of times
+and adjust the brightness
+in increments of 16.
+.Sh FILES
+.Bl -tag -width "/sys/class/backlight" -compact
+.It Pa /sys/class/backlight
+Files under the first subdirectory found
+are used to control the backlight brightness.
+.El
