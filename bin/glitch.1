@@ -1,0 +1,62 @@
+.Dd $Mdocdate$
+.Dt GLITCH 1
+.Os "Causal Agency"
+.Sh NAME
+.Nm glitch
+.Nd PNG glitcher
+.Sh SYNOPSIS
+.Nm
+.Op Fl cfimprxy
+.Op Fl a Ar filters
+.Op Fl d Ar filters
+.Op Fl o Ar file
+.Op Ar file
+.Sh DESCRIPTION
+.Nm
+misinterprets PNG files
+according to the options given
+to create natural glitch effects.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl a Ar filters
+Apply a pattern of comma-separated filters.
+Filters are
+.Cm none ,
+.Cm sub ,
+.Cm up ,
+.Cm average ,
+.Cm paeth .
+.It Fl c
+Write to standard output.
+.It Fl d Ar filters
+Declare a pattern of comma-separated filters.
+See
+.Fl a
+for list of filters.
+.It Fl f
+Apply filtering in place of reconstruction.
+.It Fl i
+Invert image data after filtering.
+.It Fl m
+Mirror scanlines after filtering.
+.It Fl o Ar file
+Write to
+.Ar file .
+.It Fl p
+Use a broken Paeth predictor function.
+.It Fl r
+Apply reconstruction in place of filtering.
+.It Fl x
+Zero first pixel of each scanline after filtering.
+.It Fl y
+Zero first scanline after filtering.
+.El
+.Sh EXAMPLES
+.Bd -literal
+glitch -m -a sub -d sub
+.Ed
+.Sh SEE ALSO
+.Xr pngo 1
+.Sh BUGS
+More wanted.
