@@ -1,0 +1,27 @@
+.Dd $Mdocdate$
+.Dt FBCLOCK 1
+.Sh NAME
+.Nm fbclock
+.Nd framebuffer clock
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+.Nm
+displays a clock
+in the top-right corner
+of the Linux framebuffer.
+.Sh ENVIRONMENT
+.Bl -tag
+.It Ev FONT
+Path to gzipped PSF file.
+.It Ev FRAMEBUFFER
+The framebuffer device. By default,
+.Pa /dev/fb0 .
+.El
+.Sh FILES
+.Bl -tag
+.It Pa /usr/share/kbd/consolefonts/Lat2-Terminus16.psfu.gz
+The default font file.
+.El
+.Sh SEE ALSO
+.Xr setfont 8
