@@ -1,0 +1,30 @@
+.Dd $Mdocdate$
+.Dt HNEL 1
+.Os "Causal Agency"
+.Sh NAME
+.Nm hnel
+.Nd PTY input remapper
+.Sh SYNOPSIS
+.Nm
+.Ar string1
+.Ar string2
+.Ar "command ..."
+.Sh DESCRIPTION
+.Nm
+runs the
+.Ar command
+in a new PTY,
+remapping input characters in
+.Ar string1
+to the corresponding characters in
+.Ar string2 .
+Type
+.Ic ^S
+to toggle remapping.
+.Sh EXAMPLES
+.Bd -literal
+hnel '[]{}' '{}[]' vim
+.Ed
+.Sh SEE ALSO
+.Xr tr 1 ,
+.Xr forkpty 3
