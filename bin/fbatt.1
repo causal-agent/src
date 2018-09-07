@@ -13,11 +13,12 @@ of the Linux framebuffer.
 .Sh ENVIRONMENT
 .Bl -tag
 .It Ev FRAMEBUFFER
-The framebuffer device. By default,
-.Pa /dev/fb0 .
+The framebuffer device path.
 .El
 .Sh FILES
 .Bl -tag
+.It Pa /dev/fb0
+The default framebuffer device path.
 .It Pa /sys/class/power_supply
 The first subdirectory containing
 .Pa charge_full

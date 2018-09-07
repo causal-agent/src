@@ -15,13 +15,14 @@ of the Linux framebuffer.
 .It Ev FONT
 Path to gzipped PSF file.
 .It Ev FRAMEBUFFER
-The framebuffer device. By default,
-.Pa /dev/fb0 .
+The framebuffer device path.
 .El
 .Sh FILES
 .Bl -tag
+.It Pa /dev/fb0
+The default framebuffer device path.
 .It Pa /usr/share/kbd/consolefonts/Lat2-Terminus16.psfu.gz
-The default font file.
+The default font path.
 .El
 .Sh SEE ALSO
 .Xr setfont 8
