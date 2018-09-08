@@ -6,10 +6,13 @@
 .Nm atch
 .Nd detached sessions
 .Sh SYNOPSIS
-.Nm dtch Op Ar name Op Ar "command ..."
-.Nm atch Op Ar name
+.Nm
+.Op Ar name
+.Op Ar "command ..."
+.Nm atch
+.Op Ar name
 .Sh DESCRIPTION
-.Nm dtch
+.Nm
 spawns the
 .Ar command
 (by default, the user's shell)
@@ -17,13 +20,13 @@ inside a new PTY.
 It then lends control of the detached PTY to
 .Nm atch
 over a UNIX-domain socket.
-.Nm dtch
+.Nm
 should be run as a background job or with
 .Xr nohup 1 .
 .Pp
 .Nm atch
 attaches to the
-.Nm dtch
+.Nm
 session with the corresponding
 .Ar name .
 To detach from a session, type
