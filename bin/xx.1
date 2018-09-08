@@ -1,0 +1,49 @@
+.Dd $Mdocdate$
+.Dt XX 1
+.Os "Causal Agency"
+.Sh NAME
+.Nm xx
+.Nd hexdump
+.Sh SYNOPSIS
+.Nm
+.Op Fl arsz
+.Op Fl c Ar cols
+.Op Fl g Ar group
+.Op Ar file
+.Sh DESCRIPTION
+.Nm
+dumps the contents of a
+.Ar file
+or standard input
+in hexadecimal format.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl a
+Toggle ASCII output.
+.It Fl c Ar cols
+Output
+.Ar cols
+bytes per line.
+The default
+.Ar cols
+is 16.
+.It Fl g Ar group
+Output extra space after every
+.Ar group
+bytes.
+The default
+.Ar group
+is 8.
+.It Fl r
+Reverse hexdump.
+Read hexadecimal input
+and write byte output.
+.It Fl s
+Toggle offset output.
+.It Fl z
+Skip output of lines containing only zeros.
+.El
+.Sh SEE ALSO
+.Xr hexdump 1 ,
+.Xr xxd 1
