@@ -35,15 +35,13 @@ to access the local pasteboard
 and open URLs.
 .Pp
 Forwarding can be configured with:
-.Bd -literal
+.Bd -literal -offset indent
 RemoteForward 7062 127.0.0.1:7062
 .Ed
 .Sh EXAMPLES
-.Bd -literal
-pbd &
-ssh -R 7062:127.0.0.1:7062 tux.local
-pbpaste
-.Ed
+.Dl pbd &
+.Dl ssh -R 7062:127.0.0.1:7062 tux.local
+.Dl pbpaste
 .Sh SEE ALSO
 .Xr open 1 ,
 .Xr pbcopy 1 ,
