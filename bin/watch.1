@@ -1,0 +1,30 @@
+.Dd $Mdocdate$
+.Dt WATCH 1
+.Os "Causal Agency"
+.Sh NAME
+.Nm watch
+.Nd watch files
+.Sh SYNOPSIS
+.Nm
+.Ar
+.Ar command
+.Nm
+.Ar
+.Cm --
+.Ar command
+.Op Ar "argument ..."
+.Sh DESCRIPTION
+.Nm
+executes the
+.Ar command
+each time a
+.Ar file
+is modified.
+.Sh EXAMPLES
+.Dl watch watch.c make
+.Dl watch wake.c watch.c -- make wake watch
+.Sh CAVEATS
+.Nm
+does not support Linux
+since it uses
+.Xr kqueue 2 .
