@@ -1,0 +1,103 @@
+.Dd $Mdocdate$
+.Dt GFXX 1
+.Os "Causal Agency"
+.Sh NAME
+.Nm gfxx
+.Nd graphics data explorer
+.Sh SYNOPSIS
+.Nm
+.Op Fl fm
+.Op Fl c Ar space
+.Op Fl p Ar file
+.Op Fl e Ar lb
+.Op Fl E Ar lb
+.Op Fl b Ar bits
+.Op Fl n Ar offset
+.Op Fl w Ar width
+.Op Fl z Ar scale
+.Op Fl o Ar prefix
+.Sh DESCRIPTION
+.Nm
+is an interactive graphics data explorer
+capable of dumping PNGs.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl E Ar lb
+Set bit order to little or big endian.
+.It Fl b Ar bits
+Set number of bits of padding,
+red,
+green
+and blue
+components.
+Four digits are required.
+.It Fl c Ar space
+Set color space to one of
+.Cm indexed ,
+.Cm grayscale ,
+.Cm rgb .
+.It Fl e Ar lb
+Set byte order to little or big endian.
+.It Fl f
+Flip display vertically.
+.It Fl m
+Mirror display horizontally.
+.It Fl n Ar offset
+Set byte offset into data.
+.It Fl o Ar prefix
+Set PNG output filename prefix.
+.It Fl p Ar file
+Load indexed color palette from
+.Ar file .
+.It Fl w Ar width
+Set display column width.
+.It Fl z Ar scale
+Set display scale.
+.El
+.Pp
+The interactive keys are as follows:
+.Bl -tag -width Ds
+.It Ic q
+Quit.
+.It Ic x
+Export one frame as PNG.
+.It Ic X
+Export each frame as PNG.
+.It Ic o
+Print interactive options.
+.It Ic []
+Select color space.
+.It Ic p
+Sample indexed palette from top-left corner.
+.It Ic P
+Export indexed palette as RGB data.
+.It Ic {}
+Select bits preset.
+.It Ic e
+Toggle byte order.
+.It Ic E
+Toggle bit order.
+.It Ic hl
+Adjust offset by byte.
+.It Ic jk
+Adjust offset by pixel.
+.It Ic HL
+Adjust offset by pixel row.
+.It Ic JK
+Adjust offset by pixel row square.
+.It Ic ,.
+Adjust display column width.
+.It Ic <>
+Adjust display column width by half or double.
+.It Ic f
+Toggle vertically flipped display.
+.It Ic m
+Toggle horizontally mirrored display.
+.It Ic -+
+Adjust display scale.
+.It Ic 0-9
+Set bits.
+.El
+.Sh SEE ALSO
+.Xr pngo 1
