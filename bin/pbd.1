@@ -1,0 +1,52 @@
+.Dd $Mdocdate$
+.Dt PBD 1
+.Os "Causal Agency"
+.Sh NAME
+.Nm pbd ,
+.Nm pbcopy ,
+.Nm pbpaste ,
+.Nm open
+.Nd macOS pasteboard daemon
+.Sh SYNOPSIS
+.Nm pbd
+.Nm pbcopy
+.Nm pbpaste
+.Nm open Ar
+.Sh DESCRIPTION
+.Nm pbd
+is a daemon which pipes into macOS
+.Xr pbcopy 1 ,
+from
+.Xr pbpaste 1
+and invokes
+.Xr open 1
+in response to messages
+sent over TCP port 7062.
+.Pp
+The socket can be forwarded through
+.Xr ssh 1
+and the stub implementations of
+.Nm pbcopy ,
+.Nm pbpaste
+and
+.Nm open
+can be used remotely
+to access the local pasteboard
+and open URLs.
+.Pp
+Forwarding can be configured with:
+.Bd -literal
+RemoteForward 7062 127.0.0.1:7062
+.Ed
+.Sh EXAMPLES
+.Bd -literal
+pbd &
+ssh -R 7062:127.0.0.1:7062 tux.local
+pbpaste
+.Ed
+.Sh SEE ALSO
+.Xr open 1 ,
+.Xr pbcopy 1 ,
+.Xr pbpaste 1 ,
+.Xr ssh 1 ,
+.Xr ssh_config 5
