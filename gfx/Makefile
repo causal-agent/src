@@ -1,5 +1,8 @@
-BINS = brot gfxx
 GFX ?= cocoa
+PREFIX = ~/.local
+
+BINS = brot gfxx
+MAN1 = $(BINS:%=%.1)
 
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lm -lz
@@ -28,8 +31,10 @@ clean:
 	rm -f tags *.o $(BINS)
 
 link:
-	mkdir -p ~/.local/bin
-	ln -s -f $(BINS:%=$(PWD)/%) ~/.local/bin
+	mkdir -p $(PREFIX)/bin $(PREFIX)/share/man/man1
+	ln -s -f $(BINS:%=$(PWD)/%) $(PREFIX)/bin
+	ln -s -f $(MAN1:%=$(PWD)/%) $(PREFIX)/share/man/man1
 
 unlink:
-	rm -f $(BINS:%=~/.local/bin/%)
+	rm -f $(BINS:%=$(PREFIX)/bin/%)
+	rm -f $(MAN1:%=$(PREFIX)/share/man/man1/%)
