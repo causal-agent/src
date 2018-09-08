@@ -1,0 +1,49 @@
+.Dd $Mdocdate$
+.Dt PNGO 1
+.Os "Causal Agency"
+.Sh NAME
+.Nm pngo
+.Nd PNG optimizer
+.Sh SYNOPSIS
+.Nm
+.Op Fl cv
+.Op Fl o Ar file
+.Op Ar
+.Sh DESCRIPTION
+.Nm
+optimizes PNG files for size.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl c
+Write to standard output.
+.It Fl o Ar file
+Write to
+.Ar file .
+.It Fl v
+Output PNG header information.
+.El
+.Pp
+.Nm
+performs the following optimizations:
+.Bl -bullet
+.It
+Discard ancillary chunks.
+.It
+Discard unnecessary alpha channel.
+.It
+Convert unnecessary truecolor to grayscale.
+.It
+Palletize color if possible.
+.It
+Reduce bit depth if possible.
+.It
+Apply a simple filter heuristic.
+.It
+Apply zlib's best compresion.
+.El
+.Sh SEE ALSO
+.Xr glitch 1
+.Sh CAVEATS
+.Nm
+does not support interlaced PNGs.
