@@ -1,18 +1,21 @@
 .Dd September 7, 2018
 .Dt WATCH 1
 .Os "Causal Agency"
+.
 .Sh NAME
 .Nm watch
 .Nd watch files
+.
 .Sh SYNOPSIS
 .Nm
 .Ar
 .Ar command
 .Nm
 .Ar
-.Cm --
+.Fl -
 .Ar command
-.Op Ar "argument ..."
+.Op Ar argument ...
+.
 .Sh DESCRIPTION
 .Nm
 executes the
@@ -20,9 +23,11 @@ executes the
 each time a
 .Ar file
 is modified.
+.
 .Sh EXAMPLES
 .Dl watch watch.c make
 .Dl watch wake.c watch.c -- make wake watch
+.
 .Sh CAVEATS
 .Nm
 does not support Linux

@@ -1,16 +1,18 @@
 .Dd September 7, 2018
 .Dt DTCH 1
 .Os "Causal Agency"
+.
 .Sh NAME
 .Nm dtch ,
 .Nm atch
 .Nd detached sessions
+.
 .Sh SYNOPSIS
 .Nm
-.Op Ar name
-.Op Ar "command ..."
+.Op Ar name Op Ar command ...
 .Nm atch
 .Op Ar name
+.
 .Sh DESCRIPTION
 .Nm
 spawns the
@@ -23,6 +25,7 @@ over a UNIX-domain socket.
 .Nm
 should be run as a background job or with
 .Xr nohup 1 .
+.
 .Pp
 .Nm atch
 attaches to the
@@ -31,14 +34,20 @@ session with the corresponding
 .Ar name .
 To detach from a session, type
 .Ic ^Q .
+.
 .Sh FILES
 .Bl -tag
-.It Pa ~/.dtch
-Location of UNIX-domain sockets for each session.
+.It Pa ~/.dtch/ Ns Ar name
+UNIX-domain socket for the session
+.Ar name .
 .El
+.
 .Sh EXAMPLES
-.Dl dtch foo vim &
-.Dl atch foo
+.Bd -literal -offset indent
+dtch foo vim &
+atch foo
+.Ed
+.
 .Sh SEE ALSO
 .Xr nohup 1 ,
 .Xr screen 1 ,

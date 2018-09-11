@@ -1,14 +1,17 @@
 .Dd September 7, 2018
 .Dt HNEL 1
 .Os "Causal Agency"
+.
 .Sh NAME
 .Nm hnel
 .Nd PTY input remapper
+.
 .Sh SYNOPSIS
 .Nm
 .Ar string1
 .Ar string2
-.Ar "command ..."
+.Ar command ...
+.
 .Sh DESCRIPTION
 .Nm
 runs the
@@ -21,8 +24,10 @@ to the corresponding characters in
 Type
 .Ic ^S
 to toggle remapping.
+.
 .Sh EXAMPLES
 .Dl hnel '[]{}' '{}[]' vim
+.
 .Sh SEE ALSO
 .Xr tr 1 ,
 .Xr forkpty 3

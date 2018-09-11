@@ -1,48 +1,63 @@
 .Dd September 8, 2018
 .Dt BROT 1
 .Os "Causal Agency"
+.
 .Sh NAME
 .Nm brot
 .Nd Mandelbrot renderer
+.
 .Sh SYNOPSIS
 .Nm
 .Op Fl i Ar depth
 .Op Fl s Ar samples
 .Op Fl t Ar a+bi
 .Op Fl f Ar a+bi
+.
 .Sh DESCRIPTION
 .Nm
 renders the Mandelbrot set
 in grayscale.
+.
 .Pp
 The arguments are as follows:
 .Bl -tag -width Ds
 .It Fl f Ar a+bi
 Set complex transform factor.
+.
 .It Fl i Ar depth
 Set number of iterations.
+.
 .It Fl s Ar samples
 Set number of samples per pixel.
+.
 .It Fl t Ar a+bi
 Set complex translation term.
 .El
+.
 .Pp
 The interactive keys are as follows:
 .Bl -tag -width Ds
 .It Ic q
 Quit.
+.
 .It Ic ,.
 Adjust depth.
+.
 .It Ic []
 Adjust samples.
+.
 .It Ic hl
 Adjust real component of translation.
+.
 .It Ic kj
 Adjust imaginary componenent of translation.
+.
 .It Ic ui
 Adjust rotation.
+.
 .It Ic -+
 Adjust scale.
+.
 .It Ic 0
 Reset translation and transform.
 .El

@@ -1,33 +1,43 @@
 .Dd September 7, 2018
 .Dt SCHEME 1
 .Os "Causal Agency"
+.
 .Sh NAME
 .Nm scheme
 .Nd terminal color scheme
+.
 .Sh SYNOPSIS
 .Nm
 .Op Fl acghlmtx
+.
 .Sh DESCRIPTION
 .Nm
 generates a terminal color scheme
 and outputs it in a number of formats.
+.
 .Pp
 The arguments are as follows:
 .Bl -tag -width Ds
 .It Fl a
 Output only the 16 ANSI colors.
+.
 .It Fl c
 Output a C header file.
+.
 .It Fl g
 Output a swatch PNG.
+.
 .It Fl h
 Output HSV.
+.
 .It Fl l
 Output Linux console OSC sequences.
+.
 .It Fl m
 Output a
 .Xr mintty 1
 theme.
+.
 .It Fl t
 Additionally output terminal
 background,
@@ -36,6 +46,7 @@ bold,
 selection
 and cursor
 colors.
+.
 .It Fl x
 Output hexadecimal RGB.
 .El

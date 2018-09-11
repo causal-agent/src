@@ -1,18 +1,21 @@
 .Dd September 7, 2018
 .Dt PBD 1
 .Os "Causal Agency"
+.
 .Sh NAME
 .Nm pbd ,
 .Nm pbcopy ,
 .Nm pbpaste ,
 .Nm open
 .Nd macOS pasteboard daemon
+.
 .Sh SYNOPSIS
 .Nm
 .Nm pbcopy
 .Nm pbpaste
 .Nm open
 .Ar
+.
 .Sh DESCRIPTION
 .Nm
 is a daemon which pipes into macOS
@@ -23,6 +26,7 @@ and invokes
 .Xr open 1
 in response to messages
 sent over TCP port 7062.
+.
 .Pp
 The socket can be forwarded through
 .Xr ssh 1
@@ -34,15 +38,19 @@ and
 can be used remotely
 to access the local pasteboard
 and open URLs.
+.
 .Pp
 Forwarding can be configured with:
-.Bd -literal -offset indent
-RemoteForward 7062 127.0.0.1:7062
-.Ed
+.Pp
+.Dl RemoteForward 7062 127.0.0.1:7062
+.
 .Sh EXAMPLES
-.Dl pbd &
-.Dl ssh -R 7062:127.0.0.1:7062 tux.local
-.Dl pbpaste
+.Bd -literal -offset indent
+pbd &
+ssh -R 7062:127.0.0.1:7062 tux.local
+pbpaste
+.Ed
+.
 .Sh SEE ALSO
 .Xr open 1 ,
 .Xr pbcopy 1 ,
