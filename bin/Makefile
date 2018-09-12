@@ -39,6 +39,9 @@ atch: dtch
 open pbcopy pbpaste: pbd
 	ln -f pbd $@
 
+README: bin.7
+	mandoc bin.7 | sed $$'s/.\b//g' > README
+
 scheme.png: scheme
 	./scheme -t -g > scheme.png
 

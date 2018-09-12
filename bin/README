@@ -1,0 +1,24 @@
+bin(7)                 Miscellaneous Information Manual                 bin(7)
+
+NAME
+     bin – various utilities
+
+DESCRIPTION
+     Various tools primarily targeting Darwin, FreeBSD and NetBSD.  Some tools
+     target Linux.
+
+     bri(1)      backlight brightness control
+     dtch(1)     detached sessions
+     fbatt(1)    framebuffer battery indicator
+     fbclock(1)  framebuffer clock
+     glitch(1)   PNG glitcher
+     hnel(1)     PTY input remapper
+     klon(6)     Klondike solitaire
+     modem(1)    fixed baud rate wrapper
+     pbd(1)      macOS pasteboard daemon
+     pngo(1)     PNG optimizer
+     wake(1)     wake-on-LAN
+     watch(1)    watch files
+     xx(1)       hexdump
+
+Causal Agency                 September 11, 2018                 Causal Agency
