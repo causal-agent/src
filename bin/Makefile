@@ -3,7 +3,7 @@ PREFIX = ~/.local
 BINS = atch dtch glitch hnel modem open pbcopy pbd pbpaste pngo scheme wake xx
 BINS_BSD = watch
 BINS_LINUX = bri fbatt fbclock
-BINS_ALL = $(BINS) $(BINS_BSD) $(BINS_LINUX) $(GAMES_BSD)
+BINS_ALL = $(BINS) $(BINS_BSD) $(BINS_LINUX)
 
 GAMES_BSD = klon
 GAMES_ALL = $(GAMES_BSD)
