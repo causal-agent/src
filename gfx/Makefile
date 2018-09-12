@@ -2,7 +2,7 @@ GFX ?= cocoa
 PREFIX = ~/.local
 
 BINS = brot gfxx
-MAN1 = $(BINS:%=%.1)
+MAN1 = $(BINS:%=man/%.1)
 
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lm -lz
@@ -10,9 +10,6 @@ LDLIBS_cocoa = -framework Cocoa
 LDLIBS_x11 = -lX11
 
 all: .gitignore tags $(BINS)
-
-.gitignore: Makefile
-	echo '*.o' tags $(BINS) | tr ' ' '\n' > .gitignore
 
 tags: *.h *.c
 	ctags -w *.h *.c
@@ -27,11 +24,14 @@ brot: brot.o $(GFX).o
 gfxx: gfxx.o $(GFX).o
 	$(CC) $(LDFLAGS) gfxx.o $(GFX).o $(LDLIBS) $(LDLIBS_$(GFX)) -o $@
 
-README: gfx.7
-	mandoc gfx.7 | sed $$'s/.\b//g' > README
-
 clean:
 	rm -f tags *.o $(BINS)
+
+README: man/gfx.7
+	mandoc man/gfx.7 | sed $$'s/.\b//g' > README
+
+.gitignore: Makefile
+	echo '*.o' tags $(BINS) | tr ' ' '\n' > .gitignore
 
 link:
 	mkdir -p $(PREFIX)/bin $(PREFIX)/share/man/man1
