@@ -8,8 +8,8 @@ BINS_ALL = $(BINS) $(BINS_BSD) $(BINS_LINUX)
 GAMES_BSD = klon
 GAMES_ALL = $(GAMES_BSD)
 
-MAN1 = $(BINS_ALL:%=%.1)
-MAN6 = $(GAMES_ALL:%=%.6)
+MAN1 = $(BINS_ALL:%=man/%.1)
+MAN6 = $(GAMES_ALL:%=man/%.6)
 
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lcurses -lm -lutil -lz
@@ -19,11 +19,6 @@ any: .gitignore tags $(BINS)
 bsd: any $(BINS_BSD) $(GAMES_BSD)
 
 linux: any $(BINS_LINUX)
-
-.gitignore: Makefile
-	echo tags scheme.h *.o $(BINS_ALL) $(GAMES_ALL) scheme.png \
-		| tr ' ' '\n' \
-		> .gitignore
 
 tags: *.c
 	ctags -w *.c
@@ -39,9 +34,6 @@ atch: dtch
 open pbcopy pbpaste: pbd
 	ln -f pbd $@
 
-README: bin.7
-	mandoc bin.7 | sed $$'s/.\b//g' > README
-
 scheme.png: scheme
 	./scheme -t -g > scheme.png
 
@@ -50,7 +42,15 @@ setuid: bri
 	chmod u+s bri
 
 clean:
-	rm -f tags $(BINS_ALL) $(GAMES_ALL)
+	rm -f tags scheme.h *.o $(BINS_ALL) $(GAMES_ALL) scheme.png
+
+README: man/bin.7
+	mandoc man/bin.7 | sed $$'s/.\b//g' > README
+
+.gitignore: Makefile
+	echo tags scheme.h *.o $(BINS_ALL) $(GAMES_ALL) scheme.png \
+		| tr ' ' '\n' \
+		> .gitignore
 
 link:
 	mkdir -p $(PREFIX)/bin $(PREFIX)/share/man/man1 $(PREFIX)/share/man/man6
