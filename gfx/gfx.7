@@ -1,0 +1,30 @@
+.Dd September 11, 2018
+.Dt gfx 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm gfx
+.Nd graphical utilities
+.
+.Sh DESCRIPTION
+Graphial tools targeting
+Cocoa,
+X11
+and Linux framebuffer.
+.
+.Pp
+.Bl -tag -width "gfxx(1)" -compact
+.It Xr brot 1
+Mandelbrot renderer
+.
+.It Xr gfxx 1
+graphics data explorer
+.El
+.
+.Pp
+To build,
+run one of:
+.Pp
+.Dl make GFX=cocoa
+.Dl make GFX=x11
+.Dl make GFX=fb

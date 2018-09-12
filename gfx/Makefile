@@ -27,6 +27,9 @@ brot: brot.o $(GFX).o
 gfxx: gfxx.o $(GFX).o
 	$(CC) $(LDFLAGS) gfxx.o $(GFX).o $(LDLIBS) $(LDLIBS_$(GFX)) -o $@
 
+README: gfx.7
+	mandoc gfx.7 | sed $$'s/.\b//g' > README
+
 clean:
 	rm -f tags *.o $(BINS)
 
