@@ -249,20 +249,55 @@ static struct {
 	uint8_t entries[256][3];
 } palette;
 
-static uint16_t paletteIndex(const uint8_t *rgb) {
-	uint16_t i;
+static struct {
+	uint32_t len;
+	uint8_t notAlpha[256];
+} trans;
+
+static uint32_t paletteIndex(bool alpha, const uint8_t *rgba) {
+	uint32_t i;
 	for (i = 0; i < palette.len; ++i) {
-		if (0 == memcmp(palette.entries[i], rgb, 3)) break;
+		if (alpha && trans.notAlpha[i] != (uint8_t)~rgba[3]) continue;
+		if (0 == memcmp(palette.entries[i], rgba, 3)) break;
 	}
 	return i;
 }
 
-static bool paletteAdd(const uint8_t *rgb) {
-	uint16_t i = paletteIndex(rgb);
+static bool paletteAdd(bool alpha, const uint8_t *rgba) {
+	uint32_t i = paletteIndex(alpha, rgba);
 	if (i < palette.len) return true;
 	if (i == 256) return false;
-	memcpy(palette.entries[palette.len++], rgb, 3);
+	i = palette.len++;
+	memcpy(palette.entries[i], rgba, 3);
+	if (alpha && rgba[3] != 255) {
+		trans.notAlpha[i] = ~rgba[3];
+		trans.len = i + 1;
+	}
 	return true;
+}
+
+static void transCompact(void) {
+	uint32_t i;
+	for (i = 0; i < trans.len; ++i) {
+		if (!trans.notAlpha[i]) break;
+	}
+	if (i == trans.len) return;
+
+	for (uint32_t j = i + 1; j < trans.len; ++j) {
+		if (!trans.notAlpha[j]) continue;
+
+		uint8_t notAlpha = trans.notAlpha[i];
+		trans.notAlpha[i] = trans.notAlpha[j];
+		trans.notAlpha[j] = notAlpha;
+
+		uint8_t rgb[3];
+		memcpy(rgb, palette.entries[i], 3);
+		memcpy(palette.entries[i], palette.entries[j], 3);
+		memcpy(palette.entries[j], rgb, 3);
+
+		i++;
+	}
+	trans.len = i;
 }
 
 static void readPalette(void) {
@@ -288,6 +323,33 @@ static void writePalette(void) {
 	struct Chunk plte = { .size = 3 * palette.len, .type = "PLTE" };
 	writeChunk(plte);
 	writeExpect(palette.entries, plte.size);
+	writeCrc();
+}
+
+static void readTrans(struct Chunk chunk) {
+	trans.len = chunk.size;
+	uint8_t alpha[256];
+	readExpect(alpha, chunk.size, "transparency alpha");
+	readCrc();
+
+	for (uint32_t i = 0; i < trans.len; ++i) {
+		trans.notAlpha[i] = ~alpha[i];
+	}
+
+	if (verbose) fprintf(stderr, "%s: transparency length %u\n", path, trans.len);
+}
+
+static void writeTrans(void) {
+	if (verbose) fprintf(stderr, "%s: transparency length %u\n", path, trans.len);
+
+	uint8_t alpha[256];
+	for (uint32_t i = 0; i < trans.len; ++i) {
+		alpha[i] = ~trans.notAlpha[i];
+	}
+
+	struct Chunk trns = { .size = trans.len, .type = "tRNS" };
+	writeChunk(trns);
+	writeExpect(alpha, trns.size);
 	writeCrc();
 }
 
@@ -322,6 +384,8 @@ static void readData(void) {
 			if (error == Z_STREAM_END) break;
 			if (error != Z_OK) errx(EX_DATAERR, "%s: inflate: %s", path, stream.msg);
 
+		} else if (0 == memcmp(chunk.type, "tRNS", 4)) {
+			readTrans(chunk);
 		} else if (0 == memcmp(chunk.type, "IEND", 4)) {
 			errx(EX_DATAERR, "%s: missing IDAT chunk", path);
 		} else {
@@ -527,18 +591,21 @@ static void discardColor(void) {
 }
 
 static void indexColor(void) {
-	if (header.color != Truecolor || header.depth != 8) return;
+	if (header.color != Truecolor && header.color != TruecolorAlpha) return;
+	if (header.depth != 8) return;
+	bool alpha = (header.color == TruecolorAlpha);
 	for (uint32_t y = 0; y < header.height; ++y) {
 		for (uint32_t x = 0; x < header.width; ++x) {
-			if (!paletteAdd(&lines[y]->data[x * 3])) return;
+			if (!paletteAdd(alpha, &lines[y]->data[x * pixelSize()])) return;
 		}
 	}
 
+	if (alpha) transCompact();
 	uint8_t *ptr = data;
 	for (uint32_t y = 0; y < header.height; ++y) {
 		*ptr++ = lines[y]->type;
 		for (uint32_t x = 0; x < header.width; ++x) {
-			*ptr++ = paletteIndex(&lines[y]->data[x * 3]);
+			*ptr++ = paletteIndex(alpha, &lines[y]->data[x * pixelSize()]);
 		}
 	}
 	header.color = Indexed;
@@ -691,7 +758,10 @@ static void optimize(const char *inPath, const char *outPath) {
 
 	writeSignature();
 	writeHeader();
-	if (header.color == Indexed) writePalette();
+	if (header.color == Indexed) {
+		writePalette();
+		if (trans.len) writeTrans();
+	}
 	writeData();
 	writeEnd();
 	free(data);
