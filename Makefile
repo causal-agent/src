@@ -12,5 +12,5 @@ all: $(TXTS)
 clean:
 	rm -f $(TXTS)
 
-install:
+install: $(TXTS)
 	cp $(TXTS) $(WEBROOT)
