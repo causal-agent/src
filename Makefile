@@ -9,8 +9,11 @@ all: $(TXTS)
 .7.txt:
 	mandoc $< | sed $$'s/.\b//g' > $@
 
-clean:
-	rm -f $(TXTS)
+feed.atom: $(TXTS)
+	./feed.sh > feed.atom
 
-install: $(TXTS)
-	install -p -m 644 $(TXTS) $(WEBROOT)
+clean:
+	rm -f $(TXTS) feed.atom
+
+install: $(TXTS) feed.atom
+	install -p -m 644 $(TXTS) feed.atom $(WEBROOT)
