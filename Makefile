@@ -13,4 +13,4 @@ clean:
 	rm -f $(TXTS)
 
 install: $(TXTS)
-	cp $(TXTS) $(WEBROOT)
+	install -p -m 644 $(TXTS) $(WEBROOT)
