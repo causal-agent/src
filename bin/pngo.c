@@ -172,15 +172,11 @@ static void printHeader(void) {
 	);
 }
 
-static void readHeader(void) {
-	struct Chunk ihdr = readChunk();
-	if (0 != memcmp(ihdr.type, "IHDR", 4)) {
-		errx(EX_DATAERR, "%s: expected IHDR, found %s", path, typeStr(ihdr));
-	}
-	if (ihdr.size != sizeof(header)) {
+static void readHeader(struct Chunk chunk) {
+	if (chunk.size != sizeof(header)) {
 		errx(
 			EX_DATAERR, "%s: expected IHDR size %zu, found %u",
-			path, sizeof(header), ihdr.size
+			path, sizeof(header), chunk.size
 		);
 	}
 	readExpect(&header, sizeof(header), "header");
@@ -254,6 +250,12 @@ static struct {
 	uint8_t notAlpha[256];
 } trans;
 
+static void paletteClear(void) {
+	palette.len = 0;
+	trans.len = 0;
+	memset(trans.notAlpha, 0, sizeof(trans.notAlpha));
+}
+
 static uint32_t paletteIndex(bool alpha, const uint8_t *rgba) {
 	uint32_t i;
 	for (i = 0; i < palette.len; ++i) {
@@ -300,13 +302,7 @@ static void transCompact(void) {
 	trans.len = i;
 }
 
-static void readPalette(void) {
-	struct Chunk chunk;
-	for (;;) {
-		chunk = readChunk();
-		if (0 == memcmp(chunk.type, "PLTE", 4)) break;
-		skipChunk(chunk);
-	}
+static void readPalette(struct Chunk chunk) {
 	if (chunk.size % 3) {
 		errx(EX_DATAERR, "%s: PLTE size %u not divisible by 3", path, chunk.size);
 	}
@@ -360,7 +356,7 @@ static void allocData(void) {
 	if (!data) err(EX_OSERR, "malloc(%zu)", dataSize());
 }
 
-static void readData(void) {
+static void readData(struct Chunk chunk) {
 	if (verbose) fprintf(stderr, "%s: data size %zu\n", path, dataSize());
 
 	struct z_stream_s stream = { .next_out = data, .avail_out = dataSize() };
@@ -368,29 +364,27 @@ static void readData(void) {
 	if (error != Z_OK) errx(EX_SOFTWARE, "%s: inflateInit: %s", path, stream.msg);
 
 	for (;;) {
-		struct Chunk chunk = readChunk();
-		if (0 == memcmp(chunk.type, "IDAT", 4)) {
-			uint8_t *idat = malloc(chunk.size);
-			if (!idat) err(EX_OSERR, "malloc");
-
-			readExpect(idat, chunk.size, "image data");
-			readCrc();
-
-			stream.next_in = idat;
-			stream.avail_in = chunk.size;
-			int error = inflate(&stream, Z_SYNC_FLUSH);
-			free(idat);
-
-			if (error == Z_STREAM_END) break;
-			if (error != Z_OK) errx(EX_DATAERR, "%s: inflate: %s", path, stream.msg);
-
-		} else if (0 == memcmp(chunk.type, "tRNS", 4)) {
-			readTrans(chunk);
-		} else if (0 == memcmp(chunk.type, "IEND", 4)) {
+		if (0 != memcmp(chunk.type, "IDAT", 4)) {
 			errx(EX_DATAERR, "%s: missing IDAT chunk", path);
-		} else {
-			skipChunk(chunk);
 		}
+
+		uint8_t *idat = malloc(chunk.size);
+		if (!idat) err(EX_OSERR, "malloc");
+
+		readExpect(idat, chunk.size, "image data");
+		readCrc();
+
+		stream.next_in = idat;
+		stream.avail_in = chunk.size;
+		int error = inflate(&stream, Z_SYNC_FLUSH);
+		free(idat);
+
+		if (error == Z_STREAM_END) break;
+		if (error != Z_OK) {
+			errx(EX_DATAERR, "%s: inflate: %s", path, stream.msg);
+		}
+
+		chunk = readChunk();
 	}
 
 	inflateEnd(&stream);
@@ -724,16 +718,35 @@ static void optimize(const char *inPath, const char *outPath) {
 	}
 
 	readSignature();
-	readHeader();
+	struct Chunk ihdr = readChunk();
+	if (0 != memcmp(ihdr.type, "IHDR", 4)) {
+		errx(EX_DATAERR, "%s: expected IHDR, found %s", path, typeStr(ihdr));
+	}
+	readHeader(ihdr);
 	if (header.interlace != Progressive) {
 		errx(
 			EX_CONFIG, "%s: unsupported interlace method %hhu",
 			path, header.interlace
 		);
 	}
-	if (header.color == Indexed) readPalette();
+
+	paletteClear();
 	allocData();
-	readData();
+	for (;;) {
+		struct Chunk chunk = readChunk();
+		if (0 == memcmp(chunk.type, "PLTE", 4)) {
+			readPalette(chunk);
+		} else if (0 == memcmp(chunk.type, "tRNS", 4)) {
+			readTrans(chunk);
+		} else if (0 == memcmp(chunk.type, "IDAT", 4)) {
+			readData(chunk);
+		} else if (0 != memcmp(chunk.type, "IEND", 4)) {
+			skipChunk(chunk);
+		} else {
+			break;
+		}
+	}
+
 	fclose(file);
 
 	allocLines();
