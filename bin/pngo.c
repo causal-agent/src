@@ -247,19 +247,18 @@ static struct {
 
 static struct {
 	uint32_t len;
-	uint8_t notAlpha[256];
+	uint8_t alpha[256];
 } trans;
 
 static void paletteClear(void) {
 	palette.len = 0;
 	trans.len = 0;
-	memset(trans.notAlpha, 0, sizeof(trans.notAlpha));
 }
 
 static uint32_t paletteIndex(bool alpha, const uint8_t *rgba) {
 	uint32_t i;
 	for (i = 0; i < palette.len; ++i) {
-		if (alpha && trans.notAlpha[i] != (uint8_t)~rgba[3]) continue;
+		if (alpha && i < trans.len && trans.alpha[i] != rgba[3]) continue;
 		if (0 == memcmp(palette.entries[i], rgba, 3)) break;
 	}
 	return i;
@@ -269,11 +268,11 @@ static bool paletteAdd(bool alpha, const uint8_t *rgba) {
 	uint32_t i = paletteIndex(alpha, rgba);
 	if (i < palette.len) return true;
 	if (i == 256) return false;
-	i = palette.len++;
 	memcpy(palette.entries[i], rgba, 3);
-	if (alpha && rgba[3] != 255) {
-		trans.notAlpha[i] = ~rgba[3];
-		trans.len = i + 1;
+	palette.len++;
+	if (alpha) {
+		trans.alpha[i] = rgba[3];
+		trans.len++;
 	}
 	return true;
 }
@@ -281,16 +280,16 @@ static bool paletteAdd(bool alpha, const uint8_t *rgba) {
 static void transCompact(void) {
 	uint32_t i;
 	for (i = 0; i < trans.len; ++i) {
-		if (!trans.notAlpha[i]) break;
+		if (trans.alpha[i] == 0xFF) break;
 	}
 	if (i == trans.len) return;
 
 	for (uint32_t j = i + 1; j < trans.len; ++j) {
-		if (!trans.notAlpha[j]) continue;
+		if (trans.alpha[j] == 0xFF) continue;
 
-		uint8_t notAlpha = trans.notAlpha[i];
-		trans.notAlpha[i] = trans.notAlpha[j];
-		trans.notAlpha[j] = notAlpha;
+		uint8_t alpha = trans.alpha[i];
+		trans.alpha[i] = trans.alpha[j];
+		trans.alpha[j] = alpha;
 
 		uint8_t rgb[3];
 		memcpy(rgb, palette.entries[i], 3);
@@ -324,28 +323,16 @@ static void writePalette(void) {
 
 static void readTrans(struct Chunk chunk) {
 	trans.len = chunk.size;
-	uint8_t alpha[256];
-	readExpect(alpha, chunk.size, "transparency alpha");
+	readExpect(trans.alpha, chunk.size, "transparency alpha");
 	readCrc();
-
-	for (uint32_t i = 0; i < trans.len; ++i) {
-		trans.notAlpha[i] = ~alpha[i];
-	}
-
 	if (verbose) fprintf(stderr, "%s: transparency length %u\n", path, trans.len);
 }
 
 static void writeTrans(void) {
 	if (verbose) fprintf(stderr, "%s: transparency length %u\n", path, trans.len);
-
-	uint8_t alpha[256];
-	for (uint32_t i = 0; i < trans.len; ++i) {
-		alpha[i] = ~trans.notAlpha[i];
-	}
-
 	struct Chunk trns = { .size = trans.len, .type = "tRNS" };
 	writeChunk(trns);
-	writeExpect(alpha, trns.size);
+	writeExpect(trans.alpha, trns.size);
 	writeCrc();
 }
 
@@ -593,8 +580,8 @@ static void indexColor(void) {
 			if (!paletteAdd(alpha, &lines[y]->data[x * pixelSize()])) return;
 		}
 	}
+	transCompact();
 
-	if (alpha) transCompact();
 	uint8_t *ptr = data;
 	for (uint32_t y = 0; y < header.height; ++y) {
 		*ptr++ = lines[y]->type;
