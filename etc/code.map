@@ -14,6 +14,7 @@ keycode 12 = underscore minus
 keycode 26 = braceleft bracketleft
 keycode 27 = braceright bracketright
 keycode 43 = bar backslash
+keycode 58 = Escape
 
 keycode 100 = Compose
 keycode 125 = Escape
