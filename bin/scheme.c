@@ -89,6 +89,18 @@ static void generate(void) {
 	scheme.cursor     = x(scheme.dark[White],    0.0, 1.0, 0.8);
 }
 
+static void swap(struct Hsv *a, struct Hsv *b) {
+	struct Hsv t;
+	t = *a;
+	*a = *b;
+	*b = t;
+}
+
+static void invert(void) {
+	swap(&scheme.dark[Black], &scheme.light[White]);
+	swap(&scheme.light[Black], &scheme.dark[White]);
+}
+
 static void printHsv(struct Hsv hsv) {
 	printf("%g,%g,%g\n", hsv.h, hsv.s, hsv.v);
 }
@@ -265,9 +277,10 @@ int main(int argc, char *argv[]) {
 	bool ansi = true;
 	char out = 'x';
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "acghlmtx"))) {
+	while (0 < (opt = getopt(argc, argv, "acghilmtx"))) {
 		switch (opt) {
 			break; case 'a': ansi = true;
+			break; case 'i': invert();
 			break; case 't': ansi = false;
 			break; case '?': return EX_USAGE;
 			break; default: out = opt;
