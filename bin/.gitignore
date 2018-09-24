@@ -1,6 +1,7 @@
 tags
 scheme.h
-*.o
+fbatt.o
+fbclock.o
 atch
 dtch
 glitch
@@ -18,5 +19,6 @@ watch
 bri
 fbatt
 fbclock
+psfed
 klon
 scheme.png

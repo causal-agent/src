@@ -1,0 +1,137 @@
+.Dd September 24, 2018
+.Dt PSFED 1
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm psfed
+.Nd PSF2 font editor
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl g Ar glyphs
+.Op Fl h Ar height
+.Op Fl w Ar width
+.Ar file
+.
+.Sh DESCRIPTION
+.Nm
+is a PSF2 font editor
+for the Linux framebuffer.
+.
+.Pp
+The arguments are as follows:
+.
+.Bl -tag -width Ds
+.It Fl g Ar glyphs
+Set the number of glyphs in a new font.
+The default number of glyphs is 256.
+.
+.It Fl h Ar height
+Set the height of a new font.
+The default height is 16.
+.
+.It Fl w Ar width
+Set the width of a new font.
+The default width is 8.
+.El
+.
+.Ss Normal Mode
+In normal mode,
+each glyph is displayed in a grid.
+.
+.Pp
+.Bl -tag -width Ds -compact
+.It Ic q
+Quit.
+.Nm
+will ask for confirmation
+if the font has been modified
+since the last write.
+.
+.It Ic w
+Write font to
+.Ar file .
+.
+.It Ic - Ic +
+Adjust display scale.
+.
+.It Ic h Ic l
+Select previous/next glyph.
+.
+.It Ic k Ic j
+Select glyph in previous/next row.
+.
+.It Ic e
+Edit the selected glyph in
+.Sx Edit Mode .
+.
+.It Ic i
+Enter
+.Sx Preview Mode .
+.El
+.
+.Ss Edit Mode
+In edit mode,
+the selected glyph is displayed for editing
+surrounded by a checked border.
+The glyph is also displayed unscaled
+in the bottom-right corner.
+.
+.Pp
+.Bl -tag -width Ds -compact
+.It Ic ESC
+Return to
+.Sx Normal Mode .
+.
+.It Ic - Ic +
+Adjust display scale.
+.
+.It Ic h Ic l
+Select previous/next bit in row.
+.
+.It Ic k Ic j
+Select previous/next bit in column.
+.
+.It Ic SPACE
+Flip selected bit.
+.
+.It Ic u
+Revert glyph to initial state.
+.El
+.
+.Ss Preview Mode
+In preview mode,
+arbitrary text may be entered
+for preview.
+Press
+.Ic ESC
+to return to
+.Sx Normal Mode .
+.
+.Sh ENVIRONMENT
+.Bl -tag -width FRAMEBUFFER
+.It Ev FRAMEBUFFER
+The framebuffer device path.
+The default path is
+.Pa /dev/fb0 .
+.El
+.
+.Sh SEE ALSO
+.Xr psfaddtable 1 ,
+.Xr psfgettable 1 ,
+.Xr psfstriptable 1 ,
+.Xr setfont 8
+.
+.Sh CAVEATS
+.Nm
+does not support Unicode tables.
+Use
+.Xr psfaddtable 1
+to add Unicode tables
+to fonts created by
+.Nm .
+.
+.Sh BUGS
+.Nm
+makes no attempt to convert header fields
+to and from little-endian format.
