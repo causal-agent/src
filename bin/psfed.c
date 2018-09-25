@@ -337,6 +337,13 @@ static void inputEdit(char ch) {
 		break; case 'k': if (edit.y) edit.y--;
 		break; case 'j': if (edit.y + 1 < header.glyph.height) edit.y++;
 		break; case ' ': bitFlip(edit.index, edit.x, edit.y);
+		break; case 'r': {
+			for (uint32_t y = 0; y < header.glyph.height; ++y) {
+				for (uint32_t x = 0; x < header.glyph.width; ++x) {
+					bitFlip(edit.index, x, y);
+				}
+			}
+		}
 		break; case 'u': {
 			memcpy(glyph(edit.index), edit.undo, header.glyph.size);
 		}
