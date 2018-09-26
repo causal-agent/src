@@ -248,6 +248,7 @@ static struct {
 	uint32_t scale;
 	uint32_t index;
 	bool modified;
+	uint8_t *copy;
 } normal;
 
 static struct {
@@ -278,11 +279,11 @@ static void normalDec(uint32_t n) {
 static void normalInc(uint32_t n) {
 	if (normal.index + n < header.glyph.len) normal.index += n;
 }
-static void normalPrint(void) {
+static void normalPrint(const char *prefix) {
 	if (normal.index <= 256) {
-		printf("index: %02X '%lc'\n", normal.index, CP437[normal.index]);
+		printf("%s: %02X '%lc'\n", prefix, normal.index, CP437[normal.index]);
 	} else {
-		printf("index: %02X\n", normal.index);
+		printf("%s: %02X\n", prefix, normal.index);
 	}
 }
 
@@ -299,10 +300,21 @@ static void inputNormal(char ch) {
 		}
 		break; case '-': if (normal.scale) normal.scale--; frameClear();
 		break; case '+': normal.scale++;
-		break; case 'h': normalDec(1); normalPrint();
-		break; case 'l': normalInc(1); normalPrint();
-		break; case 'k': normalDec(NormalCols); normalPrint();
-		break; case 'j': normalInc(NormalCols); normalPrint();
+		break; case 'h': normalDec(1); normalPrint("index");
+		break; case 'l': normalInc(1); normalPrint("index");
+		break; case 'k': normalDec(NormalCols); normalPrint("index");
+		break; case 'j': normalInc(NormalCols); normalPrint("index");
+		break; case 'y': {
+			if (!normal.copy) normal.copy = malloc(header.glyph.size);
+			if (!normal.copy) err(EX_OSERR, "malloc");
+			memcpy(normal.copy, glyph(normal.index), header.glyph.size);
+			normalPrint("copy");
+		}
+		break; case 'p': {
+			if (!normal.copy) break;
+			normal.modified = true;
+			memcpy(glyph(normal.index), normal.copy, header.glyph.size);
+		}
 		break; case 'e': {
 			normal.modified = true;
 			edit.index = normal.index;
