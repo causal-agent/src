@@ -1,0 +1,138 @@
+.Dd September 27, 2018
+.Dt WRITING-MDOC 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm Writing mdoc
+.Nd semantic markup
+.
+.Sh DESCRIPTION
+I recently learned how to write man pages
+so that I could document
+a bunch of little programs I've written.
+Modern man pages are written in
+.Xr mdoc 7 ,
+whose documentation is also available from
+.Lk http://mandoc.bsd.lv .
+.
+.Pp
+.Xr mdoc 7
+differs from many other markup languages
+by providing
+.Dq semantic markup
+rather than just
+.Dq physical markup.
+What this means is that
+the markup indicates what something is,
+not how to format it.
+For example,
+the
+.Ql \&Ar
+macro is used to indicate
+command-line arguments
+rather than one of the macros
+for bold, italic or underline.
+This frees each author of having to choose
+and enables consistent presentation
+across different man pages.
+.
+.Pp
+Another advantage of semantic markup
+is that information can be extracted from it.
+For example,
+.Xr makewhatis 8
+can easily extract the name and short description
+from each man page
+thanks to the
+.Ql \&Nm
+and
+.Ql \&Nd
+macros.
+I use the same information
+to generate an Atom feed for these documents,
+though in admittedly a much less robust way than
+.Xr mandoc 1 .
+.
+.Pp
+When it comes to actually writing
+.Xr mdoc 7 ,
+it can take some getting used to.
+The language is of
+.Xr roff 7
+lineage
+so its syntax is very particular.
+Macros cannot appear inline,
+but must start on new lines
+beginning with
+.Ql \&. .
+Sentences should likewise
+always start on a new line.
+Since I'm in the habit of writing with
+semantic line breaks,
+I actually find these requirements
+fit in well.
+.
+.Pp
+The more frustrating syntax limitation to me
+is the rule against empty lines.
+Without them,
+it can be quite difficult to edit a lengthy document.
+Thankfully,
+lines with only a
+.Ql \&.
+on them are allowed,
+but this still causes visual noise.
+To alleviate that,
+I have a
+.Xr vim 1
+syntax file for
+.Xr mdoc 7
+which conceals the lone dots:
+.
+.Bd -literal -offset indent
+if exists("b:current_syntax")
+	finish
+endif
+
+runtime! syntax/nroff.vim
+unlet! b:current_syntax
+
+setlocal sections+=ShSs
+syntax match mdocBlank /^\\.$/ conceal
+setlocal conceallevel=2
+
+let b:current_syntax = "mdoc"
+.Ed
+.
+.Pp
+It also adds the
+.Xr mdoc 7
+section header and subsection header macros to the
+.Cm sections
+option to make
+.Xr vim 1 Ap s
+.Ic {
+and
+.Ic }
+motions
+aware of them.
+.
+.Pp
+With that,
+I've found writing man pages pleasant and rewarding.
+I've started writing other documents with
+.Xr mdoc 7
+as well,
+as you can see here.
+.
+.Sh SEE ALSO
+.Lk http://rhodesmill.org/brandon/2012/one-sentence-per-line/ "Semantic Linefeeds"
+.
+.Sh AUTHORS
+.An June Aq Mt june@causal.agency
+.
+.Pp
+This document is produced from
+.Xr mdoc 7
+source available from
+.Lk https://code.causal.agency/june/text.causal.agency "Code Toilet"

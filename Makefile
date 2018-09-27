@@ -1,6 +1,7 @@
 WEBROOT = /usr/local/www/text.causal.agency
 
 TXTS += 001-make.txt
+TXTS += 002-writing-mdoc.txt
 
 all: $(TXTS)
 
