@@ -9,6 +9,7 @@ function colonize {
 systemPath=$PATH
 PATH=$(colonize {,/usr{/local,/pkg,},$HOME/.local}/{s,}bin /usr/games)
 CDPATH=:$HOME
+export PWD
 
 export PAGER=less
 export EDITOR=vim
