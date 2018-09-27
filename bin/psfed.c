@@ -248,7 +248,6 @@ static struct {
 	uint32_t scale;
 	uint32_t index;
 	bool modified;
-	uint8_t *copy;
 } normal;
 
 static struct {
@@ -257,6 +256,7 @@ static struct {
 	uint32_t x;
 	uint32_t y;
 	uint8_t *undo;
+	uint8_t *copy;
 } edit = {
 	.scale = 4,
 };
@@ -305,15 +305,10 @@ static void inputNormal(char ch) {
 		break; case 'k': normalDec(NormalCols); normalPrint("index");
 		break; case 'j': normalInc(NormalCols); normalPrint("index");
 		break; case 'y': {
-			if (!normal.copy) normal.copy = malloc(header.glyph.size);
-			if (!normal.copy) err(EX_OSERR, "malloc");
-			memcpy(normal.copy, glyph(normal.index), header.glyph.size);
+			if (!edit.copy) edit.copy = malloc(header.glyph.size);
+			if (!edit.copy) err(EX_OSERR, "malloc");
+			memcpy(edit.copy, glyph(normal.index), header.glyph.size);
 			normalPrint("copy");
-		}
-		break; case 'p': {
-			if (!normal.copy) break;
-			normal.modified = true;
-			memcpy(glyph(normal.index), normal.copy, header.glyph.size);
 		}
 		break; case 'e': {
 			normal.modified = true;
@@ -355,6 +350,9 @@ static void inputEdit(char ch) {
 					bitFlip(edit.index, x, y);
 				}
 			}
+		}
+		break; case 'p': {
+			memcpy(glyph(edit.index), edit.copy, header.glyph.size);
 		}
 		break; case 'u': {
 			memcpy(glyph(edit.index), edit.undo, header.glyph.size);
