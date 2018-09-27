@@ -188,6 +188,10 @@ static uint8_t bitGet(uint32_t index, uint32_t x, uint32_t y) {
 static void bitFlip(uint32_t index, uint32_t x, uint32_t y) {
 	*bitByte(index, x, y) ^= 1 << (7 - x % 8);
 }
+static void bitSet(uint32_t index, uint32_t x, uint32_t y, uint8_t bit) {
+	*bitByte(index, x, y) &= ~(1 << (7 - x % 8));
+	*bitByte(index, x, y) |= bit << (7 - x % 8);
+}
 
 static void drawGlyph(
 	uint32_t destX, uint32_t destY, uint32_t scale,
@@ -344,6 +348,7 @@ static void inputEdit(char ch) {
 		break; case 'k': if (edit.y) edit.y--;
 		break; case 'j': if (edit.y + 1 < header.glyph.height) edit.y++;
 		break; case ' ': bitFlip(edit.index, edit.x, edit.y);
+
 		break; case 'r': {
 			for (uint32_t y = 0; y < header.glyph.height; ++y) {
 				for (uint32_t x = 0; x < header.glyph.width; ++x) {
@@ -351,6 +356,57 @@ static void inputEdit(char ch) {
 				}
 			}
 		}
+
+		break; case 'H': {
+			for (uint32_t x = 0; x < header.glyph.width; ++x) {
+				for (uint32_t y = 0; y < header.glyph.height; ++y) {
+					if (x + 1 < header.glyph.width) {
+						bitSet(edit.index, x, y, bitGet(edit.index, x + 1, y));
+					} else {
+						bitSet(edit.index, x, y, 0);
+					}
+				}
+			}
+		}
+
+		break; case 'L': {
+			uint32_t width = header.glyph.width;
+			for (uint32_t x = width - 1; x < width; --x) {
+				for (uint32_t y = 0; y < header.glyph.height; ++y) {
+					if (x - 1 < width) {
+						bitSet(edit.index, x, y, bitGet(edit.index, x - 1, y));
+					} else {
+						bitSet(edit.index, x, y, 0);
+					}
+				}
+			}
+		}
+
+		break; case 'K': {
+			for (uint32_t y = 0; y < header.glyph.height; ++y) {
+				for (uint32_t x = 0; x < header.glyph.width; ++x) {
+					if (y + 1 < header.glyph.height) {
+						bitSet(edit.index, x, y, bitGet(edit.index, x, y + 1));
+					} else {
+						bitSet(edit.index, x, y, 0);
+					}
+				}
+			}
+		}
+
+		break; case 'J': {
+			uint32_t height = header.glyph.height;
+			for (uint32_t y = height - 1; y < height; --y) {
+				for (uint32_t x = 0; x < header.glyph.width; ++x) {
+					if (y - 1 < height) {
+						bitSet(edit.index, x, y, bitGet(edit.index, x, y - 1));
+					} else {
+						bitSet(edit.index, x, y, 0);
+					}
+				}
+			}
+		}
+
 		break; case 'p': {
 			memcpy(glyph(edit.index), edit.copy, header.glyph.size);
 		}
