@@ -17,6 +17,7 @@ DESCRIPTION
      modem(1)    fixed baud rate wrapper
      pbd(1)      macOS pasteboard daemon
      pngo(1)     PNG optimizer
+     psf2png(1)  PSF2 to PNG renderer
      psfed(1)    PSF2 font editor
      wake(1)     wake-on-LAN
      watch(1)    watch files

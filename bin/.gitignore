@@ -1,7 +1,6 @@
 tags
 scheme.h
-fbatt.o
-fbclock.o
+*.o
 atch
 dtch
 glitch
@@ -12,6 +11,7 @@ pbcopy
 pbd
 pbpaste
 pngo
+psf2png
 scheme
 wake
 xx

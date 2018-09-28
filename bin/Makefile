@@ -1,6 +1,20 @@
 PREFIX = ~/.local
 
-BINS = atch dtch glitch hnel modem open pbcopy pbd pbpaste pngo scheme wake xx
+BINS += atch
+BINS += dtch
+BINS += glitch
+BINS += hnel
+BINS += modem
+BINS += open
+BINS += pbcopy
+BINS += pbd
+BINS += pbpaste
+BINS += pngo
+BINS += psf2png
+BINS += scheme
+BINS += wake
+BINS += xx
+
 BINS_BSD = watch
 BINS_LINUX = bri fbatt fbclock psfed
 BINS_ALL = $(BINS) $(BINS_BSD) $(BINS_LINUX)
