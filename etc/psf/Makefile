@@ -1,6 +1,8 @@
 TABLE = default.u
 
 FONTS += sans6x8.psfu
+FONTS += sans6x10.psfu
+
 PNGS = $(FONTS:psfu=png)
 
 all: $(FONTS)
