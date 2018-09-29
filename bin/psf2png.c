@@ -21,9 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
+#include <unistd.h>
 #include <zlib.h>
-
-static const uint32_t GlyphCols = 32;
 
 static uint32_t crc;
 static void pngWrite(const void *ptr, size_t size) {
@@ -42,8 +41,22 @@ static void pngChunk(const char *type, uint32_t size) {
 }
 
 int main(int argc, char *argv[]) {
+	uint32_t cols = 32;
+	const char *str = NULL;
+
+	int opt;
+	while (0 < (opt = getopt(argc, argv, "c:s:"))) {
+		switch (opt) {
+			break; case 'c': cols = strtoul(optarg, NULL, 0);
+			break; case 's': str = optarg;
+			break; default:  return EX_USAGE;
+		}
+	}
+	if (!cols && str) cols = strlen(str);
+	if (!cols) return EX_USAGE;
+
 	const char *path = NULL;
-	if (argc > 1) path = argv[1];
+	if (optind < argc) path = argv[optind];
 	
 	FILE *file = path ? fopen(path, "r") : stdin;
 	if (!file) err(EX_NOINPUT, "%s", path);
@@ -76,8 +89,9 @@ int main(int argc, char *argv[]) {
 
 	pngWrite("\x89PNG\r\n\x1A\n", 8);
 
-	uint32_t width = header.glyph.width * GlyphCols;
-	uint32_t rows = (header.glyph.len + GlyphCols - 1) / GlyphCols;
+	uint32_t count = (str ? strlen(str) : header.glyph.len);
+	uint32_t width = header.glyph.width * cols;
+	uint32_t rows = (count + cols - 1) / cols;
 	uint32_t height = header.glyph.height * rows;
 
 	pngChunk("IHDR", 13);
@@ -89,12 +103,13 @@ int main(int argc, char *argv[]) {
 	uint8_t data[height][1 + width];
 	memset(data, 0, sizeof(data));
 
-	for (uint32_t i = 0; i < header.glyph.len; ++i) {
-		uint32_t row = header.glyph.height * (i / GlyphCols);
-		uint32_t col = 1 + header.glyph.width * (i % GlyphCols);
+	for (uint32_t i = 0; i < count; ++i) {
+		uint32_t row = header.glyph.height * (i / cols);
+		uint32_t col = 1 + header.glyph.width * (i % cols);
+		uint32_t g = (str ? str[i] : i);
 		for (uint32_t y = 0; y < header.glyph.height; ++y) {
 			for (uint32_t x = 0; x < header.glyph.width; ++x) {
-				uint8_t bit = glyphs[i][y][x / 8] >> (7 - x % 8) & 1;
+				uint8_t bit = glyphs[g][y][x / 8] >> (7 - x % 8) & 1;
 				data[row + y][col + x] = -bit;
 			}
 		}
