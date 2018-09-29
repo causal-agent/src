@@ -252,6 +252,8 @@ static struct {
 	uint32_t scale;
 	uint32_t index;
 	bool modified;
+	bool to;
+	uint32_t from;
 } normal;
 
 static struct {
@@ -292,6 +294,13 @@ static void normalPrint(const char *prefix) {
 }
 
 static void inputNormal(char ch) {
+	if (normal.to) {
+		if (ch < header.glyph.len) normal.index = ch;
+		normalPrint("index");
+		normal.to = false;
+		return;
+	}
+
 	switch (ch) {
 		break; case 'q': {
 			if (!normal.modified) exit(EX_OK);
@@ -308,6 +317,8 @@ static void inputNormal(char ch) {
 		break; case 'l': normalInc(1); normalPrint("index");
 		break; case 'k': normalDec(NormalCols); normalPrint("index");
 		break; case 'j': normalInc(NormalCols); normalPrint("index");
+		break; case 'f': normal.from = normal.index; normal.to = true;
+		break; case 047: normal.index = normal.from; normalPrint("index");
 		break; case 'y': {
 			if (!edit.copy) edit.copy = malloc(header.glyph.size);
 			if (!edit.copy) err(EX_OSERR, "malloc");
