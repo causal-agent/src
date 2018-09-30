@@ -239,7 +239,7 @@ static void drawBorder(uint32_t destX, uint32_t destY, uint32_t scale) {
 	}
 }
 
-enum { LF = '\n', ESC = '\33', DEL = '\177' };
+enum { LF = '\n', Esc = '\33', Del = '\177' };
 
 static enum {
 	Normal,
@@ -351,7 +351,7 @@ static void drawEdit(void) {
 
 static void inputEdit(char ch) {
 	switch (ch) {
-		break; case ESC: mode = Normal; frameClear();
+		break; case Esc: mode = Normal; frameClear();
 		break; case '-': if (edit.scale) edit.scale--; frameClear();
 		break; case '+': edit.scale++;
 		break; case 'h': if (edit.x) edit.x--;
@@ -446,8 +446,8 @@ static void drawPreview(void) {
 
 static void inputPreview(char ch) {
 	switch (ch) {
-		break; case ESC: mode = Normal; frameClear();
-		break; case DEL: {
+		break; case Esc: mode = Normal; frameClear();
+		break; case Del: {
 			if (preview.index) preview.index--;
 			preview.glyphs[preview.index] = 0;
 		}
