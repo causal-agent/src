@@ -1,3 +1,7 @@
+- [Tiffany — I Think We're Alone Now][60]
+- [Pulp — Common People][59]
+- [XTC — Making Plans for Nigel][58]
+- [New Order — Temptation][57]
 - [Street Sects — In for a World of Hurt][56]
 - [New Order — Temptation][55]
 - [Blondie — Heart of Glass][54]
@@ -121,3 +125,7 @@
 [54]: https://youtu.be/fWPhhlKHM80
 [55]: https://youtu.be/xxDv_RTdLQo
 [56]: https://streetsects.bandcamp.com/track/in-for-a-world-of-hurt
+[57]: https://youtu.be/xxDv_RTdLQo
+[58]: https://youtu.be/gZjZBCZWxpg
+[59]: https://youtu.be/yuTMWgOduFM
+[60]: https://youtu.be/w6Q3mHyzn78
