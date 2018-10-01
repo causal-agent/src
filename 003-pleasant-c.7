@@ -1,0 +1,113 @@
+.Dd September 30, 2018
+.Dt PLEASANT-C 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm Pleasant C
+.Nd it's good, actually
+.
+.Sh DESCRIPTION
+I've been writing a lot of C lately
+and actually find it very pleasant.
+I want to talk about some of its ergonomic features.
+These are C99 features unless otherwise noted.
+.
+.Ss Initializer syntax
+Struct and union initializer syntax
+is well generalized.
+Designators can be chained,
+making initializing nested structs easy,
+and all uninitialized fields are zeroed.
+.
+.Bd -literal -offset indent
+struct {
+	struct pollfd fds[2];
+} loop = {
+	.fds[0].fd = STDIN_FILENO,
+	.fds[1].fd = STDOUT_FILENO,
+	.fds[0].events = POLLIN,
+	.fds[1].events = POLLOUT,
+};
+.Ed
+.
+.Ss Variable-length arrays
+VLAs can be multi-dimensional,
+which can avoid manual stride multiplications
+needed to index a flat
+.Xr malloc 3 Ap d
+array.
+.
+.Bd -literal -offset indent
+uint8_t glyphs[len][height][width];
+fread(glyphs, height * width, len, stdin);
+.Ed
+.
+.Ss Incomplete array types
+The last field of a struct can be an
+.Dq incomplete
+array type,
+which means it doesn't have a length.
+A variable amount of space for the struct can be
+.Xr malloc 3 Ap d ,
+or the struct can be used as
+a sort of pointer with fields.
+.
+.Bd -literal -offset indent
+struct Line {
+	enum Filter type;
+	uint8_t data[];
+} *line = &png.data[1 + lineSize()];
+.Ed
+.
+.Ss Anonymous struct and union fields (C11)
+Members of structs or unions
+which are themselves structs or unions
+can be unnamed.
+In that case,
+each of the inner fields
+is treated as a member of the outer struct or union.
+This makes working with tagged unions nicer.
+.
+.Bd -literal -offset indent
+struct Message {
+	enum { Foo, Bar } type;
+	union {
+		uint8_t foo;
+		uint32_t bar;
+	};
+} msg = { .type = Foo, .foo = 0xFF };
+.Ed
+.
+.Ss Static assert (C11)
+Assertions can be made at compile time.
+Most useful for checking sizes of structs.
+.
+.Bd -literal -offset indent
+static_assert(13 == sizeof(struct PNGHeader), "PNG IHDR size");
+.Ed
+.
+.Ss Leading-break switch
+This one is just an odd style choice
+I came across that C happens to allow.
+To prevent accidental fall-through
+in switch statements,
+you can put breaks before the case labels.
+.
+.Bd -literal -offset indent
+while (0 < (opt = getopt(argc, argv, "h:w:"))) {
+	switch (opt) {
+		break; case 'h': height = optarg;
+		break; case 'w': width = optarg;
+		break; default:  return EX_USAGE;
+	}
+}
+.Ed
+.
+.Sh AUTHORS
+.An June Aq Mt june@causal.agency
+.
+.Pp
+This document is produced from
+.Xr mdoc 7
+source available from
+.Lk https://code.causal.agency/june/text.causal.agency "Code Toilet"
