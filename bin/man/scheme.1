@@ -9,6 +9,7 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl acghilmtx
+.Op Fl p Ar n
 .
 .Sh DESCRIPTION
 .Nm
@@ -20,9 +21,10 @@ The arguments are as follows:
 .Bl -tag -width Ds
 .It Fl a
 Output only the 16 ANSI colors.
+This is the default.
 .
 .It Fl c
-Output a C header file.
+Output a C enum.
 .
 .It Fl g
 Output a swatch PNG.
@@ -40,11 +42,17 @@ Output Linux console OSC sequences.
 Output a
 .Xr mintty 1
 theme.
+Should be used with
+.Fl t .
+.
+.It Fl p Ar n
+Only output the color
+.Ar n .
 .
 .It Fl t
 Additionally output terminal
 background,
-text,
+foreground,
 bold,
 selection
 and cursor

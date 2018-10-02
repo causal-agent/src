@@ -42,9 +42,6 @@ struct PSF2Header {
 	uint32_t glyphWidth;
 };
 
-static const uint32_t BG = Scheme.darkBlack;
-static const uint32_t FG = Scheme.darkWhite;
-
 int main() {
 	size_t len;
 
@@ -110,10 +107,10 @@ int main() {
 			uint32_t bottom = header.glyphHeight;
 
 			for (uint32_t y = 0; y < bottom; ++y) {
-				buf[y * info.xres + left - 1] = FG;
+				buf[y * info.xres + left - 1] = DarkWhite;
 			}
 			for (uint32_t x = left - 1; x < info.xres; ++x) {
-				buf[bottom * info.xres + x] = FG;
+				buf[bottom * info.xres + x] = DarkWhite;
 			}
 
 			for (const char *s = str; *s; ++s) {
@@ -123,7 +120,9 @@ int main() {
 					for (uint32_t x = 0; x < header.glyphWidth; ++x) {
 						uint8_t bits = glyph[y * stride + x / 8];
 						uint8_t bit = bits >> (7 - x % 8) & 1;
-						buf[y * info.xres + left + x] = bit ? FG : BG;
+						buf[y * info.xres + left + x] = bit
+							? DarkWhite
+							: DarkBlack;
 					}
 				}
 				left += header.glyphWidth;

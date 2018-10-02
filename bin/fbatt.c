@@ -35,12 +35,6 @@ static const uint32_t Right  = 5 * 8 + 1; // fbclock width.
 static const uint32_t Width  = 8;
 static const uint32_t Height = 16;
 
-static const uint32_t BG     = Scheme.darkBlack;
-static const uint32_t Border = Scheme.darkWhite;
-static const uint32_t Gray   = Scheme.lightBlack;
-static const uint32_t Yellow = Scheme.darkYellow;
-static const uint32_t Red    = Scheme.darkRed;
-
 int main() {
 	int error;
 
@@ -108,20 +102,20 @@ int main() {
 			uint32_t left = info.xres - Right - Width;
 
 			for (uint32_t y = 0; y <= Height; ++y) {
-				buf[y * info.xres + left - 1] = Border;
-				buf[y * info.xres + left + Width] = Border;
+				buf[y * info.xres + left - 1] = DarkWhite;
+				buf[y * info.xres + left + Width] = DarkWhite;
 			}
 			for (uint32_t x = left; x < left + Width; ++x) {
-				buf[Height * info.xres + x] = Border;
+				buf[Height * info.xres + x] = DarkWhite;
 			}
 
 			for (uint32_t y = 0; y < Height; ++y) {
 				for (uint32_t x = left; x < left + Width; ++x) {
 					buf[y * info.xres + x] =
-						(Height - 1 - y > height) ? BG
-						: (percent <= 10) ? Red
-						: (percent <= 30) ? Yellow
-						: Gray;
+						(Height - 1 - y > height) ? DarkBlack
+						: (percent <= 10) ? DarkRed
+						: (percent <= 30) ? DarkYellow
+						: LightBlack;
 				}
 			}
 		}
