@@ -8,7 +8,9 @@
 .
 .Sh SYNOPSIS
 .Nm
+.Op Fl b Ar bg
 .Op Fl c Ar cols
+.Op Fl f Ar fg
 .Op Fl s Ar str
 .Op Ar file
 .
@@ -23,11 +25,23 @@ on standard output.
 .Pp
 The arguments are as follows:
 .Bl -tag -width Ds
+.It Fl b Ar bg
+Use
+.Ar bg
+(hexadecimal RGB)
+as background color.
+The default background color is black.
 .It Fl c Ar cols
 Arrange glyphs in
 .Ar cols
 columns.
 The default number of columns is 32.
+.It Fl f Ar fg
+Use
+.Ar fg
+(hexadecimal RGB)
+as foreground color.
+The default foreground color is white.
 .It Fl s Ar str
 Render glyphs for string
 .Ar str

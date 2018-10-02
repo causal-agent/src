@@ -43,11 +43,15 @@ static void pngChunk(const char *type, uint32_t size) {
 int main(int argc, char *argv[]) {
 	uint32_t cols = 32;
 	const char *str = NULL;
+	uint32_t fg = 0xFFFFFF;
+	uint32_t bg = 0x000000;
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "c:s:"))) {
+	while (0 < (opt = getopt(argc, argv, "b:c:f:s:"))) {
 		switch (opt) {
+			break; case 'b': bg = strtoul(optarg, NULL, 16);
 			break; case 'c': cols = strtoul(optarg, NULL, 0);
+			break; case 'f': fg = strtoul(optarg, NULL, 16);
 			break; case 's': str = optarg;
 			break; default:  return EX_USAGE;
 		}
@@ -97,7 +101,12 @@ int main(int argc, char *argv[]) {
 	pngChunk("IHDR", 13);
 	pngInt(width);
 	pngInt(height);
-	pngWrite("\x08\x00\x00\x00\x00", 5);
+	pngWrite("\x08\x03\x00\x00\x00", 5);
+	pngInt(crc);
+
+	pngChunk("PLTE", 6);
+	pngWrite((uint8_t[]) { bg >> 16, bg >> 8, bg }, 3);
+	pngWrite((uint8_t[]) { fg >> 16, fg >> 8, fg }, 3);
 	pngInt(crc);
 
 	uint8_t data[height][1 + width];
@@ -110,7 +119,7 @@ int main(int argc, char *argv[]) {
 		for (uint32_t y = 0; y < header.glyph.height; ++y) {
 			for (uint32_t x = 0; x < header.glyph.width; ++x) {
 				uint8_t bit = glyphs[g][y][x / 8] >> (7 - x % 8) & 1;
-				data[row + y][col + x] = -bit;
+				data[row + y][col + x] = bit;
 			}
 		}
 	}
