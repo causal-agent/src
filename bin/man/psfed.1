@@ -8,6 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
+.Op Fl H Ar height
 .Op Fl g Ar glyphs
 .Op Fl h Ar height
 .Op Fl w Ar width
@@ -22,6 +23,10 @@ for the Linux framebuffer.
 The arguments are as follows:
 .
 .Bl -tag -width Ds
+.It Fl H Ar height
+Modify the height of an existing font.
+Only increasing the height is allowed.
+.
 .It Fl g Ar glyphs
 Set the number of glyphs in a new font.
 The default number of glyphs is 256.

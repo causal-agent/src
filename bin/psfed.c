@@ -504,10 +504,12 @@ int main(int argc, char *argv[]) {
 	uint32_t newLen = 256;
 	uint32_t newWidth = 8;
 	uint32_t newHeight = 16;
+	uint32_t setHeight = 0;
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "g:h:w:"))) {
+	while (0 < (opt = getopt(argc, argv, "H:g:h:w:"))) {
 		switch (opt) {
+			break; case 'H': setHeight = strtoul(optarg, NULL, 0);
 			break; case 'g': newLen = strtoul(optarg, NULL, 0);
 			break; case 'h': newHeight = strtoul(optarg, NULL, 0);
 			break; case 'w': newWidth = strtoul(optarg, NULL, 0);
@@ -519,6 +521,24 @@ int main(int argc, char *argv[]) {
 
 	path = strdup(argv[optind]);
 	fileRead(newLen, newWidth, newHeight);
+
+	if (setHeight) {
+		if (setHeight < header.glyph.height) {
+			errx(EX_CONFIG, "cannot decrease height");
+		}
+
+		uint32_t setSize = bytes(header.glyph.width) * setHeight;
+		uint8_t *setGlyphs = calloc(header.glyph.len, setSize);
+		for (uint32_t i = 0; i < header.glyph.len; ++i) {
+			memcpy(&setGlyphs[setSize * i], glyph(i), header.glyph.size);
+		}
+		free(glyphs);
+		glyphs = setGlyphs;
+
+		header.glyph.height = setHeight;
+		header.glyph.size = setSize;
+		normal.modified = true;
+	}
 
 	frameOpen();
 	frameClear();
