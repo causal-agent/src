@@ -12,6 +12,7 @@ BINS += pbpaste
 BINS += pngo
 BINS += psf2png
 BINS += scheme
+BINS += ttpre
 BINS += wake
 BINS += xx
 
