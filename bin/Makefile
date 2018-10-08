@@ -59,7 +59,7 @@ clean:
 	rm -f tags scheme.h *.o $(BINS_ALL) $(GAMES_ALL) scheme.png
 
 README: man/bin.7
-	mandoc man/bin.7 | sed $$'s/.\b//g' > README
+	mandoc man/bin.7 | col -b -x > README
 
 .gitignore: Makefile
 	echo tags scheme.h *.o $(BINS_ALL) $(GAMES_ALL) scheme.png \

@@ -28,7 +28,7 @@ clean:
 	rm -f tags *.o $(BINS)
 
 README: man/gfx.7
-	mandoc man/gfx.7 | sed $$'s/.\b//g' > README
+	mandoc man/gfx.7 | col -b -x > README
 
 .gitignore: Makefile
 	echo '*.o' tags $(BINS) | tr ' ' '\n' > .gitignore
