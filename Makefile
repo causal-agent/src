@@ -9,7 +9,7 @@ all: $(TXTS)
 .SUFFIXES: .7 .txt
 
 .7.txt:
-	mandoc $< | sed $$'s/.\b//g' > $@
+	mandoc $< | col -b -x > $@
 
 feed.atom: $(TXTS)
 	./feed.sh > feed.atom
