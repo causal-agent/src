@@ -40,8 +40,8 @@ linux: any $(BINS_LINUX)
 		| tr ' ' '\n' \
 		> .gitignore
 
-tags: *.h *.c
-	ctags -w *.h *.c
+tags: *.c
+	ctags -w *.c
 
 atch: dtch
 	ln -f dtch atch
