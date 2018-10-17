@@ -16,35 +16,40 @@ BINS += ttpre
 BINS += wake
 BINS += xx
 
-BINS_BSD = watch
-BINS_LINUX = bri fbatt fbclock psfed
+BINS_BSD += watch
+
+BINS_LINUX += bri
+BINS_LINUX += fbatt
+BINS_LINUX += fbclock
+BINS_LINUX += psfed
+
 BINS_ALL = $(BINS) $(BINS_BSD) $(BINS_LINUX)
-
-GAMES_BSD = klon
-GAMES_ALL = $(GAMES_BSD)
-
-MAN1 = $(BINS_ALL:%=man/%.1)
-MAN6 = $(GAMES_ALL:%=man/%.6)
+MAN1_ALL = $(BINS_ALL:%=man/%.1)
 
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lcurses -lm -lutil -lz
 
 any: .gitignore tags $(BINS)
 
-bsd: any $(BINS_BSD) $(GAMES_BSD)
+bsd: any $(BINS_BSD)
 
 linux: any $(BINS_LINUX)
 
-tags: *.c
-	ctags -w *.c
+.gitignore: Makefile
+	echo '*.o' tags scheme.h $(BINS_ALL) scheme.png \
+		| tr ' ' '\n' \
+		> .gitignore
 
-scheme.h: scheme
-	./scheme -c > scheme.h
-
-fbatt.o fbclock.o: scheme.h
+tags: *.h *.c
+	ctags -w *.h *.c
 
 atch: dtch
 	ln -f dtch atch
+
+fbatt.o fbclock.o: scheme.h
+
+scheme.h: scheme
+	./scheme -c > scheme.h
 
 open pbcopy pbpaste: pbd
 	ln -f pbd $@
@@ -52,30 +57,21 @@ open pbcopy pbpaste: pbd
 scheme.png: scheme
 	./scheme -t -g > scheme.png
 
-setuid: bri
-	chown root bri
-	chmod u+s bri
-
 clean:
-	rm -f tags scheme.h *.o $(BINS_ALL) $(GAMES_ALL) scheme.png
+	rm -f *.o tags scheme.h $(BINS_ALL) scheme.png
 
 README: man/bin.7
 	mandoc man/bin.7 | col -b -x > README
 
-.gitignore: Makefile
-	echo tags scheme.h *.o $(BINS_ALL) $(GAMES_ALL) scheme.png \
-		| tr ' ' '\n' \
-		> .gitignore
+setuid: bri
+	chown root bri
+	chmod u+s bri
 
 link:
-	mkdir -p $(PREFIX)/bin $(PREFIX)/share/man/man1 $(PREFIX)/share/man/man6
+	mkdir -p $(PREFIX)/bin $(PREFIX)/share/man/man1
 	ln -s -f $(BINS_ALL:%=$(PWD)/%) $(PREFIX)/bin
-	ln -s -f $(GAMES_ALL:%=$(PWD)/%) $(PREFIX)/bin
-	ln -s -f $(MAN1:%=$(PWD)/%) $(PREFIX)/share/man/man1
-	ln -s -f $(MAN6:%=$(PWD)/%) $(PREFIX)/share/man/man6
+	ln -s -f $(MAN1_ALL:%=$(PWD)/%) $(PREFIX)/share/man/man1
 
 unlink:
 	rm -f $(BINS_ALL:%=$(PREFIX)/bin/%)
-	rm -f $(GAMES_ALL:%=$(PREFIX)/bin/%)
-	rm -f $(MAN1:%=$(PREFIX)/share/man/man1/%)
-	rm -f $(MAN6:%=$(PREFIX)/share/man/man6/%)
+	rm -f $(MAN1_ALL:%=$(PREFIX)/share/man/man1/%)
