@@ -1,3 +1,4 @@
+- [Rival Consoles — Helios][61]
 - [Tiffany — I Think We're Alone Now][60]
 - [Pulp — Common People][59]
 - [XTC — Making Plans for Nigel][58]
@@ -129,3 +130,4 @@
 [58]: https://youtu.be/gZjZBCZWxpg
 [59]: https://youtu.be/yuTMWgOduFM
 [60]: https://youtu.be/w6Q3mHyzn78
+[61]: https://youtu.be/T8n-XC_2a-k
