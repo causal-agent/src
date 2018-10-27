@@ -12,6 +12,7 @@ CDPATH=:$HOME
 export PWD
 
 export PAGER=less
+export MANSECT=2:3:1:8:6:5:7:4:9
 export EDITOR=vim
 if whence nvim > /dev/null; then
 	EDITOR=nvim
