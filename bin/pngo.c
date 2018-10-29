@@ -110,8 +110,12 @@ static void skipChunk(struct Chunk chunk) {
 	if (!(chunk.type[0] & 0x20)) {
 		errx(EX_CONFIG, "%s: unsupported critical chunk %s", path, typeStr(chunk));
 	}
-	uint8_t discard[chunk.size];
-	readExpect(discard, sizeof(discard), "chunk data");
+	uint8_t discard[4096];
+	while (chunk.size > sizeof(discard)) {
+		readExpect(discard, sizeof(discard), "chunk data");
+		chunk.size -= sizeof(discard);
+	}
+	if (chunk.size) readExpect(discard, chunk.size, "chunk data");
 	readCrc();
 }
 
@@ -307,6 +311,10 @@ static void readPalette(struct Chunk chunk) {
 	}
 
 	palette.len = chunk.size / 3;
+	if (palette.len > 256) {
+		errx(EX_DATAERR, "%s: PLTE length %u > 256", path, palette.len);
+	}
+
 	readExpect(palette.entries, chunk.size, "palette data");
 	readCrc();
 
@@ -323,6 +331,9 @@ static void writePalette(void) {
 
 static void readTrans(struct Chunk chunk) {
 	trans.len = chunk.size;
+	if (trans.len > 256) {
+		errx(EX_DATAERR, "%s: tRNS length %u > 256", path, trans.len);
+	}
 	readExpect(trans.alpha, chunk.size, "transparency alpha");
 	readCrc();
 	if (verbose) fprintf(stderr, "%s: transparency length %u\n", path, trans.len);
