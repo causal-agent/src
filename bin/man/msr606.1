@@ -1,0 +1,105 @@
+.Dd November 7, 2018
+.Dt MSR606 1
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm msr606
+.Nd magnetic stripe card reader/writer
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl RTWchiltwz
+.Op Fl L Ar led
+.Op Fl Z Ar zero
+.Op Fl b Ar bpc
+.Op Fl e Ar track
+.Op Fl f Ar tty
+.
+.Sh DESCRIPTION
+.Nm
+operates the MSR606 magnetic stripe card reader/writer.
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.
+.It Fl L Ar led
+Set LEDs.
+The values for
+.Ar led
+are:
+.Sy n
+for none,
+.Sy a
+for all,
+.Sy g
+for green,
+.Sy y
+for yellow,
+.Sy r
+for red.
+.
+.It Fl R
+Read raw data from a card to standard output.
+.
+.It Fl T
+Perform a sensor test.
+.
+.It Fl W
+Write raw data to a card from standard input.
+.
+.It Fl Z Ar zero
+Set leading zero.
+.Ar zero
+is a comma-separated list of two numbers
+indicating the leading zero setting
+for tracks 1 & 3
+and track 2,
+respectively.
+.
+.It Fl b Ar bpc
+Set bits per character for each track.
+.Ar bpc
+is a comma-separated list of 3 numbers
+indicating the BPC for each track.
+Valid values range from 5 to 8.
+.
+.It Fl c
+Print the coercivity status.
+.
+.It Fl e Ar track
+Erase a card.
+.Ar track
+is a number from 1 to 7
+representing a 3-bit set
+of tracks to erase.
+.
+.It Fl f Ar tty
+Open the device
+.Ar tty .
+The default device is
+.Pa /dev/ttyUSB0 .
+.
+.It Fl h
+Set high coercivity.
+.
+.It Fl i
+Reset the device.
+.
+.It Fl l
+Set low coercivity.
+.
+.It Fl r
+Read ISO format data from card to standard output.
+.
+.It Fl t
+Perform communication and RAM tests.
+Print the hardware model and firmware version.
+This is the default operation.
+.
+.It Fl w
+Write ISO format data to card from standard input.
+.
+.It Fl z
+Print the leading zero setting.
+.El
