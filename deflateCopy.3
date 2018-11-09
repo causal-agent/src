@@ -1,0 +1,66 @@
+.Dd January 15, 2017
+.Dt DEFLATECOPY 3
+.Os
+.
+.Sh NAME
+.Nm deflateCopy
+.Nd copy deflate stream
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn deflateCopy "z_streamp dest" "z_streamp source"
+.
+.Sh DESCRIPTION
+Sets the destination stream
+as a complete copy of the source stream.
+.
+.Pp
+This function can be useful when
+several compression strategies will be tried,
+for example when there are several ways of
+pre-processing the input data with a filter.
+The streams that will be discarded
+should then be freed by calling
+.Xr deflateEnd 3 .
+Note that
+.Fn deflateCopy
+duplicates the internal compression state
+which can be quite large,
+so this strategy is slow
+and can consume lots of memory.
+.
+.Sh RETURN VALUES
+.Fn deflateCopy
+returns
+.Dv Z_OK
+if success,
+.Dv Z_MEM_ERROR
+if there was not enough memory,
+.Dv Z_STREAM_ERROR
+if the source stream state was inconsistent
+.Po
+such as
+.Fa zalloc
+being
+.Dv Z_NULL
+.Pc .
+.Fa msg
+is left unchanged
+in both source and destination.
+.
+.Sh SEE ALSO
+.Xr deflateInit 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

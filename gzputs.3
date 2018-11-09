@@ -1,0 +1,41 @@
+.Dd January 15, 2017
+.Dt GZPUTS 3
+.Os
+.
+.Sh NAME
+.Nm gzputs
+.Nd write string to compressed file
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn gzputs "gzFile file" "const char *s"
+.
+.Sh DESCRIPTION
+Writes the given null-terminated string
+to the compressed file,
+excluding the terminating null character.
+.
+.Sh RETURN VALUES
+.Fn gzputs
+returns the number of characters written,
+or -1 in case of error.
+.
+.Sh SEE ALSO
+.Xr gzerror 3 ,
+.Xr gzopen 3 ,
+.Xr gzputc 3 ,
+.Xr gzwrite 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

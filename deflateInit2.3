@@ -1,0 +1,227 @@
+.Dd January 15, 2017
+.Dt DEFLATEINIT2 3
+.Os
+.
+.Sh NAME
+.Nm deflateInit2
+.Nd deflate compression options
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fo deflateInit2
+.Fa "z_streamp strm"
+.Fa "int level"
+.Fa "int method"
+.Fa "int windowBits"
+.Fa "int memLevel"
+.Fa "int strategy"
+.Fc
+.
+.Sh DESCRIPTION
+This is another version of
+.Xr deflateInit 3
+with more compression options.
+The fields
+.Fa next_in ,
+.Fa zalloc ,
+.Fa zfree
+and
+.Fa opaque
+must be initialized before by the caller.
+.
+.Pp
+The
+.Fa method
+parameter is the compression method.
+It must be
+.Dv Z_DEFLATED
+in this version of the library.
+.
+.Pp
+The
+.Fa windowBits
+parameter is the base two logarithm
+of the window size
+(the size of the history buffer).
+It should be in the range 8..15
+for this version of the library.
+Larger values of this parameter
+result in better compression
+at the expense of memory usage.
+The default value is 15 if
+.Xr deflateInit 3
+is used instead.
+.
+.Pp
+For the current implementation of
+.Xr deflate 3 ,
+a
+.Fa windowBits
+value of 8
+(a window size of 256 bytes)
+is not supported.
+As a result,
+a request for 8
+will result in 9
+(a 512-byte window).
+In that case,
+providing 8 to
+.Xr inflateInit2 3
+will result in an error
+when the zlib header with 9
+is checked against the initialization of
+.Xr inflate 3 .
+The remedy is to not use 8 with
+.Fn deflateInit2
+with this initialization,
+or at least in that case use 9 with
+.Xr inflateInit2 3 .
+.
+.Pp
+.Fa windowBits
+can also be -8..-15 for raw deflate.
+In this case,
+.Fa -windowBits
+determines the window size.
+.Xr deflate 3
+will then generate raw deflate data
+with no zlib header or trailer,
+and will not compute a check value.
+.
+.Pp
+.Fa windowBits
+can also be greater than 15
+for optional gzip encoding.
+Add 16 to
+.Fa windowBits
+to write a simple gzip header and trailer
+around the compressed data
+instead of a zlib wrapper.
+The gzip header will have
+no file name,
+no extra data,
+no comment,
+no modification time (set to zero),
+no header CRC,
+and the operating system will be set
+to the appropriate value,
+if the operating system was determined at compile time.
+If a gzip stream is being written,
+.Fa strm->adler
+is a CRC-32 instead of an Adler-32.
+.
+.Pp
+For raw deflate or gzip encoding,
+a request for a 256-byte window
+is rejected as invalid,
+since only the zlib header provides
+a means of transmitting the window size
+to the decompressor.
+.
+.Pp
+The
+.Fa memLevel
+parameter specifies how much memory should be allocated
+for the internal compression state.
+.Fa memLevel=1
+uses minimum memory
+but is slow and reduces compression ratio;
+.Fa memLevel=9
+uses maximum memory for optimal speed.
+The default value is 8.
+See
+.In zconf.h
+for total memory usage
+as a function of
+.Fa windowBits
+and
+.Fa memLevel .
+.
+.Pp
+The
+.Fa strategy
+parameter is used to tune the compression algorithm.
+Use the value
+.Dv Z_DEFAULT_STRATEGY
+for normal data,
+.Dv Z_FILTERED
+for data produced by a filter
+(or predictor),
+.Dv Z_HUFFMAN_ONLY
+to force Huffman encoding only
+(no string match),
+or
+.Dv Z_RLE
+to limit match distances to one
+(run-length encoding).
+Filtered data consists mostly of small values
+with a somewhat random distribution.
+In this case,
+the compression algorithm
+is tuned to compress them better.
+The effect of
+.Dv Z_FILTERED
+is to force more Huffman coding
+and less string matching;
+it is somewhat intermediate between
+.Dv Z_DEFAULT_STRATEGY
+and
+.Dv Z_HUFFMAN_ONLY .
+.Dv Z_RLE
+is designed to be almost as fast as
+.Dv Z_HUFFMAN_ONLY ,
+but give better compression for PNG image data.
+The
+.Fa strategy
+parameter only affects the compression ratio
+but not the correctness of the compressed output
+even if it is not set appropriately.
+.Dv Z_FIXED
+prevents the use of dynamic Huffman codes,
+allowing for a simpler decoder
+for special applications.
+.
+.Pp
+.Fn deflateInit2
+does not perform any compression:
+this will be done by
+.Xr deflate 3 .
+.
+.Sh RETURN VALUES
+.Fn deflateInit2
+returns
+.Dv Z_OK
+if success,
+.Dv Z_MEM_ERROR
+if there was not enough memory,
+.Dv Z_STREAM_ERROR
+if any parameter is invalid
+(such as invalid method),
+or
+.Dv Z_VERSION_ERROR
+if the zlib library version
+.Pq Xr zlibVersion 3
+is incompatible with the version assumed by the caller
+.Pq Dv ZLIB_VERSION .
+.Fa msg
+is set to null if there is no error message.
+.
+.Sh SEE ALSO
+.Xr deflate 3 ,
+.Xr deflateInit 3 ,
+.Xr deflateParams 3 ,
+.Xr deflateSetHeader 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

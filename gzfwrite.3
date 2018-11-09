@@ -1,0 +1,75 @@
+.Dd January 15, 2017
+.Dt GZFWRITE 3
+.Os
+.
+.Sh NAME
+.Nm gzfwrite
+.Nd write to compressed file
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft z_size_t
+.Fn gzfwrite "voidpc buf" "z_size_t size" "z_size_t nitems" "gzFile file"
+.
+.Sh DESCRIPTION
+.Fn gzfwrite
+writes
+.Fa nitems
+items of size
+.Fa size
+from
+.Fa buf
+to
+.Fa file ,
+duplicating the interface of stdio's
+.Xr fwrite 3 ,
+with
+.Vt size_t
+request and return types.
+If the library defines
+.Vt size_t ,
+then
+.Vt z_size_t
+is identical to
+.Vt size_t .
+If not,
+then
+.Vt z_size_t
+is an unsigned integer type
+that can contain a pointer.
+.
+.Sh RETURN VALUES
+.Fn gzfwrite
+returns the number of full items
+written of size
+.Fa size ,
+or zero if there was an error.
+If the multiplication of
+.Fa size
+and
+.Fa nitems
+overflows,
+i.e. the product does not fit in a
+.Vt z_size_t ,
+then nothing is written,
+zero is returned,
+and the error state is set to
+.Dv Z_STREAM_ERROR .
+.
+.Sh SEE ALSO
+.Xr gzerror 3 ,
+.Xr gzopen 3 ,
+.Xr gzwrite 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

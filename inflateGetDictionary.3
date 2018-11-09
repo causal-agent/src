@@ -1,0 +1,69 @@
+.Dd January 15, 2017
+.Dt INFLATEGETDICTIONARY 3
+.Os
+.
+.Sh NAME
+.Nm inflateGetDictionary
+.Nd inflate sliding dictionary
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fo inflateGetDictionary
+.Fa "z_streamp strm"
+.Fa "Bytef *dictionary"
+.Fa "uInt *dictLength"
+.Fc
+.
+.Sh DESCRIPTION
+Returns the sliding dictionary
+being maintained by
+.Xr inflate 3 .
+.Fa dictLength
+is set to the number of bytes
+in the dictionary,
+and that many bytes are copied to
+.Fa dictionary .
+.Fa dictionary
+must have enough space,
+where 32768 bytes is always enough.
+If
+.Fn inflateGetDictionary
+is called with
+.Fa dictionary
+equal to
+.Dv Z_NULL ,
+then only the dictionary length is returned,
+and nothing is copied.
+Similarly,
+if
+.Fa dictLength
+is
+.Dv Z_NULL ,
+then it is not set.
+.
+.Sh RETURN VALUES
+.Fn inflateGetDictionary
+returns
+.Dv Z_OK
+on success,
+or
+.Dv Z_STREAM_ERROR
+if the stream state is inconsistent.
+.
+.Sh SEE ALSO
+.Xr deflateSetDictionary 3 ,
+.Xr inflateSetDictionary 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

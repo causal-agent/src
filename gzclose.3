@@ -1,0 +1,97 @@
+.Dd January 15, 2017
+.Dt GZCLOSE 3
+.Os
+.
+.Sh NAME
+.Nm gzclose ,
+.Nm gzclose_r ,
+.Nm gzclose_w
+.Nd close compressed file
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn gzclose "gzFile file"
+.Ft int
+.Fn gzclose_r "gzFile file"
+.Ft int
+.Fn gzclose_w "gzFile file"
+.
+.Sh DESCRIPTION
+Flushes all pending output if necessary,
+closes the compressed file
+and deallocates the (de)compression state.
+Note that once
+.Fa file
+is closed,
+you cannot call
+.Xr gzerror 3
+with
+.Fa file ,
+since its structures
+have been deallocated.
+.Fn gzclose
+must not be called more than once
+on the same file,
+just as
+.Xr free 3
+must not be called more than once
+on the same allocation.
+.
+.Pp
+.Fn gzclose_r
+and
+.Fn gzclose_w
+are the same as
+.Fn gzclose ,
+but
+.Fn gzclose_r
+is only for use when reading,
+and
+.Fn gzclose_w
+is only for use when writing or appending.
+The advantage to using these instead of
+.Fn gzclose
+is that they avoid linking in
+zlib compression or decompression code
+that is not used when only reading
+or only writing respectively.
+If
+.Fn gzclose
+is used,
+then both compression and decompression code
+will be included in the application
+when linking to a static zlib library.
+.
+.Sh RETURN VALUES
+.Fn gzclose
+will return
+.Dv Z_STREAM_ERROR
+if
+.Fa file
+is not valid,
+.Dv Z_ERRNO
+on a file operator error,
+.Dv Z_MEM_ERROR
+if out of memory,
+.Dv Z_BUF_ERROR
+if the last read ended in the middle of a gzip stream,
+or
+.Dv Z_OK
+on success.
+.
+.Sh SEE ALSO
+.Xr gzopen 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

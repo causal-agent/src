@@ -1,0 +1,70 @@
+.Dd January 15, 2017
+.Dt DEFLATETUNE 3
+.Os
+.
+.Sh NAME
+.Nm deflateTune
+.Nd fine tune compression parameters
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fo deflateTune
+.Fa "z_streamp strm"
+.Fa "int good_length"
+.Fa "int max_lazy"
+.Fa "int nice_length"
+.Fa "int max_chain"
+.Fc
+.
+.Sh DESCRIPTION
+Fine tune deflate's internal compression parameters.
+This should only be used
+by someone who understands the algorithm
+used by zlib's deflate
+for searching for the best matching string,
+and even then only by the most fanatic optimizer
+trying to squeeze out the last compressed bit
+for their specific input data.
+Read the
+.Pa deflate.c
+source code for the meaning of the
+.Fa max_lazy ,
+.Fa good_length ,
+.Fa nice_length ,
+and
+.Fa max_chain
+parameters.
+.
+.Pp
+.Fn deflateTune
+can be called after
+.Xr deflateInit 3
+or
+.Xr deflateInit2 3 .
+.
+.Sh RETURN VALUES
+.Fn deflateTune
+returns
+.Dv Z_OK
+on success,
+or
+.Dv Z_STREAM_ERROR
+for an invalid deflate stream.
+.
+.Sh SEE ALSO
+.Xr deflateInit 3 ,
+.Xr deflateInit2 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

@@ -1,0 +1,64 @@
+.Dd January 15, 2017
+.Dt DEFLATEPRIME 3
+.Os
+.
+.Sh NAME
+.Nm deflatePrime
+.Nd insert bits in deflate stream
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn deflatePrime "z_streamp strm" "int bits" "int value"
+.
+.Sh DESCRIPTION
+.Fn deflatePrime
+inserts bits in the deflate output stream.
+The intent is that this function
+is used to start off the deflate output
+with the bits leftover
+from a previous deflate stream
+when appending to it.
+As such,
+this function can only be used for raw deflate,
+and must be used before the first
+.Xr deflate 3
+call
+after a
+.Xr deflateInit2 3
+or
+.Xr deflateReset 3 .
+.Fa bits
+must be less than or equal to 16,
+and that many of the least significant bits of
+.Fa value
+will be inserted in the output.
+.
+.Sh RETURN VALUES
+.Fn deflatePrime
+returns
+.Dv Z_OK
+if success,
+.Dv Z_BUF_ERROR
+if there was not enough room
+in the internal buffer
+to insert the bits,
+or
+.Dv Z_STREAM_ERROR
+if the source stream state was inconsistent.
+.
+.Sh SEE ALSO
+.Xr deflateInit2 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

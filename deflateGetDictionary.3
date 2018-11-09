@@ -1,0 +1,79 @@
+.Dd January 15, 2017
+.Dt DEFLATEGETDICTIONARY 3
+.Os
+.
+.Sh NAME
+.Nm deflateGetDictionary
+.Nd deflate sliding dictionary
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fo deflateGetDictionary
+.Fa "z_streamp strm"
+.Fa "Bytef *dictionary"
+.Fa "uInt *dictLength"
+.Fc
+.
+.Sh DESCRIPTION
+Returns the sliding dictionary
+being maintained by deflate.
+.Fa dictLength
+is set to the number of bytes in the dictionary,
+and that many bytes are copied to
+.Fa dictionary .
+.Fa dictionary
+must have enough space,
+where 32768 bytes is always enough.
+If
+.Fn deflateGetDictionary
+is called with
+.Fa dictionary
+equal to
+.Dv Z_NULL ,
+then only the dictionary length is returned,
+and nothing is copied.
+Similarly,
+if
+.Fa dictLength
+is
+.Dv Z_NULL ,
+then it is not set.
+.
+.Pp
+.Fn deflateGetDictionary
+may return a length less than the window size,
+even when more than the window size in input
+has been provided.
+It may return up to 258 bytes less in that case,
+due to how zlib's implementation of deflate
+manages the sliding window and lookahead for matches,
+where matches can be up to 258 bytes long.
+If the application needs the last window-size bytes of input,
+then that would need to be saved by the application
+outside of zlib.
+.
+.Sh RETURN VALUES
+.Fn deflateGetDictionary
+returns
+.Dv Z_OK
+on success,
+or
+.Dv Z_STREAM_ERROR
+if the stream state is inconsistent.
+.
+.Sh SEE ALSO
+.Xr deflateSetDictionary 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

@@ -1,0 +1,178 @@
+.Dd January 15, 2017
+.Dt DEFLATEINIT 3
+.Os
+.
+.Sh NAME
+.Nm deflateInit
+.Nd initialize deflate stream
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.
+.Ft typedef voidpf
+.Fo (*alloc_func)
+.Fa "voidpf opaque"
+.Fa "uInt items"
+.Fa "uInt size"
+.Fc
+.
+.Ft typedef void
+.Fo (*free_func)
+.Fa "voidpf opaque"
+.Fa "voidpf address"
+.Fc
+.
+.Bd -literal
+typedef struct z_stream_s {
+	z_const Bytef *next_in;
+	uInt     avail_in;
+	uLong    total_in;
+
+	Bytef    *next_out;
+	uInt     avail_out;
+	uLong    total_out;
+
+	z_const char *msg;
+	struct internal_state FAR *state;
+
+	alloc_func zalloc;
+	free_func  zfree;
+	voidpf     opaque;
+
+	int     data_type;
+	uLong   adler;
+	uLong   reserved;
+} z_stream;
+.Ed
+.
+.Pp
+.Vt typedef z_stream FAR *z_streamp;
+.
+.Ft int
+.Fn deflateInit "z_streamp strm" "int level"
+.
+.Sh DESCRIPTION
+Initializes the internal stream state for compression.
+The fields
+.Fa zalloc ,
+.Fa zfree
+and
+.Fa opaque
+must be initialized before by the caller.
+If
+.Fa zalloc
+and
+.Fa zfree
+are set to
+.Dv Z_NULL ,
+.Fn deflateInit
+updates them to use default allocation functions.
+.Fn deflateInit
+does not perform any compression:
+this will be done by
+.Xr deflate 3 .
+.
+.Pp
+The compression
+.Fa level
+must be
+.Dv Z_DEFAULT_COMPRESSION ,
+or between 0 and 9:
+1 gives best speed,
+9 gives best compression,
+0 gives no compression at all
+(the input data is simply copied a block at a time).
+.Dv Z_DEFAULT_COMPRESSION
+requests a default compromise between speed and compression
+(currently equivalent to level 6).
+.
+.Pp
+The fields of
+.Vt z_stream
+are as follows:
+.
+.Bl -tag -width "data_type"
+.It Fa next_in
+next input byte
+.It Fa avail_in
+number of bytes available at
+.Fa next_in
+.It Fa total_in
+total number of input bytes read so far
+.It Fa next_out
+next output byte will go here
+.It Fa avail_out
+remaining free space at
+.Fa next_out
+.It Fa total_out
+total number of bytes output so far
+.It Fa msg
+last error message,
+.Dv NULL
+if no error
+.It Fa state
+not visible by applications
+.It Fa zalloc
+used to allocate the internal state
+.It Fa zfree
+used to free the internal state
+.It Fa opaque
+private data object passed to
+.Fa zalloc
+and
+.Fa zfree
+.It data_type
+best guess about the data type:
+binary or text for
+.Xr deflate 3 ,
+or the decoding state for
+.Xr inflate 3
+.It adler
+Adler-32 or CRC-32 value of the uncompressed data
+.It reserved
+reserved for future use
+.El
+.
+.Sh RETURN VALUES
+.Fn deflateInit
+returns
+.Dv Z_OK
+if success,
+.Dv Z_MEM_ERROR
+if there was not enough memory,
+.Dv Z_STREAM_ERROR
+if
+.Fa level
+is not a valid compression level,
+or
+.Dv Z_VERSION_ERROR
+if the zlib library version
+.Pq Xr zlibVersion 3
+is incompatible with the version assumed by the caller
+.Pq Dv ZLIB_VERSION .
+.Fa msg
+is set to null
+if there is no error message.
+.
+.Sh SEE ALSO
+.Xr deflate 3 ,
+.Xr deflateCopy 3 ,
+.Xr deflateEnd 3 ,
+.Xr deflateInit2 3 ,
+.Xr deflatePrime 3 ,
+.Xr deflateReset 3 ,
+.Xr deflateSetDictionary 3 ,
+.Xr deflateTune 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

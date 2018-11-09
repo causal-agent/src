@@ -1,0 +1,44 @@
+.Dd January 15, 2017
+.Dt INFLATEEND 3
+.Os
+.
+.Sh NAME
+.Nm inflateEnd
+.Nd free inflate stream
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn inflateEnd "z_streamp strm"
+.
+.Sh DESCRIPTION
+All dynamically allocated data structures
+for this stream are feed.
+This function discards any unprocessed input
+and does not flush any pending output.
+.
+.Sh RETURN VALUES
+.Fn inflateEnd
+returns
+.Dv Z_OK
+if success,
+or
+.Dv Z_STREAM_ERROR
+if the stream state was inconsistent.
+.
+.Sh SEE ALSO
+.Xr inflate 3 ,
+.Xr inflateInit 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

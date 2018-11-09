@@ -1,0 +1,56 @@
+.Dd January 15, 2017
+.Dt DEFLATEPENDING 3
+.Os
+.
+.Sh NAME
+.Nm deflatePending
+.Nd pending deflate output
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn deflatePending "z_streamp strm" "unsigned *pending" "int *bits"
+.
+.Sh DESCRIPTION
+.Fn deflatePending
+returns the number of bytes and bits
+of output that have been generated,
+but not yet provided in the available output.
+The bytes not provided would be due to
+the available output space having been consumed.
+The number of bits of output not provided
+are between 0 and 7,
+where they await more bits to join them
+in order to fill out a full byte.
+If
+.Fa pending
+or
+.Fa bits
+are
+.Dv Z_NULL ,
+then those values are not set.
+.
+.Sh RETURN VALUES
+.Fn deflatePending
+returns
+.Dv Z_OK
+if success,
+or
+.Dv Z_STREAM_ERROR
+if the source stream state was inconsistent.
+.
+.Sh SEE ALSO
+.Xr deflate 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

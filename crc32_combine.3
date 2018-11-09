@@ -1,0 +1,54 @@
+.Dd January 15, 2017
+.Dt CRC32_COMBINE 3
+.Os
+.
+.Sh NAME
+.Nm crc32_combine
+.Nd combine CRC-32 checksums
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft uLong
+.Fn crc32_combine "uLong crc1" "uLong crc2" "z_off_t len2"
+.
+.Sh DESCRIPTION
+Combine two CRC-32 check values into one.
+For two sequences of bytes,
+.Va seq1
+and
+.Va seq2
+with lengths
+.Va len1
+and
+.Va len2 ,
+CRC-32 check values were calculated for each,
+.Va crc1
+and
+.Va crc2 .
+.Fn crc32_combine
+returns the CRC-32 check value of
+.Va seq1
+and
+.Va seq2
+concatenated,
+requiring only
+.Fa crc1 ,
+.Fa crc2 ,
+and
+.Fa len2 .
+.
+.Sh SEE ALSO
+.Xr crc32 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

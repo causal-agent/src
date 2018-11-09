@@ -1,0 +1,84 @@
+.Dd January 15, 2017
+.Dt COMPRESS 3
+.Os
+.
+.Sh NAME
+.Nm compress ,
+.Nm compress2
+.Nd compress source buffer into destination buffer
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.
+.Ft int
+.Fo compress
+.Fa "Bytef *dest"
+.Fa "uLongf *destLen"
+.Fa "const Bytef *source"
+.Fa "uLong sourceLen"
+.Fc
+.
+.Ft int
+.Fo compress2
+.Fa "Bytef *dest"
+.Fa "uLongf *destLen"
+.Fa "const Bytef *source"
+.Fa "uLong sourceLen"
+.Fa "int level"
+.Fc
+.
+.Sh DESCRIPTION
+Compresses the source buffer into the destination buffer.
+.Fa sourceLen
+is the byte length of the source buffer.
+Upon entry,
+.Fa destLen
+is the total size of the destination buffer,
+which must be at least the value returned by
+.Fn compressBound sourceLen .
+Upon exit,
+.Fa destLen
+is the actual size of the compressed data.
+.
+.Pp
+.Fn compress
+is equivalent to
+.Fn compress2
+with a
+.Fa level
+parameter of
+.Dv Z_DEFAULT_COMPRESSION .
+.
+.Sh RETURN VALUES
+.Fn compress
+and
+.Fn compress2
+return
+.Dv Z_OK
+on success,
+.Dv Z_MEM_ERROR
+if there was not enough memory,
+.Dv Z_BUF_ERROR
+if there was not enough room in the output buffer,
+.Dv Z_STREAM_ERROR
+if the
+.Fa level
+parameter is invalid.
+.
+.Sh SEE ALSO
+.Xr compressBound 3 ,
+.Xr deflateInit 3 ,
+.Xr uncompress 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

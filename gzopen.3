@@ -1,0 +1,261 @@
+.Dd January 15, 2017
+.Dt GZOPEN 3
+.Os
+.
+.Sh NAME
+.Nm gzopen ,
+.Nm gzdopen
+.Nd open gzip file
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft gzFile
+.Fn gzopen "const char *path" "const char *mode"
+.Ft gzFile
+.Fn gzdopen "int fd" "const char *mode"
+.
+.Sh DESCRIPTION
+Opens a gzip (.gz) file
+for reading or writing.
+The
+.Fa mode
+parameter is as in
+.Xr fopen 3
+.Po
+.Dq rb
+or
+.Dq wb
+.Pc
+but can also include a compression level
+.Pq Dq wb9
+or a strategy:
+.Sq f
+for filtered data as in
+.Dq wb6f ,
+.Sq h
+for Huffman-only compression as in
+.Dq wb1h ,
+.Sq R
+for run-length encoding as in
+.Dq wb1R ,
+or
+.Sq F
+for fixed code compression as in
+.Dq wb9F .
+.Po
+See the description of
+.Xr deflateInit2 3
+for more information about the
+.Fa strategy
+parameter.
+.Pc \&
+.Sq T
+will request transparent writing or appending
+with no compression
+and not using the gzip format.
+.
+.Pp
+.Dq a
+can be used instead of
+.Dq w
+to request that the gzip stream
+that will be written
+be appended to the file.
+.Dq +
+will result in an error,
+since reading and writing
+to the same gzip file
+is not supported.
+The addition of
+.Dq x
+when writing will create the file exclusively,
+which fails if the file already exists.
+On systems that support it,
+the addition of
+.Dq e
+when reading or writing
+will set the flag to close the file on an
+.Xr execve 2
+call.
+.
+.Pp
+These functions,
+as well as
+.Xr gzip 1 ,
+will read and decode
+a sequence of gzip streams in a file.
+The append function of
+.Fn gzopen
+can be used to create such a file.
+.Po
+Also see
+.Xr gzflush 3
+for another way to do this.
+.Pc \&
+When appending,
+.Fn gzopen
+does not test whether the file begins with a gzip stream,
+nor does it look for the end of the gzip streams
+to begin appending.
+.Fn gzopen
+will simply append a gzip stream
+to the existing file.
+.
+.Pp
+.Fn gzopen
+can be used to read a file which is not in gzip format;
+in this case
+.Xr gzread 3
+will directly read from the file without decompression.
+When reading,
+this will be detected automatically
+by looking for the magic two-byte gzip header.
+.
+.Pp
+.Fn gzdopen
+associates at
+.Vt gzFile
+with the file descriptor
+.Fa fd .
+File descriptors
+are obtained from calls like
+.Xr open 2 ,
+.Xr dup 2 ,
+.Xr creat 2 ,
+.Xr pipe 2
+or
+.Xr fileno 3
+.Po
+if the file has been previously opened with
+.Xr fopen 3
+.Pc .
+The
+.Fa mode
+parameter is as in
+.Fn gzopen .
+.
+.Pp
+The next call of
+.Xr gzclose 3
+on the returned
+.Vt gzFile
+will also close the file descriptor
+.Fa fd ,
+just like
+.Xr fclose 3 .
+If you want to keep
+.Fa fd
+open,
+use
+.Li "fd = dup(fd_keep); gz = gzdopen(fd, mode)" .
+The duplicated descriptor should be saved
+to avoid a leak,
+since
+.Fn gzdopen
+does not close
+.Fa fd
+if it fails.
+If you are using
+.Xr fileno 3
+to get the file descriptor from a
+.Vt FILE * ,
+then you will have to use
+.Xr dup 2
+to avoid double-closing
+the file descriptor.
+Both
+.Xr gzclose 3
+and
+.Xr flcose 3
+will close the associated file descriptor,
+so they need to have different file descriptors.
+.
+.Sh RETURN VALUES
+.Fn gzopen
+and
+.Fn gzdopen
+return
+.Dv NULL
+if the file could not be opened,
+if there was insufficient memory
+to allocate the
+.Vt gzFile
+state,
+or if an invalid
+.Fa mode
+was specified
+.Po
+an
+.Sq r ,
+.Sq w ,
+or
+.Sq a
+was not provided,
+or
+.Sq +
+was provided
+.Pc ,
+or if
+.Fa fd
+is -1.
+The file descriptor
+is not used until the next
+gz* read, write, seek, or close operation,
+so
+.Fn gzdopen
+will not detect if
+.Fa fd
+is invalid
+.Po
+unless
+.Fa fd
+is -1
+.Pc .
+.Va errno
+can be checked
+to determine if the reason
+.Fn gzopen
+failed was that the file
+could not be opened.
+.
+.Sh ERRORS
+The
+.Fn gzopen
+function may fail and set
+.Va errno
+for any of the errors specified
+for the routine
+.Xr fopen 3 .
+.
+.Sh SEE ALSO
+.Xr deflateInit2 3 ,
+.Xr fopen 3 ,
+.Xr gzbuffer 3 ,
+.Xr gzclose 3 ,
+.Xr gzdirect 3 ,
+.Xr gzeof 3 ,
+.Xr gzerror 3 ,
+.Xr gzflush 3 ,
+.Xr gzgetc 3 ,
+.Xr gzgets 3 ,
+.Xr gzoffset 3 ,
+.Xr gzprintf 3 ,
+.Xr gzputc 3 ,
+.Xr gzputs 3 ,
+.Xr gzread 3 ,
+.Xr gzseek 3 ,
+.Xr gzsetparams 3 ,
+.Xr gzwrite 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

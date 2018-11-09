@@ -1,0 +1,71 @@
+.Dd January 15, 2017
+.Dt GZPRINTF 3
+.Os
+.
+.Sh NAME
+.Nm gzprintf
+.Nd format output to compressed file
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn gzprintf "gzFile file" "const char *format" "..."
+.
+.Sh DESCRIPTION
+Converts, formats, and writes the arguments
+to the compressed file
+under control of the format string,
+as in
+.Xr fprintf 3 .
+.
+.Sh RETURN VALUES
+.Fn gzprintf
+returns the number of
+uncompressed bytes actually written,
+or a negative zlib error code
+in case of error.
+The number of uncompressed bytes written
+is limited to 8191,
+or one less than the buffer size given to
+.Xr gzbuffer 3 .
+The caller should assure that
+this limit is not exceeded.
+If it is exceeded,
+then
+.Fn gzprintf
+will return an error (0)
+with nothing written.
+In this case,
+there may also be a buffer overflow
+with unpredictable consequences,
+which is possibly only if zlib
+was compiled with the insecure functions
+.Xr sprintf 3
+or
+.Xr vsprintf 3
+because the secure
+.Xr snprintf 3
+or
+.Xr vsnprintf 3
+functions
+were not available.
+This can be determined using
+.Xr zlibCompileFlags 3 .
+.
+.Sh SEE ALSO
+.Xr fprintf 3 ,
+.Xr gzerror 3 ,
+.Xr gzopen 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

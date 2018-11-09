@@ -1,0 +1,85 @@
+.Dd January 15, 2017
+.Dt INFLATESETDICTIONARY 3
+.Os
+.
+.Sh NAME
+.Nm inflateSetDictionary
+.Nd initialize decompression dictionary
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fo inflateSetDictionary
+.Fa "z_streamp strm"
+.Fa "const Bytef *dictionary"
+.Fa "uInt dictLength"
+.Fc
+.
+.Sh DESCRIPTION
+Initializes the decompression dictionary
+from the given uncompressed byte sequence.
+This function must be called
+immediately after a call of
+.Xr inflate 3 ,
+if that call returned
+.Dv Z_NEED_DICT .
+The dictionary chosen by the compressor
+can be determined from the Adler-32 value
+returned by that call of
+.Xr inflate 3 .
+The compressor and decompressor
+must use exactly the same dictionary
+.Po
+see
+.Xr deflateSetDictionary 3
+.Pc .
+For raw inflate,
+this function can be called at any time
+to set the dictionary.
+If the provided dictionary
+is smaller than the window
+and there is already data in the window,
+then the provided dictionary
+will amend what's there.
+The application must insure that the dictionary
+that was used for compression is provided.
+.
+.Pp
+.Fn inflateSetDictionary
+does not perform any decompression:
+this will be done by subsequent calls of
+.Xr inflate 3 .
+.
+.Sh RETURN VALUES
+.Fn inflateSetDictionary
+returns
+.Dv Z_OK
+if success,
+.Dv Z_STREAM_ERROR
+if a parameter is invalid
+.Po
+e.g. dictionary being
+.Dv Z_NULL
+.Pc
+or the stream state is inconsistent,
+.Dv Z_DATA_ERROR
+if the given dictionary
+doesn't match the expected one
+(incorrect Adler-32 value).
+.
+.Sh SEE ALSO
+.Xr deflateGetDictionary 3 ,
+.Xr inflateGetDictionary 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

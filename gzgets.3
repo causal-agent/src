@@ -1,0 +1,67 @@
+.Dd January 15, 2017
+.Dt GZGETS 3
+.Os
+.
+.Sh NAME
+.Nm gzgets
+.Nd read line from compressed file
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft char *
+.Fn gzgets "gzFile file" "char *buf" "int len"
+.
+.Sh DESCRIPTION
+Reads bytes from the compressed file
+until
+.Fa len-1
+characters are read,
+or a newline character
+is read and transferred to
+.Fa buf ,
+or an end-of-file condition
+is encountered.
+If any characters are read or if
+.Fa len
+== 1,
+the string is terminated
+with a null character.
+If no characters are read
+due to an end-of-file or
+.Fa len
+< 1,
+then the buffer is left untouched.
+.
+.Sh RETURN VALUES
+.Fn gzgets
+returns
+.Fa buf
+which is a null-terminated string,
+or it returns
+.Dv NULL
+for end-of-file
+or in case of error.
+If there was an error,
+the contents at
+.Fa buf
+are indeterminate.
+.
+.Sh SEE ALSO
+.Xr gzeof 3 ,
+.Xr gzerror 3 ,
+.Xr gzgetc 3 ,
+.Xr gzopen 3 ,
+.Xr gzread 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

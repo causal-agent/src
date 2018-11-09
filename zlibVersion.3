@@ -1,0 +1,45 @@
+.Dd January 15, 2017
+.Dt ZLIBVERSION 3
+.Os
+.
+.Sh NAME
+.Nm zlibVersion
+.Nd check zlib version
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Fd #define ZLIB_VERSION \(dq1.2.11\(dq
+.Ft "const char *"
+.Fn zlibVersion void
+.
+.Sh DESCRIPTION
+The application can compare
+.Fn zlibVersion
+and
+.Dv ZLIB_VERSION
+for consistency.
+If the first character differs,
+the library code actually used
+is not compatible with the
+.In zlib.h
+header file used by the application.
+This check is automatically made by
+.Xr deflateInit 3
+and
+.Xr inflateInit 3 .
+.
+.Sh SEE ALSO
+.Xr zlibCompileFlags 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

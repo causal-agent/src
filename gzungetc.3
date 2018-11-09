@@ -1,0 +1,67 @@
+.Dd January 15, 2017
+.Dt GZUNGETC 3
+.Os
+.
+.Sh NAME
+.Nm gzungetc
+.Nd un-get character from compressed file
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn gzungetc "int c" "gzFile file"
+.
+.Sh DESCRIPTION
+Push one character back onto the stream
+to be read as the first character
+on the next read.
+At least one character of push-back
+is allowed.
+.Fn gzungetc
+will fail if
+.Fa c
+is -1,
+and may fail if a character
+has been pushed
+but not read yet.
+If
+.Fn gzungetc
+is used immediately after
+.Xr gzopen 3
+or
+.Xr gzdopen 3 ,
+at least the output buffer size
+of pushed characters is allowed.
+.Po
+See
+.Xr gzbuffer 3 .
+.Pc \&
+The pushed character will be discarded
+if the stream is repositioned with
+.Xr gzseek 3
+or
+.Xr gzrewind 3 .
+.
+.Sh RETURN VALUES
+.Fn gzungetc
+returns the character pushed,
+or -1 on failure.
+.
+.Sh SEE ALSO
+.Xr gzbuffer 3 ,
+.Xr gzerror 3 ,
+.Xr gzgetc 3 ,
+.Xr gzopen 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

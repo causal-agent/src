@@ -1,0 +1,370 @@
+.Dd January 15, 2017
+.Dt DEFLATE 3
+.Os
+.
+.Sh NAME
+.Nm deflate
+.Nd deflate compression
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn deflate "z_streamp strm" "int flush"
+.
+.Sh DESCRIPTION
+.Fn deflate
+compresses as much data as possible,
+and stops when the input buffer becomes empty
+or the output buffer becomes full.
+It may introduce some output latency
+(reading input without producing any output)
+except when forced the flush.
+.
+.Pp
+The detailed semantics are as follows.
+.Fn deflate
+performs one or both of the following actions:
+.
+.Bl -dash
+.It
+Compress more input starting at
+.Fa next_in
+and update
+.Fa next_in
+and
+.Fa avail_in
+accordingly.
+If not all input can be processed
+(because there is not enough room in the output buffer),
+.Fa next_in
+and
+.Fa avail_in
+are updated
+and processing will resume at this point
+for the next call of
+.Fn deflate .
+.
+.It
+Generate more output starting at
+.Fa next_out
+and update
+.Fa next_out
+and
+.Fa avail_out
+accordingly.
+This action is forced if the parameter
+.Fa flush
+is non-zero.
+Forcing flush frequently degrades the compression ratio,
+so this parameter should be set only when necessary.
+Some output may be provided even if
+.Fa flush
+is zero.
+.El
+.
+.Pp
+Before the call of
+.Fn deflate ,
+the application should ensure that
+at least one of the actions is possible,
+by providing more input
+and/or consuming more output,
+and updating
+.Fa avail_in
+or
+.Fa avail_out
+accordingly;
+.Fa avail_out
+should never be zero before the call.
+The application can consume the compressed output
+when it wants,
+for example when the output buffer is full
+.Po
+.Fa avail_out
+== 0
+.Pc ,
+or after each call of
+.Fn deflate .
+If
+.Fn deflate
+returns
+.Dv Z_OK
+and with zero
+.Fa avail_out ,
+it must be called again after making room in the output buffer
+because there might be more output pending.
+See
+.Xr deflatePending 3 ,
+which can be used if desired to determine
+whether or not there is more output in that case.
+.
+.Pp
+Normally the parameter
+.Fa flush
+is set to
+.Dv Z_NO_FLUSH ,
+which allows
+.Fn deflate
+to decide how much data to accumulate before producing output,
+in order to maximize compression.
+.
+.Pp
+If the parameter
+.Fa flush
+is set to
+.Dv Z_SYNC_FLUSH ,
+all pending output is flushed to the output buffer
+and the output is aligned on a byte boundary,
+so that the decompressor can get all input data available so far.
+.Po
+In particular
+.Fa avail_in
+is zero after the call if enough output space
+has been provided before the call.
+.Pc \&
+Flushing may degrade compression for some compression algorithms
+and so it should be used only when necessary.
+This completes the current deflate block
+and follows it with an empty stored block
+that is three bits plus filler bits to the next byte,
+followed by four bytes
+(00 00 ff ff).
+.
+.Pp
+If
+.Fa flush
+is set to
+.Dv Z_PARTIAL_FLUSH ,
+all pending output is flushed to the output buffer,
+but the output is not aligned to a byte boundary.
+All of the input data so far will be available to the decompressor,
+as for
+.Dv Z_SYNC_FLUSH .
+This completes the current deflate block
+and follows it with an empty fixed codes block
+that is 10 bits long.
+This assures that enough bytes are output
+in order for the decompressor to finish the block
+before the empty fixed codes block.
+.
+.Pp
+If
+.Fa flush
+is set to
+.Dv Z_BLOCK ,
+a deflate block is completed and emitted,
+as for
+.Dv Z_SYNC_FLUSH ,
+but the output is not aligned on a byte boundary,
+and up to seven bits of the current block
+are held to be written as the next byte
+after the next deflate block is completed.
+In this case,
+the decompressor may not be provided enough bits
+at this point in order to complete decompression
+of the data provided so far to the compressor.
+It may need to wait for the next block to be emitted.
+This is for advanced applications
+that need to control the emission of deflate blocks.
+.
+.Pp
+If
+.Fa flush
+is set to
+.Dv Z_FULL_FLUSH ,
+all output is flushed as with
+.Dv Z_SYNC_FLUSH ,
+and the compression state is reset
+so that decompression can restart from this point
+if previous compressed data has been damaged
+or if random access is desired.
+Using
+.Dv Z_FULL_FLUSH
+too often can seriously degrade compression.
+.
+.Pp
+If
+.Fn deflate
+returns with
+.Fa avail_out
+== 0,
+this function must be called again
+with the same value of the
+.Fa flush
+parameter
+and more output space
+.Po
+updated
+.Fa avail_out
+.Pc ,
+until the flush is complete
+.Po
+.Fn deflate
+returns with non-zero
+.Fa avail_out
+.Pc .
+In the case of a
+.Dv Z_FULL_FLUSH
+or
+.Dv Z_SYNC_FLUSH ,
+make sure that
+.Fa avail_out
+is greater than six
+to avoid repeated flush markers
+due to
+.Fa avail_out
+== 0
+on return.
+.
+.Pp
+If the parameter
+.Fa flush
+is set to
+.Dv Z_FINISH ,
+pending input is processed,
+pending output is flushed and
+.Fn deflate
+returns with
+.Dv Z_STREAM_END
+if there was enough output space.
+If
+.Fn deflate
+returns with
+.Dv Z_OK
+or
+.Dv Z_BUF_ERROR ,
+this function must be called again with
+.Dv Z_FINISH
+and more output space
+.Pq updated Fa avail_out
+but no more input data,
+until it returns with
+.Dv Z_STREAM_END
+or an error.
+After
+.Fn deflate
+has returned
+.Dv Z_STREAM_END ,
+the only possible operations on the stream are
+.Xr deflateReset 3
+or
+.Xr deflateEnd 3 .
+.
+.Pp
+.Dv Z_FINISH
+can be used in the first
+.Fn deflate
+call after
+.Xr deflateInit 3
+if all the compression is to be done in a single step.
+In order to complete in one call,
+.Fa avail_out
+must be at least the value returned by
+.Xr deflateBound 3 .
+Then
+.Fn deflate
+is guaranteed to return
+.Dv Z_STREAM_END .
+If not enough output space is provided,
+.Fn deflate
+will not return
+.Dv Z_STREAM_END ,
+and it must be called again as described above.
+.
+.Pp
+.Fn deflate
+sets
+.Fa strm->adler
+to the Adler-32 checksum
+of all input read so far
+.Po
+that is,
+.Fa total_in
+bytes
+.Pc .
+If a gzip stream is being generated,
+then
+.Fa strm->adler
+will be the CRC-32 checksum of the input read so far.
+See
+.Xr deflateInit2 3 .
+.
+.Pp
+.Fn deflate
+may update
+.Fa strm->data_type
+if it can make a good guess
+about the input data type
+.Po
+.Dv Z_BINARY
+or
+.Dv Z_TEXT
+.Pc .
+If in doubt,
+the date is considered binary.
+This field is only for information purposes
+and does not affect the compression algorithm in any manner.
+.
+.Sh RETURN VALUES
+.Fn deflate
+returns
+.Dv Z_OK
+if some progress has been made
+(more input processed or more output produced),
+.Dv Z_STREAM_END
+if all input has been consumed
+and all output has been produced
+.Po
+only when
+.Fa flush
+is set to
+.Dv Z_FINISH
+.Pc ,
+.Dv Z_STREAM_ERROR
+if the stream state was inconsistent
+.Po
+for example if
+.Fa next_in
+or
+.Fa next_out
+was
+.Dv Z_NULL
+or the state was inadvertently written over
+by the application
+.Pc ,
+or
+.Dv Z_BUF_ERROR
+if no progress is possible
+.Po
+for example
+.Fa avail_in
+or
+.Fa avail_out
+was zero
+.Pc .
+Note that
+.Dv Z_BUF_ERROR
+is not fatal,
+and
+.Fn deflate
+can be called again with more input and more output space
+to continue compressing.
+.
+.Sh SEE ALSO
+.Xr deflateEnd 3 ,
+.Xr deflateInit 3 ,
+.Xr deflatePending 3 ,
+.Xr inflate 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

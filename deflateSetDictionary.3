@@ -1,0 +1,142 @@
+.Dd January 15, 2017
+.Dt DEFLATESETDICTIONARY 3
+.Os
+.
+.Sh NAME
+.Nm deflateSetDictionary
+.Nd initialize compression dictionary
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fo deflateSetDictionary
+.Fa "z_streamp strm"
+.Fa "const Bytef *dictionary"
+.Fa "uInt dictLength"
+.Fc
+.
+.Sh DESCRIPTION
+.Fn deflateSetDictionary
+initializes the compression dictionary
+from the given byte sequence
+without producing any compressed output.
+When using the zlib format,
+this function must be called immediately after
+.Xr deflateInit 3 ,
+.Xr deflateInit2 3 ,
+or
+.Xr deflateReset 3 ,
+and before any call of
+.Xr deflate 3 .
+When doing raw deflate,
+this function must be called
+either before any call of
+.Xr deflate 3 ,
+or immediately after the completion of a deflate block,
+i.e. after all input has been consumed
+and all output has been delivered
+when using any of the flush options
+.Dv Z_BLOCK ,
+.Dv Z_PARTIAL_FLUSH ,
+.Dv Z_SYNC_FLUSH ,
+or
+.Dv Z_FULL_FLUSH .
+The compressor and decompressor
+must use exactly the same dictionary
+.Po
+see
+.Xr inflateSetDictionary 3
+.Pc .
+.
+.Pp
+The dictionary should consist of strings
+(byte sequences)
+that are likely to be encountered later
+in the data to be compressed,
+with the most commonly used strings
+preferably put towards the end of the dictionary.
+Using a dictionary is most useful
+when the data to be compressed is short
+and can be predicted with good accuracy;
+the data can then be compressed better than
+with the default empty dictionary.
+.
+.Pp
+Depending on the size of
+the compression data structures selected by
+.Xr deflateInit 3
+or
+.Xr deflateInit2 3 ,
+a part of the dictionary may in effect be discarded,
+for example if the dictionary is larger
+than the window size provided in
+.Xr deflateInit 3
+or
+.Xr deflateInit2 3 .
+Thus the strings most likely to be useful
+should be put at the end of the dictionary,
+not at the front.
+In addition,
+the current implementation of deflate
+will use at most the window size minus 262 bytes
+of the provided dictionary.
+.
+.Pp
+Upon return of this function,
+.Fa strm->adler
+is set to the Adler-32 value
+of the dictionary;
+the decompressor may later use this value
+to determine which dictionary has been used
+by the compressor.
+(The Adler-32 value applies to the whole dictionary
+even if only a subset of the dictionary
+is actually used by the compressor.)
+If a raw deflate was requested,
+then the Adler-32 value is not computed and
+.Fa strm->adler
+is not set.
+.
+.Pp
+.Fn deflateSetDictionary
+does not perform any compression:
+this will be done by
+.Xr deflate 3 .
+.
+.Sh RETURN VALUES
+.Fn deflateSetDictionary
+returns
+.Dv Z_OK
+if success,
+or
+.Dv Z_STREAM_ERROR
+if a parameter is invalid
+.Po
+e.g. dictionary being
+.Dv Z_NULL
+.Pc
+or the stream state is inconsistent
+.Po
+for example if
+.Xr deflate 3
+has already been called for this stream
+or if not at a block boundary
+for raw deflate
+.Pc .
+.
+.Sh SEE ALSO
+.Xr deflateGetDictionary 3 ,
+.Xr inflateSetDictionary 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

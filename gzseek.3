@@ -1,0 +1,108 @@
+.Dd January 15, 2017
+.Dt GZSEEK 3
+.Os
+.
+.Sh NAME
+.Nm gzseek ,
+.Nm gzrewind ,
+.Nm gztell
+.Nd seek compressed file
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft z_off_t
+.Fn gzseek "gzFile file" "z_off_t offset" "int whence"
+.Ft int
+.Fn gzrewind "gzFile file"
+.Ft z_off_t
+.Fn gztell "gzFile file"
+.
+.Sh DESCRIPTION
+Sets the starting position
+for the next
+.Xr gzread 3
+or
+.Xr gzwrite 3
+on the given compressed file.
+The
+.Fa offset
+represents a number of bytes
+in the uncompressed data stream.
+The
+.Fa whence
+parameter
+is defined as in
+.Xr lseek 2 ;
+the value
+.Dv SEEK_END
+is not supported.
+.
+.Pp
+If the file is opened for reading,
+this function is emulated
+but can be extremely slow.
+If the file is opened for writing,
+only forward seeks are supported;
+.Fn gzseek
+then compresses a sequence of zeroes
+up to the new starting position.
+.
+.Pp
+.Fn gzrewind
+rewinds the given file.
+This function is supported
+only for reading.
+.
+.Pp
+.Fn gzrewind file
+is equivalent to
+.Li (int) Ns Fn gzseek file 0L SEEK_SET .
+.
+.Pp
+.Fn gztell
+returns the starting position
+for the next
+.Xr gzread 3
+or
+.Xr gzwrite 3
+on the given compressed file.
+This position represents a number of bytes
+in the uncompressed data stream,
+and is zero when starting,
+even if appending or reading
+a gzip stream from the middle of a file using
+.Xr gzdopen 3 .
+.
+.Pp
+.Fn gztell file
+is equivalent to
+.Fn gzseek file 0L SEEK_CUR .
+.
+.Sh RETURN VALUES
+.Fn gzseek
+returns the resulting offset location
+as measured in bytes
+from the beginning of the uncompressed stream,
+or -1 in case of error,
+in particular if the file
+is opened for writing
+and the new starting position
+would be before the current position.
+.
+.Sh SEE ALSO
+.Xr gzerror 3 ,
+.Xr gzoffset 3 ,
+.Xr gzopen 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

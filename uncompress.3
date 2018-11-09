@@ -1,0 +1,92 @@
+.Dd January 15, 2017
+.Dt UNCOMPRESS 3
+.Os
+.
+.Sh NAME
+.Nm uncompress ,
+.Nm uncompress2
+.Nd decompress source buffer into destination buffer
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.
+.Ft int
+.Fo uncompress
+.Fa "Bytef *dest"
+.Fa "uLongf *destLen"
+.Fa "const Bytef *source"
+.Fa "uLong sourceLen"
+.Fc
+.
+.Ft int
+.Fo uncompress2
+.Fa "Bytef *dest"
+.Fa "uLongf *destLen"
+.Fa "const Bytef *source"
+.Fa "uLong *sourceLen"
+.Fc
+.
+.Sh DESCRIPTION
+Decompresses the source buffer into the destination buffer.
+.Fa sourceLen
+is the byte length of the source buffer.
+Upon entry,
+.Fa destLen
+is the total size of the destination buffer,
+which must be large enough to hold the entire uncompressed data.
+.Po
+The size of the uncompressed data
+must have been saved previously by the compressor
+and transmitted to the decompressor
+by some mechanism outside the scope of this compression library.
+.Pc \&
+Upon exit,
+.Fa destLen
+is the actual size of the uncompressed data.
+.
+.Pp
+.Fn uncompress2
+is the same as
+.Fn uncompress ,
+except that
+.Fa sourceLen
+is a pointer,
+where the length of the source is
+.Fa *sourceLen .
+On return,
+.Fa *sourceLen
+is the number of source bytes consumed.
+.
+.Sh RETURN VALUES
+.Fn uncompress
+returns
+.Dv Z_OK
+if success,
+.Dv Z_MEM_ERROR
+if there was not enough memory,
+.Dv Z_BUF_ERROR
+if there was not enough room in the output buffer,
+or
+.Dv Z_DATA_ERROR
+if the input data was corrupted or incomplete.
+In the case where there is not enough room,
+.Fn uncompress
+will fill the output buffer
+with the uncompressed data up to that point.
+.
+.Sh SEE ALSO
+.Xr compress 3 ,
+.Xr inflate 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

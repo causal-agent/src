@@ -1,0 +1,107 @@
+.Dd January 15, 2017
+.Dt GZFREAD 3
+.Os
+.
+.Sh NAME
+.Nm gzfread
+.Nd read from compressed file
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft z_size_t
+.Fn gzfread "voidp buf" "z_size_t size" "z_size_t nitems" "gzFile file"
+.
+.Sh DESCRIPTION
+Read up to
+.Fa nitems
+of size
+.Fa size
+from
+.Fa file
+to
+.Fa buf ,
+otherwise operating as
+.Xr gzread 3
+does.
+This duplicates the interface of stdio's
+.Xr fread 3 ,
+with
+.Vt size_t
+request and return types.
+If the library defines
+.Vt size_t ,
+then
+.Vt z_size_t
+is identical to
+.Vt size_t .
+If not,
+then
+.Vt z_size_t
+is an unsigned integer type
+that can contain a pointer.
+.
+.Pp
+In the event that the end of file is reached
+and only a partial item is available at the end,
+i.e. the remaining uncompressed data length
+is not a multiple of
+.Fa size ,
+then the file partial item
+is nevertheless read into
+.Fa buf
+and the end-of-file flag is set.
+The length of the partial item read
+is not provided,
+but could be inferred from the result of
+.Xr gztell 3 .
+This behavior is the same as the behavior of
+.Xr fread 3
+implementations in common libraries,
+but it prevents the direct use of
+.Fn gzfread
+to read a concurrently written file,
+reseting and retrying on end-of-file,
+when
+.Fa size
+is not 1.
+.
+.Sh RETURN VALUES
+.Fn gzfread
+returns the number of full items read of size
+.Fa size ,
+or zero if the end of the file was reached
+and a full item could not be read,
+or if there was an error.
+.Xr gzerror 3
+must be consulted if zero is returned
+in order to determine if there was an error.
+If the multiplication of
+.Fa size
+and
+.Fa nitems
+overflows,
+i.e. the product does not fit in
+.Vt z_size_t ,
+then nothing is read,
+zero is returned,
+and the error state is set to
+.Dv Z_STREAM_ERROR .
+.
+.Sh SEE ALSO
+.Xr gzeof 3 ,
+.Xr gzerror 3 ,
+.Xr gzopen 3 ,
+.Xr gzread 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

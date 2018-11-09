@@ -1,0 +1,85 @@
+.Dd January 15, 2017
+.Dt GZDIRECT 3
+.Os
+.
+.Sh NAME
+.Nm gzdirect
+.Nd check direct copy
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn gzdirect "gzFile file"
+.
+.Sh DESCRIPTION
+Returns true (1) if
+.Fa file
+is being copied directly while reading,
+or false (0) if
+.Fa file
+is a gzip stream being decompressed.
+.
+.Pp
+If the input file is empty,
+.Fn gzdirect
+will return true,
+since the input does not contain a gzip stream.
+.
+.Pp
+If
+.Fn gzdirect
+is used immediately after
+.Xr gzopen 3
+or
+.Xr gzdopen 3
+it will cause buffers to be allocated
+to allow reading the file
+to determine if it is a gzip file.
+Therefore if
+.Xr gzbuffer 3
+is used,
+it should be called before
+.Fn gzdirect .
+.
+.Pp
+When writing,
+.Fn gzdirect
+returns true (1)
+if transparent writing was requested
+.Po
+.Dq wT
+for the
+.Xr gzopen 3
+mode
+.Pc ,
+or false (0) otherwise.
+.Po
+Note:
+.Fn gzdirect
+is not needed when writing.
+Transparent writing
+must be explicitly requested,
+so the application already knows the answer.
+When linking statically,
+using
+.Fn gzdirect
+will include all of the zlib code
+for gzip file reading and decompression,
+which may not be desired.
+.Pc
+.
+.Sh SEE ALSO
+.Xr gzopen 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu
