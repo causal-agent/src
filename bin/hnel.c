@@ -33,6 +33,8 @@
 #include <util.h>
 #endif
 
+typedef unsigned char byte;
+
 static struct termios saveTerm;
 static void restoreTerm(void) {
 	tcsetattr(STDIN_FILENO, TCSADRAIN, &saveTerm);
@@ -43,10 +45,10 @@ int main(int argc, char *argv[]) {
 
 	if (argc < 4) return EX_USAGE;
 
-	char table[256] = {0};
+	byte table[256] = {0};
 	if (strlen(argv[1]) != strlen(argv[2])) return EX_USAGE;
 	for (const char *from = argv[1], *to = argv[2]; *from; ++from, ++to) {
-		table[(unsigned)*from] = *to;
+		table[(byte)*from] = *to;
 	}
 
 	error = tcgetattr(STDERR_FILENO, &saveTerm);
@@ -73,7 +75,7 @@ int main(int argc, char *argv[]) {
 
 	bool enable = true;
 
-	char buf[4096];
+	byte buf[4096];
 	struct pollfd fds[2] = {
 		{ .fd = STDIN_FILENO, .events = POLLIN },
 		{ .fd = pty, .events = POLLIN },
@@ -89,7 +91,7 @@ int main(int argc, char *argv[]) {
 					continue;
 				}
 
-				unsigned char c = buf[0];
+				byte c = buf[0];
 				if (enable && table[c]) buf[0] = table[c];
 			}
 

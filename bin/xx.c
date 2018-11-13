@@ -17,13 +17,14 @@
 #include <ctype.h>
 #include <err.h>
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sysexits.h>
 #include <unistd.h>
 
-static bool zero(const uint8_t *ptr, size_t size) {
+typedef unsigned char byte;
+
+static bool zero(const byte *ptr, size_t size) {
 	for (size_t i = 0; i < size; ++i) {
 		if (ptr[i]) return false;
 	}
@@ -41,7 +42,7 @@ static struct {
 static void dump(FILE *file) {
 	bool skip = false;
 
-	uint8_t buf[options.cols];
+	byte buf[options.cols];
 	size_t offset = 0;
 	for (
 		size_t size;
@@ -92,10 +93,10 @@ static void dump(FILE *file) {
 }
 
 static void undump(FILE *file) {
-	uint8_t byte;
+	byte c;
 	int match;
-	while (0 < (match = fscanf(file, " %hhx", &byte))) {
-		printf("%c", byte);
+	while (0 < (match = fscanf(file, " %hhx", &c))) {
+		printf("%c", c);
 	}
 	if (!match) errx(EX_DATAERR, "invalid input");
 }

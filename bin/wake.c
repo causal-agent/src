@@ -18,13 +18,14 @@
 
 #include <err.h>
 #include <netinet/in.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <sysexits.h>
 
+typedef unsigned char byte;
+
 #define MAC 0x04, 0x7D, 0x7B, 0xD5, 0x6A, 0x53
-static const uint8_t Payload[102] = {
+static const byte Payload[102] = {
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 	MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC,
 	MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC,

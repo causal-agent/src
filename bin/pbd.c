@@ -27,6 +27,8 @@
 #include <sysexits.h>
 #include <unistd.h>
 
+typedef unsigned char byte;
+
 static void spawn(const char *cmd, const char *arg, int dest, int src) {
 	pid_t pid = fork();
 	if (pid < 0) err(EX_OSERR, "fork");
@@ -106,7 +108,7 @@ static int pbdClient(char c) {
 }
 
 static void copy(int out, int in) {
-	char buf[4096];
+	byte buf[4096];
 	ssize_t readSize;
 	while (0 < (readSize = read(in, buf, sizeof(buf)))) {
 		ssize_t writeSize = write(out, buf, readSize);
@@ -127,7 +129,7 @@ static int pbpaste(void) {
 	return EX_OK;
 }
 
-static int open1(char *url) {
+static int open1(const char *url) {
 	if (!url) return EX_USAGE;
 	int client = pbdClient('o');
 	ssize_t size = write(client, url, strlen(url));

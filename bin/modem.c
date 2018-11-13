@@ -31,7 +31,10 @@
 #include <util.h>
 #endif
 
-static const int BaudRate = 19200;
+typedef unsigned uint;
+typedef unsigned char byte;
+
+static const uint BaudRate = 19200;
 
 static struct termios saveTerm;
 static void restoreTerm(void) {
@@ -65,7 +68,7 @@ int main(int argc, char *argv[]) {
 		err(EX_NOINPUT, "%s", argv[1]);
 	}
 
-	char c;
+	byte c;
 	struct pollfd fds[2] = {
 		{ .events = POLLIN, .fd = STDIN_FILENO },
 		{ .events = POLLIN, .fd = pty },

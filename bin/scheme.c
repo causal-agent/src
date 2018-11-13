@@ -25,6 +25,9 @@
 #include <unistd.h>
 #include <zlib.h>
 
+typedef unsigned uint;
+typedef unsigned char byte;
+
 static const struct HSV { double h, s, v; }
 	R = {   0.0, 1.0, 1.0 },
 	Y = {  60.0, 1.0, 1.0 },
@@ -33,7 +36,7 @@ static const struct HSV { double h, s, v; }
 	B = { 240.0, 1.0, 1.0 },
 	M = { 300.0, 1.0, 1.0 };
 
-static struct RGB { uint8_t r, g, b; } toRGB(struct HSV hsv) {
+static struct RGB { byte r, g, b; } toRGB(struct HSV hsv) {
 	double c = hsv.v * hsv.s;
 	double h = hsv.h / 60.0;
 	double x = c * (1.0 - fabs(fmod(h, 2.0) - 1.0));
@@ -88,7 +91,7 @@ static void generate(void) {
 
 	scheme[Dark + Black] = x(scheme[Light + Black], 0.0, 1.0, 0.3);
 	scheme[Dark + White] = x(scheme[Light + White], 0.0, 1.0, 0.6);
-	for (int i = Red; i < White; ++i) {
+	for (uint i = Red; i < White; ++i) {
 		scheme[Dark + i] = x(scheme[Light + i], 0.0, 1.0, 0.8);
 	}
 
@@ -99,7 +102,7 @@ static void generate(void) {
 	scheme[Cursor]     = x(scheme[Dark + White],    0.0, 1.0, 0.8);
 }
 
-static void swap(int a, int b) {
+static void swap(uint a, uint b) {
 	struct HSV t = scheme[a];
 	scheme[a] = scheme[b];
 	scheme[b] = t;
@@ -110,13 +113,13 @@ static void invert(void) {
 	swap(Light + Black, Dark + White);
 }
 
-static void printHSV(int n) {
+static void printHSV(uint n) {
 	printf("%g,%g,%g\n", scheme[n].h, scheme[n].s, scheme[n].v);
 }
 
-static void printRGB(int n) {
+static void printRGB(uint n) {
 	struct RGB rgb = toRGB(scheme[n]);
-	printf("%02X%02X%02X\n", rgb.r, rgb.g, rgb.b);
+	printf("%02hhX%02hhX%02hhX\n", rgb.r, rgb.g, rgb.b);
 }
 
 static const char *CNames[SchemeLen] = {
@@ -145,17 +148,17 @@ static const char *CNames[SchemeLen] = {
 static void printCHead(void) {
 	printf("enum {\n");
 }
-static void printC(int n) {
+static void printC(uint n) {
 	struct RGB rgb = toRGB(scheme[n]);
-	printf("\t%s = 0x%02X%02X%02X,\n", CNames[n], rgb.r, rgb.g, rgb.b);
+	printf("\t%s = 0x%02hhX%02hhX%02hhX,\n", CNames[n], rgb.r, rgb.g, rgb.b);
 }
 static void printCTail(void) {
 	printf("};\n");
 }
 
-static void printLinux(int n) {
+static void printLinux(uint n) {
 	struct RGB rgb = toRGB(scheme[n]);
-	printf("\x1B]P%X%02X%02X%02X", n, rgb.r, rgb.g, rgb.b);
+	printf("\x1B]P%X%02hhX%02hhX%02hhX", n, rgb.r, rgb.g, rgb.b);
 }
 
 static const char *MinttyNames[SchemeLen] = {
@@ -179,10 +182,10 @@ static const char *MinttyNames[SchemeLen] = {
 	[Foreground]      = "ForegroundColour",
 	[Cursor]          = "CursorColour",
 };
-static void printMintty(int n) {
+static void printMintty(uint n) {
 	if (!MinttyNames[n]) return;
 	struct RGB rgb = toRGB(scheme[n]);
-	printf("%s=%d,%d,%d\n", MinttyNames[n], rgb.r, rgb.g, rgb.b);
+	printf("%s=%hhd,%hhd,%hhd\n", MinttyNames[n], rgb.r, rgb.g, rgb.b);
 }
 
 static uint32_t crc;
@@ -201,7 +204,7 @@ static void pngChunk(const char *type, uint32_t size) {
 	pngWrite(type, 4);
 }
 
-static void png(int at, int to) {
+static void png(uint at, uint to) {
 	if (to - at > 256) to = at + 256;
 
 	uint32_t len = to - at;
@@ -221,7 +224,7 @@ static void png(int at, int to) {
 	pngInt(crc);
 
 	pngChunk("PLTE", 3 * len);
-	for (int i = at; i < to; ++i) {
+	for (uint i = at; i < to; ++i) {
 		struct RGB rgb = toRGB(scheme[i]);
 		pngWrite(&rgb, 3);
 	}
@@ -233,16 +236,16 @@ static void png(int at, int to) {
 		enum { None, Sub, Up, Average, Paeth };
 		data[y][0] = (y % swatchHeight) ? Up : Sub;
 	}
-	for (int i = at; i < to; ++i) {
-		int p = i - at;
+	for (uint i = at; i < to; ++i) {
+		uint p = i - at;
 		uint32_t y = swatchHeight * (p / cols);
 		uint32_t x = swatchWidth * (p % cols);
 		data[y][1 + x] = x ? 1 : p;
 	}
 
 	uLong size = compressBound(sizeof(data));
-	uint8_t deflate[size];
-	int error = compress(deflate, &size, (Byte *)data, sizeof(data));
+	byte deflate[size];
+	int error = compress(deflate, &size, (byte *)data, sizeof(data));
 	if (error != Z_OK) errx(EX_SOFTWARE, "compress: %d", error);
 
 	pngChunk("IDAT", size);
@@ -253,16 +256,16 @@ static void png(int at, int to) {
 	pngInt(crc);
 }
 
-static void print(void (*fn)(int), int at, int to) {
-	for (int i = at; i < to; ++i) {
+static void print(void (*fn)(uint), uint at, uint to) {
+	for (uint i = at; i < to; ++i) {
 		fn(i);
 	}
 }
 
 int main(int argc, char *argv[]) {
 	generate();
-	int at = 0;
-	int to = Background;
+	uint at = 0;
+	uint to = Background;
 	char out = 'x';
 
 	int opt;

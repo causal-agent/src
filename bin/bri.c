@@ -23,6 +23,8 @@
 #include <sysexits.h>
 #include <unistd.h>
 
+typedef unsigned uint;
+
 static const char *Class = "/sys/class/backlight";
 
 int main(int argc, char *argv[]) {
@@ -52,7 +54,7 @@ int main(int argc, char *argv[]) {
 	FILE *actual = fopen("actual_brightness", "r");
 	if (!actual) err(EX_OSFILE, "actual_brightness");
 
-	unsigned value;
+	uint value;
 	int match = fscanf(actual, "%u", &value);
 	if (match == EOF) err(EX_IOERR, "actual_brightness");
 	if (match < 1) errx(EX_DATAERR, "actual_brightness");
