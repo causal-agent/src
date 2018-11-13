@@ -17,7 +17,11 @@
 .Nm
 spawns the
 .Ar command
-(by default, the user's shell)
+.Po
+by default,
+the value of
+.Ev SHELL
+.Pc
 inside a new PTY.
 It then lends control of the detached PTY to
 .Nm atch
@@ -35,11 +39,17 @@ session with the corresponding
 To detach from a session, type
 .Ic ^Q .
 .
-.Sh FILES
-.Bl -tag
-.It Pa ~/.dtch/ Ns Ar name
-UNIX-domain socket for the session
-.Ar name .
+.Sh ENVIRONMENT
+.Bl -tag -width "SHELL"
+.It Ev HOME
+Location of
+.Pa .dtch
+directory for UNIX-domain sockets.
+.It Ev SHELL
+The default command to run,
+or
+.Pa /bin/sh
+if unset.
 .El
 .
 .Sh EXAMPLES
