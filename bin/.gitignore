@@ -1,6 +1,7 @@
 *.o
-tags
 scheme.h
+scheme.png
+tags
 atch
 dtch
 glitch
@@ -21,4 +22,3 @@ bri
 fbatt
 fbclock
 psfed
-scheme.png
