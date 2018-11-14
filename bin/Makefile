@@ -54,6 +54,8 @@ scheme.h: scheme
 open pbcopy pbpaste: pbd
 	ln -f pbd $@
 
+psf2png.o scheme.o: png.h
+
 scheme.png: scheme
 	./scheme -t -g > scheme.png
 

@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arpa/inet.h>
 #include <err.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -22,23 +21,8 @@
 #include <string.h>
 #include <sysexits.h>
 #include <unistd.h>
-#include <zlib.h>
 
-static uint32_t crc;
-static void pngWrite(const void *ptr, size_t size) {
-	fwrite(ptr, size, 1, stdout);
-	if (ferror(stdout)) err(EX_IOERR, "(stdout)");
-	crc = crc32(crc, ptr, size);
-}
-static void pngInt(uint32_t host) {
-	uint32_t net = htonl(host);
-	pngWrite(&net, 4);
-}
-static void pngChunk(const char *type, uint32_t size) {
-	pngInt(size);
-	crc = crc32(0, Z_NULL, 0);
-	pngWrite(type, 4);
-}
+#include "png.h"
 
 int main(int argc, char *argv[]) {
 	uint32_t cols = 32;
@@ -91,26 +75,20 @@ int main(int argc, char *argv[]) {
 	}
 	fclose(file);
 
-	pngWrite("\x89PNG\r\n\x1A\n", 8);
-
 	uint32_t count = (str ? strlen(str) : header.glyph.len);
 	uint32_t width = header.glyph.width * cols;
 	uint32_t rows = (count + cols - 1) / cols;
 	uint32_t height = header.glyph.height * rows;
 
-	pngChunk("IHDR", 13);
-	pngInt(width);
-	pngInt(height);
-	pngWrite("\x08\x03\x00\x00\x00", 5);
-	pngInt(crc);
-
-	pngChunk("PLTE", 6);
-	pngWrite((uint8_t[]) { bg >> 16, bg >> 8, bg }, 3);
-	pngWrite((uint8_t[]) { fg >> 16, fg >> 8, fg }, 3);
-	pngInt(crc);
+	pngHead(stdout, width, height, 8, PNGIndexed);
+	uint8_t pal[] = {
+		bg >> 16, bg >> 8, bg,
+		fg >> 16, fg >> 8, fg,
+	};
+	pngPalette(stdout, pal, sizeof(pal));
 
 	uint8_t data[height][1 + width];
-	memset(data, 0, sizeof(data));
+	memset(data, PNGNone, sizeof(data));
 
 	for (uint32_t i = 0; i < count; ++i) {
 		uint32_t row = header.glyph.height * (i / cols);
@@ -124,15 +102,6 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	uLong size = compressBound(sizeof(data));
-	uint8_t deflate[size];
-	int error = compress(deflate, &size, (Byte *)data, sizeof(data));
-	if (error != Z_OK) errx(EX_SOFTWARE, "compress: %d", error);
-
-	pngChunk("IDAT", size);
-	pngWrite(deflate, size);
-	pngInt(crc);
-
-	pngChunk("IEND", 0);
-	pngInt(crc);
+	pngData(stdout, (uint8_t *)data, sizeof(data));
+	pngTail(stdout);
 }

@@ -14,16 +14,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arpa/inet.h>
 #include <err.h>
 #include <math.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
 #include <unistd.h>
-#include <zlib.h>
+
+#include "png.h"
 
 typedef unsigned uint;
 typedef unsigned char byte;
@@ -188,53 +187,29 @@ static void printMintty(uint n) {
 	printf("%s=%hhd,%hhd,%hhd\n", MinttyNames[n], rgb.r, rgb.g, rgb.b);
 }
 
-static uint32_t crc;
-static void pngWrite(const void *ptr, size_t size) {
-	fwrite(ptr, size, 1, stdout);
-	if (ferror(stdout)) err(EX_IOERR, "(stdout)");
-	crc = crc32(crc, ptr, size);
-}
-static void pngInt(uint32_t host) {
-	uint32_t net = htonl(host);
-	pngWrite(&net, 4);
-}
-static void pngChunk(const char *type, uint32_t size) {
-	pngInt(size);
-	crc = crc32(0, Z_NULL, 0);
-	pngWrite(type, 4);
-}
-
 static void png(uint at, uint to) {
 	if (to - at > 256) to = at + 256;
 
-	uint32_t len = to - at;
-	uint32_t swatchWidth = 64;
-	uint32_t swatchHeight = 64;
-	uint32_t cols = 8;
-	uint32_t rows = (len + cols - 1) / cols;
-	uint32_t width = swatchWidth * cols;
-	uint32_t height = swatchHeight * rows;
+	uint len = to - at;
+	uint swatchWidth = 64;
+	uint swatchHeight = 64;
+	uint cols = 8;
+	uint rows = (len + cols - 1) / cols;
+	uint width = swatchWidth * cols;
+	uint height = swatchHeight * rows;
 
-	pngWrite("\x89PNG\r\n\x1A\n", 8);
+	pngHead(stdout, width, height, 8, PNGIndexed);
 
-	pngChunk("IHDR", 13);
-	pngInt(width);
-	pngInt(height);
-	pngWrite("\x08\x03\x00\x00\x00", 5);
-	pngInt(crc);
-
-	pngChunk("PLTE", 3 * len);
-	for (uint i = at; i < to; ++i) {
-		struct RGB rgb = toRGB(scheme[i]);
-		pngWrite(&rgb, 3);
+	struct RGB rgb[len];
+	for (uint i = 0; i < len; ++i) {
+		rgb[i] = toRGB(scheme[at + i]);
 	}
-	pngInt(crc);
+	pngPalette(stdout, (byte *)rgb, sizeof(rgb));
 
 	uint8_t data[height][1 + width];
 	memset(data, 0, sizeof(data));
 	for (uint32_t y = 0; y < height; ++y) {
-		enum { None, Sub, Up, Average, Paeth };
-		data[y][0] = (y % swatchHeight) ? Up : Sub;
+		data[y][0] = (y % swatchHeight) ? PNGUp : PNGSub;
 	}
 	for (uint i = at; i < to; ++i) {
 		uint p = i - at;
@@ -243,17 +218,8 @@ static void png(uint at, uint to) {
 		data[y][1 + x] = x ? 1 : p;
 	}
 
-	uLong size = compressBound(sizeof(data));
-	byte deflate[size];
-	int error = compress(deflate, &size, (byte *)data, sizeof(data));
-	if (error != Z_OK) errx(EX_SOFTWARE, "compress: %d", error);
-
-	pngChunk("IDAT", size);
-	pngWrite(deflate, size);
-	pngInt(crc);
-
-	pngChunk("IEND", 0);
-	pngInt(crc);
+	pngData(stdout, (byte *)data, sizeof(data));
+	pngTail(stdout);
 }
 
 static void print(void (*fn)(uint), uint at, uint to) {
