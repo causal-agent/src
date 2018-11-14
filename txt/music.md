@@ -1,3 +1,4 @@
+- [Chromatics — Running Up That Hill][63]
 - [Low — Double Negative][62]
 - [Rival Consoles — Helios][61]
 - [Tiffany — I Think We're Alone Now][60]
@@ -133,3 +134,4 @@
 [60]: https://youtu.be/w6Q3mHyzn78
 [61]: https://youtu.be/T8n-XC_2a-k
 [62]: https://lowtheband.bandcamp.com/album/double-negative
+[63]: https://youtu.be/Mgv88ZLi6LY
