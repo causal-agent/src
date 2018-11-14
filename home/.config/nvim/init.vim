@@ -28,3 +28,4 @@ let g:clipboard = {'copy':{'+':'pbcopy'},'paste':{'+':'pbpaste'}}
 nmap <leader>s vip:sort<CR>
 nmap <leader>h :$?^#include <<CR>:nohlsearch<CR>vip:sort<CR>
 nmap <leader>a :$?^#include <<CR>:nohlsearch<CR>o#include <
+nmap <leader>l :0read ~/src/etc/agpl.c<CR>''
