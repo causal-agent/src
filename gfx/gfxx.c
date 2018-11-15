@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, June McEnroe <programble@gmail.com>
+/* Copyright (C) 2018  June McEnroe <june@causal.agency>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arpa/inet.h>
 #include <err.h>
 #include <fcntl.h>
 #include <math.h>
@@ -27,9 +26,9 @@
 #include <sys/stat.h>
 #include <sysexits.h>
 #include <unistd.h>
-#include <zlib.h>
 
 #include "gfx.h"
+#include "png.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MASK(b) ((1 << (b)) - 1)
@@ -329,22 +328,6 @@ static void outOpen(const char *ext) {
 	}
 }
 
-static uint32_t crc;
-static void pngWrite(const void *ptr, size_t size) {
-	fwrite(ptr, size, 1, out.file);
-	if (ferror(out.file)) err(EX_IOERR, "%s", out.path);
-	crc = crc32(crc, ptr, size);
-}
-static void pngUint(uint32_t host) {
-	uint32_t net = htonl(host);
-	pngWrite(&net, 4);
-}
-static void pngChunk(const char *type, uint32_t size) {
-	pngUint(size);
-	crc = crc32(0, Z_NULL, 0);
-	pngWrite(type, 4);
-}
-
 static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
 	int error;
 
@@ -360,43 +343,26 @@ static void pngDump(uint32_t *src, size_t srcWidth, size_t srcHeight) {
 		}
 	}
 
-	uLong deflateSize = compressBound(sizeof(data));
-	uint8_t deflate[deflateSize];
-	error = compress(deflate, &deflateSize, data, sizeof(data));
-	if (error != Z_OK) errx(EX_SOFTWARE, "compress: %d", error);
-
 	outOpen("png");
 	if (!out.file) return;
 
-	const uint8_t Signature[8] = "\x89PNG\r\n\x1A\n";
-	const uint8_t Header[] = { 8, 2, 0, 0, 0 }; // 8-bit truecolor
 	const char Software[] = "Software";
 	formatOptions();
 	uint8_t sbit[3] = { MAX(bits[R], 1), MAX(bits[G], 1), MAX(bits[B], 1) };
 
-	pngWrite(Signature, sizeof(Signature));
+	pngHead(out.file, srcWidth, srcHeight, 8, PNGTruecolor);
 
-	pngChunk("IHDR", 4 + 4 + sizeof(Header));
-	pngUint(srcWidth);
-	pngUint(srcHeight);
-	pngWrite(Header, sizeof(Header));
-	pngUint(crc);
+	pngChunk(out.file, "tEXt", sizeof(Software) + strlen(options));
+	pngWrite(out.file, (uint8_t *)Software, sizeof(Software));
+	pngWrite(out.file, (uint8_t *)options, strlen(options));
+	pngInt32(out.file, ~pngCRC);
 
-	pngChunk("tEXt", sizeof(Software) + strlen(options));
-	pngWrite(Software, sizeof(Software));
-	pngWrite(options, strlen(options));
-	pngUint(crc);
+	pngChunk(out.file, "sBIT", sizeof(sbit));
+	pngWrite(out.file, sbit, sizeof(sbit));
+	pngInt32(out.file, ~pngCRC);
 
-	pngChunk("sBIT", sizeof(sbit));
-	pngWrite(sbit, sizeof(sbit));
-	pngUint(crc);
-
-	pngChunk("IDAT", deflateSize);
-	pngWrite(deflate, deflateSize);
-	pngUint(crc);
-
-	pngChunk("IEND", 0);
-	pngUint(crc);
+	pngData(out.file, data, sizeof(data));
+	pngTail(out.file);
 
 	error = fclose(out.file);
 	if (error) err(EX_IOERR, "%s", out.path);

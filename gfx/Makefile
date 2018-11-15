@@ -5,7 +5,7 @@ BINS = brot gfxx
 MAN1 = $(BINS:%=man/%.1)
 
 CFLAGS += -Wall -Wextra -Wpedantic
-LDLIBS = -lm -lz
+LDLIBS = -lm
 LDLIBS_cocoa = -framework Cocoa
 LDLIBS_x11 = -lX11
 
@@ -17,6 +17,8 @@ tags: *.h *.c
 brot.o gfxx.o: gfx.h
 
 cocoa.o fb.o x11.o: gfx.h
+
+gfxx.o: png.h
 
 brot: brot.o $(GFX).o
 	$(CC) $(LDFLAGS) brot.o $(GFX).o $(LDLIBS) $(LDLIBS_$(GFX)) -o $@
