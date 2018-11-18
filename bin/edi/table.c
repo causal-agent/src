@@ -21,78 +21,75 @@
 
 #include "edi.h"
 
-static struct Table *alloc(size_t cap) {
-	size_t size = sizeof(struct Table) + sizeof(struct Slice) * cap;
-	struct Table *table = malloc(size);
-	if (!table) err(EX_OSERR, "malloc");
-	table->len = 0;
-	return table;
+static struct Table alloc(size_t cap) {
+	struct Slice *slices = malloc(sizeof(*slices) * cap);
+	if (!slices) err(EX_OSERR, "malloc");
+	return (struct Table) { 0, slices };
 }
 
-struct Table *tableInsert(const struct Table *prev, size_t at, struct Slice slice) {
-	if (!prev || !prev->len) {
-		struct Table *next = alloc(1);
-		next->slices[next->len++] = slice;
+struct Table tableInsert(struct Table prev, size_t at, struct Slice ins) {
+	if (!prev.len) {
+		struct Table next = alloc(1);
+		next.slices[next.len++] = ins;
 		return next;
 	}
 
-	struct Table *next = alloc(prev->len + 2);
+	struct Table next = alloc(prev.len + 2);
 	struct Span span = { 0, 0 };
-	for (size_t i = 0; i < prev->len; ++i) {
-		span = spanNext(span, prev->slices[i].len);
+	for (size_t i = 0; i < prev.len; ++i) {
+		span = spanNext(span, prev.slices[i].len);
 		if (span.at == at) {
-			next->slices[next->len++] = slice;
-			next->slices[next->len++] = prev->slices[i];
+			next.slices[next.len++] = ins;
+			next.slices[next.len++] = prev.slices[i];
 		} else if (span.at < at && span.to > at) {
-			next->slices[next->len++] = (struct Slice) {
-				prev->slices[i].ptr,
+			next.slices[next.len++] = (struct Slice) {
+				prev.slices[i].ptr,
 				at - span.at,
 			};
-			next->slices[next->len++] = slice;
-			next->slices[next->len++] = (struct Slice) {
-				&prev->slices[i].ptr[at - span.at],
-				prev->slices[i].len - (at - span.at),
+			next.slices[next.len++] = ins;
+			next.slices[next.len++] = (struct Slice) {
+				&prev.slices[i].ptr[at - span.at],
+				prev.slices[i].len - (at - span.at),
 			};
 		} else {
-			next->slices[next->len++] = prev->slices[i];
+			next.slices[next.len++] = prev.slices[i];
 		}
 	}
 	if (span.to == at) {
-		next->slices[next->len++] = slice;
+		next.slices[next.len++] = ins;
 	}
 	return next;
 }
 
-struct Table *tableDelete(const struct Table *prev, struct Span del) {
-	if (!prev || !prev->len) return alloc(0);
-
-	struct Table *next = alloc(prev->len + 1);
+struct Table tableDelete(struct Table prev, struct Span del) {
+	if (!prev.len) return TableEmpty;
+	struct Table next = alloc(prev.len + 1);
 	struct Span span = { 0, 0 };
-	for (size_t i = 0; i < prev->len; ++i) {
-		span = spanNext(span, prev->slices[i].len);
+	for (size_t i = 0; i < prev.len; ++i) {
+		span = spanNext(span, prev.slices[i].len);
 		if (span.at >= del.at && span.to <= del.to) {
-			(void)prev->slices[i];
+			(void)prev.slices[i];
 		} else if (span.at < del.at && span.to > del.to) {
-			next->slices[next->len++] = (struct Slice) {
-				prev->slices[i].ptr,
+			next.slices[next.len++] = (struct Slice) {
+				prev.slices[i].ptr,
 				del.at - span.at,
 			};
-			next->slices[next->len++] = (struct Slice) {
-				&prev->slices[i].ptr[del.to - span.at],
-				prev->slices[i].len - (del.to - span.at),
+			next.slices[next.len++] = (struct Slice) {
+				&prev.slices[i].ptr[del.to - span.at],
+				prev.slices[i].len - (del.to - span.at),
 			};
 		} else if (span.at < del.at && span.to > del.at) {
-			next->slices[next->len++] = (struct Slice) {
-				prev->slices[i].ptr,
+			next.slices[next.len++] = (struct Slice) {
+				prev.slices[i].ptr,
 				del.at - span.at,
 			};
 		} else if (span.at < del.to && span.to > del.to) {
-			next->slices[next->len++] = (struct Slice) {
-				&prev->slices[i].ptr[del.to - span.at],
-				prev->slices[i].len - (del.to - span.at),
+			next.slices[next.len++] = (struct Slice) {
+				&prev.slices[i].ptr[del.to - span.at],
+				prev.slices[i].len - (del.to - span.at),
 			};
 		} else {
-			next->slices[next->len++] = prev->slices[i];
+			next.slices[next.len++] = prev.slices[i];
 		}
 	}
 	return next;
@@ -109,18 +106,18 @@ static struct Slice slice(const wchar_t *str) {
 	return (struct Slice) { str, wcslen(str) };
 }
 
-static int eq(const struct Table *table, const wchar_t *str) {
-	for (size_t i = 0; i < table->len; ++i) {
-		if (wcsncmp(str, table->slices[i].ptr, table->slices[i].len)) {
+static int eq(struct Table table, const wchar_t *str) {
+	for (size_t i = 0; i < table.len; ++i) {
+		if (wcsncmp(str, table.slices[i].ptr, table.slices[i].len)) {
 			return 0;
 		}
-		str = &str[table->slices[i].len];
+		str = &str[table.slices[i].len];
 	}
 	return 1;
 }
 
 int main() {
-	struct Table *abc = tableInsert(NULL, 0, slice(L"ABC"));
+	struct Table abc = tableInsert(TableEmpty, 0, slice(L"ABC"));
 	assert(eq(abc, L"ABC"));
 
 	assert(eq(tableInsert(abc, 0, slice(L"D")), L"DABC"));

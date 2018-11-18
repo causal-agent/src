@@ -48,18 +48,19 @@ wchar_t *bufferDest(struct Buffer *buf, size_t len);
 
 struct Table {
 	size_t len;
-	struct Slice slices[];
+	struct Slice *slices;
 };
+static const struct Table TableEmpty = { 0, NULL };
 
-struct Table *tableInsert(const struct Table *prev, size_t at, struct Slice slice);
-struct Table *tableDelete(const struct Table *prev, struct Span del);
+struct Table tableInsert(struct Table prev, size_t at, struct Slice ins);
+struct Table tableDelete(struct Table prev, struct Span del);
 
 struct Log {
 	size_t cap;
 	size_t len;
-	size_t index;
+	size_t idx;
 	struct State {
-		struct Table *table;
+		struct Table table;
 		size_t prev;
 		size_t next;
 	} *states;
@@ -67,20 +68,20 @@ struct Log {
 
 struct Log logAlloc(size_t cap);
 void logFree(struct Log *log);
-void logPush(struct Log *log, struct Table *table);
+void logPush(struct Log *log, struct Table table);
 
-static inline struct Table *logTable(struct Log *log) {
-	return log->states[log->index].table;
+static inline struct Table logTable(struct Log log) {
+	return log.states[log.idx].table;
 }
 static inline void logPrev(struct Log *log) {
-	log->index = log->states[log->index].prev;
+	log->idx = log->states[log->idx].prev;
 }
 static inline void logNext(struct Log *log) {
-	log->index = log->states[log->index].next;
+	log->idx = log->states[log->idx].next;
 }
 static inline void logBack(struct Log *log) {
-	if (log->index) log->index--;
+	if (log->idx) log->idx--;
 }
 static inline void logFore(struct Log *log) {
-	if (log->index + 1 < log->len) log->index++;
+	if (log->idx + 1 < log->len) log->idx++;
 }
