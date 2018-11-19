@@ -28,6 +28,7 @@ export NETHACKOPTIONS='
 	color, DECgraphics
 '
 
+alias ls='ls -p'
 alias ll='ls -lh'
 if [[ $(uname) = 'Linux' ]]; then
 	alias ls='ls --color=auto' grep='grep --color' rm='rm -I'
