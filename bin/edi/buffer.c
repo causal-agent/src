@@ -66,6 +66,12 @@ void bufferAppend(struct Buffer *buf, wchar_t ch) {
 	buf->slice.len++;
 }
 
+void bufferDelete(struct Buffer *buf) {
+	if (!buf->slice.len) return;
+	buf->slice.len--;
+	buf->len--;
+}
+
 wchar_t *bufferDest(struct Buffer *buf, size_t len) {
 	if (buf->len + len > buf->cap) {
 		while (len > buf->cap) buf->cap *= 2;
@@ -113,6 +119,16 @@ int main() {
 	bufferAppend(&buf, L'E');
 	bufferAppend(&buf, L'F');
 	assert(!wcsncmp(L"ABCDEF", buf.slice.ptr, buf.slice.len));
+	bufferFree(&buf);
+
+	buf = bufferAlloc(4);
+	bufferInsert(&buf);
+	bufferAppend(&buf, L'A');
+	bufferAppend(&buf, L'B');
+	bufferDelete(&buf);
+	assert(!wcsncmp(L"A", buf.slice.ptr, buf.slice.len));
+	bufferAppend(&buf, L'C');
+	assert(!wcsncmp(L"AC", buf.slice.ptr, buf.slice.len));
 	bufferFree(&buf);
 
 	buf = bufferAlloc(4);

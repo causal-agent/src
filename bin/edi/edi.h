@@ -44,6 +44,7 @@ struct Buffer bufferAlloc(size_t cap);
 void bufferFree(struct Buffer *buf);
 void bufferInsert(struct Buffer *buf);
 void bufferAppend(struct Buffer *buf, wchar_t ch);
+void bufferDelete(struct Buffer *buf);
 wchar_t *bufferDest(struct Buffer *buf, size_t len);
 
 struct Table {
