@@ -24,13 +24,13 @@
 static struct Table alloc(size_t cap) {
 	struct Slice *slices = malloc(sizeof(*slices) * cap);
 	if (!slices) err(EX_OSERR, "malloc");
-	return (struct Table) { 0, slices };
+	return (struct Table) { 0, 0, slices };
 }
 
 struct Table tableInsert(struct Table prev, size_t at, struct Slice ins) {
 	if (!prev.len) {
 		struct Table next = alloc(1);
-		next.slices[next.len++] = ins;
+		next.slices[next.hot = next.len++] = ins;
 		return next;
 	}
 
@@ -39,14 +39,14 @@ struct Table tableInsert(struct Table prev, size_t at, struct Slice ins) {
 	for (size_t i = 0; i < prev.len; ++i) {
 		span = spanNext(span, prev.slices[i].len);
 		if (span.at == at) {
-			next.slices[next.len++] = ins;
+			next.slices[next.hot = next.len++] = ins;
 			next.slices[next.len++] = prev.slices[i];
 		} else if (span.at < at && span.to > at) {
 			next.slices[next.len++] = (struct Slice) {
 				prev.slices[i].ptr,
 				at - span.at,
 			};
-			next.slices[next.len++] = ins;
+			next.slices[next.hot = next.len++] = ins;
 			next.slices[next.len++] = (struct Slice) {
 				&prev.slices[i].ptr[at - span.at],
 				prev.slices[i].len - (at - span.at),
@@ -56,7 +56,7 @@ struct Table tableInsert(struct Table prev, size_t at, struct Slice ins) {
 		}
 	}
 	if (span.to == at) {
-		next.slices[next.len++] = ins;
+		next.slices[next.hot = next.len++] = ins;
 	}
 	return next;
 }
@@ -69,12 +69,13 @@ struct Table tableDelete(struct Table prev, struct Span del) {
 		span = spanNext(span, prev.slices[i].len);
 		if (span.at >= del.at && span.to <= del.to) {
 			(void)prev.slices[i];
+			next.hot = next.len;
 		} else if (span.at < del.at && span.to > del.to) {
 			next.slices[next.len++] = (struct Slice) {
 				prev.slices[i].ptr,
 				del.at - span.at,
 			};
-			next.slices[next.len++] = (struct Slice) {
+			next.slices[next.hot = next.len++] = (struct Slice) {
 				&prev.slices[i].ptr[del.to - span.at],
 				prev.slices[i].len - (del.to - span.at),
 			};
@@ -83,8 +84,9 @@ struct Table tableDelete(struct Table prev, struct Span del) {
 				prev.slices[i].ptr,
 				del.at - span.at,
 			};
+			next.hot = next.len;
 		} else if (span.at < del.to && span.to > del.to) {
-			next.slices[next.len++] = (struct Slice) {
+			next.slices[next.hot = next.len++] = (struct Slice) {
 				&prev.slices[i].ptr[del.to - span.at],
 				prev.slices[i].len - (del.to - span.at),
 			};
@@ -98,36 +100,74 @@ struct Table tableDelete(struct Table prev, struct Span del) {
 #ifdef TEST
 #include <assert.h>
 
-static struct Span span(size_t at, size_t to) {
-	return (struct Span) { at, to };
-}
-
 static struct Slice slice(const wchar_t *str) {
 	return (struct Slice) { str, wcslen(str) };
 }
 
-static int eq(struct Table table, const wchar_t *str) {
+static struct Span span(size_t at, size_t to) {
+	return (struct Span) { at, to };
+}
+
+static int eq(const wchar_t *str, struct Table table) {
 	for (size_t i = 0; i < table.len; ++i) {
 		if (wcsncmp(str, table.slices[i].ptr, table.slices[i].len)) {
 			return 0;
 		}
 		str = &str[table.slices[i].len];
 	}
-	return 1;
+	return !str[0];
+}
+
+static int hot(wint_t ch, struct Table table) {
+	if (table.hot == table.len) {
+		return ch == WEOF;
+	} else {
+		return ch == table.slices[table.hot].ptr[0];
+	}
 }
 
 int main() {
 	struct Table abc = tableInsert(TableEmpty, 0, slice(L"ABC"));
-	assert(eq(abc, L"ABC"));
+	assert(eq(L"ABC", abc));
+	assert(hot(L'A', abc));
 
-	assert(eq(tableInsert(abc, 0, slice(L"D")), L"DABC"));
-	assert(eq(tableInsert(abc, 3, slice(L"D")), L"ABCD"));
-	assert(eq(tableInsert(abc, 1, slice(L"D")), L"ADBC"));
+	struct Table dabc = tableInsert(abc, 0, slice(L"D"));
+	struct Table abcd = tableInsert(abc, 3, slice(L"D"));
+	struct Table adbc = tableInsert(abc, 1, slice(L"D"));
 
-	assert(eq(tableDelete(abc, span(0, 1)), L"BC"));
-	assert(eq(tableDelete(abc, span(2, 3)), L"AB"));
-	assert(eq(tableDelete(abc, span(1, 2)), L"AC"));
-	assert(eq(tableDelete(abc, span(0, 3)), L""));
+	assert(eq(L"DABC", dabc));
+	assert(eq(L"ABCD", abcd));
+	assert(eq(L"ADBC", adbc));
+
+	assert(hot(L'D', dabc));
+	assert(hot(L'D', abcd));
+	assert(hot(L'D', adbc));
+
+	free(dabc.slices);
+	free(abcd.slices);
+	free(adbc.slices);
+
+	struct Table bc = tableDelete(abc, span(0, 1));
+	struct Table ab = tableDelete(abc, span(2, 3));
+	struct Table ac = tableDelete(abc, span(1, 2));
+	struct Table __ = tableDelete(abc, span(0, 3));
+
+	assert(eq(L"BC", bc));
+	assert(eq(L"AB", ab));
+	assert(eq(L"AC", ac));
+	assert(eq(L"",   __));
+
+	assert(hot(L'B', bc));
+	assert(hot(WEOF, ab));
+	assert(hot(L'C', ac));
+	assert(hot(WEOF, __));
+
+	free(bc.slices);
+	free(ab.slices);
+	free(ac.slices);
+	free(__.slices);
+
+	free(abc.slices);
 }
 
 #endif

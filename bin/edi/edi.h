@@ -49,9 +49,10 @@ wchar_t *bufferDest(struct Buffer *buf, size_t len);
 
 struct Table {
 	size_t len;
+	size_t hot;
 	struct Slice *slices;
 };
-static const struct Table TableEmpty = { 0, NULL };
+static const struct Table TableEmpty = { 0, 0, NULL };
 
 struct Table tableInsert(struct Table prev, size_t at, struct Slice ins);
 struct Table tableDelete(struct Table prev, struct Span del);
