@@ -75,8 +75,9 @@ void bufferDelete(struct Buffer *buf) {
 wchar_t *bufferDest(struct Buffer *buf, size_t len) {
 	if (buf->len + len > buf->cap) {
 		if (!buf->len) {
+			struct Block *empty = buf->block;
 			buf->block = buf->block->prev;
-			free(buf->block);
+			free(empty);
 		}
 		while (len > buf->cap) buf->cap *= 2;
 		buf->block = blockAlloc(buf->block, buf->cap);
