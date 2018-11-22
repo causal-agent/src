@@ -34,7 +34,6 @@ struct File fileAlloc(char *path) {
 		.path = path,
 		.buf = bufferAlloc(BufCap),
 		.log = logAlloc(LogCap),
-		.clean = 0,
 	};
 	if (!path) logPush(&file.log, TableEmpty);
 	return file;

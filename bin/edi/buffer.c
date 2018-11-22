@@ -34,7 +34,6 @@ struct Buffer bufferAlloc(size_t cap) {
 	struct Block *block = blockAlloc(NULL, cap);
 	return (struct Buffer) {
 		.cap = cap,
-		.len = 0,
 		.slice = { block->chars, 0 },
 		.block = block,
 	};

@@ -24,12 +24,7 @@
 struct Table tableAlloc(size_t cap) {
 	struct Slice *slices = malloc(sizeof(*slices) * cap);
 	if (!slices) err(EX_OSERR, "malloc");
-	return (struct Table) {
-		.cap = cap,
-		.len = 0,
-		.ins = 0,
-		.slices = slices,
-	};
+	return (struct Table) { .cap = cap, .slices = slices };
 }
 
 void tableFree(struct Table *table) {

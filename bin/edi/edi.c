@@ -30,10 +30,8 @@ int main(int argc, char *argv[]) {
 	fileRead(&file);
 
 	const struct Table *table = &file.log.states[file.log.state].table;
-	for (size_t i = 0; i < table->len; ++i) {
-		for (size_t j = 0; j < table->slices[i].len; ++j) {
-			printf("%lc", table->slices[i].ptr[j]);
-		}
+	for (struct Iter it = iter(table, 0); it.ch != WEOF; it = iterNext(it)) {
+		printf("%lc", it.ch);
 	}
 
 	fileFree(&file);

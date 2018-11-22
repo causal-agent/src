@@ -4,10 +4,12 @@ LDLIBS = -lcursesw
 OBJS += buffer.o
 OBJS += edi.o
 OBJS += file.o
+OBJS += iter.o
 OBJS += log.o
 OBJS += table.o
 
 TESTS += buffer.t
+TESTS += iter.t
 TESTS += table.t
 
 all: tags edi test

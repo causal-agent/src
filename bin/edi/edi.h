@@ -17,10 +17,14 @@
 #include <stdlib.h>
 #include <wchar.h>
 
-static inline struct Span {
+struct Span {
 	size_t at, to;
-} spanNext(struct Span span, size_t len) {
+};
+static inline struct Span spanNext(struct Span span, size_t len) {
 	return (struct Span) { span.to, span.to + len };
+}
+static inline struct Span spanPrev(struct Span span, size_t len) {
+	return (struct Span) { span.at - len, span.at };
 }
 
 struct Slice {
@@ -54,6 +58,17 @@ void tablePush(struct Table *table, struct Slice slice);
 struct Table tableInsert(const struct Table *prev, size_t at, struct Slice ins);
 struct Table tableDelete(const struct Table *prev, struct Span del);
 void tableUpdate(struct Table *table, struct Slice ins);
+
+struct Iter {
+	const struct Table *table;
+	struct Span span;
+	size_t slice;
+	size_t at;
+	wint_t ch;
+};
+struct Iter iter(const struct Table *table, size_t at);
+struct Iter iterNext(struct Iter it);
+struct Iter iterPrev(struct Iter it);
 
 struct Log {
 	size_t cap, len;
