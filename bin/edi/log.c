@@ -23,25 +23,19 @@
 #include "edi.h"
 
 struct Log logAlloc(size_t cap) {
-	assert(cap);
 	struct State *states = malloc(sizeof(*states) * cap);
 	if (!states) err(EX_OSERR, "malloc");
-	states[0] = (struct State) {
-		.table = TableEmpty,
-		.prev = 0,
-		.next = 0,
-	};
 	return (struct Log) {
 		.cap = cap,
-		.len = 1,
-		.idx = 0,
+		.len = 0,
+		.state = 0,
 		.states = states,
 	};
 }
 
 void logFree(struct Log *log) {
 	for (size_t i = 0; i < log->len; ++i) {
-		free(log->states[i].table.slices);
+		tableFree(&log->states[i].table);
 	}
 	free(log->states);
 }
@@ -55,9 +49,9 @@ void logPush(struct Log *log, struct Table table) {
 	size_t next = log->len++;
 	log->states[next] = (struct State) {
 		.table = table,
-		.prev = log->idx,
+		.prev = log->state,
 		.next = next,
 	};
-	log->states[log->idx].next = next;
-	log->idx = next;
+	log->states[log->state].next = next;
+	log->state = next;
 }

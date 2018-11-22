@@ -2,6 +2,8 @@ CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lcursesw
 
 OBJS += buffer.o
+OBJS += edi.o
+OBJS += file.o
 OBJS += log.o
 OBJS += table.o
 
