@@ -25,14 +25,15 @@
 #include "edi.h"
 
 enum {
-	BufCap = 8192,
+	BufferCap = 8192,
+	TableCap = 2,
 	LogCap = 8,
 };
 
 struct File fileAlloc(char *path) {
 	struct File file = {
 		.path = path,
-		.buf = bufferAlloc(BufCap),
+		.buf = bufferAlloc(BufferCap),
 		.log = logAlloc(LogCap),
 	};
 	if (!path) logPush(&file.log, TableEmpty);
@@ -45,7 +46,7 @@ void fileFree(struct File *file) {
 	free(file->path);
 }
 
-static const mbstate_t MBStateInit;
+static const mbstate_t StateInit;
 
 // TODO: Error handling.
 void fileRead(struct File *file) {
@@ -59,22 +60,19 @@ void fileRead(struct File *file) {
 		return;
 	}
 
-	struct Table table = tableAlloc(1);
-
-	char buf[BufCap];
-	mbstate_t mbState = MBStateInit;
+	struct Table table = tableAlloc(TableCap);
+	char buf[BufferCap];
+	mbstate_t state = StateInit;
 	while (!feof(stream)) {
 		size_t mbsLen = fread(buf, 1, sizeof(buf), stream);
 		if (ferror(stream)) err(EX_IOERR, "%s", file->path);
 
 		const char *mbs = buf;
-		mbstate_t mbLenState = mbState;
-		size_t wcsLen = mbsnrtowcs(NULL, &mbs, mbsLen, 0, &mbLenState);
+		wchar_t *wcs = bufferDest(&file->buf, mbsLen);
+		size_t wcsLen = mbsnrtowcs(wcs, &mbs, mbsLen, mbsLen, &state);
 		if (wcsLen == (size_t)-1) err(EX_DATAERR, "%s", file->path);
 
-		wchar_t *wcs = bufferDest(&file->buf, wcsLen);
-		assert(wcsLen == mbsnrtowcs(wcs, &mbs, mbsLen, wcsLen, &mbState));
-
+		bufferTruncate(&file->buf, wcsLen);
 		tablePush(&table, file->buf.slice);
 	}
 	logPush(&file->log, table);

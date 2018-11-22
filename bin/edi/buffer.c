@@ -73,11 +73,6 @@ void bufferDelete(struct Buffer *buf) {
 
 wchar_t *bufferDest(struct Buffer *buf, size_t len) {
 	if (buf->len + len > buf->cap) {
-		if (!buf->len) {
-			struct Block *empty = buf->block;
-			buf->block = buf->block->prev;
-			free(empty);
-		}
 		while (len > buf->cap) buf->cap *= 2;
 		buf->block = blockAlloc(buf->block, buf->cap);
 		buf->len = 0;
@@ -87,6 +82,12 @@ wchar_t *bufferDest(struct Buffer *buf, size_t len) {
 	buf->slice.len = len;
 	buf->len += len;
 	return ptr;
+}
+
+void bufferTruncate(struct Buffer *buf, size_t len) {
+	if (len > buf->slice.len) return;
+	buf->len -= buf->slice.len - len;
+	buf->slice.len = len;
 }
 
 #ifdef TEST
@@ -159,6 +160,8 @@ int main() {
 	dest[4] = L'E';
 	dest[5] = L'F';
 	assert(!wcsncmp(L"ABCDEF", buf.slice.ptr, buf.slice.len));
+	bufferTruncate(&buf, 4);
+	assert(!wcsncmp(L"ABCD", buf.slice.ptr, buf.slice.len));
 	bufferFree(&buf);
 }
 

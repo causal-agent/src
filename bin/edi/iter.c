@@ -79,6 +79,7 @@ int main() {
 	assert(L'B' == iter(&table, 1).ch);
 	assert(L'C' == iter(&table, 2).ch);
 	assert(L'D' == iter(&table, 3).ch);
+	assert(WEOF == iter(&table, 4).ch);
 
 	assert(L'B' == iterNext(iter(&table, 0)).ch);
 	assert(L'C' == iterNext(iter(&table, 1)).ch);

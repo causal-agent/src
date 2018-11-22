@@ -46,6 +46,7 @@ void bufferInsert(struct Buffer *buf);
 void bufferAppend(struct Buffer *buf, wchar_t ch);
 void bufferDelete(struct Buffer *buf);
 wchar_t *bufferDest(struct Buffer *buf, size_t len);
+void bufferTruncate(struct Buffer *buf, size_t len);
 
 static const struct Table {
 	size_t cap, len;
