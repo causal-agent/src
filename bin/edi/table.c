@@ -43,20 +43,29 @@ void tablePush(struct Table *table, struct Slice slice) {
 	table->slices[table->len++] = slice;
 }
 
+void tableReplace(struct Table *table, struct Slice old, struct Slice new) {
+	for (size_t i = 0; i < table->len; ++i) {
+		if (table->slices[i].ptr != old.ptr) continue;
+		if (table->slices[i].len != old.len) continue;
+		table->slices[i] = new;
+		break;
+	}
+}
+
 struct Table tableInsert(const struct Table *prev, size_t at, struct Slice ins) {
 	struct Table next = tableAlloc(prev->len + 2);
 	struct Span span = { 0, 0 };
 	for (size_t i = 0; i < prev->len; ++i) {
 		span = spanNext(span, prev->slices[i].len);
 		if (span.at == at) {
-			next.slices[next.ins = next.len++] = ins;
+			next.slices[next.len++] = ins;
 			next.slices[next.len++] = prev->slices[i];
 		} else if (span.at < at && span.to > at) {
 			next.slices[next.len++] = (struct Slice) {
 				prev->slices[i].ptr,
 				at - span.at,
 			};
-			next.slices[next.ins = next.len++] = ins;
+			next.slices[next.len++] = ins;
 			next.slices[next.len++] = (struct Slice) {
 				&prev->slices[i].ptr[at - span.at],
 				prev->slices[i].len - (at - span.at),
@@ -66,13 +75,9 @@ struct Table tableInsert(const struct Table *prev, size_t at, struct Slice ins) 
 		}
 	}
 	if (span.to == at) {
-		next.slices[next.ins = next.len++] = ins;
+		next.slices[next.len++] = ins;
 	}
 	return next;
-}
-
-void tableUpdate(struct Table *table, struct Slice ins) {
-	if (table->ins < table->len) table->slices[table->ins] = ins;
 }
 
 struct Table tableDelete(const struct Table *prev, struct Span del) {
@@ -105,7 +110,6 @@ struct Table tableDelete(const struct Table *prev, struct Span del) {
 			next.slices[next.len++] = prev->slices[i];
 		}
 	}
-	next.ins = next.len;
 	return next;
 }
 
@@ -141,10 +145,6 @@ int main() {
 	assert(eq(L"DABC", &dabc));
 	assert(eq(L"ABCD", &abcd));
 	assert(eq(L"ADBC", &adbc));
-
-	assert(L'D' == dabc.slices[dabc.ins].ptr[0]);
-	assert(L'D' == abcd.slices[abcd.ins].ptr[0]);
-	assert(L'D' == adbc.slices[adbc.ins].ptr[0]);
 
 	tableFree(&dabc);
 	tableFree(&abcd);

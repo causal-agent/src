@@ -51,15 +51,14 @@ void bufferTruncate(struct Buffer *buf, size_t len);
 
 static const struct Table {
 	size_t cap, len;
-	size_t ins;
 	struct Slice *slices;
 } TableEmpty;
 struct Table tableAlloc(size_t cap);
 void tableFree(struct Table *table);
 void tablePush(struct Table *table, struct Slice slice);
+void tableReplace(struct Table *table, struct Slice old, struct Slice new);
 struct Table tableInsert(const struct Table *prev, size_t at, struct Slice ins);
 struct Table tableDelete(const struct Table *prev, struct Span del);
-void tableUpdate(struct Table *table, struct Slice ins);
 
 struct Iter {
 	const struct Table *table;
