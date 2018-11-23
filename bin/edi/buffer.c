@@ -27,15 +27,14 @@ static struct Block *blockAlloc(struct Block *prev, size_t cap) {
 	struct Block *block = malloc(size);
 	if (!block) err(EX_OSERR, "malloc");
 	block->prev = prev;
+	block->len = 0;
 	return block;
 }
 
 struct Buffer bufferAlloc(size_t cap) {
-	struct Block *block = blockAlloc(NULL, cap);
 	return (struct Buffer) {
 		.cap = cap,
-		.slice = { block->chars, 0 },
-		.block = block,
+		.block = blockAlloc(NULL, cap),
 	};
 }
 
@@ -47,46 +46,47 @@ void bufferFree(struct Buffer *buf) {
 	}
 }
 
-void bufferInsert(struct Buffer *buf) {
-	buf->slice.ptr = &buf->block->chars[buf->len];
+void bufferSlice(struct Buffer *buf) {
+	buf->slice.ptr = &buf->block->chars[buf->block->len];
 	buf->slice.len = 0;
 }
 
-void bufferAppend(struct Buffer *buf, wchar_t ch) {
-	if (buf->len == buf->cap) {
+void bufferPush(struct Buffer *buf, wchar_t ch) {
+	if (buf->block->len == buf->cap) {
 		if (buf->slice.len == buf->cap) buf->cap *= 2;
-		struct Block *block = blockAlloc(buf->block, buf->cap);
-		memcpy(block->chars, buf->slice.ptr, sizeof(wchar_t) * buf->slice.len);
-		buf->len = buf->slice.len;
-		buf->slice.ptr = block->chars;
-		buf->block = block;
+		buf->block = blockAlloc(buf->block, buf->cap);
+		memcpy(
+			buf->block->chars, buf->slice.ptr,
+			sizeof(wchar_t) * buf->slice.len
+		);
+		buf->slice.ptr = buf->block->chars;
+		buf->block->len = buf->slice.len;
 	}
-	buf->block->chars[buf->len++] = ch;
+	buf->block->chars[buf->block->len++] = ch;
 	buf->slice.len++;
 }
 
-void bufferDelete(struct Buffer *buf) {
+void bufferPop(struct Buffer *buf) {
 	if (!buf->slice.len) return;
 	buf->slice.len--;
-	buf->len--;
+	buf->block->len--;
 }
 
 wchar_t *bufferDest(struct Buffer *buf, size_t len) {
-	if (buf->len + len > buf->cap) {
+	if (buf->block->len + len > buf->cap) {
 		while (len > buf->cap) buf->cap *= 2;
 		buf->block = blockAlloc(buf->block, buf->cap);
-		buf->len = 0;
 	}
-	wchar_t *ptr = &buf->block->chars[buf->len];
+	wchar_t *ptr = &buf->block->chars[buf->block->len];
 	buf->slice.ptr = ptr;
 	buf->slice.len = len;
-	buf->len += len;
+	buf->block->len += len;
 	return ptr;
 }
 
 void bufferTruncate(struct Buffer *buf, size_t len) {
 	if (len > buf->slice.len) return;
-	buf->len -= buf->slice.len - len;
+	buf->block->len -= buf->slice.len - len;
 	buf->slice.len = len;
 }
 
@@ -96,43 +96,43 @@ void bufferTruncate(struct Buffer *buf, size_t len) {
 int main() {
 	struct Buffer buf = bufferAlloc(6);
 
-	bufferInsert(&buf);
-	bufferAppend(&buf, L'A');
-	bufferAppend(&buf, L'B');
+	bufferSlice(&buf);
+	bufferPush(&buf, L'A');
+	bufferPush(&buf, L'B');
 	assert(!wcsncmp(L"AB", buf.slice.ptr, buf.slice.len));
 
-	bufferInsert(&buf);
-	bufferAppend(&buf, L'C');
-	bufferAppend(&buf, L'D');
+	bufferSlice(&buf);
+	bufferPush(&buf, L'C');
+	bufferPush(&buf, L'D');
 	assert(!wcsncmp(L"CD", buf.slice.ptr, buf.slice.len));
 
-	bufferInsert(&buf);
-	bufferAppend(&buf, L'E');
-	bufferAppend(&buf, L'F');
-	bufferAppend(&buf, L'G');
-	bufferAppend(&buf, L'H');
+	bufferSlice(&buf);
+	bufferPush(&buf, L'E');
+	bufferPush(&buf, L'F');
+	bufferPush(&buf, L'G');
+	bufferPush(&buf, L'H');
 	assert(!wcsncmp(L"EFGH", buf.slice.ptr, buf.slice.len));
 
 	bufferFree(&buf);
 
 	buf = bufferAlloc(4);
-	bufferInsert(&buf);
-	bufferAppend(&buf, L'A');
-	bufferAppend(&buf, L'B');
-	bufferAppend(&buf, L'C');
-	bufferAppend(&buf, L'D');
-	bufferAppend(&buf, L'E');
-	bufferAppend(&buf, L'F');
+	bufferSlice(&buf);
+	bufferPush(&buf, L'A');
+	bufferPush(&buf, L'B');
+	bufferPush(&buf, L'C');
+	bufferPush(&buf, L'D');
+	bufferPush(&buf, L'E');
+	bufferPush(&buf, L'F');
 	assert(!wcsncmp(L"ABCDEF", buf.slice.ptr, buf.slice.len));
 	bufferFree(&buf);
 
 	buf = bufferAlloc(4);
-	bufferInsert(&buf);
-	bufferAppend(&buf, L'A');
-	bufferAppend(&buf, L'B');
-	bufferDelete(&buf);
+	bufferSlice(&buf);
+	bufferPush(&buf, L'A');
+	bufferPush(&buf, L'B');
+	bufferPop(&buf);
 	assert(!wcsncmp(L"A", buf.slice.ptr, buf.slice.len));
-	bufferAppend(&buf, L'C');
+	bufferPush(&buf, L'C');
 	assert(!wcsncmp(L"AC", buf.slice.ptr, buf.slice.len));
 	bufferFree(&buf);
 

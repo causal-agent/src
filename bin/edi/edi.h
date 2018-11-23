@@ -33,18 +33,19 @@ struct Slice {
 };
 
 struct Buffer {
-	size_t cap, len;
+	size_t cap;
 	struct Slice slice;
 	struct Block {
 		struct Block *prev;
+		size_t len;
 		wchar_t chars[];
 	} *block;
 };
 struct Buffer bufferAlloc(size_t cap);
 void bufferFree(struct Buffer *buf);
-void bufferInsert(struct Buffer *buf);
-void bufferAppend(struct Buffer *buf, wchar_t ch);
-void bufferDelete(struct Buffer *buf);
+void bufferSlice(struct Buffer *buf);
+void bufferPush(struct Buffer *buf, wchar_t ch);
+void bufferPop(struct Buffer *buf);
 wchar_t *bufferDest(struct Buffer *buf, size_t len);
 void bufferTruncate(struct Buffer *buf, size_t len);
 
