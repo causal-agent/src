@@ -13,13 +13,13 @@ set ignorecase smartcase inccommand=nosplit
 nmap <leader><leader> :nohlsearch<CR>
 set foldmethod=syntax foldlevel=99
 
-set title
+set title laststatus=1
 set scrolloff=1
-set number colorcolumn=80
+set noruler colorcolumn=80
 set list listchars=tab:\ \ ,trail:·
 colorscheme trivial
 
-autocmd TermOpen * setlocal nonumber statusline=%{b:term_title}
+autocmd TermOpen * setlocal statusline=%{b:term_title}
 autocmd BufEnter term://* startinsert
 tmap <C-w> <C-\><C-n><C-w>
 
