@@ -1,3 +1,4 @@
+- [Julia Holter — I Shall Love 2][64]
 - [Chromatics — Running Up That Hill][63]
 - [Low — Double Negative][62]
 - [Rival Consoles — Helios][61]
@@ -135,3 +136,4 @@
 [61]: https://youtu.be/T8n-XC_2a-k
 [62]: https://lowtheband.bandcamp.com/album/double-negative
 [63]: https://youtu.be/Mgv88ZLi6LY
+[64]: https://youtu.be/k5uwPaCvbhA
