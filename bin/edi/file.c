@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <assert.h>
 #include <err.h>
 #include <errno.h>
 #include <stdio.h>
@@ -79,4 +78,35 @@ void fileRead(struct File *file) {
 	file->clean = file->log.state;
 
 	fclose(stream);
+}
+
+// TODO: Error handling.
+void fileWrite(struct File *file) {
+	if (!file->path) return;
+
+	FILE *stream = fopen(file->path, "w");
+	if (!stream) err(EX_CANTCREAT, "%s", file->path);
+
+	const struct Table *table = logTable(&file->log);
+	if (!table) errx(EX_SOFTWARE, "fileWrite: no table");
+
+	char buf[BufferCap];
+	mbstate_t state = StateInit;
+	for (size_t i = 0; i < table->len; ++i) {
+		struct Slice slice = table->slices[i];
+		while (slice.len) {
+			size_t mbsLen = wcsnrtombs(
+				buf, &slice.ptr, slice.len, sizeof(buf), &state
+			);
+			if (mbsLen == (size_t)-1) err(EX_DATAERR, "%s", file->path);
+			slice.len -= slice.ptr - table->slices[i].ptr;
+
+			fwrite(buf, 1, mbsLen, stream);
+			if (ferror(stream)) err(EX_IOERR, "%s", file->path);
+		}
+	}
+	file->clean = file->log.state;
+
+	fclose(stream);
+	if (ferror(stream)) err(EX_IOERR, "%s", file->path);
 }

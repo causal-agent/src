@@ -82,6 +82,10 @@ struct Log {
 struct Log logAlloc(size_t cap);
 void logFree(struct Log *log);
 void logPush(struct Log *log, struct Table table);
+static inline struct Table *logTable(const struct Log *log) {
+	if (log->state == log->len) return NULL;
+	return &log->states[log->state].table;
+}
 
 struct File {
 	char *path;
@@ -92,3 +96,4 @@ struct File {
 struct File fileAlloc(char *path);
 void fileFree(struct File *file);
 void fileRead(struct File *file);
+void fileWrite(struct File *file);

@@ -29,10 +29,12 @@ int main(int argc, char *argv[]) {
 	struct File file = fileAlloc(strdup(argv[1]));
 	fileRead(&file);
 
-	const struct Table *table = &file.log.states[file.log.state].table;
+	const struct Table *table = logTable(&file.log);
 	for (struct Iter it = iter(table, 0); it.ch != WEOF; it = iterNext(it)) {
 		printf("%lc", it.ch);
 	}
+
+	fileWrite(&file);
 
 	fileFree(&file);
 }
