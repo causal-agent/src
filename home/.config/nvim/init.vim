@@ -5,13 +5,15 @@ set wildmode=list:longest wildignore=*.o
 set splitbelow splitright
 command! W w
 command! Q q
-autocmd BufNewFile,BufRead *.asm,*.mac setfiletype nasm
 
 set tabstop=4 shiftwidth=4 shiftround
 set smartindent cinoptions=l1(sU1m1
 set ignorecase smartcase inccommand=nosplit
 nmap <leader><leader> :nohlsearch<CR>
 set foldmethod=syntax foldlevel=99
+let asmsyntax = "nasm"
+let c_syntax_for_h = 1
+let is_posix = 1
 
 set title laststatus=1
 set scrolloff=1
