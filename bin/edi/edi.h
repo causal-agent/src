@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <wchar.h>
 
@@ -75,8 +77,8 @@ struct Log {
 	size_t cap, len;
 	size_t state;
 	struct State {
-		struct Table table;
 		size_t prev, next;
+		struct Table table;
 	} *states;
 };
 struct Log logAlloc(size_t cap);
@@ -86,6 +88,14 @@ static inline struct Table *logTable(const struct Log *log) {
 	if (log->state == log->len) return NULL;
 	return &log->states[log->state].table;
 }
+
+struct Edit {
+	struct Buffer buf;
+	struct Log log;
+};
+
+bool storeWrite(FILE *stream, const struct Edit *edit);
+bool storeRead(FILE *stream, struct Edit *edit);
 
 struct File {
 	char *path;

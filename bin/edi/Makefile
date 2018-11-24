@@ -6,6 +6,7 @@ OBJS += edi.o
 OBJS += file.o
 OBJS += iter.o
 OBJS += log.o
+OBJS += store.o
 OBJS += table.o
 
 TESTS += buffer.t
