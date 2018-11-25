@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <wchar.h>
@@ -94,8 +93,16 @@ struct Edit {
 	struct Log log;
 };
 
-bool storeWrite(FILE *stream, const struct Edit *edit);
-bool storeRead(FILE *stream, struct Edit *edit);
+enum Error {
+	Ok,
+	StoreMagic,
+	StoreVersion,
+	StoreEOF,
+	Errno,
+};
+
+enum Error storeWrite(FILE *stream, const struct Edit *edit);
+enum Error storeRead(FILE *stream, struct Edit *edit);
 
 struct File {
 	char *path;
