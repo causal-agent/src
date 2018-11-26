@@ -14,11 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <err.h>
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sysexits.h>
 #include <wchar.h>
 
 #include "edi.h"
@@ -32,31 +31,32 @@ enum {
 struct File fileAlloc(char *path) {
 	struct File file = {
 		.path = path,
-		.buf = bufferAlloc(BufferCap),
-		.log = logAlloc(LogCap),
+		.edit = {
+			.buf = bufferAlloc(BufferCap),
+			.log = logAlloc(LogCap),
+		},
 	};
-	if (!path) logPush(&file.log, TableEmpty);
+	if (!path) logPush(&file.edit.log, TableEmpty);
 	return file;
 }
 
 void fileFree(struct File *file) {
-	logFree(&file->log);
-	bufferFree(&file->buf);
+	logFree(&file->edit.log);
+	bufferFree(&file->edit.buf);
 	free(file->path);
 }
 
 static const mbstate_t StateInit;
 
-// TODO: Error handling.
-void fileRead(struct File *file) {
-	if (!file->path) return;
+enum Error fileRead(struct File *file) {
+	if (!file->path) return FileNoPath;
 
 	FILE *stream = fopen(file->path, "r");
 	if (!stream) {
-		if (errno != ENOENT) err(EX_NOINPUT, "%s", file->path);
-		logPush(&file->log, TableEmpty);
-		file->clean = file->log.state;
-		return;
+		if (errno != ENOENT) return Errno + errno;
+		logPush(&file->edit.log, TableEmpty);
+		file->clean = file->edit.log.state;
+		return Ok;
 	}
 
 	struct Table table = tableAlloc(TableCap);
@@ -64,49 +64,52 @@ void fileRead(struct File *file) {
 	mbstate_t state = StateInit;
 	while (!feof(stream)) {
 		size_t mbsLen = fread(buf, 1, sizeof(buf), stream);
-		if (ferror(stream)) err(EX_IOERR, "%s", file->path);
+		if (ferror(stream)) return Errno + errno;
 
+		// FIXME: Handle null bytes specially.
 		const char *mbs = buf;
-		wchar_t *wcs = bufferDest(&file->buf, mbsLen);
+		wchar_t *wcs = bufferDest(&file->edit.buf, mbsLen);
 		size_t wcsLen = mbsnrtowcs(wcs, &mbs, mbsLen, mbsLen, &state);
-		if (wcsLen == (size_t)-1) err(EX_DATAERR, "%s", file->path);
+		if (wcsLen == (size_t)-1) return Errno + errno;
 
-		bufferTruncate(&file->buf, wcsLen);
-		tablePush(&table, file->buf.slice);
+		bufferTruncate(&file->edit.buf, wcsLen);
+		tablePush(&table, file->edit.buf.slice);
 	}
-	logPush(&file->log, table);
-	file->clean = file->log.state;
+	logPush(&file->edit.log, table);
+	file->clean = file->edit.log.state;
 
 	fclose(stream);
+	return Ok;
 }
 
-// TODO: Error handling.
-void fileWrite(struct File *file) {
-	if (!file->path) return;
+enum Error fileWrite(struct File *file) {
+	if (!file->path) return FileNoPath;
 
 	FILE *stream = fopen(file->path, "w");
-	if (!stream) err(EX_CANTCREAT, "%s", file->path);
+	if (!stream) return Errno + errno;
 
-	const struct Table *table = logTable(&file->log);
-	if (!table) errx(EX_SOFTWARE, "fileWrite: no table");
+	const struct Table *table = logTable(&file->edit.log);
+	assert(table);
 
 	char buf[BufferCap];
 	mbstate_t state = StateInit;
 	for (size_t i = 0; i < table->len; ++i) {
 		struct Slice slice = table->slices[i];
 		while (slice.len) {
+			// FIXME: Handle null bytes specially.
 			size_t mbsLen = wcsnrtombs(
 				buf, &slice.ptr, slice.len, sizeof(buf), &state
 			);
-			if (mbsLen == (size_t)-1) err(EX_DATAERR, "%s", file->path);
+			if (mbsLen == (size_t)-1) return Errno + errno;
+			// FIXME: This only works once.
 			slice.len -= slice.ptr - table->slices[i].ptr;
 
 			fwrite(buf, 1, mbsLen, stream);
-			if (ferror(stream)) err(EX_IOERR, "%s", file->path);
+			if (ferror(stream)) return Errno + errno;
 		}
 	}
-	file->clean = file->log.state;
+	file->clean = file->edit.log.state;
 
 	fclose(stream);
-	if (ferror(stream)) err(EX_IOERR, "%s", file->path);
+	return (ferror(stream) ? Errno + errno : Ok);
 }

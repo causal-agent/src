@@ -23,24 +23,27 @@
 
 #include "edi.h"
 
+static void errorExit(enum Error error, const char *prefix) {
+	if (error > Errno) errc(EX_IOERR, error - Errno, "%s", prefix);
+	else errx(EX_DATAERR, "%s: %d", prefix, error);
+}
+
 int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 
 	if (argc < 2) return EX_USAGE;
 
+	enum Error error;
+
 	struct File file = fileAlloc(strdup(argv[1]));
-	fileRead(&file);
-	
-	struct Edit edit = { file.buf, file.log };
+	error = fileRead(&file);
+	if (error) errorExit(error, file.path);
 
 	FILE *store = fopen("store.edi", "w");
 	if (!store) err(EX_CANTCREAT, "store.edi");
 
-	enum Error error = storeWrite(store, &edit);
-	if (error) {
-		if (error > Errno) errc(EX_IOERR, error - Errno, "store.edi");
-		else errx(EX_IOERR, "store.edi: %d", error);
-	}
+	error = storeWrite(store, &file.edit);
+	if (error) errorExit(error, "store.edi");
 
 	fclose(store);
 	if (ferror(store)) err(EX_IOERR, "store.edi");
@@ -48,21 +51,16 @@ int main(int argc, char *argv[]) {
 	store = fopen("store.edi", "r");
 	if (!store) err(EX_CANTCREAT, "store.edi");
 
-	error = storeRead(store, &edit);
-	if (error) {
-		if (error > Errno) errc(EX_IOERR, error - Errno, "store.edi");
-		else errx(EX_DATAERR, "store.edi: %d", error);
-	}
+	error = storeRead(store, &file.edit);
+	if (error) errorExit(error, "store.edi");
 
-	file.buf = edit.buf;
-	file.log = edit.log;
-
-	const struct Table *table = logTable(&file.log);
+	const struct Table *table = logTable(&file.edit.log);
 	for (struct Iter it = iter(table, 0); it.ch != WEOF; it = iterNext(it)) {
 		printf("%lc", it.ch);
 	}
 
-	fileWrite(&file);
+	error = fileWrite(&file);
+	if (error) errorExit(error, file.path);
 
 	fileFree(&file);
 }

@@ -25,12 +25,7 @@
 struct Log logAlloc(size_t cap) {
 	struct State *states = malloc(sizeof(*states) * cap);
 	if (!states) err(EX_OSERR, "malloc");
-	return (struct Log) {
-		.cap = cap,
-		.len = 0,
-		.state = 0,
-		.states = states,
-	};
+	return (struct Log) { .cap = cap, .states = states };
 }
 
 void logFree(struct Log *log) {
@@ -47,11 +42,9 @@ void logPush(struct Log *log, struct Table table) {
 		if (!log->states) err(EX_OSERR, "realloc");
 	}
 	size_t next = log->len++;
-	log->states[next] = (struct State) {
-		.table = table,
-		.prev = log->state,
-		.next = next,
-	};
+	log->states[next].table = table;
+	log->states[next].prev = log->state;
+	log->states[next].next = next;
 	log->states[log->state].next = next;
 	log->state = next;
 }

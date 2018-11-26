@@ -98,6 +98,7 @@ enum Error {
 	StoreMagic,
 	StoreVersion,
 	StoreEOF,
+	FileNoPath,
 	Errno,
 };
 
@@ -106,11 +107,10 @@ enum Error storeRead(FILE *stream, struct Edit *edit);
 
 struct File {
 	char *path;
-	struct Buffer buf;
-	struct Log log;
 	size_t clean;
+	struct Edit edit;
 };
 struct File fileAlloc(char *path);
 void fileFree(struct File *file);
-void fileRead(struct File *file);
-void fileWrite(struct File *file);
+enum Error fileRead(struct File *file);
+enum Error fileWrite(struct File *file);
