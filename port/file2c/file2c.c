@@ -8,7 +8,7 @@
  */
 
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: releng/11.2/usr.bin/file2c/file2c.c 200462 2009-12-13 03:14:06Z delphij $");
+//__FBSDID("$FreeBSD: releng/11.2/usr.bin/file2c/file2c.c 200462 2009-12-13 03:14:06Z delphij $");
 
 #include <limits.h>
 #include <stdio.h>
@@ -20,7 +20,7 @@ usage(void)
 {
 
 	fprintf(stderr, "usage: %s [-sx] [-n count] [prefix [suffix]]\n",
-	    getprogname());
+	    "file2c");
 	exit(1);
 }
 

@@ -47,7 +47,7 @@ static const char sccsid[] = "@(#)caesar.c    8.1 (Berkeley) 5/31/93";
 #endif /* not lint */
 #endif
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: releng/11.2/usr.bin/caesar/caesar.c 241846 2012-10-22 03:06:53Z eadler $");
+//__FBSDID("$FreeBSD: releng/11.2/usr.bin/caesar/caesar.c 241846 2012-10-22 03:06:53Z eadler $");
 
 #include <errno.h>
 #include <math.h>
