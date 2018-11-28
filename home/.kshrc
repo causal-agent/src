@@ -7,7 +7,7 @@ function colonize {
 	print "$*"
 }
 systemPath=$PATH
-PATH=$(colonize {,/usr{/local,/pkg,},$HOME/.local}/{s,}bin /usr/games)
+PATH=$(colonize {,/opt/pkg,/usr{/local,/pkg,},$HOME/.local}/{s,}bin /usr/games)
 CDPATH=:$HOME
 export PWD
 
