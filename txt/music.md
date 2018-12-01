@@ -1,3 +1,4 @@
+- [Jeff Wayne — The Eve of the War][65]
 - [Julia Holter — I Shall Love 2][64]
 - [Chromatics — Running Up That Hill][63]
 - [Low — Double Negative][62]
@@ -137,3 +138,4 @@
 [62]: https://lowtheband.bandcamp.com/album/double-negative
 [63]: https://youtu.be/Mgv88ZLi6LY
 [64]: https://youtu.be/k5uwPaCvbhA
+[65]: https://youtu.be/6YwFvmnbj3E
