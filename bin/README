@@ -1,4 +1,4 @@
-BIN(7)                 Miscellaneous Information Manual                 BIN(7)
+BIN(7)             FreeBSD Miscellaneous Information Manual             BIN(7)
 
 NAME
      bin – various utilities
@@ -18,9 +18,9 @@ DESCRIPTION
      pngo(1)     PNG optimizer
      psf2png(1)  PSF2 to PNG renderer
      psfed(1)    PSF2 font editor
+     rec(1)      watch files
      ttpre(1)    man output to HTML
      wake(1)     wake-on-LAN
-     watch(1)    watch files
      xx(1)       hexdump
 
-Causal Agency                 September 28, 2018                 Causal Agency
+Causal Agency                  December 2, 2018                  Causal Agency
