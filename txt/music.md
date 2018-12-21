@@ -1,3 +1,4 @@
+- [Daughters — You Won't Get What You Want][68]
 - [La Dispute — FULTON STREET I][67]
 - [KASHIWA Daisuke — Stella][66]
 - [Jeff Wayne — The Eve of the War][65]
@@ -143,3 +144,4 @@
 [65]: https://youtu.be/6YwFvmnbj3E
 [66]: https://youtu.be/ei7cdynwRMA
 [67]: https://ladispute.bandcamp.com/track/fulton-street-i
+[68]: https://daughters.bandcamp.com/album/you-wont-get-what-you-want
