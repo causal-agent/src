@@ -4,6 +4,7 @@ TXTS += 001-make.txt
 TXTS += 002-writing-mdoc.txt
 TXTS += 003-pleasant-c.txt
 TXTS += 004-uloc.txt
+TXTS += 005-testing-c.txt
 
 all: $(TXTS)
 
