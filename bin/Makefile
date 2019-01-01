@@ -16,7 +16,7 @@ BIN += ttpre
 BIN += wake
 BIN += xx
 
-BIN_BSD += rec
+BIN_BSD += wat
 
 BIN_LINUX += bri
 BIN_LINUX += fbatt
