@@ -37,6 +37,9 @@ static int write_archive_type(const char *format, const char *hex, const char *p
 	/* argv_array guarantees a trailing NULL entry. */
 	memcpy(nargv, argv.argv, sizeof(char *) * (argv.argc + 1));
 
+	if (fflush(stdout))
+		return errno;
+
 	result = write_archive(argv.argc, nargv, NULL, the_repository, NULL, 0);
 	argv_array_clear(&argv);
 	free(nargv);
