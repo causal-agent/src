@@ -666,7 +666,6 @@ div#cgit div.footer a:hover {
 
 div#cgit a.branch-deco {
 	color: #000;
-	margin: 0px 0.5em;
 	padding: 0px 0.25em;
 	background-color: #88ff88;
 	border: solid 1px #007700;
@@ -674,7 +673,6 @@ div#cgit a.branch-deco {
 
 div#cgit a.tag-deco {
 	color: #000;
-	margin: 0px 0.5em;
 	padding: 0px 0.25em;
 	background-color: #ffff88;
 	border: solid 1px #777700;
@@ -682,7 +680,6 @@ div#cgit a.tag-deco {
 
 div#cgit a.tag-annotated-deco {
 	color: #000;
-	margin: 0px 0.5em;
 	padding: 0px 0.25em;
 	background-color: #ffcc88;
 	border: solid 1px #777700;
@@ -690,7 +687,6 @@ div#cgit a.tag-annotated-deco {
 
 div#cgit a.remote-deco {
 	color: #000;
-	margin: 0px 0.5em;
 	padding: 0px 0.25em;
 	background-color: #ccccff;
 	border: solid 1px #000077;
@@ -698,7 +694,6 @@ div#cgit a.remote-deco {
 
 div#cgit a.deco {
 	color: #000;
-	margin: 0px 0.5em;
 	padding: 0px 0.25em;
 	background-color: #ff8888;
 	border: solid 1px #770000;
@@ -709,7 +704,6 @@ div#cgit div.commit-subject a.tag-deco,
 div#cgit div.commit-subject a.tag-annotated-deco,
 div#cgit div.commit-subject a.remote-deco,
 div#cgit div.commit-subject a.deco {
-	margin-left: 1em;
 	font-size: 75%;
 }
 
