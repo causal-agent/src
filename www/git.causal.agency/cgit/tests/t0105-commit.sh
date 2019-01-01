@@ -11,7 +11,7 @@ test_expect_success 'find commit subject' '
 	grep "<div class=.commit-subject.>commit 5<" tmp
 '
 
-test_expect_success 'find commit msg' 'grep "<div class=.commit-msg.></div>" tmp'
+test_expect_success 'find commit msg' 'grep "<pre class=.commit-msg.></pre>" tmp'
 test_expect_success 'find diffstat' 'grep "<table summary=.diffstat. class=.diffstat.>" tmp'
 
 test_expect_success 'find diff summary' '

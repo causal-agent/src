@@ -25,9 +25,9 @@ static void print_tag_content(char *buf)
 	html_txt(buf);
 	html("</div>");
 	if (p) {
-		html("<div class='commit-msg'>");
+		html("<pre class='commit-msg'>");
 		html_txt(++p);
-		html("</div>");
+		html("</pre>");
 	}
 }
 

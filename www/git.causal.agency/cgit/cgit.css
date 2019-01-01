@@ -437,11 +437,6 @@ div#cgit div.commit-subject {
 	padding: 0em;
 }
 
-div#cgit div.commit-msg {
-	white-space: pre;
-	font-family: monospace;
-}
-
 div#cgit div.notes-header {
 	font-weight: bold;
 	padding-top: 1.5em;
