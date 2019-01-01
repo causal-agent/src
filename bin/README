@@ -18,9 +18,9 @@ DESCRIPTION
      pngo(1)     PNG optimizer
      psf2png(1)  PSF2 to PNG renderer
      psfed(1)    PSF2 font editor
-     rec(1)      watch files
      ttpre(1)    man output to HTML
      wake(1)     wake-on-LAN
+     wat(1)      watch files
      xx(1)       hexdump
 
 Causal Agency                  December 2, 2018                  Causal Agency
