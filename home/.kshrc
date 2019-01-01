@@ -34,7 +34,7 @@ if [[ $(uname) = 'Linux' ]]; then
 	alias ls='ls --color=auto' grep='grep --color' rm='rm -I'
 fi
 alias bc='bc -l'
-alias gs='git status --short --branch' gd='git diff'
+alias gs='git status --short --branch || ls' gd='git diff'
 alias gsh='git show' gl='git log --graph --pretty=log'
 alias gco='git checkout' gb='git branch' gm='git merge' gst='git stash'
 alias ga='git add' gmv='git mv' grm='git rm'
