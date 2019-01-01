@@ -1043,32 +1043,41 @@ void cgit_print_pageheader(void)
 
 	html("<table class='tabs'><tr><td>\n");
 	if (ctx.env.authenticated && ctx.repo) {
-		if (ctx.repo->readme.nr)
+		if (ctx.repo->readme.nr) {
 			reporevlink("about", "about", NULL,
 				    hc("about"), ctx.qry.head, NULL,
 				    NULL);
+			html(" ");
+		}
 		cgit_summary_link("summary", NULL, hc("summary"),
 				  ctx.qry.head);
+		html(" ");
 		cgit_refs_link("refs", NULL, hc("refs"), ctx.qry.head,
 			       ctx.qry.sha1, NULL);
+		html(" ");
 		cgit_log_link("log", NULL, hc("log"), ctx.qry.head,
 			      NULL, ctx.qry.vpath, 0, NULL, NULL,
 			      ctx.qry.showmsg, ctx.qry.follow);
+		html(" ");
 		if (ctx.qry.page && !strcmp(ctx.qry.page, "blame"))
 			cgit_blame_link("blame", NULL, hc("blame"), ctx.qry.head,
 				        ctx.qry.sha1, ctx.qry.vpath);
 		else
 			cgit_tree_link("tree", NULL, hc("tree"), ctx.qry.head,
 				       ctx.qry.sha1, ctx.qry.vpath);
+		html(" ");
 		cgit_commit_link("commit", NULL, hc("commit"),
 				 ctx.qry.head, ctx.qry.sha1, ctx.qry.vpath);
+		html(" ");
 		cgit_diff_link("diff", NULL, hc("diff"), ctx.qry.head,
 			       ctx.qry.sha1, ctx.qry.sha2, ctx.qry.vpath);
-		if (ctx.repo->max_stats)
+		if (ctx.repo->max_stats) {
+			html(" ");
 			cgit_stats_link("stats", NULL, hc("stats"),
 					ctx.qry.head, ctx.qry.vpath);
+		}
 		if (ctx.repo->homepage) {
-			html("<a href='");
+			html(" <a href='");
 			html_attr(ctx.repo->homepage);
 			html("'>homepage</a>");
 		}

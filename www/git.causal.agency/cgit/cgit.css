@@ -75,7 +75,7 @@ div#cgit table.tabs td {
 }
 
 div#cgit table.tabs td a {
-	padding: 2px 0.75em;
+	padding: 2px 0.25em;
 	color: #777;
 	font-size: 110%;
 }
