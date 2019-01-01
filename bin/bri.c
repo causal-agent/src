@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, June McEnroe <programble@gmail.com>
+/* Copyright (C) 2017  June McEnroe <june@causal.agency>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
