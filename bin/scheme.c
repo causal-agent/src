@@ -27,7 +27,11 @@
 typedef unsigned uint;
 typedef unsigned char byte;
 
-static const struct HSV { double h, s, v; }
+struct HSV {
+	double h, s, v;
+};
+
+static const struct HSV
 	R = {   0.0, 1.0, 1.0 },
 	Y = {  60.0, 1.0, 1.0 },
 	G = { 120.0, 1.0, 1.0 },
@@ -35,7 +39,11 @@ static const struct HSV { double h, s, v; }
 	B = { 240.0, 1.0, 1.0 },
 	M = { 300.0, 1.0, 1.0 };
 
-static struct RGB { byte r, g, b; } toRGB(struct HSV hsv) {
+struct RGB {
+	byte r, g, b;
+};
+
+static struct RGB rgb(struct HSV hsv) {
 	double c = hsv.v * hsv.s;
 	double h = hsv.h / 60.0;
 	double x = c * (1.0 - fabs(fmod(h, 2.0) - 1.0));
@@ -59,21 +67,9 @@ static struct HSV x(struct HSV o, double hd, double sf, double vf) {
 }
 
 enum {
-	Black,
-	Red,
-	Green,
-	Yellow,
-	Blue,
-	Magenta,
-	Cyan,
-	White,
-	Dark = 0,
-	Light = 8,
-	Background = 16,
-	Foreground,
-	Bold,
-	Selection,
-	Cursor,
+	Black, Red, Green, Yellow, Blue, Magenta, Cyan, White,
+	Dark = 0, Light = 8,
+	Background = 16, Foreground, Bold, Selection, Cursor,
 	SchemeLen,
 };
 static struct HSV scheme[SchemeLen];
@@ -117,8 +113,10 @@ static void printHSV(uint n) {
 }
 
 static void printRGB(uint n) {
-	struct RGB rgb = toRGB(scheme[n]);
-	printf("%02hhX%02hhX%02hhX\n", rgb.r, rgb.g, rgb.b);
+	printf(
+		"%02hhX%02hhX%02hhX\n",
+		rgb(scheme[n]).r, rgb(scheme[n]).g, rgb(scheme[n]).b
+	);
 }
 
 static const char *CNames[SchemeLen] = {
@@ -148,16 +146,20 @@ static void printCHead(void) {
 	printf("enum {\n");
 }
 static void printC(uint n) {
-	struct RGB rgb = toRGB(scheme[n]);
-	printf("\t%s = 0x%02hhX%02hhX%02hhX,\n", CNames[n], rgb.r, rgb.g, rgb.b);
+	printf(
+		"\t%s = 0x%02hhX%02hhX%02hhX,\n",
+		CNames[n], rgb(scheme[n]).r, rgb(scheme[n]).g, rgb(scheme[n]).b
+	);
 }
 static void printCTail(void) {
 	printf("};\n");
 }
 
 static void printLinux(uint n) {
-	struct RGB rgb = toRGB(scheme[n]);
-	printf("\x1B]P%X%02hhX%02hhX%02hhX", n, rgb.r, rgb.g, rgb.b);
+	printf(
+		"\x1B]P%X%02hhX%02hhX%02hhX",
+		n, rgb(scheme[n]).r, rgb(scheme[n]).g, rgb(scheme[n]).b
+	);
 }
 
 static const char *MinttyNames[SchemeLen] = {
@@ -183,8 +185,10 @@ static const char *MinttyNames[SchemeLen] = {
 };
 static void printMintty(uint n) {
 	if (!MinttyNames[n]) return;
-	struct RGB rgb = toRGB(scheme[n]);
-	printf("%s=%hhd,%hhd,%hhd\n", MinttyNames[n], rgb.r, rgb.g, rgb.b);
+	printf(
+		"%s=%hhu,%hhu,%hhu\n",
+		MinttyNames[n], rgb(scheme[n]).r, rgb(scheme[n]).g, rgb(scheme[n]).b
+	);
 }
 
 static void png(uint at, uint to) {
@@ -200,11 +204,11 @@ static void png(uint at, uint to) {
 
 	pngHead(stdout, width, height, 8, PNGIndexed);
 
-	struct RGB rgb[len];
+	struct RGB pal[len];
 	for (uint i = 0; i < len; ++i) {
-		rgb[i] = toRGB(scheme[at + i]);
+		pal[i] = rgb(scheme[at + i]);
 	}
-	pngPalette(stdout, (byte *)rgb, sizeof(rgb));
+	pngPalette(stdout, (byte *)pal, sizeof(pal));
 
 	uint8_t data[height][1 + width];
 	memset(data, 0, sizeof(data));
@@ -222,7 +226,7 @@ static void png(uint at, uint to) {
 	pngTail(stdout);
 }
 
-static void print(void (*fn)(uint), uint at, uint to) {
+static void print(void fn(uint), uint at, uint to) {
 	for (uint i = at; i < to; ++i) {
 		fn(i);
 	}
