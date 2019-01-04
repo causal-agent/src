@@ -22,11 +22,7 @@ fi
 FCEDIT=$EDITOR
 export GIT_EDITOR=$EDITOR
 export CLICOLOR=1
-export NETHACKOPTIONS='
-	name:June, role:Valkyrie, race:Human, gender:female, align:neutral,
-	dogname:Moro, catname: Baron, pickup_types:$!?+/=,
-	color, DECgraphics
-'
+export NETHACKOPTIONS='pickup_types:$!?+/=, color, DECgraphics'
 
 alias ls='ls -p'
 alias ll='ls -lh'
