@@ -263,15 +263,21 @@ static int ls_item(const struct object_id *oid, struct strbuf *base,
 	cgit_log_link("log", NULL, "button", ctx.qry.head,
 		      walk_tree_ctx->curr_rev, fullpath.buf, 0, NULL, NULL,
 		      ctx.qry.showmsg, 0);
-	if (ctx.repo->max_stats)
+	if (ctx.repo->max_stats) {
+		html(" ");
 		cgit_stats_link("stats", NULL, "button", ctx.qry.head,
 				fullpath.buf);
-	if (!S_ISGITLINK(mode))
+	}
+	if (!S_ISGITLINK(mode)) {
+		html(" ");
 		cgit_plain_link("plain", NULL, "button", ctx.qry.head,
 				walk_tree_ctx->curr_rev, fullpath.buf);
-	if (!S_ISDIR(mode) && ctx.repo->enable_blame)
+	}
+	if (!S_ISDIR(mode) && ctx.repo->enable_blame) {
+		html(" ");
 		cgit_blame_link("blame", NULL, "button", ctx.qry.head,
 				walk_tree_ctx->curr_rev, fullpath.buf);
+	}
 	html("</td></tr>\n");
 
 cleanup:
