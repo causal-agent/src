@@ -42,7 +42,7 @@ OBJS = $(SRCS:.c=.o)
 
 MAN1 = cash.1 cash-kill.1 cash-printf.1 cash-test.1
 
-all: tags cash .depend
+all: tags cash
 
 cash: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
@@ -50,7 +50,7 @@ cash: $(OBJS)
 tags: *.h *.c
 	ctags -w *.h *.c
 
-.depend: $(SRCS) $(GENHDRS)
+depend: $(SRCS) $(GENHDRS)
 	$(CC) $(CFLAGS) -MM $(SRCS) > .depend
 
 -include .depend
