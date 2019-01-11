@@ -3,41 +3,54 @@ LDLIBS = -ledit
 
 -include config.mk
 
-OBJS += alias.o
-OBJS += arith_yacc.o
-OBJS += arith_yylex.o
-OBJS += cd.o
-OBJS += echo.o
-OBJS += error.o
-OBJS += eval.o
-OBJS += exec.o
-OBJS += expand.o
-OBJS += histedit.o
-OBJS += input.o
-OBJS += jobs.o
-OBJS += kill.o
-OBJS += mail.o
-OBJS += main.o
-OBJS += memalloc.o
-OBJS += miscbltin.o
-OBJS += mystring.o
-OBJS += options.o
-OBJS += output.o
-OBJS += parser.o
-OBJS += printf.o
-OBJS += redir.o
-OBJS += show.o
-OBJS += test.o
-OBJS += trap.o
-OBJS += var.o
+SRCS += alias.c
+SRCS += arith_yacc.c
+SRCS += arith_yylex.c
+SRCS += cd.c
+SRCS += echo.c
+SRCS += error.c
+SRCS += eval.c
+SRCS += exec.c
+SRCS += expand.c
+SRCS += histedit.c
+SRCS += input.c
+SRCS += jobs.c
+SRCS += kill.c
+SRCS += mail.c
+SRCS += main.c
+SRCS += memalloc.c
+SRCS += miscbltin.c
+SRCS += mystring.c
+SRCS += options.c
+SRCS += output.c
+SRCS += parser.c
+SRCS += printf.c
+SRCS += redir.c
+SRCS += show.c
+SRCS += test.c
+SRCS += trap.c
+SRCS += var.c
 
 GENSRCS = builtins.c nodes.c syntax.c
 GENHDRS = builtins.h nodes.h syntax.h token.h
 
-OBJS += $(GENSRCS:.c=.o)
+SRCS += $(GENSRCS)
+OBJS = $(SRCS:.c=.o)
+
+all: tags cash .depend
 
 cash: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
+
+tags: *.h *.c
+	ctags -w *.h *.c
+
+.depend: $(SRCS) $(GENHDRS)
+	$(CC) $(CFLAGS) -MM $(SRCS) > .depend
+
+-include .depend
+
+$(OBJS): $(GENHDRS)
 
 builtins.c builtins.h: mkbuiltins builtins.def
 	sh mkbuiltins .
@@ -51,8 +64,5 @@ syntax.c syntax.h: mksyntax
 token.h: mktokens
 	sh mktokens
 
-# FIXME
-$(OBJS): *.h $(GENHDRS)
-
 clean:
-	rm -f cash $(OBJS) mknodes mksyntax $(GENSRCS) $(GENHDRS)
+	rm -f cash $(OBJS) mknodes mksyntax $(GENSRCS) $(GENHDRS) tags .depend

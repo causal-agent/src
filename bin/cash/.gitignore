@@ -1,4 +1,5 @@
 *.o
+.depend
 builtins.c
 builtins.h
 cash
