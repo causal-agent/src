@@ -32,12 +32,12 @@
 .\"	from: @(#)sh.1	8.6 (Berkeley) 5/4/95
 .\" $FreeBSD: releng/12.0/bin/sh/sh.1 336483 2018-07-19 13:09:29Z 0mp $
 .\"
-.Dd July 19, 2018
-.Dt SH 1
+.Dd January 10, 2019
+.Dt CASH 1
 .Os
 .Sh NAME
-.Nm sh
-.Nd command interpreter (shell)
+.Nm cash
+.Nd the Causal Agency shell
 .Sh SYNOPSIS
 .Nm
 .Op Fl /+abCEefhIimnPpTuVvx
@@ -62,7 +62,7 @@
 .Sh DESCRIPTION
 The
 .Nm
-utility is the standard command interpreter for the system.
+utility is a command interpreter.
 The current version of
 .Nm
 is close to the
@@ -137,10 +137,10 @@ variable to some file by placing the following line in the file
 .Pa .profile
 in the home directory,
 substituting for
-.Pa .shrc
+.Pa .cashrc
 the filename desired:
 .Pp
-.Dl "ENV=$HOME/.shrc; export ENV"
+.Dl "ENV=$HOME/.cashrc; export ENV"
 .Pp
 The first non-option argument specified on the command line
 will be treated as the
@@ -153,7 +153,7 @@ Otherwise, the shell reads commands
 from its standard input.
 .Pp
 Unlike older versions of
-.Nm
+.Xr sh 1
 the
 .Ev ENV
 script is only sourced on invocation of interactive shells.
@@ -314,7 +314,7 @@ The surrounding shell may kill the child
 or it may just return control to the tty and leave the child alone,
 like this:
 .Bd -literal -offset indent
-sh -T -c "trap 'exit 1' 2 ; some-blocking-program"
+cash -T -c "trap 'exit 1' 2 ; some-blocking-program"
 .Ed
 .It Fl u Li nounset
 Write a message to standard error when attempting
@@ -2847,25 +2847,42 @@ will return the argument.
 .Xr shells 5
 .Sh HISTORY
 A
-.Nm
+.Xr sh 1
 command, the Thompson shell, appeared in
 .At v1 .
 It was superseded in
 .At v7
 by the Bourne shell, which inherited the name
-.Nm .
+.Xr sh 1 .
 .Pp
-This version of
-.Nm
+The
+.Fx
+version of
+.Xr sh 1
 was rewritten in 1989 under the
 .Bx
 license after the Bourne shell from
 .At V.4 .
-.Sh AUTHORS
-This version of
+.Pp
+The
 .Nm
+utility is based on
+.Xr sh 1
+from
+.Fx 12.0 .
+.Sh AUTHORS
+.An -nosplit
+The
+.Fx
+version of
+.Xr sh 1
 was originally written by
 .An Kenneth Almquist .
+.Pp
+The
+.Nm
+utility is developed by
+.An June McEnroe Aq Mt june@causal.agency .
 .Sh BUGS
 The
 .Nm
