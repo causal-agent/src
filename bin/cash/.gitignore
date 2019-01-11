@@ -1,0 +1,11 @@
+*.o
+builtins.c
+builtins.h
+cash
+mknodes
+mksyntax
+nodes.c
+nodes.h
+syntax.c
+syntax.h
+token.h

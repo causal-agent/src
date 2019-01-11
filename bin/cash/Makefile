@@ -1,72 +1,57 @@
-#	@(#)Makefile	8.4 (Berkeley) 5/5/95
-# $FreeBSD: releng/12.0/bin/sh/Makefile 338374 2018-08-29 16:59:19Z brd $
+CFLAGS += -std=c99 -Wall -Wextra -DSHELL
+LDLIBS = -ledit
 
-.include <src.opts.mk>
+SHSRCS += alias.c
+SHSRCS += arith_yacc.c
+SHSRCS += arith_yylex.c
+SHSRCS += cd.c
+SHSRCS += echo.c
+SHSRCS += error.c
+SHSRCS += eval.c
+SHSRCS += exec.c
+SHSRCS += expand.c
+SHSRCS += histedit.c
+SHSRCS += input.c
+SHSRCS += jobs.c
+SHSRCS += kill.c
+SHSRCS += mail.c
+SHSRCS += main.c
+SHSRCS += memalloc.c
+SHSRCS += miscbltin.c
+SHSRCS += mystring.c
+SHSRCS += options.c
+SHSRCS += output.c
+SHSRCS += parser.c
+SHSRCS += printf.c
+SHSRCS += redir.c
+SHSRCS += show.c
+SHSRCS += test.c
+SHSRCS += trap.c
+SHSRCS += var.c
 
-CONFS=	dot.profile profile
-CONFSDIR_dot.profile=	/root
-CONFSNAME_dot.profile=	.profile
-PACKAGE=runtime
-PROG=	sh
-INSTALLFLAGS= -S
-SHSRCS=	alias.c arith_yacc.c arith_yylex.c cd.c echo.c error.c eval.c \
-	exec.c expand.c \
-	histedit.c input.c jobs.c kill.c mail.c main.c memalloc.c miscbltin.c \
-	mystring.c options.c output.c parser.c printf.c redir.c show.c \
-	test.c trap.c var.c
-GENSRCS= builtins.c nodes.c syntax.c
-GENHDRS= builtins.h nodes.h syntax.h token.h
-SRCS= ${SHSRCS} ${GENSRCS} ${GENHDRS}
+GENSRCS = builtins.c nodes.c syntax.c
+GENHDRS = builtins.h nodes.h syntax.h token.h
 
-# MLINKS for Shell built in commands for which there are no userland
-# utilities of the same name are handled with the associated manpage,
-# builtin.1 in share/man/man1/.
+SRCS = $(SHSRCS) $(GENSRCS)
+OBJS = $(SRCS:.c=.o)
 
-LIBADD=	edit
+cash: $(OBJS)
+	$(CC) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
 
-CFLAGS+=-DSHELL -I. -I${.CURDIR}
-# for debug:
-# DEBUG_FLAGS+= -g -DDEBUG=2 -fno-inline
-WARNS?=	2
-WFORMAT=0
-
-.PATH:	${.CURDIR}/bltin \
-	${.CURDIR:H}/kill \
-	${.CURDIR:H}/test \
-	${SRCTOP}/usr.bin/printf
-
-CLEANFILES+= mknodes mksyntax
-CLEANFILES+= ${GENSRCS} ${GENHDRS}
-
-build-tools: mknodes mksyntax
-
-.ORDER: builtins.c builtins.h
-builtins.h: .NOMETA
 builtins.c builtins.h: mkbuiltins builtins.def
-	sh ${.CURDIR}/mkbuiltins ${.CURDIR}
+	sh mkbuiltins .
 
-mknodes mksyntax: ${BUILD_TOOLS_META}
-
-.ORDER: nodes.c nodes.h
-nodes.h: .NOMETA
 nodes.c nodes.h: mknodes nodetypes nodes.c.pat
-	${BTOOLSPATH:U.}/mknodes ${.CURDIR}/nodetypes ${.CURDIR}/nodes.c.pat
+	./mknodes nodetypes nodes.c.pat
 
-.ORDER: syntax.c syntax.h
-syntax.h: .NOMETA
 syntax.c syntax.h: mksyntax
-	${BTOOLSPATH:U.}/mksyntax
+	./mksyntax
 
 token.h: mktokens
-	sh ${.CURDIR}/mktokens
+	sh mktokens
 
-HAS_TESTS=
-SUBDIR.${MK_TESTS}+= tests
+# FIXME
+$(OBJS): *.h $(GENHDRS)
 
-beforeinstallconfig:
-	rm -f ${DESTDIR}/.profile
-
-afterinstallconfig:
-	${INSTALL_LINK} ${TAG_ARGS} ${DESTDIR}/root/.profile ${DESTDIR}/.profile
-
-.include <bsd.prog.mk>
+clean:
+	rm -f cash $(OBJS) mknodes mksyntax $(GENSRCS) $(GENHDRS)
