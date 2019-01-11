@@ -48,8 +48,8 @@ static char const copyright[] =
 #if 0
 static char const sccsid[] = "@(#)printf.c	8.1 (Berkeley) 7/20/93";
 #endif
-static const char rcsid[] =
-  "$FreeBSD: releng/12.0/usr.bin/printf/printf.c 337618 2018-08-11 11:13:34Z jilles $";
+#include <sys/cdefs.h>
+__FBSDID("$FreeBSD: releng/12.0/usr.bin/printf/printf.c 337618 2018-08-11 11:13:34Z jilles $");
 #endif /* not lint */
 
 #include <sys/types.h>
