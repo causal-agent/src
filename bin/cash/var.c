@@ -88,6 +88,7 @@ struct varinit {
 struct var vhistsize;
 struct var vterm;
 #endif
+struct var venv;
 struct var vifs;
 struct var vmail;
 struct var vmpath;
@@ -104,6 +105,7 @@ struct localvar *localvars;
 int forcelocal;
 
 static const struct varinit varinit[] = {
+	{ &venv, 0, "ENV=${XDG_CONFIG_HOME:-${HOME}/.config}/cash/cashrc", NULL },
 #ifndef NO_HISTORY
 	{ &vhistsize,	VUNSET,				"HISTSIZE=",
 	  sethistsize },

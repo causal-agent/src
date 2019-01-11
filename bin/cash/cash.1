@@ -138,17 +138,11 @@ at login time in the
 file, and commands that are executed for every shell inside the
 .Ev ENV
 file.
-The user can set the
+The default value of
 .Ev ENV
-variable to some file by placing the following line in the file
-.Pa .profile
-in the home directory,
-substituting for
-.Pa .cashrc
-the filename desired:
-.
+is:
 .Pp
-.Dl "ENV=$HOME/.cashrc; export ENV"
+.Dl "ENV=${XDG_CONFIG_HOME:-${HOME}/.config}/cash/cashrc"
 .
 .Pp
 The first non-option argument specified on the command line
