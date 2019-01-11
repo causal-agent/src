@@ -1,3 +1,6 @@
+PREFIX = /usr/local
+MANDIR = $(PREFIX)/share/man
+
 CFLAGS += -std=c99 -Wall -Wextra -DSHELL
 LDLIBS = -ledit
 
@@ -37,6 +40,8 @@ GENHDRS = builtins.h nodes.h syntax.h token.h
 SRCS += $(GENSRCS)
 OBJS = $(SRCS:.c=.o)
 
+MAN1 = cash.1 cash-kill.1 cash-printf.1 cash-test.1
+
 all: tags cash .depend
 
 cash: $(OBJS)
@@ -66,3 +71,11 @@ token.h: mktokens
 
 clean:
 	rm -f cash $(OBJS) mknodes mksyntax $(GENSRCS) $(GENHDRS) tags .depend
+
+install: cash $(MAN1)
+	mkdir -p $(PREFIX)/bin $(MANDIR)/man1
+	install cash $(PREFIX)/bin
+	install -m 644 $(MAN1) $(MANDIR)/man1
+
+uninstall:
+	rm -f $(PREFIX)/bin/cash $(MAN1:%=$(MANDIR)/man1/%)
