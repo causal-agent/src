@@ -1,39 +1,40 @@
 CFLAGS += -std=c99 -Wall -Wextra -DSHELL
 LDLIBS = -ledit
 
-SHSRCS += alias.c
-SHSRCS += arith_yacc.c
-SHSRCS += arith_yylex.c
-SHSRCS += cd.c
-SHSRCS += echo.c
-SHSRCS += error.c
-SHSRCS += eval.c
-SHSRCS += exec.c
-SHSRCS += expand.c
-SHSRCS += histedit.c
-SHSRCS += input.c
-SHSRCS += jobs.c
-SHSRCS += kill.c
-SHSRCS += mail.c
-SHSRCS += main.c
-SHSRCS += memalloc.c
-SHSRCS += miscbltin.c
-SHSRCS += mystring.c
-SHSRCS += options.c
-SHSRCS += output.c
-SHSRCS += parser.c
-SHSRCS += printf.c
-SHSRCS += redir.c
-SHSRCS += show.c
-SHSRCS += test.c
-SHSRCS += trap.c
-SHSRCS += var.c
+-include config.mk
+
+OBJS += alias.o
+OBJS += arith_yacc.o
+OBJS += arith_yylex.o
+OBJS += cd.o
+OBJS += echo.o
+OBJS += error.o
+OBJS += eval.o
+OBJS += exec.o
+OBJS += expand.o
+OBJS += histedit.o
+OBJS += input.o
+OBJS += jobs.o
+OBJS += kill.o
+OBJS += mail.o
+OBJS += main.o
+OBJS += memalloc.o
+OBJS += miscbltin.o
+OBJS += mystring.o
+OBJS += options.o
+OBJS += output.o
+OBJS += parser.o
+OBJS += printf.o
+OBJS += redir.o
+OBJS += show.o
+OBJS += test.o
+OBJS += trap.o
+OBJS += var.o
 
 GENSRCS = builtins.c nodes.c syntax.c
 GENHDRS = builtins.h nodes.h syntax.h token.h
 
-SRCS = $(SHSRCS) $(GENSRCS)
-OBJS = $(SRCS:.c=.o)
+OBJS += $(GENSRCS:.c=.o)
 
 cash: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@

@@ -2,6 +2,7 @@
 builtins.c
 builtins.h
 cash
+config.mk
 mknodes
 mksyntax
 nodes.c
