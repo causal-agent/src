@@ -1,0 +1,8 @@
+*.o
+common.h
+emacs.h
+fcns.h
+func.h
+help.h
+libedit.a
+vi.h
