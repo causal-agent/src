@@ -91,7 +91,7 @@ main(int argc, char *argv[])
 				errx(2, "illegal signal number: %s", *argv);
 			if (numsig >= 128)
 				numsig -= 128;
-			if (numsig <= 0 || numsig >= sys_nsig)
+			if (numsig <= 0 || numsig >= NSIG)
 				nosig(*argv);
 			printf("%s\n", sys_signame[numsig]);
 			return (0);
@@ -164,7 +164,7 @@ signame_to_signum(const char *sig)
 
 	if (strncasecmp(sig, "SIG", 3) == 0)
 		sig += 3;
-	for (n = 1; n < sys_nsig; n++) {
+	for (n = 1; n < NSIG; n++) {
 		if (!strcasecmp(sys_signame[n], sig))
 			return (n);
 	}
@@ -189,9 +189,9 @@ printsignals(FILE *fp)
 {
 	int n;
 
-	for (n = 1; n < sys_nsig; n++) {
+	for (n = 1; n < NSIG; n++) {
 		(void)fprintf(fp, "%s", sys_signame[n]);
-		if (n == (sys_nsig / 2) || n == (sys_nsig - 1))
+		if (n == (NSIG / 2) || n == (NSIG - 1))
 			(void)fprintf(fp, "\n");
 		else
 			(void)fprintf(fp, " ");
