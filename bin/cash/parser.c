@@ -1969,35 +1969,11 @@ pgetc_linecont(void)
 	return (c);
 }
 
-/*
- * called by editline -- any expansions to the prompt
- *    should be added here.
- */
-char *
-getprompt(void *unused __unused)
-{
+static char *
+expandprompt(const char *fmt) {
 	static char ps[PROMPTLEN];
-	const char *fmt;
 	const char *pwd;
 	int i, trim;
-	static char internal_error[] = "??";
-
-	/*
-	 * Select prompt format.
-	 */
-	switch (whichprompt) {
-	case 0:
-		fmt = "";
-		break;
-	case 1:
-		fmt = ps1val();
-		break;
-	case 2:
-		fmt = ps2val();
-		break;
-	default:
-		return internal_error;
-	}
 
 	/*
 	 * Format prompt string.
@@ -2075,6 +2051,62 @@ getprompt(void *unused __unused)
 			ps[i] = *fmt;
 	ps[i] = '\0';
 	return (ps);
+}
+
+/*
+ * called by editline -- any expansions to the prompt
+ *    should be added here.
+ */
+char *
+getprompt(void *unused __unused)
+{
+	const char *fmt;
+	static char internal_error[] = "??";
+
+	/*
+	 * Select prompt format.
+	 */
+	switch (whichprompt) {
+	case 0:
+		fmt = "";
+		break;
+	case 1:
+		fmt = ps1val();
+		break;
+	case 2:
+		fmt = ps2val();
+		break;
+	default:
+		return internal_error;
+	}
+
+	return expandprompt(fmt);
+}
+
+char *
+getrprompt(void *unused __unused)
+{
+	const char *fmt;
+	static char internal_error[] = "??";
+
+	/*
+	 * Select prompt format.
+	 */
+	switch (whichprompt) {
+	case 0:
+		fmt = "";
+		break;
+	case 1:
+		fmt = rps1val();
+		break;
+	case 2:
+		fmt = rps2val();
+		break;
+	default:
+		return internal_error;
+	}
+
+	return expandprompt(fmt);
 }
 
 
