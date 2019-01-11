@@ -1,0 +1,36 @@
+set -o noclobber -o nounset -o vi
+
+systemPath=$PATH
+PATH=/sbin:/bin:/opt/pkg/sbin:/opt/pkg/bin:/usr/local/sbin:/usr/local/bin:/usr/pkg/sbin:/usr/pkg/bin:/usr/sbin:/usr/bin:~/.local/sbin:~/.local/bin:/usr/games
+CDPATH=:$HOME
+
+export PAGER=less
+export MANSECT=2:3:1:8:6:5:7:4:9
+export EDITOR=vim
+if type nvim > /dev/null; then
+	EDITOR=nvim
+	alias vim=nvim
+	export MANPAGER="nvim -c 'set ft=man' -"
+fi
+export GIT_EDITOR=$EDITOR
+export CLICOLOR=1
+export GPG_TTY=$(tty)
+export NETHACKOPTIONS='pickup_types:$!?+/=, color, DECgraphics'
+
+alias ls='ls -p'
+alias ll='ls -lh'
+if [ "$(uname)" = 'Linux' ]; then
+	alias ls='ls --color=auto' grep='grep --color' rm='rm -I'
+fi
+alias bc='bc -l'
+alias gs='git status --short --branch || ls' gd='git diff'
+alias gsh='git show' gl='git log --graph --pretty=log'
+alias gco='git checkout' gb='git branch' gm='git merge' gst='git stash'
+alias ga='git add' gmv='git mv' grm='git rm'
+alias gc='git commit' gca='gc --amend' gt='git tag'
+alias gp='git push' gu='git pull' gf='git fetch'
+alias gr='git rebase' gra='gr --abort' grc='gr --continue' grs='gr --skip'
+alias rand='openssl rand -base64 33'
+alias private='eval "$(gpg -d ~/.private)"'
+
+RPS1='\W'
