@@ -177,6 +177,14 @@ sethistsize(const char *hs)
 }
 
 void
+setpslit(const char *lit) {
+	if (el != NULL && *lit < 0x20) {
+		el_set(el, EL_PROMPT_ESC, getprompt, *lit);
+		el_set(el, EL_RPROMPT_ESC, getrprompt, *lit);
+	}
+}
+
+void
 setterm(const char *term)
 {
 	if (rootshell && el != NULL && term != NULL)

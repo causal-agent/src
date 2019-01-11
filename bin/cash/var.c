@@ -86,6 +86,7 @@ struct varinit {
 
 #ifndef NO_HISTORY
 struct var vhistsize;
+struct var vpslit;
 struct var vterm;
 #endif
 struct var venv;
@@ -130,6 +131,8 @@ static const struct varinit varinit[] = {
 	{ &vrps2,	VUNSET,				"RPS2=",
 	  NULL },
 #ifndef NO_HISTORY
+	{ &vpslit,	VUNSET,				"PSlit=",
+	  setpslit },
 	{ &vterm,	VUNSET,				"TERM=",
 	  setterm },
 #endif
