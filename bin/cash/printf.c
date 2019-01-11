@@ -68,7 +68,7 @@ static const char rcsid[] =
 
 #ifdef SHELL
 #define	main printfcmd
-#include "bltin/bltin.h"
+#include "bltin.h"
 #include "options.h"
 #endif
 

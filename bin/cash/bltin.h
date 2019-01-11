@@ -41,11 +41,11 @@
  * routines to ash routines using defines.
  */
 
-#include "../shell.h"
-#include "../mystring.h"
+#include "shell.h"
+#include "mystring.h"
 #ifdef SHELL
-#include "../error.h"
-#include "../output.h"
+#include "error.h"
+#include "output.h"
 #include "builtins.h"
 #define FILE struct output
 #undef stdout

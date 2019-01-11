@@ -57,7 +57,7 @@ __FBSDID("$FreeBSD: releng/12.0/bin/kill/kill.c 326025 2017-11-20 19:49:47Z pfg 
 
 #ifdef SHELL
 #define main killcmd
-#include "bltin/bltin.h"
+#include "bltin.h"
 #endif
 
 static void nosig(const char *);
