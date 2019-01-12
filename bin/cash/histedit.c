@@ -125,7 +125,7 @@ histedit(void)
 				el_set(el, EL_RPROMPT, getrprompt);
 				el_set(el, EL_ADDFN, "sh-complete",
 				    "Filename completion",
-				    _el_fn_sh_complete);
+				    _el_fn_complete);
 			} else {
 bad:
 				out2fmt_flush("sh: can't initialize editing\n");

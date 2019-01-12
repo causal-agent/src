@@ -1,8 +1,8 @@
 PREFIX = /usr/local
 MANDIR = $(PREFIX)/share/man
 
-CFLAGS += -std=c99 -Wall -Wextra -DSHELL
-LDLIBS = -ledit
+CFLAGS += -std=c99 -Wall -Wextra -DSHELL -Ilibedit
+LDLIBS = -lcurses
 
 -include config.mk
 
@@ -38,7 +38,7 @@ GENSRCS = builtins.c nodes.c syntax.c
 GENHDRS = builtins.h nodes.h syntax.h token.h
 
 SRCS += $(GENSRCS)
-OBJS = $(SRCS:.c=.o)
+OBJS = $(SRCS:.c=.o) libedit/libedit.a
 
 MAN1 = cash.1 cash-kill.1 cash-printf.1 cash-test.1
 
@@ -47,15 +47,10 @@ all: tags cash
 cash: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
 
-tags: *.h *.c
-	ctags -w *.h *.c
-
-depend: $(SRCS) $(GENHDRS)
-	$(CC) $(CFLAGS) -MM $(SRCS) > .depend
-
--include .depend
-
 $(OBJS): $(GENHDRS)
+
+libedit/libedit.a:
+	$(MAKE) -C libedit libedit.a
 
 builtins.c builtins.h: mkbuiltins builtins.def
 	sh mkbuiltins .
@@ -68,6 +63,14 @@ syntax.c syntax.h: mksyntax
 
 token.h: mktokens
 	sh mktokens
+
+tags: *.h *.c
+	ctags -w *.h *.c
+
+depend: $(SRCS) $(GENHDRS)
+	$(CC) $(CFLAGS) -MM $(SRCS) > .depend
+
+-include .depend
 
 clean:
 	rm -f cash $(OBJS) mknodes mksyntax $(GENSRCS) $(GENHDRS) tags .depend
