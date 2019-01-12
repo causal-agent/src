@@ -177,10 +177,26 @@ sethistsize(const char *hs)
 }
 
 void
-setpslit(const char *lit) {
-	if (el != NULL && *lit < 0x20) {
-		el_set(el, EL_PROMPT_ESC, getprompt, *lit);
-		el_set(el, EL_RPROMPT_ESC, getrprompt, *lit);
+setpslit(const char *lit_ch) {
+	wchar_t wc;
+
+	if (!(iflag && editing && el))
+		return;
+
+	if (lit_ch == NULL) {
+		el_set(el, EL_PROMPT, getprompt);
+		el_set(el, EL_RPROMPT, getrprompt);
+		return;
+	}
+
+	mbtowc(&wc, NULL, 1);		/* state init */
+
+	if (mbtowc(&wc, lit_ch, strlen(lit_ch)) <= 0) {
+		el_set(el, EL_PROMPT, getprompt);
+		el_set(el, EL_RPROMPT, getrprompt);
+	} else {
+		el_set(el, EL_PROMPT_ESC, getprompt, (int)wc);
+		el_set(el, EL_RPROMPT_ESC, getrprompt, (int)wc);
 	}
 }
 
