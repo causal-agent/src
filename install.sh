@@ -1,11 +1,11 @@
 #!/bin/sh
 set -e -u
 
-pkgAny='curl git gnupg htop mksh sl the_silver_searcher tree'
-pkgDarwin='git'
-pkgFreeBSD='ddate neovim sudo'
-pkgNetBSD='sudo vim'
-pkgLinux='base-devel bc ctags gdb neovim openssh'
+pkgAny='curl git htop mksh sl the_silver_searcher tree'
+pkgDarwin='git gnupg2'
+pkgFreeBSD='ddate gnupg neovim sudo'
+pkgNetBSD='gnupg2 sudo vim'
+pkgLinux='base-devel bc ctags gdb gnupg neovim openssh'
 
 pkgsrcTag='20171103'
 neovimTag='v0.3.1'
@@ -26,6 +26,7 @@ Darwin() {
 	fi
 	sudo pkgin update
 	sudo pkgin install ${pkgAny} ${pkgDarwin}
+	sudo ln -sf /opt/pkg/bin/gpg2 /usr/local/bin/gpg
 	if [ ! -f /usr/local/bin/nvim ]; then
 		curl -L -O ${neovimURL}
 		sudo tar -xf ${neovimTar} --strip-components 1 -C /usr/local
@@ -45,6 +46,7 @@ NetBSD() {
 	fi
 	pkgin update
 	pkgin install ${pkgAny} ${pkgNetBSD}
+	ln -sf /usr/pkg/bin/gpg2 /usr/local/bin/gpg
 }
 
 FreeBSD() {
