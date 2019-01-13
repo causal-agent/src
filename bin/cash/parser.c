@@ -129,6 +129,7 @@ static void consumetoken(int);
 static void synexpect(int) __dead2;
 static void synerror(const char *) __dead2;
 static void setprompt(int);
+static char *expandprompt(const char *);
 static int pgetc_linecont(void);
 
 
@@ -1936,6 +1937,11 @@ setprompt(int which)
 	whichprompt = which;
 	if (which == 0)
 		return;
+
+	if (which == 1 && *ps0val()) {
+		out2str(expandprompt(ps0val()));
+		flushout(out2);
+	}
 
 #ifndef NO_HISTORY
 	if (!el)

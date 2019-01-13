@@ -94,6 +94,7 @@ struct var vifs;
 struct var vmail;
 struct var vmpath;
 struct var vpath;
+struct var vps0;
 struct var vps1;
 struct var vps2;
 struct var vps4;
@@ -119,6 +120,8 @@ static const struct varinit varinit[] = {
 	  NULL },
 	{ &vpath,	0,				"PATH=" _PATH_DEFPATH,
 	  changepath },
+	{ &vps0,	VUNSET,				"PS0=",
+	  NULL },
 	/*
 	 * vps1 depends on uid
 	 */
