@@ -33,4 +33,9 @@ alias gr='git rebase' gra='gr --abort' grc='gr --continue' grs='gr --skip'
 alias rand='openssl rand -base64 33'
 alias private='eval "$(gpg -d ~/.private)"'
 
-RPS1='\W'
+af7=$(tput setaf 7 || tput AF 7)
+sgr0=$(tput sgr0 || tput me)
+
+PSlit=$'\1'
+PS1="${PSlit}${af7}${PSlit}\$${PSlit}${sgr0}${PSlit} "
+RPS1="${PSlit}${af7}${PSlit}\\W${PSlit}${sgr0}${PSlit}"
