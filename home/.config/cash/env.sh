@@ -38,5 +38,6 @@ af7=$(tput setaf 7 || tput AF 7)
 sgr0=$(tput sgr0 || tput me)
 
 PSlit=$'\1'
+[ "${TERM%-*}" = 'xterm' ] && PS0=$'\e]0;\\W\a\n' || PS0=$'\n'
 PS1="${PSlit}${af7}${PSlit}\$${PSlit}${sgr0}${PSlit} "
 RPS1="${PSlit}${af7}${PSlit}\\W${PSlit}${sgr0}${PSlit}"
