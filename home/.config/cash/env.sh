@@ -1,27 +1,27 @@
 set -o noclobber -o nounset -o vi
 
-systemPath=$PATH
-PATH=/sbin:/bin:/opt/pkg/sbin:/opt/pkg/bin:/usr/local/sbin:/usr/local/bin:/usr/pkg/sbin:/usr/pkg/bin:/usr/sbin:/usr/bin:~/.local/sbin:~/.local/bin:/usr/games
-CDPATH=:$HOME
+colon() {
+	IFS=:
+	echo "$*"
+}
+
+# {,/opt/pkg,/usr{/local,/pkg,},$HOME/.local}/{s,}bin /usr/games
+_PATH=$PATH
+PATH=$(colon /sbin /bin /opt/pkg/sbin /opt/pkg/bin /usr/local/sbin /usr/local/bin /usr/pkg/sbin /usr/pkg/bin /usr/sbin /usr/bin ~/.local/sbin ~/.local/bin /usr/games)
+CDPATH=:~
 
 export PAGER=less
+export EDITOR=nvim
+export MANPAGER="nvim -c 'set ft=man' -"
 export MANSECT=2:3:1:8:6:5:7:4:9
-export EDITOR=vim
-if type nvim > /dev/null; then
-	EDITOR=nvim
-	alias vim=nvim
-	export MANPAGER="nvim -c 'set ft=man' -"
-fi
-export GIT_EDITOR=$EDITOR
 export CLICOLOR=1
 export GPG_TTY=$(tty)
 export NETHACKOPTIONS='pickup_types:$!?+/=, color, DECgraphics'
+type nvim > /dev/null || EDITOR=vim
 
+alias vim="$EDITOR"
 alias ls='ls -p'
-alias ll='ls -lh'
-if [ "$(uname)" = 'Linux' ]; then
-	alias ls='ls --color=auto' grep='grep --color' rm='rm -I'
-fi
+alias ll='ls -hl'
 alias bc='bc -l'
 alias gs='git status --short --branch || ls' gd='git diff'
 alias gsh='git show' gl='git log --graph --pretty=log'
@@ -32,6 +32,7 @@ alias gp='git push' gu='git pull' gf='git fetch'
 alias gr='git rebase' gra='gr --abort' grc='gr --continue' grs='gr --skip'
 alias rand='openssl rand -base64 33'
 alias private='eval "$(gpg -d ~/.private)"'
+[ "$(uname)" = 'Linux' ] && alias ls='ls --color=auto' grep='grep --color'
 
 af7=$(tput setaf 7 || tput AF 7)
 sgr0=$(tput sgr0 || tput me)
