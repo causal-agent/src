@@ -82,3 +82,6 @@ install: cash $(MAN1)
 
 uninstall:
 	rm -f $(PREFIX)/bin/cash $(MAN1:%=$(MANDIR)/man1/%)
+
+README: cash.7
+	mandoc cash.7 | col -bx > README
