@@ -1,5 +1,6 @@
 *.o
 common.h
+config.mk
 emacs.h
 fcns.h
 func.h

@@ -1,3 +1,7 @@
+CFLAGS += -std=c99 -Wall -Wextra
+
+-include config.mk
+
 OBJS += chared.o
 OBJS += chartype.o
 OBJS += common.o
