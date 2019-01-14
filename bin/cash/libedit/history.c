@@ -44,6 +44,7 @@ __RCSID("$NetBSD: history.c,v 1.57 2016/04/11 18:56:31 christos Exp $");
 /*
  * hist.c: TYPE(History) access functions
  */
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -768,7 +769,7 @@ static int
 history_load(TYPE(History) *h, const char *fname)
 {
 	FILE *fp;
-	char *line;
+	char *line = NULL;
 	size_t llen;
 	ssize_t sz;
 	size_t max_size;
@@ -782,7 +783,9 @@ history_load(TYPE(History) *h, const char *fname)
 	if ((fp = fopen(fname, "r")) == NULL)
 		return i;
 
-	line = NULL;
+	if (flock(fileno(fp), LOCK_SH) == -1)
+		goto done;
+
 	llen = 0;
 	if ((sz = getline(&line, &llen, fp)) == -1)
 		goto done;
@@ -836,6 +839,8 @@ history_save_fp(TYPE(History) *h, FILE *fp)
 	static ct_buffer_t conv;
 #endif
 
+	if (flock(fileno(fp), LOCK_EX) == -1)
+		goto done;
 	if (fchmod(fileno(fp), S_IRUSR|S_IWUSR) == -1)
 		goto done;
 	if (fputs(hist_cookie, fp) == EOF)
@@ -864,6 +869,7 @@ history_save_fp(TYPE(History) *h, FILE *fp)
 oomem:
 	h_free(ptr);
 done:
+	flock(fileno(fp), LOCK_UN);
 	return i;
 }
 
