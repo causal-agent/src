@@ -2512,6 +2512,17 @@ nor
 .It Fl s
 Re-execute the command without invoking an editor.
 .
+.It Ar old Ns = Ns new
+Replace the first occurrence of
+.Ar old
+in the command with
+.Ar new .
+If
+.Ar old
+is the empty string,
+the command is prefixed with
+.Ar new .
+.
 .It Ar first
 .It Ar last
 Select the commands to list or edit.
