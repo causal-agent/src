@@ -1539,6 +1539,13 @@ A later change of parent process ID is not reflected.
 A subshell retains the same value of
 .Va PPID .
 .
+.It Va PS0
+The pre-prompt string,
+which is printed before each new prompt.
+.Va PS0
+may include any of the formatting sequences from
+.Va PS1 .
+.
 .It Va PS1
 The primary prompt string, which defaults to
 .Dq Li "$ " ,
