@@ -425,13 +425,14 @@ fc_replace(const char *s, char *p, char *r)
 
 	STARTSTACKSTR(dest);
 	while (*s) {
-		if (*s == *p && strncmp(s, p, plen) == 0) {
+		if (strncmp(s, p, plen) == 0) {
 			STPUTS(r, dest);
 			s += plen;
-			*p = '\0';	/* so no more matches */
-		} else
-			STPUTC(*s++, dest);
+			break;
+		}
+		STPUTC(*s++, dest);
 	}
+	STPUTS(s, dest);
 	STPUTC('\0', dest);
 	dest = grabstackstr(dest);
 
