@@ -194,8 +194,8 @@ static void bitSet(uint32_t index, uint32_t x, uint32_t y, uint8_t bit) {
 }
 
 static void drawGlyph(
-	uint32_t destX, uint32_t destY, uint32_t scale,
-	uint32_t index, bool select, uint32_t selectX, uint32_t selectY
+	uint32_t destX, uint32_t destY, uint32_t scale, uint32_t index,
+	uint32_t selectX, uint32_t selectY, uint32_t guideX, uint32_t guideY
 ) {
 	destX <<= scale;
 	destY <<= scale;
@@ -208,8 +208,8 @@ static void drawGlyph(
 			uint32_t glyphX = x >> scale;
 			uint32_t glyphY = y >> scale;
 			uint32_t fill = -bitGet(index, glyphX, glyphY);
-			if (select) fill ^= 0x77;
-			if (selectX == glyphX && selectY == glyphY) fill ^= 0x77;
+			if (selectX & 1 << glyphX && selectY & 1 << glyphY) fill ^= 0x77;
+			if (guideX & 1 << glyphX || guideY & 1 << glyphY) fill ^= 0x3300;
 
 			frame.buffer[frame.width * (destY + y) + destX + x] = fill;
 		}
@@ -261,6 +261,8 @@ static struct {
 	uint32_t index;
 	uint32_t x;
 	uint32_t y;
+	uint32_t guideX;
+	uint32_t guideY;
 	uint8_t *undo;
 	uint8_t *copy;
 } edit = {
@@ -273,8 +275,8 @@ static void drawNormal(void) {
 		drawGlyph(
 			header.glyph.width * (i % NormalCols),
 			header.glyph.height * (i  / NormalCols),
-			normal.scale,
-			i, (i == normal.index), -1, -1
+			normal.scale, i,
+			-(i == normal.index), -(i == normal.index), 0, 0
 		);
 	}
 }
@@ -339,21 +341,28 @@ static void inputNormal(char ch) {
 }
 
 static void drawEdit(void) {
-	drawGlyph(0, 0, edit.scale, edit.index, false, edit.x, edit.y);
+	drawGlyph(
+		0, 0, edit.scale, edit.index,
+		1 << edit.x, 1 << edit.y, edit.guideX, edit.guideY
+	);
 	drawBorder(header.glyph.width, header.glyph.height, edit.scale);
 	drawGlyph(
 		header.glyph.width << edit.scale,
 		header.glyph.height << edit.scale,
-		0,
-		edit.index, false, -1, -1
+		0, edit.index,
+		0, 0, 0, 0
 	);
 }
 
 static void inputEdit(char ch) {
 	switch (ch) {
 		break; case Esc: mode = Normal; frameClear();
+
 		break; case '-': if (edit.scale) edit.scale--; frameClear();
 		break; case '+': edit.scale++;
+		break; case 'g': edit.guideY ^= 1 << edit.y;
+		break; case 'G': edit.guideX ^= 1 << edit.x;
+
 		break; case 'h': if (edit.x) edit.x--;
 		break; case 'l': if (edit.x + 1 < header.glyph.width) edit.x++;
 		break; case 'k': if (edit.y) edit.y--;
@@ -440,8 +449,8 @@ static void drawPreview(void) {
 		drawGlyph(
 			header.glyph.width * (i % PreviewCols),
 			header.glyph.height * (i / PreviewCols),
-			0,
-			preview.glyphs[i], (i == preview.index), -1, -1
+			0, preview.glyphs[i],
+			-(i == preview.index), -(i == preview.index), 0, 0
 		);
 	}
 }
