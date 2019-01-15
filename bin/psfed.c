@@ -419,9 +419,11 @@ static void inputEdit(char ch) {
 		}
 
 		break; case 'p': {
+			if (!edit.copy) break;
 			memcpy(glyph(edit.index), edit.copy, header.glyph.size);
 		}
 		break; case 'u': {
+			if (!edit.undo) break;
 			memcpy(glyph(edit.index), edit.undo, header.glyph.size);
 		}
 	}
