@@ -3,6 +3,7 @@ TABLE = default.u
 FONTS += sans6x8.psfu
 FONTS += sans6x10.psfu
 FONTS += sans6x12.psfu
+FONTS += sans8x16.psfu
 
 PNGS = $(FONTS:psfu=png)
 
