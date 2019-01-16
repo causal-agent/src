@@ -20,6 +20,7 @@ export NETHACKOPTIONS='pickup_types:$!?+/=, color, DECgraphics'
 type nvim > /dev/null || EDITOR=vim
 
 alias vim="$EDITOR"
+alias !!='fc -s'
 alias ls='ls -p'
 alias ll='ls -hl'
 alias bc='bc -l'
