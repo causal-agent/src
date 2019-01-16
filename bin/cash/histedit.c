@@ -146,12 +146,19 @@ bad:
 			el_source(el, NULL);
 		}
 	} else {
+		HistEvent he;
+		const char *hf;
+
 		INTOFF;
 		if (el) {	/* no editing if not interactive */
 			el_end(el);
 			el = NULL;
 		}
 		if (hist) {
+			hf = lookupvar("HISTFILE");
+			if (hf != NULL && *hf != '\0')
+				if (history(hist, &he, H_SAVE, hf) == -1)
+					out2fmt_flush("sh: can't save history\n");
 			history_end(hist);
 			hist = NULL;
 		}
@@ -159,6 +166,15 @@ bad:
 	}
 }
 
+
+void
+sethistfile(const char *hf)
+{
+	HistEvent he;
+
+	if (hist != NULL && hf != NULL && *hf != '\0')
+		history(hist, &he, H_LOAD, hf);
+}
 
 void
 sethistsize(const char *hs)
