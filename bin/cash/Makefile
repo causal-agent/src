@@ -76,12 +76,19 @@ clean:
 	rm -f cash $(OBJS) mknodes mksyntax $(GENSRCS) $(GENHDRS) tags .depend
 
 install: cash $(MAN1)
-	mkdir -p $(PREFIX)/bin $(MANDIR)/man1
+	install -d $(PREFIX)/bin $(MANDIR)/man1
 	install cash $(PREFIX)/bin
 	install -m 644 $(MAN1) $(MANDIR)/man1
 
 uninstall:
 	rm -f $(PREFIX)/bin/cash $(MAN1:%=$(MANDIR)/man1/%)
+
+shell:
+	grep -q '^$(PREFIX)/bin/cash$$' /etc/shells \
+		|| echo '$(PREFIX)/bin/cash' >> /etc/shells
+
+unshell:
+	sed -i sed '\;^$(PREFIX)/bin/cash$$;d' /etc/shells
 
 README: cash.7
 	mandoc cash.7 | col -bx > README
