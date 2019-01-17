@@ -1,5 +1,11 @@
 PREFIX = ~/.local
 MANDIR = $(PREFIX)/share/man
+GFX = cocoa
+
+CFLAGS += -std=c11 -Wall -Wextra -Wpedantic
+LDLIBS = -lm -lutil -lz
+LDLIBS_cocoa = $(LDLIBS) -framework Cocoa
+LDLIBS_x11 = $(LDLIBS) -lX11
 
 BINS += atch
 BINS += dtch
@@ -24,11 +30,13 @@ BINS_LINUX += fbatt
 BINS_LINUX += fbclock
 BINS_LINUX += psfed
 
-BINS_ALL = $(BINS) $(BINS_BSD) $(BINS_LINUX)
+BINS_GFX += brot
+BINS_GFX += gfxx
+
+BINS_ALL = $(BINS) $(BINS_BSD) $(BINS_LINUX) $(BINS_GFX)
 MAN1_ALL = $(BINS_ALL:%=man1/%.1)
 
-CFLAGS += -std=c11 -Wall -Wextra -Wpedantic
-LDLIBS = -lm -lutil -lz
+GFX_OBJ = gfx-$(GFX).o
 
 any: .gitignore tags $(BINS)
 
@@ -36,18 +44,28 @@ bsd: any $(BINS_BSD)
 
 linux: any $(BINS_LINUX)
 
+gfx: any $(BINS_GFX)
+
 .o:
 	$(CC) $(LDFLAGS) $< $(LDLIBS) -o $@
 
 scheme.h: scheme
 	./scheme -c > scheme.h
 
+brot.o gfxx.o gfx-cocoa.o gfx-fb.o gfx-x11.o: gfx.h
+
 fbatt.o fbclock.o: scheme.h
 
-psf2png.o scheme.o: png.h
+gfxx.o psf2png.o scheme.o: png.h
 
 atch: dtch
 	ln -f dtch atch
+
+brot: brot.o $(GFX_OBJ)
+	$(CC) $(LDFLAGS) $@.o $(GFX_OBJ) $(LDLIBS_$(GFX)) -o $@
+
+gfxx: gfxx.o $(GFX_OBJ)
+	$(CC) $(LDFLAGS) $@.o $(GFX_OBJ) $(LDLIBS_$(GFX)) -o $@
 
 open pbcopy pbpaste: pbd
 	ln -f pbd $@

@@ -8,9 +8,11 @@ DESCRIPTION
      target Linux.
 
      bri(1)      backlight brightness control
+     brot(1)     Mandelbrot renderer
      dtch(1)     detached sessions
      fbatt(1)    framebuffer battery indicator
      fbclock(1)  framebuffer clock
+     gfxx(1)     graphics data explorer
      glitch(1)   PNG glitcher
      hnel(1)     PTY input remapper
      modem(1)    fixed baud rate wrapper
@@ -23,4 +25,10 @@ DESCRIPTION
      wat(1)      watch files
      xx(1)       hexdump
 
-Causal Agency                  December 2, 2018                  Causal Agency
+     To build graphical tools, set one of:
+
+           GFX=cocoa
+           GFX=fb
+           GFX=x11
+
+Causal Agency                  January 17, 2019                  Causal Agency

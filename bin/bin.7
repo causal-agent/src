@@ -1,4 +1,4 @@
-.Dd December 2, 2018
+.Dd January 17, 2019
 .Dt BIN 7
 .Os "Causal Agency"
 .
@@ -19,6 +19,9 @@ Some tools target Linux.
 .It Xr bri 1
 backlight brightness control
 .
+.It Xr brot 1
+Mandelbrot renderer
+.
 .It Xr dtch 1
 detached sessions
 .
@@ -27,6 +30,9 @@ framebuffer battery indicator
 .
 .It Xr fbclock 1
 framebuffer clock
+.
+.It Xr gfxx 1
+graphics data explorer
 .
 .It Xr glitch 1
 PNG glitcher
@@ -60,4 +66,18 @@ watch files
 .
 .It Xr xx 1
 hexdump
+.El
+.
+.Pp
+To build graphical tools,
+set one of:
+.
+.Pp
+.Bl -item -offset indent -compact
+.It
+.Va GFX Ns = Ns Cm cocoa
+.It
+.Va GFX Ns = Ns Cm fb
+.It
+.Va GFX Ns = Ns Cm x11
 .El
