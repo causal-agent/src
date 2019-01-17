@@ -1,39 +1,43 @@
 PREFIX = ~/.local
+MANDIR = $(PREFIX)/share/man
 
-BIN += atch
-BIN += dtch
-BIN += glitch
-BIN += hnel
-BIN += modem
-BIN += open
-BIN += pbcopy
-BIN += pbd
-BIN += pbpaste
-BIN += pngo
-BIN += psf2png
-BIN += scheme
-BIN += ttpre
-BIN += wake
-BIN += xx
+BINS += atch
+BINS += dtch
+BINS += glitch
+BINS += hnel
+BINS += modem
+BINS += open
+BINS += pbcopy
+BINS += pbd
+BINS += pbpaste
+BINS += pngo
+BINS += psf2png
+BINS += scheme
+BINS += ttpre
+BINS += wake
+BINS += xx
 
-BIN_BSD += wat
+BINS_BSD += wat
 
-BIN_LINUX += bri
-BIN_LINUX += fbatt
-BIN_LINUX += fbclock
-BIN_LINUX += psfed
+BINS_LINUX += bri
+BINS_LINUX += fbatt
+BINS_LINUX += fbclock
+BINS_LINUX += psfed
 
-BIN_ALL = $(BIN) $(BIN_BSD) $(BIN_LINUX)
-MAN_ALL = $(BIN_ALL:%=man/%.1)
+BINS_ALL = $(BINS) $(BINS_BSD) $(BINS_LINUX)
+MAN1_ALL = $(BINS_ALL:%=man1/%.1)
 
-CFLAGS += -Wall -Wextra -Wpedantic
+CFLAGS += -std=c11 -Wall -Wextra -Wpedantic
 LDLIBS = -lm -lutil -lz
 
-any: .gitignore tags $(BIN)
+any: .gitignore tags $(BINS)
 
-bsd: any $(BIN_BSD)
+bsd: any $(BINS_BSD)
 
-linux: any $(BIN_LINUX)
+linux: any $(BINS_LINUX)
+
+.o:
+	$(CC) $(LDFLAGS) $< $(LDLIBS) -o $@
 
 scheme.h: scheme
 	./scheme -c > scheme.h
@@ -48,32 +52,31 @@ atch: dtch
 open pbcopy pbpaste: pbd
 	ln -f pbd $@
 
-scheme.png: scheme
-	./scheme -t -g > scheme.png
+.gitignore: Makefile
+	echo $(BINS_ALL) tags scheme.h scheme.png '*.o' \
+		| tr ' ' '\n' | sort > .gitignore
 
 tags: *.h *.c
 	ctags -w *.h *.c
 
-.gitignore: Makefile
-	echo '*.o' scheme.h scheme.png tags $(BIN_ALL) \
-		| tr ' ' '\n' \
-		> .gitignore
+scheme.png: scheme
+	./scheme -gt > scheme.png
 
 clean:
-	rm -f *.o scheme.h scheme.png tags $(BIN_ALL)
+	rm -f $(BINS_ALL) tags scheme.h scheme.png *.o
 
-README: man/bin.7
-	mandoc man/bin.7 | col -b -x > README
+README: bin.7
+	mandoc bin.7 | col -bx > README
 
 setuid: bri
 	chown root bri
 	chmod u+s bri
 
 link:
-	mkdir -p $(PREFIX)/bin $(PREFIX)/share/man/man1
-	ln -s -f $(BIN_ALL:%=$(PWD)/%) $(PREFIX)/bin
-	ln -s -f $(MAN_ALL:%=$(PWD)/%) $(PREFIX)/share/man/man1
+	install -d $(PREFIX)/bin $(MANDIR)/man1
+	ln -fs $(BINS_ALL:%=$(PWD)/%) $(PREFIX)/bin
+	ln -fs $(MAN1_ALL:%=$(PWD)/%) $(MANDIR)/man1
 
 unlink:
-	rm -f $(BIN_ALL:%=$(PREFIX)/bin/%)
-	rm -f $(MAN_ALL:man/%=$(PREFIX)/share/man/man1/%)
+	rm -f $(BINS_ALL:%=$(PREFIX)/bin/%)
+	rm -f $(MAN1_ALL:%=$(MANDIR)/%)
