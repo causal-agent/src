@@ -17,7 +17,6 @@
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <wchar.h>
 
 static void put(const char *tag, wchar_t ch) {
@@ -35,18 +34,19 @@ static void push(wchar_t ch) {
 	static wchar_t q[3];
 	if (q[1] == L'\b' && q[0] == L'_') {
 		put("i", q[2]);
-		memset(q, 0, sizeof(q));
+		q[0] = q[1] = q[2] = 0;
 	} else if (q[1] == L'\b' && q[0] == q[2]) {
 		put("b", q[2]);
-		memset(q, 0, sizeof(q));
+		q[0] = q[1] = q[2] = 0;
 	} else if (q[0]) {
 		put(NULL, q[0]);
 	}
-	memmove(q, &q[1], sizeof(q) - sizeof(wchar_t));
+	q[0] = q[1];
+	q[1] = q[2];
 	q[2] = ch;
 }
 
-int main() {
+int main(void) {
 	setlocale(LC_CTYPE, "");
 	printf("<pre>");
 	wchar_t ch;
