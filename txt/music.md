@@ -1,3 +1,4 @@
+- [Girlpool — Tiny Desk Concert][69]
 - [Daughters — You Won't Get What You Want][68]
 - [La Dispute — FULTON STREET I][67]
 - [KASHIWA Daisuke — Stella][66]
@@ -145,3 +146,4 @@
 [66]: https://youtu.be/ei7cdynwRMA
 [67]: https://ladispute.bandcamp.com/track/fulton-street-i
 [68]: https://daughters.bandcamp.com/album/you-wont-get-what-you-want
+[69]: https://youtu.be/VNM8Tg9pvDU
