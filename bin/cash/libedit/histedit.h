@@ -226,6 +226,8 @@ int		history(History *, HistEvent *, int, ...);
 #define	H_DELDATA	24	/* , int, histdata_t *);*/
 #define	H_REPLACE	25	/* , const char *, histdata_t);	*/
 #define	H_SAVE_FP	26	/* , FILE *);		*/
+#define H_SAVE_INCR	27	/* , const char *);	*/
+#define H_SAVE_FP_INCR	28	/* , FILE *);		*/
 
 
 

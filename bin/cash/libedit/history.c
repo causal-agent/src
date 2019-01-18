@@ -869,7 +869,7 @@ history_save_fp(TYPE(History) *h, FILE *fp)
 oomem:
 	h_free(ptr);
 done:
-	flock(fileno(fp), LOCK_UN);
+	(void) flock(fileno(fp), LOCK_UN);
 	return i;
 }
 
@@ -890,6 +890,82 @@ history_save(TYPE(History) *h, const char *fname)
 
     (void) fclose(fp);
     return i;
+}
+
+
+static int
+history_save_fp_incr(TYPE(History) *h, TYPE(HistEvent) *ev, FILE *fp)
+{
+	char *line = NULL;
+	char *ptr;
+	const char *str;
+	int i = -1, retval;
+	size_t len, max_size;
+	size_t llen = 0;
+	ssize_t sz;
+#ifndef NARROWCHAR
+	static ct_buffer_t conv;
+#endif
+
+	if (flock(fileno(fp), LOCK_EX) == -1)
+		goto done;
+	if (fchmod(fileno(fp), S_IRUSR|S_IWUSR) == -1)
+		goto done;
+
+	if (fseek(fp, 0, SEEK_SET) == -1)
+		goto done;
+	if ((sz = getline(&line, &llen, fp)) == -1)
+		goto done;
+	if (strncmp(line, hist_cookie, (size_t)sz) != 0)
+		goto done;
+	if (fseek(fp, 0, SEEK_END) == -1)
+		goto done;
+	if (sz == 0)
+		if (fputs(hist_cookie, fp) == EOF)
+			goto done;
+
+	ptr = h_malloc((max_size = 1024) * sizeof(*ptr));
+	if (ptr == NULL)
+		goto done;
+	for (i = 0, retval = HPREV(h, ev);
+		retval != -1;
+		retval = HPREV(h, ev), i++) {
+		str = ct_encode_string(ev->str, &conv);
+		len = strlen(str) * 4 + 1;
+		if (len > max_size) {
+			char *nptr;
+			max_size = (len + 1024) & (size_t)~1023;
+			nptr = h_realloc(ptr, max_size * sizeof(*ptr));
+			if (nptr == NULL) {
+				i = -1;
+				goto oomem;
+			}
+			ptr = nptr;
+		}
+		(void) strvis(ptr, str, VIS_WHITE);
+		(void) fprintf(fp, "%s\n", ptr);
+	}
+oomem:
+	h_free(ptr);
+done:
+	(void) flock(fileno(fp), LOCK_UN);
+	return i;
+}
+
+
+static int
+history_save_incr(TYPE(History) *h, TYPE(HistEvent) *ev, const char *fname)
+{
+	FILE *fp;
+	int i;
+
+	if ((fp = fopen(fname, "a+")) == NULL)
+		return -1;
+
+	i = history_save_fp_incr(h, ev, fp);
+
+	(void) fclose(fp);
+	return i;
 }
 
 
@@ -1073,10 +1149,22 @@ FUNW(history)(TYPE(History) *h, TYPE(HistEvent) *ev, int fun, ...)
 			he_seterrev(ev, _HE_HIST_WRITE);
 		break;
 
+	case H_SAVE_INCR:
+		retval = history_save_incr(h, ev, va_arg(va, const char *));
+		if (retval == -1)
+			he_seterrev(ev, _HE_HIST_WRITE);
+		break;
+
 	case H_SAVE_FP:
 		retval = history_save_fp(h, va_arg(va, FILE *));
 		if (retval == -1)
 		    he_seterrev(ev, _HE_HIST_WRITE);
+		break;
+
+	case H_SAVE_FP_INCR:
+		retval = history_save_fp_incr(h, ev, va_arg(va, FILE *));
+		if (retval == -1)
+			he_seterrev(ev, _HE_HIST_WRITE);
 		break;
 
 	case H_PREV_EVENT:
