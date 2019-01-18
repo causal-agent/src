@@ -139,10 +139,10 @@ int main(int argc, char *argv[]) {
 	[NSApp setMainMenu: [NSMenu new]];
 	[[NSApp mainMenu] addItem: menuItem];
 
-	NSUInteger style = NSTitledWindowMask
-		| NSClosableWindowMask
-		| NSMiniaturizableWindowMask
-		| NSResizableWindowMask;
+	NSUInteger style = NSWindowStyleMaskTitled
+		| NSWindowStyleMaskClosable
+		| NSWindowStyleMaskMiniaturizable
+		| NSWindowStyleMaskResizable;
 	NSWindow *window = [
 		[NSWindow alloc]
 		initWithContentRect: NSMakeRect(0, 0, 800, 600)
