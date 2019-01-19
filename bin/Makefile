@@ -2,9 +2,10 @@ PREFIX = ~/.local
 MANDIR = $(PREFIX)/share/man
 GFX = cocoa
 
-CFLAGS += -std=c11 -Wall -Wextra -Wpedantic
+CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lm -lutil -lz
 LDLIBS_cocoa = $(LDLIBS) -framework Cocoa
+LDLIBS_fb = $(LDLIBS)
 LDLIBS_x11 = $(LDLIBS) -lX11
 
 BINS += atch
