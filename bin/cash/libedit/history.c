@@ -894,8 +894,9 @@ history_save(TYPE(History) *h, const char *fname)
 
 
 static int
-history_save_fp_incr(TYPE(History) *h, TYPE(HistEvent) *ev, FILE *fp)
+history_save_fp_incr(TYPE(History) *h, FILE *fp, int num)
 {
+	TYPE(HistEvent) ev;
 	char *line = NULL;
 	char *ptr;
 	const char *str;
@@ -907,6 +908,12 @@ history_save_fp_incr(TYPE(History) *h, TYPE(HistEvent) *ev, FILE *fp)
 	static ct_buffer_t conv;
 #endif
 
+	for (retval = HCURR(h, &ev); retval != -1; retval = HNEXT(h, &ev))
+		if (ev.num == num)
+			break;
+	if (retval == -1)
+		goto done;
+
 	if (flock(fileno(fp), LOCK_EX) == -1)
 		goto done;
 	if (fchmod(fileno(fp), S_IRUSR|S_IWUSR) == -1)
@@ -914,8 +921,12 @@ history_save_fp_incr(TYPE(History) *h, TYPE(HistEvent) *ev, FILE *fp)
 
 	if (fseek(fp, 0, SEEK_SET) == -1)
 		goto done;
-	if ((sz = getline(&line, &llen, fp)) == -1)
-		goto done;
+	if ((sz = getline(&line, &llen, fp)) == -1) {
+		if (ferror(fp))
+			goto done;
+		else
+			sz = 0;
+	}
 	if (strncmp(line, hist_cookie, (size_t)sz) != 0)
 		goto done;
 	if (fseek(fp, 0, SEEK_END) == -1)
@@ -927,10 +938,10 @@ history_save_fp_incr(TYPE(History) *h, TYPE(HistEvent) *ev, FILE *fp)
 	ptr = h_malloc((max_size = 1024) * sizeof(*ptr));
 	if (ptr == NULL)
 		goto done;
-	for (i = 0, retval = HPREV(h, ev);
+	for (i = 0, retval = 0;
 		retval != -1;
-		retval = HPREV(h, ev), i++) {
-		str = ct_encode_string(ev->str, &conv);
+		retval = HPREV(h, &ev), i++) {
+		str = ct_encode_string(ev.str, &conv);
 		len = strlen(str) * 4 + 1;
 		if (len > max_size) {
 			char *nptr;
@@ -948,13 +959,14 @@ history_save_fp_incr(TYPE(History) *h, TYPE(HistEvent) *ev, FILE *fp)
 oomem:
 	h_free(ptr);
 done:
+	free(line);
 	(void) flock(fileno(fp), LOCK_UN);
 	return i;
 }
 
 
 static int
-history_save_incr(TYPE(History) *h, TYPE(HistEvent) *ev, const char *fname)
+history_save_incr(TYPE(History) *h, const char *fname, int num)
 {
 	FILE *fp;
 	int i;
@@ -962,7 +974,7 @@ history_save_incr(TYPE(History) *h, TYPE(HistEvent) *ev, const char *fname)
 	if ((fp = fopen(fname, "a+")) == NULL)
 		return -1;
 
-	i = history_save_fp_incr(h, ev, fp);
+	i = history_save_fp_incr(h, fp, num);
 
 	(void) fclose(fp);
 	return i;
@@ -1150,7 +1162,7 @@ FUNW(history)(TYPE(History) *h, TYPE(HistEvent) *ev, int fun, ...)
 		break;
 
 	case H_SAVE_INCR:
-		retval = history_save_incr(h, ev, va_arg(va, const char *));
+		retval = history_save_incr(h, va_arg(va, const char *), va_arg(va, int));
 		if (retval == -1)
 			he_seterrev(ev, _HE_HIST_WRITE);
 		break;
@@ -1162,7 +1174,7 @@ FUNW(history)(TYPE(History) *h, TYPE(HistEvent) *ev, int fun, ...)
 		break;
 
 	case H_SAVE_FP_INCR:
-		retval = history_save_fp_incr(h, ev, va_arg(va, FILE *));
+		retval = history_save_fp_incr(h, va_arg(va, FILE *), va_arg(va, int));
 		if (retval == -1)
 			he_seterrev(ev, _HE_HIST_WRITE);
 		break;

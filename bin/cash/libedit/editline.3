@@ -838,9 +838,9 @@ Load the history list stored in
 .It Dv H_SAVE , Fa "const char *file"
 Save the history list to
 .Fa file .
-.It Dv H_SAVE_INCR , Fa "const char *file"
-Append the history list since the previous event
-.Fa ev
+.It Dv H_SAVE_INCR , Fa "const char *file" , Fa "int e"
+Append the history list since the event numbered
+.Fa e
 to
 .Fa file .
 .It Dv H_SAVE_FP , Fa "FILE *fp"
@@ -848,9 +848,9 @@ Save the history list to the opened
 .Ft FILE
 pointer
 .Fa fp .
-.It Dv H_SAVE_FP_INCR , Fa "FILE *fp"
-Append the history list since the previous event
-.Fa ev
+.It Dv H_SAVE_FP_INCR , Fa "FILE *fp" , Fa "int e"
+Append the history list since the event numbered
+.Fa e
 to the opened
 .Ft FILE
 pointer
