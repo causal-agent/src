@@ -1162,10 +1162,14 @@ FUNW(history)(TYPE(History) *h, TYPE(HistEvent) *ev, int fun, ...)
 		break;
 
 	case H_SAVE_INCR:
-		retval = history_save_incr(h, va_arg(va, const char *), va_arg(va, int));
+	{
+		const char *fname = va_arg(va, const char *);
+		int num = va_arg(va, int);
+		retval = history_save_incr(h, fname, num);
 		if (retval == -1)
 			he_seterrev(ev, _HE_HIST_WRITE);
 		break;
+	}
 
 	case H_SAVE_FP:
 		retval = history_save_fp(h, va_arg(va, FILE *));
@@ -1174,10 +1178,14 @@ FUNW(history)(TYPE(History) *h, TYPE(HistEvent) *ev, int fun, ...)
 		break;
 
 	case H_SAVE_FP_INCR:
-		retval = history_save_fp_incr(h, va_arg(va, FILE *), va_arg(va, int));
+	{
+		FILE *fp = va_arg(va, FILE *);
+		int num = va_arg(va, int);
+		retval = history_save_fp_incr(h, fp, num);
 		if (retval == -1)
 			he_seterrev(ev, _HE_HIST_WRITE);
 		break;
+	}
 
 	case H_PREV_EVENT:
 		retval = history_prev_event(h, ev, va_arg(va, int));
