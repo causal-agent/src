@@ -85,6 +85,7 @@ extern struct var vrps1;
 extern struct var vrps2;
 extern struct var vdisvfork;
 #ifndef NO_HISTORY
+extern struct var vhistfile;
 extern struct var vhistsize;
 extern struct var vterm;
 #endif
@@ -112,6 +113,7 @@ extern int initial_localeisutf8;
 #define rps2val()	(vrps2.text + 5)
 #define optindval()	(voptind.text + 7)
 #ifndef NO_HISTORY
+#define histfileval()	(vhistfile.text + 9)
 #define histsizeval()	(vhistsize.text + 9)
 #define termval()	(vterm.text + 5)
 #endif

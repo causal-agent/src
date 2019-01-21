@@ -68,6 +68,10 @@ History *hist;	/* history cookie */
 EditLine *el;	/* editline cookie */
 int displayhist;
 static FILE *el_in, *el_out, *el_err;
+static HistEvent he_saved;
+
+static void history_load(const char *hf);
+static void history_save(const char *hf);
 
 static char *fc_replace(const char *, char *, char *);
 static int not_fcnumber(const char *);
@@ -92,9 +96,10 @@ histedit(void)
 			hist = history_init();
 			INTON;
 
-			if (hist != NULL)
+			if (hist != NULL) {
 				sethistsize(histsizeval());
-			else
+				sethistfile(histfileval());
+			} else
 				out2fmt_flush("sh: can't initialize history\n");
 		}
 		if (editing && !el && isatty(0)) { /* && isatty(2) ??? */
@@ -146,19 +151,14 @@ bad:
 			el_source(el, NULL);
 		}
 	} else {
-		HistEvent he;
-		const char *hf;
-
 		INTOFF;
 		if (el) {	/* no editing if not interactive */
 			el_end(el);
 			el = NULL;
 		}
 		if (hist) {
-			hf = lookupvar("HISTFILE");
-			if (hf != NULL && *hf != '\0')
-				if (history(hist, &he, H_SAVE, hf) == -1)
-					out2fmt_flush("sh: can't save history\n");
+			if (*histfileval() != '\0')
+				history_save(histfileval());
 			history_end(hist);
 			hist = NULL;
 		}
@@ -170,11 +170,42 @@ bad:
 void
 sethistfile(const char *hf)
 {
-	HistEvent he;
-
 	if (hist != NULL && hf != NULL && *hf != '\0')
-		history(hist, &he, H_LOAD, hf);
+		history_load(hf);
 }
+
+
+static void
+history_load(const char *hf) {
+	HistEvent he;
+	const char *ehf;
+
+	ehf = expandstr(hf);
+	if (ehf == NULL)
+		return;
+	if (history(hist, &he, H_LOAD, ehf) == -1)
+		warning("%s: %s", he.str, ehf);
+	else
+		history(hist, &he_saved, H_FIRST);
+}
+
+
+static void
+history_save(const char *hf) {
+	HistEvent he;
+	const char *ehf;
+
+	ehf = expandstr(hf);
+	if (ehf == NULL)
+		return;
+	if (he_saved.num == 0)
+		history(hist, &he_saved, H_LAST);
+	else
+		history(hist, &he_saved, H_NEXT_EVENT, he_saved.num + 1);
+	if (history(hist, &he, H_SAVE_INCR, ehf, he_saved.num) == -1)
+		warning("%s: %s", he.str, ehf);
+}
+
 
 void
 sethistsize(const char *hs)
