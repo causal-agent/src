@@ -10,12 +10,16 @@ hi VertSplit cterm=NONE ctermbg=NONE ctermfg=8
 hi LineNr ctermfg=8
 hi MatchParen ctermbg=NONE ctermfg=3
 hi ModeMsg ctermfg=8
+hi MoreMsg ctermfg=2
+hi! link Question MoreMsg
+hi WarningMsg ctermfg=1
 hi NonText ctermfg=8
 hi Search ctermbg=NONE ctermfg=11
 hi StatusLine cterm=NONE ctermbg=0 ctermfg=7
 hi StatusLineNC cterm=NONE ctermbg=0 ctermfg=8
 hi Folded ctermbg=0 ctermfg=8
 hi Visual cterm=inverse ctermbg=NONE
+hi Title ctermfg=5
 
 hi Comment ctermfg=4
 
