@@ -24,6 +24,7 @@ BINS += ttpre
 BINS += wake
 BINS += xx
 
+BINS_BSD += beef
 BINS_BSD += wat
 
 BINS_LINUX += bri

@@ -1,0 +1,97 @@
+.Dd January 26, 2019
+.Dt BEEF 1
+.Os
+.
+.Sh NAME
+.Nm beef
+.Nd Befunge-93 interpreter
+.
+.Sh SYNOPSIS
+.Nm
+.Op Ar file
+.
+.Sh DESCRIPTION
+.Nm
+is a Befunge-93 interpreter.
+If no
+.Ar file
+is provided,
+the program is read from standard input.
+.
+.Ss Befunge-93 Command Summary
+.Bl -tag -width "0-9" -compact
+.It \(dq
+toggle string mode
+.It 0-9
+push value
+.It +
+add
+.It -
+subtract
+.It *
+multiply
+.It /
+divide
+.It %
+modulo
+.It !
+not
+.It `
+greater than
+.It >
+right
+.It <
+left
+.It ^
+up
+.It v
+down
+.It ?
+random
+.It _
+horizontal (left) if
+.It |
+vertical (up) if
+.It :
+duplicate
+.It \e
+swap
+.It $
+drop
+.It .
+output integer
+.It ,
+output ASCII
+.It #
+bridge
+.It g
+get (y, x)
+.It p
+put (y, x) = v
+.It &
+input integer
+.It ~
+input ASCII
+.It @
+exit
+.El
+.
+.Sh EXIT STATUS
+.Nm
+exits with the top value left on the stack,
+or 0 if the stack is left empty.
+.
+.Sh STANDARDS
+.Rs
+.%A Chris Pressey
+.%Q Cat's Eye Technologies
+.%T Befunge-93
+.%D September, 1993
+.%U https://github.com/catseye/Befunge-93/blob/master/doc/Befunge-93.markdown
+.Re
+.
+.Sh CAVEATS
+.Nm
+does not support Linux
+since it uses
+.Xr arc4random_uniform 3 .
