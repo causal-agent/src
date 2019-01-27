@@ -7,6 +7,7 @@ DESCRIPTION
      Various tools primarily targeting Darwin, FreeBSD and NetBSD.  Some tools
      target Linux.
 
+     beef(1)     Befunge-93 interpreter
      bri(1)      backlight brightness control
      brot(1)     Mandelbrot renderer
      dtch(1)     detached sessions
@@ -31,4 +32,4 @@ DESCRIPTION
            GFX=fb
            GFX=x11
 
-Causal Agency                  January 17, 2019                  Causal Agency
+Causal Agency                  January 26, 2019                  Causal Agency
