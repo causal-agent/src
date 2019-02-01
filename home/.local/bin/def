@@ -1,0 +1,47 @@
+#!/bin/sh
+set -eu
+
+macro=$1
+headers='
+assert.h
+complex.h
+ctype.h
+errno.h
+fenv.h
+float.h
+inttypes.h
+iso646.h
+limits.h
+locale.h
+math.h
+setjmp.h
+signal.h
+stdalign.h
+stdarg.h
+stdatomic.h
+stdbool.h
+stddef.h
+stdint.h
+stdio.h
+stdlib.h
+stdnoreturn.h
+string.h
+tgmath.h
+threads.h
+time.h
+uchar.h
+wchar.h
+wctype.h
+'
+
+for header in $headers; do
+	defined=$(
+		echo "$macro" \
+		| cc -E -x c -include "$header" - \
+		2> /dev/null \
+		| tail -n 1
+	)
+	[ $? -ne 0 -o "$defined" = "$macro" ] && continue
+	echo "#include <$header>"
+	echo "$defined"
+done
