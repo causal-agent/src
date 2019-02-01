@@ -20,6 +20,7 @@ hi StatusLineNC cterm=NONE ctermbg=0 ctermfg=8
 hi Folded ctermbg=0 ctermfg=8
 hi Visual cterm=inverse ctermbg=NONE
 hi Title ctermfg=5
+hi Directory ctermfg=4
 
 hi Comment ctermfg=4
 
