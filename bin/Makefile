@@ -8,6 +8,7 @@ LDLIBS_cocoa = $(LDLIBS) -framework Cocoa
 LDLIBS_fb = $(LDLIBS)
 LDLIBS_x11 = $(LDLIBS) -lX11
 
+BINS += aes
 BINS += atch
 BINS += dtch
 BINS += glitch

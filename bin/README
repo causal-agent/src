@@ -7,6 +7,7 @@ DESCRIPTION
      Various tools primarily targeting Darwin, FreeBSD and NetBSD.  Some tools
      target Linux.
 
+     aes(1)      fullwidth output
      beef(1)     Befunge-93 interpreter
      bri(1)      backlight brightness control
      brot(1)     Mandelbrot renderer
