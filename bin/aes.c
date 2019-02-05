@@ -31,7 +31,7 @@ static const wchar_t Table[128] = {
 	L"＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯ"
 	L"ＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿"
 	L"｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏ"
-	L"ｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～\xFF"
+	L"ｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～\x7F"
 };
 
 static void enwiden(const char *ch) {
