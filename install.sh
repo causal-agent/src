@@ -1,61 +1,55 @@
 #!/bin/sh
-set -e -u
+set -eu
 
 pkgAny='curl git htop mksh sl the_silver_searcher tree'
-pkgDarwin='git gnupg2'
-pkgFreeBSD='ddate gnupg neovim sudo'
-pkgNetBSD='gnupg2 sudo vim'
-pkgLinux='base-devel bc ctags gdb gnupg neovim openssh'
+pkgDarwin="${pkgAny} gnupg2"
+pkgFreeBSD="${pkgAny} ddate gnupg neovim"
+pkgNetBSD="${pkgAny} gnupg2 vim"
+pkgLinux="${pkgAny} bc ctags gdb gnupg neovim openssh"
 
 pkgsrcTag='20171103'
-neovimTag='v0.3.1'
-
-pkgsrcTar="bootstrap-trunk-x86_64-${pkgsrcTag}.tar.gz"
-pkgsrcURL="https://pkgsrc.joyent.com/packages/Darwin/bootstrap/${pkgsrcTar}"
-neovimTar='nvim-macos.tar.gz'
-neovimURL="
-https://github.com/neovim/neovim/releases/download/${neovimTag}/${neovimTar}
-"
+neovimTag='v0.3.4'
 
 Darwin() {
 	xcode-select --install || true
 	if [ ! -d /opt/pkg ]; then
-		curl -O ${pkgsrcURL}
-		sudo tar -zxpf ${pkgsrcTar} -C /
-		rm ${pkgsrcTar}
+		tar="bootstrap-trunk-x86_64-${pkgsrcTag}.tar.gz"
+		url="https://pkgsrc.joyent.com/packages/Darwin/bootstrap/${tar}"
+		curl -O "${url}"
+		sudo tar -pxz -f "${tar}" -C /
+		rm "${tar}"
 	fi
 	sudo pkgin update
-	sudo pkgin install ${pkgAny} ${pkgDarwin}
-	sudo ln -sf /opt/pkg/bin/gpg2 /usr/local/bin/gpg
+	sudo pkgin install ${pkgDarwin}
+	sudo ln -fs /opt/pkg/bin/gpg2 /usr/local/bin/gpg
 	if [ ! -f /usr/local/bin/nvim ]; then
-		curl -L -O ${neovimURL}
-		sudo tar -xf ${neovimTar} --strip-components 1 -C /usr/local
-		rm ${neovimTar}
+		tar="nvim-macos.tar.gz"
+		base="https://github.com/neovim/neovim/releases/download"
+		url="${base}/${neovimTag}/${tar}"
+		curl -L -O "${url}"
+		sudo tar -x -f "${tar}" -C /usr/local --strip-components 1
+		rm "${tar}"
 	fi
 }
 
-PKG_PATH="
-ftp://ftp.netbsd.org/pub/pkgsrc/packages/NetBSD/$(uname -p)/$(uname -r)/All
-"
+FreeBSD() {
+	pkg install ${pkgFreeBSD}
+}
 
 NetBSD() {
 	if [ ! -f /usr/pkg/bin/pkgin ]; then
-		export PKG_PATH
+		base="ftp://ftp.NetBSD.org/pub/pkgsrc/packages"
+		export PKG_PATH="${base}/$(uname -s)/$(uname -p)/$(uname -r)/All"
 		pkg_add pkgin
 		echo "${PKG_PATH}" > /usr/pkg/etc/pkgin/repositories.conf
 	fi
 	pkgin update
-	pkgin install ${pkgAny} ${pkgNetBSD}
-	ln -sf /usr/pkg/bin/gpg2 /usr/local/bin/gpg
-}
-
-FreeBSD() {
-	pkg install ${pkgAny} ${pkgFreeBSD}
+	pkgin install ${pkgNetBSD}
+	ln -fs /usr/pkg/bin/gpg2 /usr/local/bin/gpg
 }
 
 Linux() {
-	pacman -Sy
-	pacman -S --needed ${pkgAny} ${pkgLinux}
+	pacman -Sy --needed ${pkgLinux}
 }
 
 $(uname)
