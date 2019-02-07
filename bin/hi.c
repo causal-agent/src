@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include <err.h>
 #include <regex.h>
 #include <stdbool.h>
@@ -35,25 +36,28 @@ enum Class {
 	ClassCount,
 };
 
+enum { SubsLen = 8 };
+
 struct Syntax {
 	enum Class class;
+	size_t subexp;
 	const char *pattern;
 	const char *pattend;
 };
 
-// FIXME: Looks like [[:<:]] [[:>:]] are not supported on GNU.
+#define CKB "(^|[^[:alnum:]_]|\n)"
 static const struct Syntax CSyntax[] = {
-	{ Keyword, "[[:<:]](enum|struct|typedef|union)[[:>:]]", NULL },
-	{ Keyword, "[[:<:]](const|inline|static)[[:>:]]", NULL },
-	{ Keyword, "[[:<:]](do|else|for|if|switch|while)[[:>:]]", NULL },
-	{ Keyword, "[[:<:]](break|continue|goto|return)[[:>:]]", NULL },
-	{ Keyword, "[[:<:]](case|default)[[:>:]]", NULL },
-	{ Macro,   "^#.*", NULL },
-	{ String,  "<[^[:blank:]=]*>", NULL },
-	{ Comment, "//.*", NULL },
-	{ Comment, "/\\*", "\\*/" },
-	{ String,  "[LUu]?'([^']|\\\\')*'", NULL },
-	{ String,  "([LUu]|u8)?\"([^\"]|\\\\\")*\"", NULL },
+	{ Keyword, .subexp = 2, .pattern = CKB"(enum|struct|typedef|union)"CKB },
+	{ Keyword, .subexp = 2, .pattern = CKB"(const|inline|static)"CKB },
+	{ Keyword, .subexp = 2, .pattern = CKB"(do|else|for|if|switch|while)"CKB },
+	{ Keyword, .subexp = 2, .pattern = CKB"(break|continue|goto|return)"CKB },
+	{ Keyword, .subexp = 2, .pattern = CKB"(case|default)"CKB },
+	{ Macro,   .pattern = "^#.*" },
+	{ String,  .pattern = "<[^[:blank:]=]*>" },
+	{ Comment, .pattern = "//.*", },
+	{ Comment, .pattern = "/\\*", .pattend = "\\*/" },
+	{ String,  .pattern = "[LUu]?'([^']|\\\\')*'", },
+	{ String,  .pattern = "([LUu]|u8)?\"([^\"]|\\\\\")*\"", },
 };
 
 static const struct Language {
@@ -76,16 +80,16 @@ static regex_t compile(const char *pattern, int flags) {
 
 static void highlight(struct Language lang, enum Class *hi, const char *str) {
 	for (size_t i = 0; i < lang.len; ++i) {
-		regex_t regex = compile(lang.syntax[i].pattern, 0);
+		struct Syntax syn = lang.syntax[i];
+		regex_t regex = compile(syn.pattern, 0);
 		regex_t regend = {0};
-		if (lang.syntax[i].pattend) {
-			regend = compile(lang.syntax[i].pattend, 0);
-		}
+		if (syn.pattend) regend = compile(syn.pattend, 0);
 
-		regmatch_t match = {0};
-		for (size_t offset = 0; str[offset]; offset += match.rm_eo) {
+		assert(syn.subexp < SubsLen);
+		regmatch_t subs[SubsLen] = {{0}};
+		for (size_t offset = 0; str[offset]; offset += subs[syn.subexp].rm_eo) {
 			int error = regexec(
-				&regex, &str[offset], 1, &match, offset ? REG_NOTBOL : 0
+				&regex, &str[offset], SubsLen, subs, offset ? REG_NOTBOL : 0
 			);
 			if (error == REG_NOMATCH) break;
 			if (error) errx(EX_SOFTWARE, "regexec: %d", error);
@@ -93,14 +97,16 @@ static void highlight(struct Language lang, enum Class *hi, const char *str) {
 			if (lang.syntax[i].pattend) {
 				regmatch_t end;
 				error = regexec(
-					&regend, &str[offset + match.rm_eo], 1, &end, REG_NOTBOL
+					&regend, &str[offset + subs[syn.subexp].rm_eo],
+					1, &end, REG_NOTBOL
 				);
 				if (error == REG_NOMATCH) break;
 				if (error) errx(EX_SOFTWARE, "regexec: %d", error);
-				match.rm_eo += end.rm_eo;
+				subs[syn.subexp].rm_eo += end.rm_eo;
 			}
 
-			for (regoff_t j = match.rm_so; j < match.rm_eo; ++j) {
+			regmatch_t sub = subs[syn.subexp];
+			for (regoff_t j = sub.rm_so; j < sub.rm_eo; ++j) {
 				hi[offset + j] = lang.syntax[i].class;
 			}
 		}
