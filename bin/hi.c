@@ -31,8 +31,8 @@ enum Class {
 	Normal,
 	Keyword,
 	Macro,
-	Comment,
 	String,
+	Comment,
 	ClassCount,
 };
 
@@ -54,10 +54,11 @@ static const struct Syntax CSyntax[] = {
 	{ Keyword, .subexp = 2, .pattern = CKB"(case|default)"CKB },
 	{ Macro,   .pattern = "^#.*" },
 	{ String,  .pattern = "<[^[:blank:]=]*>" },
-	{ Comment, .pattern = "//.*", },
-	{ Comment, .pattern = "/\\*", .pattend = "\\*/" },
 	{ String,  .pattern = "[LUu]?'([^']|\\\\')*'", },
 	{ String,  .pattern = "([LUu]|u8)?\"([^\"]|\\\\\")*\"", },
+	{ Comment, .pattern = "//.*", },
+	{ Comment, .pattern = "/\\*", .pattend = "\\*/" },
+	{ Comment, .pattern = "^#if 0", .pattend = "^#endif" },
 };
 
 static const struct Language {
@@ -127,8 +128,8 @@ static const enum SGR Style[ClassCount][2] = {
 	[Normal]  = { Reset, Default },
 	[Keyword] = { Reset, White },
 	[Macro]   = { Reset, Green },
-	[Comment] = { Reset, Blue },
 	[String]  = { Reset, Cyan },
+	[Comment] = { Reset, Blue },
 };
 
 static void ansiOutput(enum Class class, const char *str, size_t len) {
@@ -173,8 +174,8 @@ static const char *ClassName[ClassCount] = {
 	[Normal]  = "Normal",
 	[Keyword] = "Keyword",
 	[Macro]   = "Macro",
-	[Comment] = "Comment",
 	[String]  = "String",
+	[Comment] = "Comment",
 };
 
 static void htmlOutput(enum Class class, const char *str, size_t len) {
@@ -193,8 +194,8 @@ static void htmlDocumentHeader(const char *path) {
 		"<style>\n"
 		".hi.Keyword { color: dimgray; }\n"
 		".hi.Macro   { color: green; }\n"
-		".hi.Comment { color: navy; }\n"
 		".hi.String  { color: teal; }\n"
+		".hi.Comment { color: navy; }\n"
 		"</style>\n"
 	);
 	htmlHeader(path);
