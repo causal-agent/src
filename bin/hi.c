@@ -95,6 +95,7 @@ static void highlight(struct Language lang, enum Class *hi, const char *str) {
 		if (syn.pattend) regend = compile(syn.pattend, 0);
 
 		assert(syn.subexp < SubsLen);
+		assert(syn.subexp <= regex.re_nsub);
 		regmatch_t subs[SubsLen] = {{0}};
 		for (size_t offset = 0; str[offset]; offset += subs[syn.subexp].rm_eo) {
 			int error = regexec(
@@ -122,6 +123,28 @@ static void highlight(struct Language lang, enum Class *hi, const char *str) {
 		}
 		regfree(&regex);
 		if (lang.syntax[i].pattend) regfree(&regend);
+	}
+}
+
+static void check(void) {
+	for (size_t i = 0; i < ARRAY_LEN(Languages); ++i) {
+		regex_t regex = compile(Languages[i].pattern, REG_NOSUB);
+		regfree(&regex);
+		for (size_t j = 0; j < Languages[i].len; ++j) {
+			struct Syntax syn = Languages[i].syntax[j];
+			regex = compile(syn.pattern, 0);
+			if (syn.subexp >= SubsLen || syn.subexp > regex.re_nsub) {
+				errx(
+					EX_SOFTWARE, "subexpression %zu out of bounds: %s",
+					syn.subexp, syn.pattern
+				);
+			}
+			regfree(&regex);
+			if (syn.pattend) {
+				regex = compile(syn.pattend, REG_NOSUB);
+				regfree(&regex);
+			}
+		}
 	}
 }
 
@@ -227,14 +250,16 @@ static const struct Format {
 };
 
 int main(int argc, char *argv[]) {
-	bool check = false;
 	const struct Language *lang = NULL;
 	const struct Format *format = NULL;
 	
 	int opt;
 	while (0 < (opt = getopt(argc, argv, "cf:l:"))) {
 		switch (opt) {
-			break; case 'c': check = true;
+			break; case 'c': {
+				check();
+				return EX_OK;
+			}
 			break; case 'f': {
 				for (size_t i = 0; i < ARRAY_LEN(Formats); ++i) {
 					if (strcmp(optarg, Formats[i].name)) continue;
@@ -253,31 +278,6 @@ int main(int argc, char *argv[]) {
 			}
 			break; default: return EX_USAGE;
 		}
-	}
-
-	if (check) {
-		for (size_t i = 0; i < ARRAY_LEN(Languages); ++i) {
-			regex_t regex = compile(Languages[i].pattern, REG_NOSUB);
-			regfree(&regex);
-			for (size_t j = 0; j < Languages[i].len; ++j) {
-				struct Syntax syn = Languages[i].syntax[j];
-				regex = compile(syn.pattern, 0);
-				if (regex.re_nsub >= SubsLen) {
-					errx(
-						EX_SOFTWARE,
-						"too many subexpressions: %s", syn.pattern
-					);
-				}
-				if (syn.subexp > regex.re_nsub) {
-					errx(
-						EX_SOFTWARE,
-						"no subexpression %zu: %s", syn.subexp, syn.pattern
-					);
-				}
-				regfree(&regex);
-			}
-		}
-		return EX_OK;
 	}
 
 	const char *path = "(stdin)";
