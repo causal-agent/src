@@ -33,6 +33,7 @@ enum Class {
 	Macro,
 	String,
 	Escape,
+	Format,
 	Comment,
 	Todo,
 	ClassCount,
@@ -48,24 +49,45 @@ struct Syntax {
 
 #define CKB "(^|[^[:alnum:]_]|\n)"
 static const struct Syntax CSyntax[] = {
-	{ Keyword, .subexp = 2, .pattern = CKB"(enum|struct|typedef|union)"CKB },
-	{ Keyword, .subexp = 2, .pattern = CKB"(const|extern|inline|static)"CKB },
-	{ Keyword, .subexp = 2, .pattern = CKB"(do|else|for|if|switch|while)"CKB },
-	{ Keyword, .subexp = 2, .pattern = CKB"(break|continue|goto|return)"CKB },
-	{ Keyword, .subexp = 2, .pattern = CKB"(case|default)"CKB },
-	{ Macro,   .pattern = "^#.*" },
-	{ String,  .pattern = "^#include (<.*>)", .subexp = 1 },
-	{ String,  .pattern = "[LUu]?'([^']|\\\\')*'" },
-	{ String,  .pattern = "([LUu]|u8)?\"([^\"]|\\\\\")*\"" },
-	{ Escape,  .parent = String, .pattern = "\\\\['\"?\\abfnrtv]" },
-	{ Escape,  .parent = String, .pattern = "\\\\[0-7]{1,3}" },
-	{ Escape,  .parent = String, .pattern = "\\\\x[0-9A-Fa-f]+" },
-	{ Escape,  .parent = String, .pattern = "\\\\u[0-9A-Fa-f]{4}" },
-	{ Escape,  .parent = String, .pattern = "\\\\U[0-9A-Fa-f]{8}" },
-	{ Comment, .pattern = "//.*" },
-	{ Comment, .pattern = "/\\*", .pattend = "\\*/" },
-	{ Comment, .pattern = "^#if 0", .pattend = "^#endif" },
-	{ Todo,    .parent = Comment, .pattern = "FIXME|TODO|XXX" },
+	{ Keyword, .subexp = 2,
+		.pattern = CKB"(auto|extern|register|static|(_T|t)hread_local)"CKB },
+	{ Keyword, .subexp = 2,
+		.pattern = CKB"(const|inline|restrict|volatile)"CKB },
+	{ Keyword, .subexp = 2,
+		.pattern = CKB"((_A|a)lignas|_Atomic|(_N|n)oreturn)"CKB },
+	{ Keyword, .subexp = 2,
+		.pattern = CKB"(enum|struct|typedef|union)"CKB },
+	{ Keyword, .subexp = 2,
+		.pattern = CKB"(case|default|do|else|for|if|switch|while)"CKB },
+	{ Keyword, .subexp = 2,
+		.pattern = CKB"(break|continue|goto|return)"CKB },
+	{ Macro,
+		.pattern = "^#.*" },
+	{ String, .subexp = 1,
+		.pattern = "^#include (<[^>]*>)" },
+	{ String,
+		.pattern = "[LUu]?'([^']|\\\\')*'" },
+	{ String,
+		.pattern = "([LU]|u8?)?\"([^\"]|\\\\\")*\"" },
+	{ Escape, .parent = String,
+		.pattern = "\\\\([\"'?\\abfnrtv]|[0-7]{1,3}|x[0-9A-Fa-f]+)" },
+	{ Escape, .parent = String,
+		.pattern = "\\\\(U[0-9A-Fa-f]{8}|u[0-9A-Fa-f]{4})" },
+	{ Format, .parent = String, .pattern =
+		"%%|%[ #+-0]*"         // flags
+		"(\\*|[0-9]+)?"        // field width
+		"(\\.(\\*|[0-9]+))?"   // precision
+		"([Lhjltz]|hh|ll)?"    // length modifier
+		"[AEFGXacdefginopsux]" // format specifier
+	},
+	{ Comment,
+		.pattern = "//.*" },
+	{ Comment,
+		.pattern = "/\\*", .pattend = "\\*/" },
+	{ Comment,
+		.pattern = "^#if 0", .pattend = "^#endif" },
+	{ Todo, .parent = Comment,
+		.pattern = "FIXME|TODO|XXX" },
 };
 
 static const struct Language {
@@ -162,6 +184,7 @@ static const enum SGR Style[ClassCount][2] = {
 	[Macro]   = { Reset, Green },
 	[String]  = { Reset, Cyan },
 	[Escape]  = { Reset, Default },
+	[Format]  = { Bold,  Cyan },
 	[Comment] = { Reset, Blue },
 	[Todo]    = { Bold,  Blue },
 };
@@ -209,6 +232,8 @@ static const char *ClassName[ClassCount] = {
 	[Keyword] = "Keyword",
 	[Macro]   = "Macro",
 	[String]  = "String",
+	[Escape]  = "Escape",
+	[Format]  = "Format",
 	[Comment] = "Comment",
 	[Todo]    = "Todo",
 };
@@ -231,6 +256,7 @@ static void htmlDocumentHeader(const char *path) {
 		".hi.Macro   { color: green; }\n"
 		".hi.String  { color: teal; }\n"
 		".hi.Escape  { color: black; }\n"
+		".hi.Format  { color: teal; font-weight: bold }\n"
 		".hi.Comment { color: navy; }\n"
 		".hi.Todo    { color: navy; font-weight: bold }\n"
 		"</style>\n"
