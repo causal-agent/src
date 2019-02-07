@@ -1,0 +1,62 @@
+.Dd February 6, 2019
+.Dt HI 1
+.Os
+.
+.Sh NAME
+.Nm hi
+.Nd syntax highlighter
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl f Ar format
+.Op Fl l Ar lang
+.Op Ar file
+.Nm
+.Fl c
+.
+.Sh DESCRIPTION
+.Nm
+highlights the contents of a
+.Ar file
+or standard input
+and formats it
+on standard output.
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl c
+Compile all regular expressions and exit.
+.It Fl f Ar format
+Set the output format.
+The default
+.Ar format
+is
+.Cm ansi .
+.It Fl l Ar lang
+Set the input language.
+If a
+.Ar file
+is provided,
+.Ar lang
+may be inferred from its name.
+.El
+.
+.Pp
+The following languages are supported:
+.Cm c .
+.
+.Pp
+The output formats are as follows:
+.Bl -tag -width "html-document"
+.It Cm ansi
+ANSI terminal escape codes.
+.It Cm html
+HTML
+.Sy <pre>
+fragment with
+.Sy <span>
+classes.
+.It Cm html-document
+HTML document with default styles.
+.El
