@@ -246,7 +246,20 @@ int main(int argc, char *argv[]) {
 			regex_t regex = compile(Languages[i].pattern, REG_NOSUB);
 			regfree(&regex);
 			for (size_t j = 0; j < Languages[i].len; ++j) {
-				regex = compile(Languages[i].syntax[j].pattern, REG_NOSUB);
+				struct Syntax syn = Languages[i].syntax[j];
+				regex = compile(syn.pattern, 0);
+				if (regex.re_nsub >= SubsLen) {
+					errx(
+						EX_SOFTWARE,
+						"too many subexpressions: %s", syn.pattern
+					);
+				}
+				if (syn.subexp > regex.re_nsub) {
+					errx(
+						EX_SOFTWARE,
+						"no subexpression %zu: %s", syn.subexp, syn.pattern
+					);
+				}
 				regfree(&regex);
 			}
 		}
