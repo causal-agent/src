@@ -33,20 +33,22 @@ enum Class {
 	Macro,
 	String,
 	Comment,
+	Todo,
 	ClassCount,
 };
 
 struct Syntax {
 	enum Class class;
-	size_t subexp;
+	enum Class parent;
 	const char *pattern;
 	const char *pattend;
+	size_t subexp;
 };
 
 #define CKB "(^|[^[:alnum:]_]|\n)"
 static const struct Syntax CSyntax[] = {
 	{ Keyword, .subexp = 2, .pattern = CKB"(enum|struct|typedef|union)"CKB },
-	{ Keyword, .subexp = 2, .pattern = CKB"(const|inline|static)"CKB },
+	{ Keyword, .subexp = 2, .pattern = CKB"(const|extern|inline|static)"CKB },
 	{ Keyword, .subexp = 2, .pattern = CKB"(do|else|for|if|switch|while)"CKB },
 	{ Keyword, .subexp = 2, .pattern = CKB"(break|continue|goto|return)"CKB },
 	{ Keyword, .subexp = 2, .pattern = CKB"(case|default)"CKB },
@@ -57,6 +59,7 @@ static const struct Syntax CSyntax[] = {
 	{ Comment, .pattern = "//.*", },
 	{ Comment, .pattern = "/\\*", .pattend = "\\*/" },
 	{ Comment, .pattern = "^#if 0", .pattend = "^#endif" },
+	{ Todo,    .pattern = "FIXME|TODO|XXX", .parent = Comment },
 };
 
 static const struct Language {
@@ -107,6 +110,7 @@ static void highlight(struct Language lang, enum Class *hi, const char *str) {
 
 			regmatch_t sub = subs[syn.subexp];
 			for (regoff_t j = sub.rm_so; j < sub.rm_eo; ++j) {
+				if (syn.parent && hi[offset + j] != syn.parent) continue;
 				hi[offset + j] = lang.syntax[i].class;
 			}
 		}
@@ -129,6 +133,7 @@ static const enum SGR Style[ClassCount][2] = {
 	[Macro]   = { Reset, Green },
 	[String]  = { Reset, Cyan },
 	[Comment] = { Reset, Blue },
+	[Todo]    = { Bold,  Blue },
 };
 
 static void ansiOutput(enum Class class, const char *str, size_t len) {
@@ -175,6 +180,7 @@ static const char *ClassName[ClassCount] = {
 	[Macro]   = "Macro",
 	[String]  = "String",
 	[Comment] = "Comment",
+	[Todo]    = "Todo",
 };
 
 static void htmlOutput(enum Class class, const char *str, size_t len) {
@@ -195,6 +201,7 @@ static void htmlDocumentHeader(const char *path) {
 		".hi.Macro   { color: green; }\n"
 		".hi.String  { color: teal; }\n"
 		".hi.Comment { color: navy; }\n"
+		".hi.Todo    { color: navy; font-weight: bold }\n"
 		"</style>\n"
 	);
 	htmlHeader(path);
