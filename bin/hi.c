@@ -174,19 +174,28 @@ typedef void HeaderFn(const char *path);
 typedef void OutputFn(enum Class class, const char *str, size_t len);
 
 enum SGR {
-	Reset, Bold,
-	Black = 30, Red, Green, Yellow, Blue, Magenta, Cyan, White, Default,
+	ANSIReset,
+	ANSIBold,
+	ANSIBlack = 30,
+	ANSIRed,
+	ANSIGreen,
+	ANSIYellow,
+	ANSIBlue,
+	ANSIMagenta,
+	ANSICyan,
+	ANSIWhite,
+	ANSIDefault,
 };
 
-static const enum SGR Style[ClassCount][2] = {
-	[Normal]  = { Reset, Default },
-	[Keyword] = { Reset, White },
-	[Macro]   = { Reset, Green },
-	[String]  = { Reset, Cyan },
-	[Escape]  = { Reset, Default },
-	[Format]  = { Bold,  Cyan },
-	[Comment] = { Reset, Blue },
-	[Todo]    = { Bold,  Blue },
+static const enum SGR ansiStyle[ClassCount][2] = {
+	[Normal]  = { ANSIDefault },
+	[Keyword] = { ANSIWhite },
+	[Macro]   = { ANSIGreen },
+	[String]  = { ANSICyan },
+	[Escape]  = { ANSIDefault },
+	[Format]  = { ANSICyan, ANSIBold },
+	[Comment] = { ANSIBlue },
+	[Todo]    = { ANSIBlue, ANSIBold },
 };
 
 static void ansiOutput(enum Class class, const char *str, size_t len) {
@@ -196,8 +205,64 @@ static void ansiOutput(enum Class class, const char *str, size_t len) {
 		if (line > len) line = len;
 		printf(
 			"\x1B[%d;%dm%.*s\x1B[%dm",
-			Style[class][0], Style[class][1], (int)line, str, Style[class][0]
+			ansiStyle[class][1], ansiStyle[class][0], (int)line, str, ANSIReset
 		);
+		str += line;
+		len -= line;
+	}
+}
+
+enum IRC {
+	IRCWhite,
+	IRCBlack,
+	IRCBlue,
+	IRCGreen,
+	IRCRed,
+	IRCBrown,
+	IRCMagenta,
+	IRCOrange,
+	IRCYellow,
+	IRCLightGreen,
+	IRCCyan,
+	IRCLightCyan,
+	IRCLightBlue,
+	IRCPink,
+	IRCGray,
+	IRCLightGray,
+	IRCDefault = 99,
+	IRCBold = 0x02,
+	IRCColor = 0x03,
+	IRCReset = 0x0F,
+};
+
+static const enum IRC ircStyle[ClassCount][2] = {
+	[Normal]  = { IRCDefault },
+	[Keyword] = { IRCGray },
+	[Macro]   = { IRCGreen },
+	[String]  = { IRCCyan },
+	[Escape]  = { IRCDefault },
+	[Format]  = { IRCCyan, IRCBold },
+	[Comment] = { IRCBlue },
+	[Todo]    = { IRCBlue, IRCBold },
+};
+
+static void ircOutput(enum Class class, const char *str, size_t len) {
+	// Style each line separately, for multiple IRC messages.
+	while (len) {
+		size_t line = strcspn(str, "\n");
+		if (line > len) line = len;
+		printf(
+			"%c%c%02d,%02d%.*s%c",
+			ircStyle[class][1] ? ircStyle[class][1] : IRCReset,
+			IRCColor, ircStyle[class][0], IRCDefault,
+			(int)line, str,
+			IRCReset
+		);
+		// Print newline after all formatting to prevent excess messages.
+		if (line < len) {
+			printf("\n");
+			line++;
+		}
 		str += line;
 		len -= line;
 	}
@@ -271,6 +336,7 @@ static const struct Format {
 	HeaderFn *footer;
 } Formats[] = {
 	{ "ansi", ansiOutput, NULL, NULL },
+	{ "irc", ircOutput, NULL, NULL },
 	{ "html", htmlOutput, htmlHeader, htmlFooter },
 	{ "html-document", htmlOutput, htmlDocumentHeader, htmlFooter },
 };
