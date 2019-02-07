@@ -37,23 +37,23 @@ enum Class {
 
 struct Syntax {
 	enum Class class;
-	int flags;
 	const char *pattern;
+	const char *pattend;
 };
 
 // FIXME: Looks like [[:<:]] [[:>:]] are not supported on GNU.
 static const struct Syntax CSyntax[] = {
-	{ Keyword, 0,            "[[:<:]](enum|struct|typedef|union)[[:>:]]" },
-	{ Keyword, 0,            "[[:<:]](const|inline|static)[[:>:]]" },
-	{ Keyword, 0,            "[[:<:]](do|else|for|if|switch|while)[[:>:]]" },
-	{ Keyword, 0,            "[[:<:]](break|continue|goto|return)[[:>:]]" },
-	{ Keyword, 0,            "[[:<:]](case|default)[[:>:]]" },
-	{ Macro,   REG_NEWLINE,  "^#.*" },
-	{ String,  REG_NEWLINE,  "<[^[:blank:]=]*>" },
-	{ Comment, REG_NEWLINE,  "//.*" },
-	{ Comment, REG_ENHANCED, "/\\*.*?\\*/" }, // FIXME: Darwin-only.
-	{ String,  REG_NEWLINE,  "[LUu]?'([^']|\\\\')*'" },
-	{ String,  REG_NEWLINE,  "([LUu]|u8)?\"([^\"]|\\\\\")*\"" },
+	{ Keyword, "[[:<:]](enum|struct|typedef|union)[[:>:]]", NULL },
+	{ Keyword, "[[:<:]](const|inline|static)[[:>:]]", NULL },
+	{ Keyword, "[[:<:]](do|else|for|if|switch|while)[[:>:]]", NULL },
+	{ Keyword, "[[:<:]](break|continue|goto|return)[[:>:]]", NULL },
+	{ Keyword, "[[:<:]](case|default)[[:>:]]", NULL },
+	{ Macro,   "^#.*", NULL },
+	{ String,  "<[^[:blank:]=]*>", NULL },
+	{ Comment, "//.*", NULL },
+	{ Comment, "/\\*", "\\*/" },
+	{ String,  "[LUu]?'([^']|\\\\')*'", NULL },
+	{ String,  "([LUu]|u8)?\"([^\"]|\\\\\")*\"", NULL },
 };
 
 static const struct Language {
@@ -67,7 +67,7 @@ static const struct Language {
 
 static regex_t compile(const char *pattern, int flags) {
 	regex_t regex;
-	int error = regcomp(&regex, pattern, REG_EXTENDED | flags);
+	int error = regcomp(&regex, pattern, REG_EXTENDED | REG_NEWLINE | flags);
 	if (!error) return regex;
 	char buf[256];
 	regerror(error, &regex, buf, sizeof(buf));
@@ -76,7 +76,12 @@ static regex_t compile(const char *pattern, int flags) {
 
 static void highlight(struct Language lang, enum Class *hi, const char *str) {
 	for (size_t i = 0; i < lang.len; ++i) {
-		regex_t regex = compile(lang.syntax[i].pattern, lang.syntax[i].flags);
+		regex_t regex = compile(lang.syntax[i].pattern, 0);
+		regex_t regend = {0};
+		if (lang.syntax[i].pattend) {
+			regend = compile(lang.syntax[i].pattend, 0);
+		}
+
 		regmatch_t match = {0};
 		for (size_t offset = 0; str[offset]; offset += match.rm_eo) {
 			int error = regexec(
@@ -84,11 +89,23 @@ static void highlight(struct Language lang, enum Class *hi, const char *str) {
 			);
 			if (error == REG_NOMATCH) break;
 			if (error) errx(EX_SOFTWARE, "regexec: %d", error);
+
+			if (lang.syntax[i].pattend) {
+				regmatch_t end;
+				error = regexec(
+					&regend, &str[offset + match.rm_eo], 1, &end, REG_NOTBOL
+				);
+				if (error == REG_NOMATCH) break;
+				if (error) errx(EX_SOFTWARE, "regexec: %d", error);
+				match.rm_eo += end.rm_eo;
+			}
+
 			for (regoff_t j = match.rm_so; j < match.rm_eo; ++j) {
 				hi[offset + j] = lang.syntax[i].class;
 			}
 		}
 		regfree(&regex);
+		if (lang.syntax[i].pattend) regfree(&regend);
 	}
 }
 

@@ -16,6 +16,7 @@ DESCRIPTION
      fbclock(1)  framebuffer clock
      gfxx(1)     graphics data explorer
      glitch(1)   PNG glitcher
+     hi(1)       syntax highlighter
      hnel(1)     PTY input remapper
      modem(1)    fixed baud rate wrapper
      pbd(1)      macOS pasteboard daemon
@@ -33,4 +34,4 @@ DESCRIPTION
            GFX=fb
            GFX=x11
 
-Causal Agency                  January 26, 2019                  Causal Agency
+Causal Agency                  Feburary 6, 2019                  Causal Agency

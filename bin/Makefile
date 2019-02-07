@@ -12,6 +12,7 @@ BINS += aes
 BINS += atch
 BINS += dtch
 BINS += glitch
+BINS += hi
 BINS += hnel
 BINS += modem
 BINS += open
