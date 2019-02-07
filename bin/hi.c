@@ -36,8 +36,6 @@ enum Class {
 	ClassCount,
 };
 
-enum { SubsLen = 8 };
-
 struct Syntax {
 	enum Class class;
 	size_t subexp;
@@ -79,6 +77,7 @@ static regex_t compile(const char *pattern, int flags) {
 	errx(EX_SOFTWARE, "regcomp: %s: %s", buf, pattern);
 }
 
+enum { SubsLen = 8 };
 static void highlight(struct Language lang, enum Class *hi, const char *str) {
 	for (size_t i = 0; i < lang.len; ++i) {
 		struct Syntax syn = lang.syntax[i];
@@ -148,7 +147,7 @@ static void ansiOutput(enum Class class, const char *str, size_t len) {
 
 static void htmlHeader(const char *path) {
 	(void)path;
-	printf("<pre>");
+	printf("<pre class=\"hi\">");
 }
 static void htmlFooter(const char *path) {
 	(void)path;
