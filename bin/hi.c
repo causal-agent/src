@@ -32,6 +32,7 @@ enum Class {
 	Keyword,
 	Macro,
 	String,
+	Escape,
 	Comment,
 	Todo,
 	ClassCount,
@@ -54,12 +55,17 @@ static const struct Syntax CSyntax[] = {
 	{ Keyword, .subexp = 2, .pattern = CKB"(case|default)"CKB },
 	{ Macro,   .pattern = "^#.*" },
 	{ String,  .pattern = "^#include (<.*>)", .subexp = 1 },
-	{ String,  .pattern = "[LUu]?'([^']|\\\\')*'", },
-	{ String,  .pattern = "([LUu]|u8)?\"([^\"]|\\\\\")*\"", },
-	{ Comment, .pattern = "//.*", },
+	{ String,  .pattern = "[LUu]?'([^']|\\\\')*'" },
+	{ String,  .pattern = "([LUu]|u8)?\"([^\"]|\\\\\")*\"" },
+	{ Escape,  .parent = String, .pattern = "\\\\['\"?\\abfnrtv]" },
+	{ Escape,  .parent = String, .pattern = "\\\\[0-7]{1,3}" },
+	{ Escape,  .parent = String, .pattern = "\\\\x[0-9A-Fa-f]+" },
+	{ Escape,  .parent = String, .pattern = "\\\\u[0-9A-Fa-f]{4}" },
+	{ Escape,  .parent = String, .pattern = "\\\\U[0-9A-Fa-f]{8}" },
+	{ Comment, .pattern = "//.*" },
 	{ Comment, .pattern = "/\\*", .pattend = "\\*/" },
 	{ Comment, .pattern = "^#if 0", .pattend = "^#endif" },
-	{ Todo,    .pattern = "FIXME|TODO|XXX", .parent = Comment },
+	{ Todo,    .parent = Comment, .pattern = "FIXME|TODO|XXX" },
 };
 
 static const struct Language {
@@ -132,6 +138,7 @@ static const enum SGR Style[ClassCount][2] = {
 	[Keyword] = { Reset, White },
 	[Macro]   = { Reset, Green },
 	[String]  = { Reset, Cyan },
+	[Escape]  = { Reset, Default },
 	[Comment] = { Reset, Blue },
 	[Todo]    = { Bold,  Blue },
 };
@@ -200,6 +207,7 @@ static void htmlDocumentHeader(const char *path) {
 		".hi.Keyword { color: dimgray; }\n"
 		".hi.Macro   { color: green; }\n"
 		".hi.String  { color: teal; }\n"
+		".hi.Escape  { color: black; }\n"
 		".hi.Comment { color: navy; }\n"
 		".hi.Todo    { color: navy; font-weight: bold }\n"
 		"</style>\n"
