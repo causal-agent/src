@@ -53,7 +53,7 @@ static const struct Syntax CSyntax[] = {
 	{ Keyword, .subexp = 2, .pattern = CKB"(break|continue|goto|return)"CKB },
 	{ Keyword, .subexp = 2, .pattern = CKB"(case|default)"CKB },
 	{ Macro,   .pattern = "^#.*" },
-	{ String,  .pattern = "<[^[:blank:]=]*>" },
+	{ String,  .pattern = "^#include (<.*>)", .subexp = 1 },
 	{ String,  .pattern = "[LUu]?'([^']|\\\\')*'", },
 	{ String,  .pattern = "([LUu]|u8)?\"([^\"]|\\\\\")*\"", },
 	{ Comment, .pattern = "//.*", },
