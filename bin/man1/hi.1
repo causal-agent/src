@@ -10,6 +10,7 @@
 .Nm
 .Op Fl f Ar format
 .Op Fl l Ar lang
+.Op Fl n Ar name
 .Op Ar file
 .Nm
 .Fl c
@@ -40,8 +41,11 @@ Set the input language.
 If a
 .Ar file
 is provided,
-.Ar lang
+the input language
 may be inferred from its name.
+.It Fl n Ar name
+Override the name used
+to infer the input language.
 .El
 .
 .Pp

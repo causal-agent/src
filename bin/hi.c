@@ -419,11 +419,12 @@ static const struct Format {
 };
 
 int main(int argc, char *argv[]) {
+	const char *name = NULL;
 	const struct Language *lang = NULL;
 	const struct Format *format = NULL;
 	
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "cf:l:"))) {
+	while (0 < (opt = getopt(argc, argv, "cf:l:n:"))) {
 		switch (opt) {
 			break; case 'c': {
 				check();
@@ -445,6 +446,7 @@ int main(int argc, char *argv[]) {
 				}
 				if (!lang) errx(EX_USAGE, "no such language %s", optarg);
 			}
+			break; case 'n': name = optarg;
 			break; default: return EX_USAGE;
 		}
 	}
@@ -457,8 +459,10 @@ int main(int argc, char *argv[]) {
 		if (!file) err(EX_NOINPUT, "%s", path);
 	}
 
-	const char *name = strrchr(path, '/');
-	name = (name ? &name[1] : path);
+	if (!name) {
+		name = strrchr(path, '/');
+		name = (name ? &name[1] : path);
+	}
 
 	if (!lang) {
 		for (size_t i = 0; i < ARRAY_LEN(Languages); ++i) {
