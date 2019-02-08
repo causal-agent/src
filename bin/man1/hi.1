@@ -1,4 +1,4 @@
-.Dd February 6, 2019
+.Dd February 7, 2019
 .Dt HI 1
 .Os
 .
@@ -21,6 +21,8 @@ highlights the contents of a
 or standard input
 and formats it
 on standard output.
+A maximum of 32K
+is read from standard input.
 .
 .Pp
 The arguments are as follows:
@@ -44,7 +46,8 @@ may be inferred from its name.
 .
 .Pp
 The following languages are supported:
-.Cm c .
+.Cm c ,
+.Cm make .
 .
 .Pp
 The output formats are as follows:
@@ -60,5 +63,6 @@ fragment with
 .Sy <span>
 classes.
 .It Cm html-document
-HTML document with default styles.
+HTML document with
+.Sy <style> .
 .El

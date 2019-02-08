@@ -34,6 +34,7 @@ enum Class {
 	String,
 	Escape,
 	Format,
+	Interp,
 	Comment,
 	Todo,
 	ClassCount,
@@ -47,20 +48,22 @@ struct Syntax {
 	size_t subexp;
 };
 
-#define CKB "(^|[^[:alnum:]_]|\n)"
+#define WB "(^|[^[:alnum:]_]|\n)"
+#define TODO_PATTERN "FIXME|TODO|XXX"
+
 static const struct Syntax CSyntax[] = {
 	{ Keyword, .subexp = 2,
-		.pattern = CKB"(auto|extern|register|static|(_T|t)hread_local)"CKB },
+		.pattern = WB"(auto|extern|register|static|(_T|t)hread_local)"WB },
 	{ Keyword, .subexp = 2,
-		.pattern = CKB"(const|inline|restrict|volatile)"CKB },
+		.pattern = WB"(const|inline|restrict|volatile)"WB },
 	{ Keyword, .subexp = 2,
-		.pattern = CKB"((_A|a)lignas|_Atomic|(_N|n)oreturn)"CKB },
+		.pattern = WB"((_A|a)lignas|_Atomic|(_N|n)oreturn)"WB },
 	{ Keyword, .subexp = 2,
-		.pattern = CKB"(enum|struct|typedef|union)"CKB },
+		.pattern = WB"(enum|struct|typedef|union)"WB },
 	{ Keyword, .subexp = 2,
-		.pattern = CKB"(case|default|do|else|for|if|switch|while)"CKB },
+		.pattern = WB"(case|default|do|else|for|if|switch|while)"WB },
 	{ Keyword, .subexp = 2,
-		.pattern = CKB"(break|continue|goto|return)"CKB },
+		.pattern = WB"(break|continue|goto|return)"WB },
 	{ Macro,
 		.pattern = "^#.*" },
 	{ String, .subexp = 1,
@@ -87,7 +90,36 @@ static const struct Syntax CSyntax[] = {
 	{ Comment,
 		.pattern = "^#if 0", .pattend = "^#endif" },
 	{ Todo, .parent = Comment,
-		.pattern = "FIXME|TODO|XXX" },
+		.pattern = TODO_PATTERN },
+};
+
+static const struct Syntax MakeSyntax[] = {
+	{ Keyword, .subexp = 2,
+		.pattern = WB"(\\.(PHONY|PRECIOUS|SUFFIXES))"WB },
+	{ Macro,
+		.pattern = "^ *-?include" },
+	{ String, .subexp = 1,
+		.pattern = "[[:alnum:]._]+[[:blank:]]*[!+:?]?=[[:blank:]]*(.*)" },
+	{ Normal,
+		.pattern = "^\t.*" },
+	{ String,
+		.pattern = "'([^']|\\\\')*'" },
+	{ String,
+		.pattern = "\"([^\"]|\\\\\")*\"" },
+	{ Interp,
+		.pattern = "\\$[^$]" },
+	// These Interp patterns handle one level of nesting with the same
+	// delimiter.
+	{ Interp,
+		.pattern = "\\$\\((" "[^$)]" "|" "\\$\\([^)]*\\)" ")*\\)" },
+	{ Interp,
+		.pattern = "\\$\\{(" "[^$}]" "|" "\\$\\{[^}]*\\}" ")*\\}" },
+	{ Escape,
+		.pattern = "\\$\\$" },
+	{ Comment,
+		.pattern = "#.*" },
+	{ Todo, .parent = Comment,
+		.pattern = TODO_PATTERN },
 };
 
 static const struct Language {
@@ -97,6 +129,7 @@ static const struct Language {
 	size_t len;
 } Languages[] = {
 	{ "c", "\\.[ch]$", CSyntax, ARRAY_LEN(CSyntax) },
+	{ "make", "Makefile$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
 };
 
 static regex_t compile(const char *pattern, int flags) {
@@ -194,6 +227,7 @@ static const enum SGR ansiStyle[ClassCount][2] = {
 	[String]  = { ANSICyan },
 	[Escape]  = { ANSIDefault },
 	[Format]  = { ANSICyan, ANSIBold },
+	[Interp]  = { ANSIGreen },
 	[Comment] = { ANSIBlue },
 	[Todo]    = { ANSIBlue, ANSIBold },
 };
@@ -242,6 +276,7 @@ static const enum IRC ircStyle[ClassCount][2] = {
 	[String]  = { IRCCyan },
 	[Escape]  = { IRCDefault },
 	[Format]  = { IRCCyan, IRCBold },
+	[Interp]  = { IRCGreen },
 	[Comment] = { IRCBlue },
 	[Todo]    = { IRCBlue, IRCBold },
 };
@@ -299,6 +334,7 @@ static const char *ClassName[ClassCount] = {
 	[String]  = "String",
 	[Escape]  = "Escape",
 	[Format]  = "Format",
+	[Interp]  = "Interp",
 	[Comment] = "Comment",
 	[Todo]    = "Todo",
 };
@@ -322,6 +358,7 @@ static void htmlDocumentHeader(const char *path) {
 		".hi.String  { color: teal; }\n"
 		".hi.Escape  { color: black; }\n"
 		".hi.Format  { color: teal; font-weight: bold }\n"
+		".hi.Interp  { color: green; }\n"
 		".hi.Comment { color: navy; }\n"
 		".hi.Todo    { color: navy; font-weight: bold }\n"
 		"</style>\n"
