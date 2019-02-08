@@ -45,25 +45,31 @@ may be inferred from its name.
 .El
 .
 .Pp
-The following languages are supported:
-.Cm c ,
-.Cm make ,
-.Cm mdoc .
-.
-.Pp
 The output formats are as follows:
-.Bl -tag -width "html-document"
+.Bl -tag -offset indent -width "html-document"
 .It Cm ansi
 ANSI terminal escape codes.
 .It Cm irc
 IRC formatting codes.
+Requires support for color code 99 (default).
 .It Cm html
-HTML
-.Sy <pre>
-fragment with
-.Sy <span>
-classes.
+HTML fragment.
 .It Cm html-document
-HTML document with
-.Sy <style> .
+HTML document.
+.El
+.
+.Pp
+The languages are as follows:
+.Bl -tag -offset indent -width "make"
+.It Cm c
+The C11 language.
+.It Cm make
+The portable subset of
+.Xr make 1 .
+Variable substitution supports
+one level of nesting with the same delimiter.
+.It Cm mdoc
+The
+.Xr mdoc 7
+language.
 .El
