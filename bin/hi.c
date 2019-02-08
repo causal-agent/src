@@ -27,6 +27,9 @@
 
 #define ARRAY_LEN(a) (sizeof(a) / sizeof(a[0]))
 
+typedef unsigned Set;
+#define SET(x) ((Set)1 << (x))
+
 enum Class {
 	Normal,
 	Keyword,
@@ -42,15 +45,14 @@ enum Class {
 
 struct Syntax {
 	enum Class class;
-	enum Class parent;
+	Set parent;
+	size_t subexp;
 	const char *pattern;
 	const char *pattend;
-	size_t subexp;
 };
 
 #define WB "(^|[^_[:alnum:]]|\n)"
 #define WS "[[:blank:]]*"
-
 #define PATTERN_SQ "'([^']|\\\\')*'"
 #define PATTERN_DQ "\"([^\"]|\\\\\")*\""
 #define PATTERN_TODO "FIXME|TODO|XXX"
@@ -71,33 +73,30 @@ static const struct Syntax CSyntax[] = {
 	{ Keyword, .subexp = 2,
 		.pattern = WB "(break|continue|goto|return)" WB },
 	{ Macro,
-		.pattern = "^#(.|\\\\\n)*" },
-	{ String, .subexp = 1,
-		.pattern = "^#include (<[^>]*>)" },
+		.pattern = "^" WS "#(.|\\\\\n)*" },
+	{ String, .parent = SET(Macro), .subexp = 1,
+		.pattern = "include" WS "(<[^>]*>)" },
 	{ String,
 		.pattern = "[LUu]?" PATTERN_SQ },
 	{ String,
 		.pattern = "([LU]|u8?)?" PATTERN_DQ },
-	{ Escape, .parent = String,
+	{ Escape, .parent = SET(String),
 		.pattern = "\\\\([\"'?\\abfnrtv]|[0-7]{1,3}|x[0-9A-Fa-f]+)" },
-	{ Escape, .parent = String,
+	{ Escape, .parent = SET(String),
 		.pattern = "\\\\(U[0-9A-Fa-f]{8}|u[0-9A-Fa-f]{4})" },
-	{ Format, .parent = String, .pattern =
+	{ Format, .parent = SET(String), .pattern =
 		"%%|%[ #+-0]*"         // flags
 		"(\\*|[0-9]+)?"        // field width
 		"(\\.(\\*|[0-9]+))?"   // precision
 		"([Lhjltz]|hh|ll)?"    // length modifier
 		"[AEFGXacdefginopsux]" // format specifier
 	},
-	{ Comment,
+	{ Comment, .parent = ~SET(String),
 		.pattern = "//.*" },
-	{ Comment,
+	{ Comment, .parent = ~SET(String),
 		.pattern = "/\\*",
 		.pattend = "\\*/" },
-	{ Comment,
-		.pattern = "^#if 0",
-		.pattend = "^#endif" },
-	{ Todo, .parent = Comment,
+	{ Todo, .parent = SET(Comment),
 		.pattern = PATTERN_TODO },
 };
 
@@ -125,7 +124,7 @@ static const struct Syntax MakeSyntax[] = {
 		.pattern = "\\$\\$" },
 	{ Comment,
 		.pattern = "#.*" },
-	{ Todo, .parent = Comment,
+	{ Todo, .parent = SET(Comment),
 		.pattern = PATTERN_TODO },
 };
 
@@ -158,7 +157,7 @@ static const struct Syntax MdocSyntax[] = {
 		.pattern = "\\\\(" "." "|" "\\(.{2}" "|" "\\[[^]]*\\]" ")" },
 	{ Comment,
 		.pattern = "^\\.\\\\\".*" },
-	{ Todo, .parent = Comment,
+	{ Todo, .parent = SET(Comment),
 		.pattern = PATTERN_TODO },
 };
 
@@ -168,8 +167,8 @@ static const struct Language {
 	const struct Syntax *syntax;
 	size_t len;
 } Languages[] = {
-	{ "c", "\\.[ch]$", CSyntax, ARRAY_LEN(CSyntax) },
-	{ "make", "^Makefile$|\\.mk$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
+	{ "c",    "\\.[ch]$", CSyntax, ARRAY_LEN(CSyntax) },
+	{ "make", "\\.mk$|^Makefile$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
 	{ "mdoc", "\\.[1-9]$", MdocSyntax, ARRAY_LEN(MdocSyntax) },
 };
 
@@ -212,8 +211,10 @@ static void highlight(struct Language lang, enum Class *hi, const char *str) {
 			}
 
 			regmatch_t sub = subs[syn.subexp];
+			if (syn.parent) {
+				if (~syn.parent & SET(hi[offset + sub.rm_so])) continue;
+			}
 			for (regoff_t j = sub.rm_so; j < sub.rm_eo; ++j) {
-				if (syn.parent && hi[offset + j] != syn.parent) continue;
 				hi[offset + j] = lang.syntax[i].class;
 			}
 		}
