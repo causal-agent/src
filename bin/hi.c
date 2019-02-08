@@ -57,6 +57,7 @@ struct Syntax {
 #define PATTERN_DQ "\"([^\"]|\\\\\")*\""
 #define PATTERN_TODO "FIXME|TODO|XXX"
 
+// C syntax {{{
 static const struct Syntax CSyntax[] = {
 	{ Keyword, .subexp = 2,
 		.pattern = WB "(auto|extern|register|static|(_T|t)hread_local)" WB },
@@ -99,8 +100,9 @@ static const struct Syntax CSyntax[] = {
 	{ Todo, .parent = SET(Comment),
 		.pattern = PATTERN_TODO },
 };
+// }}}
 
-// Interp patterns handle one level of nesting with the same delimiter.
+// make syntax {{{
 static const struct Syntax MakeSyntax[] = {
 	{ Keyword, .subexp = 2,
 		.pattern = WB "(\\.(PHONY|PRECIOUS|SUFFIXES))" WB },
@@ -116,6 +118,7 @@ static const struct Syntax MakeSyntax[] = {
 		.pattern = PATTERN_DQ },
 	{ Interp,
 		.pattern = "\\$[^$]" },
+	// Support one level of nesting with the same delimiter.
 	{ Interp,
 		.pattern = "\\$\\((" "[^$)]" "|" "\\$\\([^)]*\\)" ")*\\)" },
 	{ Interp,
@@ -127,7 +130,9 @@ static const struct Syntax MakeSyntax[] = {
 	{ Todo, .parent = SET(Comment),
 		.pattern = PATTERN_TODO },
 };
+// }}}
 
+// mdoc syntax {{{
 static const struct Syntax MdocSyntax[] = {
 	{ Keyword, .subexp = 2,
 		.pattern = WB "(D[dt]|N[dm]|Os)" WB },
@@ -160,6 +165,7 @@ static const struct Syntax MdocSyntax[] = {
 	{ Todo, .parent = SET(Comment),
 		.pattern = PATTERN_TODO },
 };
+// }}}
 
 static const struct Language {
 	const char *name;
@@ -248,45 +254,60 @@ static void check(void) {
 typedef void HeaderFn(const char *name);
 typedef void OutputFn(enum Class class, const char *str, size_t len);
 
+// ANSI format {{{
+
 enum SGR {
-	ANSIReset,
-	ANSIBold,
-	ANSIBlack = 30,
-	ANSIRed,
-	ANSIGreen,
-	ANSIYellow,
-	ANSIBlue,
-	ANSIMagenta,
-	ANSICyan,
-	ANSIWhite,
-	ANSIDefault,
+	SGRReset,
+	SGRBold,
+	SGRBlack = 30,
+	SGRRed,
+	SGRGreen,
+	SGRYellow,
+	SGRBlue,
+	SGRMagenta,
+	SGRCyan,
+	SGRWhite,
 };
 
-static const enum SGR ansiStyle[ClassCount][2] = {
-	[Normal]  = { ANSIDefault },
-	[Keyword] = { ANSIWhite },
-	[Macro]   = { ANSIGreen },
-	[String]  = { ANSICyan },
-	[Escape]  = { ANSIDefault },
-	[Format]  = { ANSICyan, ANSIBold },
-	[Interp]  = { ANSIGreen },
-	[Comment] = { ANSIBlue },
-	[Todo]    = { ANSIBlue, ANSIBold },
+static const enum SGR ANSIStyle[ClassCount][2] = {
+	[Normal]  = { SGRReset },
+	[Keyword] = { SGRWhite },
+	[Macro]   = { SGRGreen },
+	[String]  = { SGRCyan },
+	[Escape]  = { SGRReset },
+	[Format]  = { SGRCyan, SGRBold },
+	[Interp]  = { SGRGreen },
+	[Comment] = { SGRBlue },
+	[Todo]    = { SGRBlue, SGRBold },
 };
 
 static void ansiOutput(enum Class class, const char *str, size_t len) {
 	// Style each line separately, otherwise less -R won't look right.
 	while (len) {
-		size_t line = strcspn(str, "\n") + 1;
+		size_t line = strcspn(str, "\n");
 		if (line > len) line = len;
-		printf(
-			"\x1B[%d;%dm%.*s\x1B[%dm",
-			ansiStyle[class][1], ansiStyle[class][0], (int)line, str, ANSIReset
-		);
+		if (ANSIStyle[class][1]) {
+			printf(
+				"\x1B[%d;%dm%.*s\x1B[%dm",
+				ANSIStyle[class][0], ANSIStyle[class][1],
+				(int)line, str,
+				SGRReset
+			);
+		} else {
+			printf("\x1B[%dm%.*s", ANSIStyle[class][0], (int)line, str);
+		}
+		if (line < len) {
+			printf("\n");
+			line++;
+		}
 		str += line;
 		len -= line;
 	}
 }
+
+// }}}
+
+// IRC format {{{
 
 enum IRC {
 	IRCWhite,
@@ -305,22 +326,22 @@ enum IRC {
 	IRCPink,
 	IRCGray,
 	IRCLightGray,
-	IRCDefault = 99,
 	IRCBold = 0x02,
 	IRCColor = 0x03,
 	IRCReset = 0x0F,
 };
 
-static const enum IRC ircStyle[ClassCount][2] = {
-	[Normal]  = { IRCDefault },
-	[Keyword] = { IRCGray },
-	[Macro]   = { IRCGreen },
-	[String]  = { IRCCyan },
-	[Escape]  = { IRCDefault },
-	[Format]  = { IRCCyan, IRCBold },
-	[Interp]  = { IRCGreen },
-	[Comment] = { IRCBlue },
-	[Todo]    = { IRCBlue, IRCBold },
+static const enum IRC SGRIRC[] = {
+	[SGRReset]   = IRCReset,
+	[SGRBold]    = IRCBold,
+	[SGRBlack]   = IRCBlack,
+	[SGRRed]     = IRCRed,
+	[SGRGreen]   = IRCGreen,
+	[SGRYellow]  = IRCYellow,
+	[SGRBlue]    = IRCBlue,
+	[SGRMagenta] = IRCMagenta,
+	[SGRCyan]    = IRCCyan,
+	[SGRWhite]   = IRCGray,
 };
 
 static void ircOutput(enum Class class, const char *str, size_t len) {
@@ -328,14 +349,24 @@ static void ircOutput(enum Class class, const char *str, size_t len) {
 	while (len) {
 		size_t line = strcspn(str, "\n");
 		if (line > len) line = len;
-		printf(
-			"%c%c%02d,%02d%.*s%c",
-			ircStyle[class][1] ? ircStyle[class][1] : IRCReset,
-			IRCColor, ircStyle[class][0], IRCDefault,
-			(int)line, str,
-			IRCReset
-		);
-		// Print newline after all formatting to prevent excess messages.
+		if (ANSIStyle[class][1]) {
+			printf(
+				"%c%d%c%.*s%c",
+				IRCColor, SGRIRC[ANSIStyle[class][0]],
+				SGRIRC[ANSIStyle[class][1]],
+				(int)line, str,
+				IRCReset
+			);
+		} else if (ANSIStyle[class][0]) {
+			// Double-toggle bold to prevent str being interpreted as color.
+			printf(
+				"%c%d%c%c%.*s",
+				IRCColor, SGRIRC[ANSIStyle[class][0]], IRCBold, IRCBold,
+				(int)line, str
+			);
+		} else {
+			printf("%c%.*s", IRCReset, (int)line, str);
+		}
 		if (line < len) {
 			printf("\n");
 			line++;
@@ -344,6 +375,10 @@ static void ircOutput(enum Class class, const char *str, size_t len) {
 		len -= line;
 	}
 }
+
+// }}}
+
+// HTML format {{{
 
 static void htmlHeader(const char *name) {
 	(void)name;
@@ -406,6 +441,8 @@ static void htmlDocumentHeader(const char *name) {
 	htmlHeader(name);
 }
 
+// }}}
+
 static const struct Format {
 	const char *name;
 	OutputFn *output;
@@ -422,7 +459,7 @@ int main(int argc, char *argv[]) {
 	const char *name = NULL;
 	const struct Language *lang = NULL;
 	const struct Format *format = NULL;
-	
+
 	int opt;
 	while (0 < (opt = getopt(argc, argv, "cf:l:n:"))) {
 		switch (opt) {
