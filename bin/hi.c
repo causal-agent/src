@@ -49,29 +49,27 @@ struct Syntax {
 };
 
 #define WB "(^|[^[:alnum:]_]|\n)"
+#define SQ_PATTERN "'([^']|\\\\')*'"
+#define DQ_PATTERN "\"([^\"]|\\\\\")*\""
 #define TODO_PATTERN "FIXME|TODO|XXX"
 
 static const struct Syntax CSyntax[] = {
-	{ Keyword, .subexp = 2,
-		.pattern = WB"(auto|extern|register|static|(_T|t)hread_local)"WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB"(const|inline|restrict|volatile)"WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB"((_A|a)lignas|_Atomic|(_N|n)oreturn)"WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB"(enum|struct|typedef|union)"WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB"(case|default|do|else|for|if|switch|while)"WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB"(break|continue|goto|return)"WB },
+	{ Keyword, .subexp = 2, .pattern =
+		WB "("
+		"(_A|a)lignas|_Atomic|(_N|n)oreturn|(_T|t)hread_local|auto|break|case"
+		"|const|continue|default|do|else|enum|extern|for|goto|if|inline"
+		"|register|restrict|return|static|struct|switch|typedef|union|volatile"
+		"|while"
+		")" WB
+	},
 	{ Macro,
 		.pattern = "^#(.|\\\\\n)*" },
 	{ String, .subexp = 1,
 		.pattern = "^#include (<[^>]*>)" },
 	{ String,
-		.pattern = "[LUu]?'([^']|\\\\')*'" },
+		.pattern = "[LUu]?" SQ_PATTERN },
 	{ String,
-		.pattern = "([LU]|u8?)?\"([^\"]|\\\\\")*\"" },
+		.pattern = "([LU]|u8?)?" DQ_PATTERN },
 	{ Escape, .parent = String,
 		.pattern = "\\\\([\"'?\\abfnrtv]|[0-7]{1,3}|x[0-9A-Fa-f]+)" },
 	{ Escape, .parent = String,
@@ -95,7 +93,7 @@ static const struct Syntax CSyntax[] = {
 
 static const struct Syntax MakeSyntax[] = {
 	{ Keyword, .subexp = 2,
-		.pattern = WB"(\\.(PHONY|PRECIOUS|SUFFIXES))"WB },
+		.pattern = WB "(\\.(PHONY|PRECIOUS|SUFFIXES))" WB },
 	{ Macro,
 		.pattern = "^ *-?include" },
 	{ String, .subexp = 1,
@@ -103,9 +101,9 @@ static const struct Syntax MakeSyntax[] = {
 	{ Normal,
 		.pattern = "^\t.*" },
 	{ String,
-		.pattern = "'([^']|\\\\')*'" },
+		.pattern = SQ_PATTERN },
 	{ String,
-		.pattern = "\"([^\"]|\\\\\")*\"" },
+		.pattern = DQ_PATTERN },
 	{ Interp,
 		.pattern = "\\$[^$]" },
 	// These Interp patterns handle one level of nesting with the same
@@ -122,6 +120,27 @@ static const struct Syntax MakeSyntax[] = {
 		.pattern = TODO_PATTERN },
 };
 
+static const struct Syntax MdocSyntax[] = {
+	{ Keyword, .subexp = 2, .pattern =
+		WB "("
+		"%[ABCDIJNOPQRTUV]|A[cdnopqrt]|B[cdfkloqtx]|Br[coq]|Bsx|C[dm]"
+		"|D[1bcdloqtvx]|E[cdfklmnorsvx]|F[acdlnortx]|Hf|I[cnt]|L[bikp]|M[st]"
+		"|N[dmosx]|O[copstx]|P[acfopq]|Q[cloq]|R[esv]|S[chmoqstxy]|T[an]|U[dx]"
+		"|V[at]|X[cor]"
+		")" WB
+	},
+	{ String,
+		.pattern = DQ_PATTERN },
+	{ Normal,
+		.pattern = "^[^.].*" },
+	{ String,
+		.pattern = "\\\\(.|\\(.{2}|\\[[^]]*\\])" },
+	{ Comment,
+		.pattern = "^\\.\\\\\".*" },
+	{ Todo, .parent = Comment,
+		.pattern = TODO_PATTERN },
+};
+
 static const struct Language {
 	const char *name;
 	const char *pattern;
@@ -130,6 +149,7 @@ static const struct Language {
 } Languages[] = {
 	{ "c", "\\.[ch]$", CSyntax, ARRAY_LEN(CSyntax) },
 	{ "make", "Makefile$|\\.mk$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
+	{ "mdoc", "\\.[1-9]$", MdocSyntax, ARRAY_LEN(MdocSyntax) },
 };
 
 static regex_t compile(const char *pattern, int flags) {
