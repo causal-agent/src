@@ -148,7 +148,7 @@ static const struct Language {
 	size_t len;
 } Languages[] = {
 	{ "c", "\\.[ch]$", CSyntax, ARRAY_LEN(CSyntax) },
-	{ "make", "Makefile$|\\.mk$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
+	{ "make", "^Makefile$|\\.mk$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
 	{ "mdoc", "\\.[1-9]$", MdocSyntax, ARRAY_LEN(MdocSyntax) },
 };
 
@@ -223,7 +223,7 @@ static void check(void) {
 	}
 }
 
-typedef void HeaderFn(const char *path);
+typedef void HeaderFn(const char *name);
 typedef void OutputFn(enum Class class, const char *str, size_t len);
 
 enum SGR {
@@ -323,12 +323,12 @@ static void ircOutput(enum Class class, const char *str, size_t len) {
 	}
 }
 
-static void htmlHeader(const char *path) {
-	(void)path;
+static void htmlHeader(const char *name) {
+	(void)name;
 	printf("<pre class=\"hi\">");
 }
-static void htmlFooter(const char *path) {
-	(void)path;
+static void htmlFooter(const char *name) {
+	(void)name;
 	printf("</pre>\n");
 }
 
@@ -365,11 +365,9 @@ static void htmlOutput(enum Class class, const char *str, size_t len) {
 	printf("</span>");
 }
 
-static void htmlDocumentHeader(const char *path) {
-	const char *slash = strrchr(path, '/');
-	if (slash) path = &slash[1];
+static void htmlDocumentHeader(const char *name) {
 	printf("<!DOCTYPE html>\n<title>");
-	htmlEscape(path, strlen(path));
+	htmlEscape(name, strlen(name));
 	printf(
 		"</title>\n"
 		"<style>\n"
@@ -383,7 +381,7 @@ static void htmlDocumentHeader(const char *path) {
 		".hi.Todo    { color: navy; font-weight: bold }\n"
 		"</style>\n"
 	);
-	htmlHeader(path);
+	htmlHeader(name);
 }
 
 static const struct Format {
@@ -437,17 +435,20 @@ int main(int argc, char *argv[]) {
 		if (!file) err(EX_NOINPUT, "%s", path);
 	}
 
+	const char *name = strrchr(path, '/');
+	name = (name ? &name[1] : path);
+
 	if (!lang) {
 		for (size_t i = 0; i < ARRAY_LEN(Languages); ++i) {
 			regex_t regex = compile(Languages[i].pattern, REG_NOSUB);
-			bool match = !regexec(&regex, path, 0, NULL, 0);
+			bool match = !regexec(&regex, name, 0, NULL, 0);
 			regfree(&regex);
 			if (match) {
 				lang = &Languages[i];
 				break;
 			}
 		}
-		if (!lang) errx(EX_USAGE, "cannot infer language for %s", path);
+		if (!lang) errx(EX_USAGE, "cannot infer language for %s", name);
 	}
 	if (!format) format = &Formats[0];
 
@@ -471,7 +472,7 @@ int main(int argc, char *argv[]) {
 
 	highlight(*lang, hi, str);
 
-	if (format->header) format->header(path);
+	if (format->header) format->header(name);
 	size_t run = 0;
 	for (size_t i = 0; i < len; i += run) {
 		for (run = 0; i + run < len; ++run) {
@@ -479,5 +480,5 @@ int main(int argc, char *argv[]) {
 		}
 		format->output(hi[i], &str[i], run);
 	}
-	if (format->footer) format->footer(path);
+	if (format->footer) format->footer(name);
 }
