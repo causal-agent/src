@@ -129,7 +129,7 @@ static const struct Language {
 	size_t len;
 } Languages[] = {
 	{ "c", "\\.[ch]$", CSyntax, ARRAY_LEN(CSyntax) },
-	{ "make", "Makefile$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
+	{ "make", "Makefile$|\\.mk$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
 };
 
 static regex_t compile(const char *pattern, int flags) {
