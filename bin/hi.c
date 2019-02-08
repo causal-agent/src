@@ -65,7 +65,7 @@ static const struct Syntax CSyntax[] = {
 	{ Keyword, .subexp = 2,
 		.pattern = WB"(break|continue|goto|return)"WB },
 	{ Macro,
-		.pattern = "^#.*" },
+		.pattern = "^#(.|\\\\\n)*" },
 	{ String, .subexp = 1,
 		.pattern = "^#include (<[^>]*>)" },
 	{ String,
