@@ -48,28 +48,36 @@ struct Syntax {
 	size_t subexp;
 };
 
-#define WB "(^|[^[:alnum:]_]|\n)"
-#define SQ_PATTERN "'([^']|\\\\')*'"
-#define DQ_PATTERN "\"([^\"]|\\\\\")*\""
-#define TODO_PATTERN "FIXME|TODO|XXX"
+#define WB "(^|[^_[:alnum:]]|\n)"
+#define WS "[[:blank:]]*"
+
+#define PATTERN_SQ "'([^']|\\\\')*'"
+#define PATTERN_DQ "\"([^\"]|\\\\\")*\""
+#define PATTERN_TODO "FIXME|TODO|XXX"
 
 static const struct Syntax CSyntax[] = {
-	{ Keyword, .subexp = 2, .pattern =
-		WB "("
-		"(_A|a)lignas|_Atomic|(_N|n)oreturn|(_T|t)hread_local|auto|break|case"
-		"|const|continue|default|do|else|enum|extern|for|goto|if|inline"
-		"|register|restrict|return|static|struct|switch|typedef|union|volatile"
-		"|while"
-		")" WB
-	},
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(auto|extern|register|static|(_T|t)hread_local)" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(_Atomic|const|restrict|volatile)" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(inline|(_N|n)oreturn)" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "((_A|a)lignas)" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(enum|struct|typedef|union)" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(case|default|do|else|for|if|switch|while)" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(break|continue|goto|return)" WB },
 	{ Macro,
 		.pattern = "^#(.|\\\\\n)*" },
 	{ String, .subexp = 1,
 		.pattern = "^#include (<[^>]*>)" },
 	{ String,
-		.pattern = "[LUu]?" SQ_PATTERN },
+		.pattern = "[LUu]?" PATTERN_SQ },
 	{ String,
-		.pattern = "([LU]|u8?)?" DQ_PATTERN },
+		.pattern = "([LU]|u8?)?" PATTERN_DQ },
 	{ Escape, .parent = String,
 		.pattern = "\\\\([\"'?\\abfnrtv]|[0-7]{1,3}|x[0-9A-Fa-f]+)" },
 	{ Escape, .parent = String,
@@ -84,30 +92,31 @@ static const struct Syntax CSyntax[] = {
 	{ Comment,
 		.pattern = "//.*" },
 	{ Comment,
-		.pattern = "/\\*", .pattend = "\\*/" },
+		.pattern = "/\\*",
+		.pattend = "\\*/" },
 	{ Comment,
-		.pattern = "^#if 0", .pattend = "^#endif" },
+		.pattern = "^#if 0",
+		.pattend = "^#endif" },
 	{ Todo, .parent = Comment,
-		.pattern = TODO_PATTERN },
+		.pattern = PATTERN_TODO },
 };
 
+// Interp patterns handle one level of nesting with the same delimiter.
 static const struct Syntax MakeSyntax[] = {
 	{ Keyword, .subexp = 2,
 		.pattern = WB "(\\.(PHONY|PRECIOUS|SUFFIXES))" WB },
 	{ Macro,
 		.pattern = "^ *-?include" },
 	{ String, .subexp = 1,
-		.pattern = "[[:alnum:]._]+[[:blank:]]*[!+:?]?=[[:blank:]]*(.*)" },
+		.pattern = "[._[:alnum:]]+" WS "[!+:?]?=" WS "(.*)" },
 	{ Normal,
 		.pattern = "^\t.*" },
 	{ String,
-		.pattern = SQ_PATTERN },
+		.pattern = PATTERN_SQ },
 	{ String,
-		.pattern = DQ_PATTERN },
+		.pattern = PATTERN_DQ },
 	{ Interp,
 		.pattern = "\\$[^$]" },
-	// These Interp patterns handle one level of nesting with the same
-	// delimiter.
 	{ Interp,
 		.pattern = "\\$\\((" "[^$)]" "|" "\\$\\([^)]*\\)" ")*\\)" },
 	{ Interp,
@@ -117,28 +126,40 @@ static const struct Syntax MakeSyntax[] = {
 	{ Comment,
 		.pattern = "#.*" },
 	{ Todo, .parent = Comment,
-		.pattern = TODO_PATTERN },
+		.pattern = PATTERN_TODO },
 };
 
 static const struct Syntax MdocSyntax[] = {
-	{ Keyword, .subexp = 2, .pattern =
-		WB "("
-		"%[ABCDIJNOPQRTUV]|A[cdnopqrt]|B[cdfkloqtx]|Br[coq]|Bsx|C[dm]"
-		"|D[1bcdloqtvx]|E[cdfklmnorsvx]|F[acdlnortx]|Hf|I[cnt]|L[bikp]|M[st]"
-		"|N[dmosx]|O[copstx]|P[acfopq]|Q[cloq]|R[esv]|S[chmoqstxy]|T[an]|U[dx]"
-		"|V[at]|X[cor]"
-		")" WB
-	},
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(D[dt]|N[dm]|Os)" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(S[hsx]|[LP]p|Xr)" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(%[ABCDIJNOPQRTUV]|[BE][dl]|D[1l]|It|Ql|R[es]|Ta)" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(Ap|[BE]k|Ns|Pf|Sm)" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(Ar|Cm|Ev|Fl|O[cop]|Pa)" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(Dv|Er|F[acdnot]|In|Lb|V[at])" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(A[dn]|Cd|Lk|M[st])" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "([BE]f|Em|Li|No|Sy)" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "((Br|[ABDPQS])[coq]|E[co])" WB },
+	{ Keyword, .subexp = 2,
+		.pattern = WB "(At|(Bs|[BDEFNO])x|Rv|St)" WB },
 	{ String,
-		.pattern = DQ_PATTERN },
+		.pattern = PATTERN_DQ },
 	{ Normal,
 		.pattern = "^[^.].*" },
 	{ String,
-		.pattern = "\\\\(.|\\(.{2}|\\[[^]]*\\])" },
+		.pattern = "\\\\(" "." "|" "\\(.{2}" "|" "\\[[^]]*\\]" ")" },
 	{ Comment,
 		.pattern = "^\\.\\\\\".*" },
 	{ Todo, .parent = Comment,
-		.pattern = TODO_PATTERN },
+		.pattern = PATTERN_TODO },
 };
 
 static const struct Language {
