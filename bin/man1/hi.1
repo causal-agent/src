@@ -27,30 +27,22 @@ is read from standard input.
 .
 .Pp
 The arguments are as follows:
-.Bl -tag -width Ds
+.Bl -tag -width "-f format"
 .It Fl c
 Compile all regular expressions and exit.
 .It Fl f Ar format
 Set the output format.
-The default
-.Ar format
-is
-.Cm ansi .
 .It Fl l Ar lang
 Set the input language.
-If a
-.Ar file
-is provided,
-the input language
-may be inferred from its name.
 .It Fl n Ar name
 Override the name used
 to infer the input language.
 .El
 .
-.Pp
-The output formats are as follows:
-.Bl -tag -offset indent -width "html-document"
+.Ss Output Formats
+The default output format is
+.Cm ansi .
+.Bl -tag -width "html-document"
 .It Cm ansi
 ANSI terminal escape codes.
 .It Cm irc
@@ -61,9 +53,15 @@ HTML fragment.
 HTML document.
 .El
 .
-.Pp
-The languages are as follows:
-.Bl -tag -offset indent -width "make"
+.Ss Input Languages
+If no input language is set with
+.Fl l ,
+it may be inferred from the name set by
+.Fl n
+or from the provided
+.Ar file
+name.
+.Bl -tag -width "make"
 .It Cm c
 The C11 language.
 .It Cm make
@@ -75,4 +73,13 @@ one level of nesting with the same delimiter.
 The
 .Xr mdoc 7
 language.
+.It Cm sh
+The POSIX
+.Xr sh 1
+language.
+Here-documents are correctly highlighted
+only with a delimiter of
+.Ql EOF .
+Arbitrarily nested strings and command substitutions
+are not highlighted correctly.
 .El

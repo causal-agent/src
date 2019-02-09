@@ -1,3 +1,4 @@
+/* vim: set foldmethod=marker foldlevel=0: */
 /* Copyright (C) 2019  June McEnroe <june@causal.agency>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -167,6 +168,54 @@ static const struct Syntax MdocSyntax[] = {
 };
 // }}}
 
+// sh syntax {{{
+static const struct Syntax ShSyntax[] = {
+	{ Keyword, .subexp = 2, .pattern =
+		WB "("
+		"!|case|do|done|elif|else|esac|fi|for|if|in|then|until|while"
+		")" WB
+	},
+	{ Keyword, .subexp = 2, .pattern =
+		WB "("
+		"alias|bg|cd|command|false|fc|fg|getopts|jobs|kill|newgrp|pwd|read"
+		"|true|umask|unalias|wait"
+		")" WB
+	},
+	{ Keyword, .subexp = 2, .pattern =
+		WB "("
+		"[.:]|break|continue|eval|exec|exit|export|local|readonly|return|set"
+		"|shift|times|trap|unset"
+		")" WB
+	},
+	{ String,
+		.pattern = PATTERN_DQ },
+	{ String, .subexp = 1,
+		.pattern = "<<-?" WS "EOF.*(\n)",
+		.pattend = "^\t*EOF$" },
+	{ Escape, .parent = SET(String),
+		.pattern = "[\\][\"$\\`]" },
+	{ String, .parent = ~SET(Escape),
+		.pattern = "[\\]." },
+	{ Interp, .parent = ~SET(Escape),
+		.pattern = "[$]([!#$*-?@]|[_[:alnum:]]+)" },
+	{ Interp, .parent = ~SET(Escape),
+		.pattern = "[$][{][^}]*[}]" },
+	{ Interp, .parent = ~SET(Escape),
+		.pattern = "[$][(][^)]*[)]" "|" "`[^`]*`" },
+	{ String,
+		.pattern = "'[^']*'" },
+	{ String, .subexp = 1,
+		.pattern = "<<-?" WS "'EOF'.*(\n)",
+		.pattend = "^\t*EOF$" },
+	{ Normal, .parent = SET(String),
+		.pattern = "^\t*EOF$" },
+	{ Comment, .parent = ~SET(String), .subexp = 2,
+		.pattern = "(^|" WS ")" "(#.*)" },
+	{ Todo, .parent = SET(Comment),
+		.pattern = PATTERN_TODO },
+};
+// }}}
+
 static const struct Language {
 	const char *name;
 	const char *pattern;
@@ -176,6 +225,7 @@ static const struct Language {
 	{ "c",    "[.][ch]$", CSyntax, ARRAY_LEN(CSyntax) },
 	{ "make", "[.]mk$|^Makefile$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
 	{ "mdoc", "[.][1-9]$", MdocSyntax, ARRAY_LEN(MdocSyntax) },
+	{ "sh",   "[.]sh$", ShSyntax, ARRAY_LEN(ShSyntax) },
 };
 
 static regex_t compile(const char *pattern, int flags) {
