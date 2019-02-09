@@ -285,8 +285,10 @@ static void check(void) {
 
 #define ENUM_OPTION \
 	X(Monospace, "monospace") \
-	X(Document, "document")   \
-	X(Title, "title")
+	X(Document, "document") \
+	X(Title, "title") \
+	X(CSS, "css") \
+	X(Inline, "inline")
 
 enum Option {
 #define X(option, _) option,
@@ -446,6 +448,7 @@ static void htmlEscape(const char *str, size_t len) {
 		size_t run = strcspn(str, "&<>");
 		if (run > len) run = len;
 		switch (str[0]) {
+			break; case '"': run = 1; printf("&quot;");
 			break; case '&': run = 1; printf("&amp;");
 			break; case '<': run = 1; printf("&lt;");
 			break; case '>': run = 1; printf("&gt;");
@@ -456,24 +459,40 @@ static void htmlEscape(const char *str, size_t len) {
 	}
 }
 
+static const char *ClassName[ClassLen] = {
+#define X(class) [class] = #class,
+	ENUM_CLASS
+#undef X
+};
+
+static const char *HTMLStyle[ClassLen] = {
+	[Keyword]  = "color: dimgray;",
+	[Macro]    = "color: green;",
+	[String]   = "color: teal;",
+	[Format]   = "color: teal; font-weight: bold;",
+	[Interp]   = "color: green;",
+	[Comment]  = "color: navy;",
+	[Todo]     = "color: navy; font-weight: bold;",
+};
+
 static void htmlHeader(const char *opts[]) {
-	if (opts[Document]) {
-		printf("<!DOCTYPE html>\n<title>");
-		if (opts[Title]) htmlEscape(opts[Title], strlen(opts[Title]));
-		printf("</title>\n");
-		printf(
-			"<style>\n"
-			".hi.Keyword { color: dimgray; }\n"
-			".hi.Macro   { color: green; }\n"
-			".hi.String  { color: teal; }\n"
-			".hi.Escape  { color: black; }\n"
-			".hi.Format  { color: teal; font-weight: bold }\n"
-			".hi.Interp  { color: green; }\n"
-			".hi.Comment { color: navy; }\n"
-			".hi.Todo    { color: navy; font-weight: bold }\n"
-			"</style>\n"
-		);
+	if (!opts[Document]) goto pre;
+	printf("<!DOCTYPE html>\n<title>");
+	if (opts[Title]) htmlEscape(opts[Title], strlen(opts[Title]));
+	printf("</title>\n");
+	if (opts[CSS]) {
+		printf("<link rel=\"stylesheet\" href=\"");
+		htmlEscape(opts[CSS], strlen(opts[CSS]));
+		printf("\">\n");
+	} else if (!opts[Inline]) {
+		printf("<style>\n");
+		for (enum Class class = 0; class < ClassLen; ++class) {
+			if (!HTMLStyle[class]) continue;
+			printf(".hi.%s { %s }\n", ClassName[class], HTMLStyle[class]);
+		}
+		printf("</style>\n");
 	}
+pre:
 	printf("<pre class=\"hi\">");
 }
 
@@ -482,16 +501,13 @@ static void htmlFooter(const char *opts[]) {
 	printf("</pre>\n");
 }
 
-static const char *ClassName[ClassLen] = {
-#define X(class) [class] = #class,
-	ENUM_CLASS
-#undef X
-};
-
 static void
 htmlOutput(const char *opts[], enum Class class, const char *str, size_t len) {
-	(void)opts;
-	printf("<span class=\"hi %s\">", ClassName[class]);
+	if (opts[Inline]) {
+		printf("<span style=\"%s\">", HTMLStyle[class] ? HTMLStyle[class] : "");
+	} else {
+		printf("<span class=\"hi %s\">", ClassName[class]);
+	}
 	htmlEscape(str, len);
 	printf("</span>");
 }

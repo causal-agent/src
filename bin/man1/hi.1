@@ -1,4 +1,4 @@
-.Dd February 7, 2019
+.Dd February 9, 2019
 .Dt HI 1
 .Os
 .
@@ -72,13 +72,31 @@ classes.
 The options are as follows:
 .Bl -tag -width "title=..."
 .It Cm document
-Output an HTML document
-with inline CSS.
+Output an HTML document.
 .It Cm title Ns = Ns Ar ...
-Set the title of the HTML document.
+With
+.Cm document ,
+set the
+.Sy <title>
+element text.
 The default title is the
 .Ar file
 name.
+.It Cm css Ns = Ns Ar url
+With
+.Cm document ,
+output a
+.Sy <link>
+element for the external stylesheet
+.Ar url .
+If unset,
+output default styles in a
+.Sy <style>
+element.
+.It Cm inline
+Output inline
+.Sy style
+attributes rather than classes.
 .El
 .El
 .
