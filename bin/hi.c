@@ -53,8 +53,8 @@ struct Syntax {
 
 #define WB "(^|[^_[:alnum:]]|\n)"
 #define WS "[[:blank:]]*"
-#define PATTERN_SQ "'([^']|\\\\')*'"
-#define PATTERN_DQ "\"([^\"]|\\\\\")*\""
+#define PATTERN_SQ "'([^']|[\\]')*'"
+#define PATTERN_DQ "\"([^\"]|[\\]\")*\""
 #define PATTERN_TODO "FIXME|TODO|XXX"
 
 // C syntax {{{
@@ -74,7 +74,7 @@ static const struct Syntax CSyntax[] = {
 	{ Keyword, .subexp = 2,
 		.pattern = WB "(break|continue|goto|return)" WB },
 	{ Macro,
-		.pattern = "^" WS "#(.|\\\\\n)*" },
+		.pattern = "^" WS "#(.|[\\]\n)*" },
 	{ String, .parent = SET(Macro), .subexp = 1,
 		.pattern = "include" WS "(<[^>]*>)" },
 	{ String,
@@ -82,21 +82,21 @@ static const struct Syntax CSyntax[] = {
 	{ String,
 		.pattern = "([LU]|u8?)?" PATTERN_DQ },
 	{ Escape, .parent = SET(String),
-		.pattern = "\\\\([\"'?\\abfnrtv]|[0-7]{1,3}|x[0-9A-Fa-f]+)" },
+		.pattern = "[\\]([\"'?\\abfnrtv]|[0-7]{1,3}|x[0-9A-Fa-f]+)" },
 	{ Escape, .parent = SET(String),
-		.pattern = "\\\\(U[0-9A-Fa-f]{8}|u[0-9A-Fa-f]{4})" },
+		.pattern = "[\\](U[0-9A-Fa-f]{8}|u[0-9A-Fa-f]{4})" },
 	{ Format, .parent = SET(String), .pattern =
 		"%%|%[ #+-0]*"         // flags
-		"(\\*|[0-9]+)?"        // field width
-		"(\\.(\\*|[0-9]+))?"   // precision
+		"([*]|[0-9]+)?"        // field width
+		"([.]([*]|[0-9]+))?"   // precision
 		"([Lhjltz]|hh|ll)?"    // length modifier
 		"[AEFGXacdefginopsux]" // format specifier
 	},
 	{ Comment, .parent = ~SET(String),
 		.pattern = "//.*" },
 	{ Comment, .parent = ~SET(String),
-		.pattern = "/\\*",
-		.pattend = "\\*/" },
+		.pattern = "/[*]",
+		.pattend = "[*]/" },
 	{ Todo, .parent = SET(Comment),
 		.pattern = PATTERN_TODO },
 };
@@ -105,7 +105,7 @@ static const struct Syntax CSyntax[] = {
 // make syntax {{{
 static const struct Syntax MakeSyntax[] = {
 	{ Keyword, .subexp = 2,
-		.pattern = WB "(\\.(PHONY|PRECIOUS|SUFFIXES))" WB },
+		.pattern = WB "([.](PHONY|PRECIOUS|SUFFIXES))" WB },
 	{ Macro,
 		.pattern = "^ *-?include" },
 	{ String, .subexp = 1,
@@ -117,14 +117,14 @@ static const struct Syntax MakeSyntax[] = {
 	{ String,
 		.pattern = PATTERN_DQ },
 	{ Interp,
-		.pattern = "\\$[^$]" },
+		.pattern = "[$]." },
 	// Support one level of nesting with the same delimiter.
 	{ Interp,
-		.pattern = "\\$\\((" "[^$)]" "|" "\\$\\([^)]*\\)" ")*\\)" },
+		.pattern = "[$][(](" "[^$)]" "|" "[$][(][^)]*[)]" ")*[)]" },
 	{ Interp,
-		.pattern = "\\$\\{(" "[^$}]" "|" "\\$\\{[^}]*\\}" ")*\\}" },
+		.pattern = "[$][{](" "[^$}]" "|" "[$][{][^}]*[}]" ")*[}]" },
 	{ Escape,
-		.pattern = "\\$\\$" },
+		.pattern = "[$][$]" },
 	{ Comment,
 		.pattern = "#.*" },
 	{ Todo, .parent = SET(Comment),
@@ -159,9 +159,9 @@ static const struct Syntax MdocSyntax[] = {
 	{ Normal,
 		.pattern = "^[^.].*" },
 	{ String,
-		.pattern = "\\\\(" "." "|" "\\(.{2}" "|" "\\[[^]]*\\]" ")" },
+		.pattern = "[\\](" "." "|" "[(].{2}" "|" "[[][^]]*[]]" ")" },
 	{ Comment,
-		.pattern = "^\\.\\\\\".*" },
+		.pattern = "^[.][\\]\".*" },
 	{ Todo, .parent = SET(Comment),
 		.pattern = PATTERN_TODO },
 };
@@ -173,9 +173,9 @@ static const struct Language {
 	const struct Syntax *syntax;
 	size_t len;
 } Languages[] = {
-	{ "c",    "\\.[ch]$", CSyntax, ARRAY_LEN(CSyntax) },
-	{ "make", "\\.mk$|^Makefile$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
-	{ "mdoc", "\\.[1-9]$", MdocSyntax, ARRAY_LEN(MdocSyntax) },
+	{ "c",    "[.][ch]$", CSyntax, ARRAY_LEN(CSyntax) },
+	{ "make", "[.]mk$|^Makefile$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
+	{ "mdoc", "[.][1-9]$", MdocSyntax, ARRAY_LEN(MdocSyntax) },
 };
 
 static regex_t compile(const char *pattern, int flags) {
