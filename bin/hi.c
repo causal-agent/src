@@ -31,17 +31,22 @@
 typedef unsigned Set;
 #define SET(x) ((Set)1 << (x))
 
+#define ENUM_CLASS \
+	X(Normal)  \
+	X(Keyword) \
+	X(Macro)   \
+	X(String)  \
+	X(Escape)  \
+	X(Format)  \
+	X(Interp)  \
+	X(Comment) \
+	X(Todo)
+
 enum Class {
-	Normal,
-	Keyword,
-	Macro,
-	String,
-	Escape,
-	Format,
-	Interp,
-	Comment,
-	Todo,
-	ClassCount,
+#define X(class) class,
+	ENUM_CLASS
+#undef X
+	ClassLen,
 };
 
 struct Syntax {
@@ -197,7 +202,7 @@ static const struct Syntax ShSyntax[] = {
 	{ String, .parent = ~SET(Escape),
 		.pattern = "[\\]." },
 	{ Interp, .parent = ~SET(Escape),
-		.pattern = "[$]([!#$*-?@]|[_[:alnum:]]+)" },
+		.pattern = "[$]([!#$*?@-]|[_[:alnum:]]+)" },
 	{ Interp, .parent = ~SET(Escape),
 		.pattern = "[$][{][^}]*[}]" },
 	{ Interp, .parent = ~SET(Escape),
@@ -319,7 +324,7 @@ enum SGR {
 	SGRWhite,
 };
 
-static const enum SGR ANSIStyle[ClassCount][2] = {
+static const enum SGR ANSIStyle[ClassLen][2] = {
 	[Normal]  = { SGRReset },
 	[Keyword] = { SGRWhite },
 	[Macro]   = { SGRGreen },
@@ -454,16 +459,10 @@ static void htmlEscape(const char *str, size_t len) {
 	}
 }
 
-static const char *ClassName[ClassCount] = {
-	[Normal]  = "Normal",
-	[Keyword] = "Keyword",
-	[Macro]   = "Macro",
-	[String]  = "String",
-	[Escape]  = "Escape",
-	[Format]  = "Format",
-	[Interp]  = "Interp",
-	[Comment] = "Comment",
-	[Todo]    = "Todo",
+static const char *ClassName[ClassLen] = {
+#define X(class) [class] = #class,
+	ENUM_CLASS
+#undef X
 };
 
 static void htmlOutput(enum Class class, const char *str, size_t len) {
