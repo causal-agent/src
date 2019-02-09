@@ -71,6 +71,10 @@ brot: brot.o $(GFX_OBJ)
 gfxx: gfxx.o $(GFX_OBJ)
 	$(CC) $(LDFLAGS) $@.o $(GFX_OBJ) $(LDLIBS_$(GFX)) -o $@
 
+hi: hi.c
+	$(CC) $(CFLAGS) $(LDFLAGS) hi.c $(LDLIBS) -o $@
+	./hi -c
+
 open pbcopy pbpaste: pbd
 	ln -f pbd $@
 
