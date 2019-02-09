@@ -10,7 +10,7 @@ set tabstop=4 shiftwidth=4 shiftround
 set smartindent cinoptions=l1(sU1m1
 set ignorecase smartcase inccommand=nosplit
 nmap <leader><leader> :nohlsearch<CR>
-set foldmethod=syntax foldlevel=99
+set foldmethod=syntax foldlevel=99 foldopen-=block
 let asmsyntax = "nasm"
 let c_syntax_for_h = 1
 let is_posix = 1
