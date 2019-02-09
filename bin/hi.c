@@ -306,8 +306,27 @@ static void check(void) {
 	}
 }
 
-typedef void HeaderFn(const char *name);
-typedef void OutputFn(enum Class class, const char *str, size_t len);
+#define ENUM_OPTION \
+	X(Monospace, "monospace") \
+	X(Document, "document")   \
+	X(Title, "title")
+
+enum Option {
+#define X(option, _) option,
+	ENUM_OPTION
+#undef X
+	OptionLen,
+};
+
+static const char *OptionKey[OptionLen] = {
+#define X(option, key) [option] = key,
+	ENUM_OPTION
+#undef X
+};
+
+typedef void HeaderFn(const char *opts[]);
+typedef void
+OutputFn(const char *opts[], enum Class class, const char *str, size_t len);
 
 // ANSI format {{{
 
@@ -337,7 +356,9 @@ static const enum SGR ANSIStyle[ClassLen][3] = {
 	[Todo]    = { SGRBlue, SGRBoldOn, SGRBoldOff },
 };
 
-static void ansiOutput(enum Class class, const char *str, size_t len) {
+static void
+ansiOutput(const char *opts[], enum Class class, const char *str, size_t len) {
+	(void)opts;
 	// Style each line separately, otherwise less -R won't look right.
 	while (len) {
 		size_t line = strcspn(str, "\n");
@@ -384,6 +405,7 @@ enum IRC {
 	IRCLightGray,
 	IRCBold = 0x02,
 	IRCColor = 0x03,
+	IRCMonospace = 0x11,
 };
 
 static const enum IRC SGRIRC[] = {
@@ -400,27 +422,32 @@ static const enum IRC SGRIRC[] = {
 	[SGRDefault] = 0,
 };
 
-static void ircOutput(enum Class class, const char *str, size_t len) {
+static void
+ircOutput(const char *opts[], enum Class class, const char *str, size_t len) {
+	char mono[2] = "";
+	if (opts[Monospace]) mono[0] = IRCMonospace;
+
+	char cc[3] = "";
+	if (ANSIStyle[class][0] != SGRDefault) {
+		snprintf(cc, sizeof(cc), "%d", SGRIRC[ANSIStyle[class][0]]);
+	}
+
 	// Style each line separately, for multiple IRC messages.
 	while (len) {
 		size_t line = strcspn(str, "\n");
 		if (line > len) line = len;
-		char cc[3] = "";
-		if (ANSIStyle[class][0] != SGRDefault) {
-			snprintf(cc, sizeof(cc), "%d", SGRIRC[ANSIStyle[class][0]]);
-		}
 		if (ANSIStyle[class][1]) {
 			printf(
-				"%c%s%c%.*s%c",
+				"%c%s%c%s%.*s%s%c",
 				IRCColor, cc, SGRIRC[ANSIStyle[class][1]],
-				(int)line, str,
+				mono, (int)line, str, mono,
 				SGRIRC[ANSIStyle[class][2]]
 			);
 		} else {
 			// Double-toggle bold to prevent str being interpreted as color.
 			printf(
-				"%c%s%c%c%.*s",
-				IRCColor, cc, IRCBold, IRCBold, (int)line, str
+				"%c%s%c%c%s%.*s%s",
+				IRCColor, cc, IRCBold, IRCBold, mono, (int)line, str, mono
 			);
 		}
 		if (line < len) {
@@ -435,15 +462,6 @@ static void ircOutput(enum Class class, const char *str, size_t len) {
 // }}}
 
 // HTML format {{{
-
-static void htmlHeader(const char *name) {
-	(void)name;
-	printf("<pre class=\"hi\">");
-}
-static void htmlFooter(const char *name) {
-	(void)name;
-	printf("</pre>\n");
-}
 
 static void htmlEscape(const char *str, size_t len) {
 	while (len) {
@@ -460,35 +478,44 @@ static void htmlEscape(const char *str, size_t len) {
 	}
 }
 
+static void htmlHeader(const char *opts[]) {
+	if (opts[Document]) {
+		printf("<!DOCTYPE html>\n<title>");
+		if (opts[Title]) htmlEscape(opts[Title], strlen(opts[Title]));
+		printf("</title>\n");
+		printf(
+			"<style>\n"
+			".hi.Keyword { color: dimgray; }\n"
+			".hi.Macro   { color: green; }\n"
+			".hi.String  { color: teal; }\n"
+			".hi.Escape  { color: black; }\n"
+			".hi.Format  { color: teal; font-weight: bold }\n"
+			".hi.Interp  { color: green; }\n"
+			".hi.Comment { color: navy; }\n"
+			".hi.Todo    { color: navy; font-weight: bold }\n"
+			"</style>\n"
+		);
+	}
+	printf("<pre class=\"hi\">");
+}
+
+static void htmlFooter(const char *opts[]) {
+	(void)opts;
+	printf("</pre>\n");
+}
+
 static const char *ClassName[ClassLen] = {
 #define X(class) [class] = #class,
 	ENUM_CLASS
 #undef X
 };
 
-static void htmlOutput(enum Class class, const char *str, size_t len) {
+static void
+htmlOutput(const char *opts[], enum Class class, const char *str, size_t len) {
+	(void)opts;
 	printf("<span class=\"hi %s\">", ClassName[class]);
 	htmlEscape(str, len);
 	printf("</span>");
-}
-
-static void htmlDocumentHeader(const char *name) {
-	printf("<!DOCTYPE html>\n<title>");
-	htmlEscape(name, strlen(name));
-	printf(
-		"</title>\n"
-		"<style>\n"
-		".hi.Keyword { color: dimgray; }\n"
-		".hi.Macro   { color: green; }\n"
-		".hi.String  { color: teal; }\n"
-		".hi.Escape  { color: black; }\n"
-		".hi.Format  { color: teal; font-weight: bold }\n"
-		".hi.Interp  { color: green; }\n"
-		".hi.Comment { color: navy; }\n"
-		".hi.Todo    { color: navy; font-weight: bold }\n"
-		"</style>\n"
-	);
-	htmlHeader(name);
 }
 
 // }}}
@@ -500,40 +527,80 @@ static const struct Format {
 	HeaderFn *footer;
 } Formats[] = {
 	{ "ansi", ansiOutput, NULL, NULL },
-	{ "irc", ircOutput, NULL, NULL },
+	{ "irc",  ircOutput, NULL, NULL },
 	{ "html", htmlOutput, htmlHeader, htmlFooter },
-	{ "html-document", htmlOutput, htmlDocumentHeader, htmlFooter },
 };
+
+static bool findLanguage(struct Language *lang, const char *name) {
+	for (size_t i = 0; i < ARRAY_LEN(Languages); ++i) {
+		if (strcmp(name, Languages[i].name)) continue;
+		*lang = Languages[i];
+		return true;
+	}
+	return false;
+}
+
+static bool matchLanguage(struct Language *lang, const char *name) {
+	for (size_t i = 0; i < ARRAY_LEN(Languages); ++i) {
+		regex_t regex = compile(Languages[i].pattern, REG_NOSUB);
+		int error = regexec(&regex, name, 0, NULL, 0);
+		regfree(&regex);
+		if (error == REG_NOMATCH) continue;
+		if (error) errx(EX_SOFTWARE, "regexec: %d", error);
+		*lang = Languages[i];
+		return true;
+	}
+	return false;
+}
+
+static bool findFormat(struct Format *format, const char *name) {
+	for (size_t i = 0; i < ARRAY_LEN(Formats); ++i) {
+		if (strcmp(name, Formats[i].name)) continue;
+		*format = Formats[i];
+		return true;
+	}
+	return false;
+}
+
+static bool findOption(enum Option *opt, const char *key) {
+	for (*opt = 0; *opt < OptionLen; ++*opt) {
+		if (!strcmp(key, OptionKey[*opt])) return true;
+	}
+	return false;
+}
 
 int main(int argc, char *argv[]) {
 	const char *name = NULL;
-	const struct Language *lang = NULL;
-	const struct Format *format = NULL;
+	struct Language lang = {0};
+	struct Format format = Formats[0];
+	const char *opts[OptionLen] = {0};
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "cf:l:n:"))) {
+	while (0 < (opt = getopt(argc, argv, "cf:l:n:o:"))) {
 		switch (opt) {
-			break; case 'c': {
-				check();
-				return EX_OK;
-			}
+			break; case 'c': check(); return EX_OK;
 			break; case 'f': {
-				for (size_t i = 0; i < ARRAY_LEN(Formats); ++i) {
-					if (strcmp(optarg, Formats[i].name)) continue;
-					format = &Formats[i];
-					break;
+				if (!findFormat(&format, optarg)) {
+					errx(EX_USAGE, "no such format %s", optarg);
 				}
-				if (!format) errx(EX_USAGE, "no such format %s", optarg);
 			}
 			break; case 'l': {
-				for (size_t i = 0; i < ARRAY_LEN(Languages); ++i) {
-					if (strcmp(optarg, Languages[i].name)) continue;
-					lang = &Languages[i];
-					break;
+				if (!findLanguage(&lang, optarg)) {
+					errx(EX_USAGE, "no such language %s", optarg);
 				}
-				if (!lang) errx(EX_USAGE, "no such language %s", optarg);
 			}
 			break; case 'n': name = optarg;
+			break; case 'o': {
+				enum Option key;
+				char *keystr, *valstr;
+				while (NULL != (valstr = strsep(&optarg, ","))) {
+					keystr = strsep(&valstr, "=");
+					if (!findOption(&key, keystr)) {
+						errx(EX_USAGE, "no such option %s", keystr);
+					}
+					opts[key] = (valstr ? valstr : keystr);
+				}
+			}
 			break; default: return EX_USAGE;
 		}
 	}
@@ -550,20 +617,10 @@ int main(int argc, char *argv[]) {
 		name = strrchr(path, '/');
 		name = (name ? &name[1] : path);
 	}
-
-	if (!lang) {
-		for (size_t i = 0; i < ARRAY_LEN(Languages); ++i) {
-			regex_t regex = compile(Languages[i].pattern, REG_NOSUB);
-			bool match = !regexec(&regex, name, 0, NULL, 0);
-			regfree(&regex);
-			if (match) {
-				lang = &Languages[i];
-				break;
-			}
-		}
-		if (!lang) errx(EX_USAGE, "cannot infer language for %s", name);
+	if (!lang.syntax && !matchLanguage(&lang, name)) {
+		errx(EX_USAGE, "cannot infer language for %s", name);
 	}
-	if (!format) format = &Formats[0];
+	if (!opts[Title]) opts[Title] = name;
 
 	size_t len = 32 * 1024;
 	if (file != stdin) {
@@ -583,15 +640,15 @@ int main(int argc, char *argv[]) {
 	enum Class *hi = calloc(len, sizeof(*hi));
 	if (!hi) err(EX_OSERR, "calloc");
 
-	highlight(*lang, hi, str);
+	highlight(lang, hi, str);
 
-	if (format->header) format->header(name);
+	if (format.header) format.header(opts);
 	size_t run = 0;
 	for (size_t i = 0; i < len; i += run) {
 		for (run = 0; i + run < len; ++run) {
 			if (hi[i + run] != hi[i]) break;
 		}
-		format->output(hi[i], &str[i], run);
+		format.output(opts, hi[i], &str[i], run);
 	}
-	if (format->footer) format->footer(name);
+	if (format.footer) format.footer(opts);
 }

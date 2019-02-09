@@ -11,6 +11,7 @@
 .Op Fl f Ar format
 .Op Fl l Ar lang
 .Op Fl n Ar name
+.Op Fl o Ar opts
 .Op Ar file
 .Nm
 .Fl c
@@ -37,20 +38,48 @@ Set the input language.
 .It Fl n Ar name
 Override the name used
 to infer the input language.
+.It Fl o Ar opts
+Set output format options.
+.Ar opts
+is a comma-separated list of options.
 .El
 .
 .Ss Output Formats
 The default output format is
 .Cm ansi .
-.Bl -tag -width "html-document"
+.
+.Bl -tag -width Ds
 .It Cm ansi
-ANSI terminal escape codes.
+Output ANSI terminal escape codes.
+.
 .It Cm irc
-IRC formatting codes.
+Output IRC formatting codes.
+.Pp
+The options are as follows:
+.Bl -tag -width "monospace"
+.It Cm monospace
+Use the monospace formatting code
+introduced by IRCCloud.
+.El
+.
 .It Cm html
-HTML fragment.
-.It Cm html-document
-HTML document.
+Output HTML
+.Sy <pre>
+with
+.Sy <span>
+classes.
+.Pp
+The options are as follows:
+.Bl -tag -width "title=..."
+.It Cm document
+Output an HTML document
+with inline CSS.
+.It Cm title Ns = Ns Ar ...
+Set the title of the HTML document.
+The default title is the
+.Ar file
+name.
+.El
 .El
 .
 .Ss Input Languages
@@ -61,18 +90,22 @@ it may be inferred from the name set by
 or from the provided
 .Ar file
 name.
-.Bl -tag -width "make"
+.
+.Bl -tag -width Ds
 .It Cm c
 The C11 language.
+.
 .It Cm make
 The portable subset of
 .Xr make 1 .
 Variable substitution supports
 one level of nesting with the same delimiter.
+.
 .It Cm mdoc
 The
 .Xr mdoc 7
 language.
+.
 .It Cm sh
 The POSIX
 .Xr sh 1
