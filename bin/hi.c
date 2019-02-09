@@ -422,37 +422,38 @@ static const enum IRC SGRIRC[] = {
 	[SGRDefault] = 0,
 };
 
+static void ircHeader(const char *opts[]) {
+	if (opts[Monospace]) printf("%c", IRCMonospace);
+}
+
 static void
 ircOutput(const char *opts[], enum Class class, const char *str, size_t len) {
-	char mono[2] = "";
-	if (opts[Monospace]) mono[0] = IRCMonospace;
-
 	char cc[3] = "";
 	if (ANSIStyle[class][0] != SGRDefault) {
 		snprintf(cc, sizeof(cc), "%d", SGRIRC[ANSIStyle[class][0]]);
 	}
-
 	// Style each line separately, for multiple IRC messages.
 	while (len) {
 		size_t line = strcspn(str, "\n");
 		if (line > len) line = len;
 		if (ANSIStyle[class][1]) {
 			printf(
-				"%c%s%c%s%.*s%s%c",
+				"%c%s%c%.*s%c",
 				IRCColor, cc, SGRIRC[ANSIStyle[class][1]],
-				mono, (int)line, str, mono,
+				(int)line, str,
 				SGRIRC[ANSIStyle[class][2]]
 			);
 		} else {
 			// Double-toggle bold to prevent str being interpreted as color.
 			printf(
-				"%c%s%c%c%s%.*s%s",
-				IRCColor, cc, IRCBold, IRCBold, mono, (int)line, str, mono
+				"%c%s%c%c%.*s",
+				IRCColor, cc, IRCBold, IRCBold, (int)line, str
 			);
 		}
 		if (line < len) {
 			printf("\n");
 			line++;
+			if (opts[Monospace] && line < len) printf("%c", IRCMonospace);
 		}
 		str += line;
 		len -= line;
@@ -527,7 +528,7 @@ static const struct Format {
 	HeaderFn *footer;
 } Formats[] = {
 	{ "ansi", ansiOutput, NULL, NULL },
-	{ "irc",  ircOutput, NULL, NULL },
+	{ "irc",  ircOutput, ircHeader, NULL },
 	{ "html", htmlOutput, htmlHeader, htmlFooter },
 };
 
