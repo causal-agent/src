@@ -65,20 +65,15 @@ struct Syntax {
 
 // C syntax {{{
 static const struct Syntax CSyntax[] = {
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(auto|extern|register|static|(_T|t)hread_local)" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(_Atomic|const|restrict|volatile)" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(inline|(_N|n)oreturn)" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "((_A|a)lignas)" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(enum|struct|typedef|union)" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(case|default|do|else|for|if|switch|while)" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(break|continue|goto|return)" WB },
+	{ Keyword, .subexp = 2, .pattern = WB
+		"(" "auto|extern|register|(_T|t)hread_local|typedef"
+		"|" "_Atomic|const|restrict|volatile"
+		"|" "inline|(_N|n)oreturn"
+		"|" "(_A|a)lignas"
+		"|" "enum|struct|union"
+		"|" "do|else|for|if|switch|while"
+		"|" "break|case|continue|default|goto|return"
+		")" WB },
 	{ Macro,
 		.pattern = "^" WS "#(.|[\\]\n)*" },
 	{ String, .parent = SET(Macro), .subexp = 1,
@@ -140,26 +135,18 @@ static const struct Syntax MakeSyntax[] = {
 
 // mdoc syntax {{{
 static const struct Syntax MdocSyntax[] = {
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(D[dt]|N[dm]|Os)" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(S[hsx]|[LP]p|Xr)" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(%[ABCDIJNOPQRTUV]|[BE][dl]|D[1l]|It|Ql|R[es]|Ta)" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(Ap|[BE]k|Ns|Pf|Sm)" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(Ar|Cm|Ev|Fl|O[cop]|Pa)" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(Dv|Er|F[acdnot]|In|Lb|V[at])" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(A[dn]|Cd|Lk|M[st])" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "([BE]f|Em|Li|No|Sy)" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "((Br|[ABDPQS])[coq]|E[co])" WB },
-	{ Keyword, .subexp = 2,
-		.pattern = WB "(At|(Bs|[BDEFNO])x|Rv|St)" WB },
+	{ Keyword, .subexp = 2, .pattern = WB
+		"(" "D[dt]|N[dm]|Os"
+		"|" "S[hsx]|[LP]p|Xr"
+		"|" "%[ABCDIJNOPQRTUV]|[BE][dl]|D[1l]|It|Ql|R[es]|Ta"
+		"|" "Ap|[BE]k|Ns|Pf|Sm"
+		"|" "Ar|Cm|Ev|Fl|O[cop]|Pa"
+		"|" "Dv|Er|F[acdnot]|In|Lb|V[at]"
+		"|" "A[dn]|Cd|Lk|M[st]"
+		"|" "[BE]f|Em|Li|No|Sy"
+		"|" "(Br|[ABDPQS])[coq]|E[co]"
+		"|" "At|(Bs|[BDEFNO])x|Rv|St"
+		")" WB },
 	{ String,
 		.pattern = PATTERN_DQ },
 	{ Normal,
@@ -175,23 +162,13 @@ static const struct Syntax MdocSyntax[] = {
 
 // sh syntax {{{
 static const struct Syntax ShSyntax[] = {
-	{ Keyword, .subexp = 2, .pattern =
-		WB "("
-		"!|case|do|done|elif|else|esac|fi|for|if|in|then|until|while"
-		")" WB
-	},
-	{ Keyword, .subexp = 2, .pattern =
-		WB "("
-		"alias|bg|cd|command|false|fc|fg|getopts|jobs|kill|newgrp|pwd|read"
-		"|true|umask|unalias|wait"
-		")" WB
-	},
-	{ Keyword, .subexp = 2, .pattern =
-		WB "("
-		"[.:]|break|continue|eval|exec|exit|export|local|readonly|return|set"
-		"|shift|times|trap|unset"
-		")" WB
-	},
+	{ Keyword, .subexp = 2, .pattern = WB
+		"(" "!|case|do|done|elif|else|esac|fi|for|if|in|then|until|while"
+		"|" "alias|bg|cd|command|false|fc|fg|getopts|jobs|kill|newgrp|pwd|read"
+		"|" "true|umask|unalias|wait"
+		"|" "[.:]|break|continue|eval|exec|exit|export|local|readonly|return"
+		"|" "set|shift|times|trap|unset"
+		")" WB },
 	{ String,
 		.pattern = PATTERN_DQ },
 	{ String, .subexp = 1,
