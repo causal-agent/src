@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+
+dir=$(mktemp -d)
+hi -f html -o document,tab=4 "$@" > "$dir/hi.html"
+up "$dir/hi.html"
+rm -r "$dir"
