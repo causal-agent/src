@@ -312,8 +312,8 @@ typedef void OutputFn(enum Class class, const char *str, size_t len);
 // ANSI format {{{
 
 enum SGR {
-	SGRReset,
-	SGRBold,
+	SGRBoldOn = 1,
+	SGRBoldOff = 22,
 	SGRBlack = 30,
 	SGRRed,
 	SGRGreen,
@@ -322,18 +322,19 @@ enum SGR {
 	SGRMagenta,
 	SGRCyan,
 	SGRWhite,
+	SGRDefault = 39,
 };
 
-static const enum SGR ANSIStyle[ClassLen][2] = {
-	[Normal]  = { SGRReset },
+static const enum SGR ANSIStyle[ClassLen][3] = {
+	[Normal]  = { SGRDefault },
 	[Keyword] = { SGRWhite },
 	[Macro]   = { SGRGreen },
 	[String]  = { SGRCyan },
-	[Escape]  = { SGRReset },
-	[Format]  = { SGRCyan, SGRBold },
+	[Escape]  = { SGRDefault },
+	[Format]  = { SGRCyan, SGRBoldOn, SGRBoldOff },
 	[Interp]  = { SGRGreen },
 	[Comment] = { SGRBlue },
-	[Todo]    = { SGRBlue, SGRBold },
+	[Todo]    = { SGRBlue, SGRBoldOn, SGRBoldOff },
 };
 
 static void ansiOutput(enum Class class, const char *str, size_t len) {
@@ -346,7 +347,7 @@ static void ansiOutput(enum Class class, const char *str, size_t len) {
 				"\x1B[%d;%dm%.*s\x1B[%dm",
 				ANSIStyle[class][0], ANSIStyle[class][1],
 				(int)line, str,
-				SGRReset
+				ANSIStyle[class][2]
 			);
 		} else {
 			printf("\x1B[%dm%.*s", ANSIStyle[class][0], (int)line, str);
@@ -383,12 +384,11 @@ enum IRC {
 	IRCLightGray,
 	IRCBold = 0x02,
 	IRCColor = 0x03,
-	IRCReset = 0x0F,
 };
 
 static const enum IRC SGRIRC[] = {
-	[SGRReset]   = IRCReset,
-	[SGRBold]    = IRCBold,
+	[SGRBoldOn]  = IRCBold,
+	[SGRBoldOff] = IRCBold,
 	[SGRBlack]   = IRCBlack,
 	[SGRRed]     = IRCRed,
 	[SGRGreen]   = IRCGreen,
@@ -397,6 +397,7 @@ static const enum IRC SGRIRC[] = {
 	[SGRMagenta] = IRCMagenta,
 	[SGRCyan]    = IRCCyan,
 	[SGRWhite]   = IRCGray,
+	[SGRDefault] = 0,
 };
 
 static void ircOutput(enum Class class, const char *str, size_t len) {
@@ -404,23 +405,23 @@ static void ircOutput(enum Class class, const char *str, size_t len) {
 	while (len) {
 		size_t line = strcspn(str, "\n");
 		if (line > len) line = len;
+		char cc[3] = "";
+		if (ANSIStyle[class][0] != SGRDefault) {
+			snprintf(cc, sizeof(cc), "%d", SGRIRC[ANSIStyle[class][0]]);
+		}
 		if (ANSIStyle[class][1]) {
 			printf(
-				"%c%d%c%.*s%c",
-				IRCColor, SGRIRC[ANSIStyle[class][0]],
-				SGRIRC[ANSIStyle[class][1]],
+				"%c%s%c%.*s%c",
+				IRCColor, cc, SGRIRC[ANSIStyle[class][1]],
 				(int)line, str,
-				IRCReset
-			);
-		} else if (ANSIStyle[class][0]) {
-			// Double-toggle bold to prevent str being interpreted as color.
-			printf(
-				"%c%d%c%c%.*s",
-				IRCColor, SGRIRC[ANSIStyle[class][0]], IRCBold, IRCBold,
-				(int)line, str
+				SGRIRC[ANSIStyle[class][2]]
 			);
 		} else {
-			printf("%c%.*s", IRCReset, (int)line, str);
+			// Double-toggle bold to prevent str being interpreted as color.
+			printf(
+				"%c%s%c%c%.*s",
+				IRCColor, cc, IRCBold, IRCBold, (int)line, str
+			);
 		}
 		if (line < len) {
 			printf("\n");
