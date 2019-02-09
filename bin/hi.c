@@ -284,11 +284,12 @@ static void check(void) {
 }
 
 #define ENUM_OPTION \
-	X(Monospace, "monospace") \
-	X(Document, "document") \
-	X(Title, "title") \
 	X(CSS, "css") \
-	X(Inline, "inline")
+	X(Document, "document") \
+	X(Inline, "inline") \
+	X(Monospace, "monospace") \
+	X(Tab, "tab") \
+	X(Title, "title")
 
 enum Option {
 #define X(option, _) option,
@@ -475,6 +476,14 @@ static const char *HTMLStyle[ClassLen] = {
 	[Todo]     = "color: navy; font-weight: bold;",
 };
 
+static void htmlTabSize(const char *tab) {
+	printf("-moz-tab-size: ");
+	htmlEscape(tab, strlen(tab));
+	printf("; tab-size: ");
+	htmlEscape(tab, strlen(tab));
+	printf(";");
+}
+
 static void htmlHeader(const char *opts[]) {
 	if (!opts[Document]) goto pre;
 	printf("<!DOCTYPE html>\n<title>");
@@ -486,14 +495,25 @@ static void htmlHeader(const char *opts[]) {
 		printf("\">\n");
 	} else if (!opts[Inline]) {
 		printf("<style>\n");
+		if (opts[Tab]) {
+			printf("pre.hi { ");
+			htmlTabSize(opts[Tab]);
+			printf(" }\n");
+		}
 		for (enum Class class = 0; class < ClassLen; ++class) {
 			if (!HTMLStyle[class]) continue;
-			printf(".hi.%s { %s }\n", ClassName[class], HTMLStyle[class]);
+			printf("span.hi.%s { %s }\n", ClassName[class], HTMLStyle[class]);
 		}
 		printf("</style>\n");
 	}
 pre:
-	printf("<pre class=\"hi\">");
+	if (opts[Inline] && opts[Tab]) {
+		printf("<pre class=\"hi\" style=\"");
+		htmlTabSize(opts[Tab]);
+		printf("\">");
+	} else {
+		printf("<pre class=\"hi\">");
+	}
 }
 
 static void htmlFooter(const char *opts[]) {
