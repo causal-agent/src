@@ -446,7 +446,7 @@ ircOutput(const char *opts[], enum Class class, const char *str, size_t len) {
 
 static void htmlEscape(const char *str, size_t len) {
 	while (len) {
-		size_t run = strcspn(str, "&<>");
+		size_t run = strcspn(str, "\"&<>");
 		if (run > len) run = len;
 		switch (str[0]) {
 			break; case '"': run = 1; printf("&quot;");
