@@ -86,7 +86,7 @@ static const struct Syntax CSyntax[] = {
 		.pattern = "include" WS "(<[^>]*>)" },
 	{ String,
 		.pattern = "[LUu]?" PATTERN_SQ },
-	{ String,
+	{ String, .parent = ~SET(String),
 		.pattern = "([LU]|u8?)?" PATTERN_DQ },
 	{ Escape, .parent = SET(String),
 		.pattern = "[\\]([\"'?\\abfnrtv]|[0-7]{1,3}|x[0-9A-Fa-f]+)" },
