@@ -49,6 +49,12 @@ enum Class {
 	ClassLen,
 };
 
+static const char *ClassName[ClassLen] = {
+#define X(class) [class] = #class,
+	ENUM_CLASS
+#undef X
+};
+
 struct Syntax {
 	enum Class class;
 	Set parent;
@@ -460,12 +466,6 @@ static void htmlEscape(const char *str, size_t len) {
 	}
 }
 
-static const char *ClassName[ClassLen] = {
-#define X(class) [class] = #class,
-	ENUM_CLASS
-#undef X
-};
-
 static const char *HTMLStyle[ClassLen] = {
 	[Keyword]  = "color: dimgray;",
 	[Macro]    = "color: green;",
@@ -534,15 +534,38 @@ htmlOutput(const char *opts[], enum Class class, const char *str, size_t len) {
 
 // }}}
 
+// Debug format {{{
+static void
+debugOutput(const char *opts[], enum Class class, const char *str, size_t len) {
+	(void)opts;
+	printf("%s\t\"", ClassName[class]);
+	while (len) {
+		size_t run = strcspn(str, "\t\n\"\\");
+		if (run > len) run = len;
+		switch (str[0]) {
+			break; case '\t': run = 1; printf("\\t");
+			break; case '\n': run = 1; printf("\\n");
+			break; case '"':  run = 1; printf("\\\"");
+			break; case '\\': run = 1; printf("\\\\");
+			break; default:   printf("%.*s", (int)run, str);
+		}
+		str += run;
+		len -= run;
+	}
+	printf("\"\n");
+}
+// }}}
+
 static const struct Format {
 	const char *name;
 	OutputFn *output;
 	HeaderFn *header;
 	HeaderFn *footer;
 } Formats[] = {
-	{ "ansi", ansiOutput, NULL, NULL },
-	{ "irc",  ircOutput, ircHeader, NULL },
-	{ "html", htmlOutput, htmlHeader, htmlFooter },
+	{ "ansi",  ansiOutput, NULL, NULL },
+	{ "irc",   ircOutput, ircHeader, NULL },
+	{ "html",  htmlOutput, htmlHeader, htmlFooter },
+	{ "debug", debugOutput, NULL, NULL },
 };
 
 static bool findLanguage(struct Language *lang, const char *name) {
