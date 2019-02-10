@@ -58,6 +58,7 @@ static const char *ClassName[ClassLen] = {
 struct Syntax {
 	enum Class class;
 	Set parent;
+	bool newline;
 	size_t subexp;
 	const char *pattern;
 	const char *pattend;
@@ -101,9 +102,8 @@ static const struct Syntax CSyntax[] = {
 	},
 	{ Comment, .parent = ~SET(String),
 		.pattern = "//.*" },
-	{ Comment, .parent = ~SET(String),
-		.pattern = "/[*]",
-		.pattend = "[*]/" },
+	{ Comment, .parent = ~SET(String), .newline = true,
+		.pattern = "/[*]" "([^*]|[*][^/])*" "[*]/" },
 	{ Todo, .parent = SET(Comment),
 		.pattern = PATTERN_TODO },
 };
@@ -177,9 +177,10 @@ static const struct Syntax ShSyntax[] = {
 		")" WB },
 	{ String,
 		.pattern = PATTERN_DQ },
-	{ String, .subexp = 1,
-		.pattern = "<<-?" WS "EOF.*(\n)",
-		.pattend = "^\t*EOF$" },
+	{ String, .newline = true, .subexp = 1, .pattern =
+		"<<-?" WS "EOF[^\n]*\n"
+		"(([^\n]|\n\t*[^E]|\n\t*E[^O]|\n\t*EO[^F]|\n\t*EOF[^\n])*)"
+		"\n\t*EOF\n" },
 	{ Escape, .parent = SET(String),
 		.pattern = "[\\][\"$\\`]" },
 	{ String, .parent = ~SET(Escape),
@@ -192,11 +193,10 @@ static const struct Syntax ShSyntax[] = {
 		.pattern = "[$][(][^)]*[)]" "|" "`[^`]*`" },
 	{ String,
 		.pattern = "'[^']*'" },
-	{ String, .subexp = 1,
-		.pattern = "<<-?" WS "'EOF'.*(\n)",
-		.pattend = "^\t*EOF$" },
-	{ Normal, .parent = SET(String),
-		.pattern = "^\t*EOF$" },
+	{ String, .subexp = 1, .newline = true, .pattern =
+		"<<-?" WS "'EOF'[^\n]*\n"
+		"(([^\n]|\n\t*[^E]|\n\t*E[^O]|\n\t*EO[^F]|\n\t*EOF[^\n])*)"
+		"\n\t*EOF\n" },
 	{ Comment, .parent = ~SET(String), .subexp = 2,
 		.pattern = "(^|" WS ")" "(#.*)" },
 	{ Todo, .parent = SET(Comment),
@@ -218,7 +218,7 @@ static const struct Language {
 
 static regex_t compile(const char *pattern, int flags) {
 	regex_t regex;
-	int error = regcomp(&regex, pattern, REG_EXTENDED | REG_NEWLINE | flags);
+	int error = regcomp(&regex, pattern, REG_EXTENDED | flags);
 	if (!error) return regex;
 	char buf[256];
 	regerror(error, &regex, buf, sizeof(buf));
@@ -229,7 +229,7 @@ enum { SubsLen = 8 };
 static void highlight(struct Language lang, enum Class *hi, const char *str) {
 	for (size_t i = 0; i < lang.len; ++i) {
 		struct Syntax syn = lang.syntax[i];
-		regex_t regex = compile(syn.pattern, 0);
+		regex_t regex = compile(syn.pattern, syn.newline ? 0 : REG_NEWLINE);
 		regex_t regend = {0};
 		if (syn.pattend) regend = compile(syn.pattend, 0);
 
