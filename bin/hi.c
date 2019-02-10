@@ -61,7 +61,6 @@ struct Syntax {
 	bool newline;
 	size_t subexp;
 	const char *pattern;
-	const char *pattend;
 };
 
 #define WB "(^|[^_[:alnum:]]|\n)"
@@ -230,9 +229,6 @@ static void highlight(struct Language lang, enum Class *hi, const char *str) {
 	for (size_t i = 0; i < lang.len; ++i) {
 		struct Syntax syn = lang.syntax[i];
 		regex_t regex = compile(syn.pattern, syn.newline ? 0 : REG_NEWLINE);
-		regex_t regend = {0};
-		if (syn.pattend) regend = compile(syn.pattend, 0);
-
 		assert(syn.subexp < SubsLen);
 		assert(syn.subexp <= regex.re_nsub);
 		regmatch_t subs[SubsLen] = {{0}};
@@ -242,18 +238,6 @@ static void highlight(struct Language lang, enum Class *hi, const char *str) {
 			);
 			if (error == REG_NOMATCH) break;
 			if (error) errx(EX_SOFTWARE, "regexec: %d", error);
-
-			if (lang.syntax[i].pattend) {
-				regmatch_t end;
-				error = regexec(
-					&regend, &str[offset + subs[syn.subexp].rm_eo],
-					1, &end, REG_NOTBOL
-				);
-				if (error == REG_NOMATCH) break;
-				if (error) errx(EX_SOFTWARE, "regexec: %d", error);
-				subs[syn.subexp].rm_eo += end.rm_eo;
-			}
-
 			regmatch_t sub = subs[syn.subexp];
 			if (syn.parent) {
 				if (~syn.parent & SET(hi[offset + sub.rm_so])) continue;
@@ -263,7 +247,6 @@ static void highlight(struct Language lang, enum Class *hi, const char *str) {
 			}
 		}
 		regfree(&regex);
-		if (lang.syntax[i].pattend) regfree(&regend);
 	}
 }
 
@@ -281,10 +264,6 @@ static void check(void) {
 				);
 			}
 			regfree(&regex);
-			if (syn.pattend) {
-				regex = compile(syn.pattend, REG_NOSUB);
-				regfree(&regex);
-			}
 		}
 	}
 }
