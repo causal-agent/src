@@ -66,7 +66,7 @@ struct Syntax {
 // C syntax {{{
 static const struct Syntax CSyntax[] = {
 	{ Keyword, .subexp = 2, .pattern = WB
-		"(" "auto|extern|register|(_T|t)hread_local|typedef"
+		"(" "auto|extern|register|static|(_T|t)hread_local|typedef"
 		"|" "_Atomic|const|restrict|volatile"
 		"|" "inline|(_N|n)oreturn"
 		"|" "(_A|a)lignas"
