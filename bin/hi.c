@@ -238,11 +238,12 @@ static void highlight(struct Language lang, enum Class *hi, const char *str) {
 			);
 			if (error == REG_NOMATCH) break;
 			if (error) errx(EX_SOFTWARE, "regexec: %d", error);
-			regmatch_t sub = subs[syn.subexp];
-			if (syn.parent) {
-				if (~syn.parent & SET(hi[offset + sub.rm_so])) continue;
+			regmatch_t *sub = &subs[syn.subexp];
+			if (syn.parent && !(syn.parent & SET(hi[offset + sub->rm_so]))) {
+				sub->rm_eo = sub->rm_so + 1;
+				continue;
 			}
-			for (regoff_t j = sub.rm_so; j < sub.rm_eo; ++j) {
+			for (regoff_t j = sub->rm_so; j < sub->rm_eo; ++j) {
 				hi[offset + j] = lang.syntax[i].class;
 			}
 		}
