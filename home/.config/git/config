@@ -4,6 +4,7 @@
 
 [commit]
     gpgSign = true
+    verbose = true
 
 [merge]
     conflictStyle = diff3
