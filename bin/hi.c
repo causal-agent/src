@@ -213,6 +213,7 @@ static const struct Language {
 	{ "make", "[.]mk$|^Makefile$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
 	{ "mdoc", "[.][1-9]$", MdocSyntax, ARRAY_LEN(MdocSyntax) },
 	{ "sh",   "[.]sh$", ShSyntax, ARRAY_LEN(ShSyntax) },
+	{ "text", "[.]txt$", NULL, 0 },
 };
 
 static regex_t compile(const char *pattern, int flags) {
@@ -634,7 +635,7 @@ int main(int argc, char *argv[]) {
 		name = strrchr(path, '/');
 		name = (name ? &name[1] : path);
 	}
-	if (!lang.syntax && !matchLanguage(&lang, name)) {
+	if (!lang.name && !matchLanguage(&lang, name)) {
 		errx(EX_USAGE, "cannot infer language for %s", name);
 	}
 	if (!opts[Title]) opts[Title] = name;
