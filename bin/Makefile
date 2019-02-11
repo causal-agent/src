@@ -127,4 +127,4 @@ unlink:
 
 install-html: $(HTMLS)
 	install -d $(WEBROOT)/bin
-	install -m 644 $(HTMLS) $(WEBROOT)/bin
+	install -C -m 644 $(HTMLS) $(WEBROOT)/bin
