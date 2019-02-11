@@ -19,27 +19,36 @@
 #include <stdlib.h>
 #include <wchar.h>
 
-static void put(const char *tag, wchar_t ch) {
-	if (tag) printf("<%s>", tag);
+static void put(wchar_t ch) {
 	switch (ch) {
 		break; case L'&': printf("&amp;");
 		break; case L'<': printf("&lt;");
 		break; case L'>': printf("&gt;");
 		break; default:   printf("%lc", ch);
 	}
-	if (tag) printf("</%s>", tag);
+}
+
+static void tag(const char *open) {
+	static const char *close = NULL;
+	if (close == open) return;
+	if (close) printf("</%s>", close);
+	if (open) printf("<%s>", open);
+	close = open;
 }
 
 static void push(wchar_t ch) {
 	static wchar_t q[3];
 	if (q[1] == L'\b' && q[0] == L'_') {
-		put("i", q[2]);
+		tag("i");
+		put(q[2]);
 		q[0] = q[1] = q[2] = 0;
 	} else if (q[1] == L'\b' && q[0] == q[2]) {
-		put("b", q[2]);
+		tag("b");
+		put(q[2]);
 		q[0] = q[1] = q[2] = 0;
 	} else if (q[0]) {
-		put(NULL, q[0]);
+		tag(NULL);
+		put(q[0]);
 	}
 	q[0] = q[1];
 	q[1] = q[2];
