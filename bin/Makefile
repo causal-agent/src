@@ -9,22 +9,23 @@ LDLIBS_fb = $(LDLIBS)
 LDLIBS_x11 = $(LDLIBS) -lX11
 
 BINS += aes
-BINS += atch
 BINS += dtch
 BINS += glitch
 BINS += hi
 BINS += hnel
 BINS += modem
-BINS += open
-BINS += pbcopy
 BINS += pbd
-BINS += pbpaste
 BINS += pngo
 BINS += psf2png
 BINS += scheme
 BINS += ttpre
 BINS += wake
 BINS += xx
+
+LINKS += atch
+LINKS += open
+LINKS += pbcopy
+LINKS += pbpaste
 
 BINS_BSD += beef
 BINS_BSD += wat
@@ -40,9 +41,7 @@ BINS_GFX += gfxx
 BINS_ALL = $(BINS) $(BINS_BSD) $(BINS_LINUX) $(BINS_GFX)
 MAN1_ALL = $(BINS_ALL:%=man1/%.1)
 
-GFX_OBJ = gfx-$(GFX).o
-
-any: .gitignore tags $(BINS)
+any: .gitignore tags $(BINS) $(LINKS)
 
 bsd: any $(BINS_BSD)
 
@@ -62,8 +61,7 @@ fbatt.o fbclock.o: scheme.h
 
 gfxx.o psf2png.o scheme.o: png.h
 
-atch: dtch
-	ln -f dtch atch
+GFX_OBJ = gfx-$(GFX).o
 
 brot: brot.o $(GFX_OBJ)
 	$(CC) $(LDFLAGS) $@.o $(GFX_OBJ) $(LDLIBS_$(GFX)) -o $@
@@ -75,11 +73,14 @@ hi: hi.c
 	$(CC) $(CFLAGS) $(LDFLAGS) hi.c $(LDLIBS) -o $@
 	./hi -c
 
+atch: dtch
+	ln -f dtch atch
+
 open pbcopy pbpaste: pbd
 	ln -f pbd $@
 
 .gitignore: Makefile
-	echo $(BINS_ALL) tags scheme.h scheme.png '*.o' \
+	echo $(BINS_ALL) $(LINKS) tags scheme.h scheme.png '*.o' '*.html' \
 		| tr ' ' '\n' | sort > .gitignore
 
 tags: *.h *.c
@@ -88,8 +89,25 @@ tags: *.h *.c
 scheme.png: scheme
 	./scheme -gt > scheme.png
 
+HTMLS = $(BINS_ALL:%=%.html)
+WEBROOT = /usr/local/www/causal.agency
+GITEA_URL = https://code.causal.agency/june/src/src/branch/master/bin
+
+html: $(HTMLS)
+
+$(HTMLS): ttpre hi
+
+.SUFFIXES: .html
+
+.c.html:
+	@echo '<!DOCTYPE html>' > $@
+	@echo '<title>$(<:%.c=%)</title>' >> $@
+	@echo '<code><a href="$(GITEA_URL)/$<">$< in git</a></code>' >> $@
+	man -P cat ./man1/$(<:%.c=%.1) | ./ttpre >> $@
+	./hi -f html -o inline,tab=4 $< >> $@
+
 clean:
-	rm -f $(BINS_ALL) tags scheme.h scheme.png *.o
+	rm -f $(BINS_ALL) $(LINKS) tags scheme.h scheme.png *.o *.html
 
 README: bin.7
 	mandoc bin.7 | col -bx > README
@@ -100,9 +118,13 @@ setuid: bri
 
 link:
 	install -d $(PREFIX)/bin $(MANDIR)/man1
-	ln -fs $(BINS_ALL:%=$(PWD)/%) $(PREFIX)/bin
+	ln -fs $(BINS_ALL:%=$(PWD)/%) $(LINKS:%=$(PWD)/%) $(PREFIX)/bin
 	ln -fs $(MAN1_ALL:%=$(PWD)/%) $(MANDIR)/man1
 
 unlink:
-	rm -f $(BINS_ALL:%=$(PREFIX)/bin/%)
+	rm -f $(BINS_ALL:%=$(PREFIX)/bin/%) $(LINKS:%=$(PREFIX)/bin/%)
 	rm -f $(MAN1_ALL:%=$(MANDIR)/%)
+
+install-html: $(HTMLS)
+	install -d $(WEBROOT)/bin
+	install -m 644 $(HTMLS) $(WEBROOT)/bin
