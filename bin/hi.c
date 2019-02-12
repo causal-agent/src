@@ -68,6 +68,7 @@ struct Syntax {
 #define WS "[[:blank:]]*"
 #define PATTERN_SQ "'([^']|[\\]')*'"
 #define PATTERN_DQ "\"([^\"]|[\\]\")*\""
+#define PATTERN_BC "/[*]" "([^*]|[*][^/])*" "[*]+/"
 #define PATTERN_TODO "FIXME|TODO|XXX"
 
 // C syntax {{{
@@ -103,7 +104,7 @@ static const struct Syntax CSyntax[] = {
 	{ Comment, .parent = ~SET(String),
 		.pattern = "//.*" },
 	{ Comment, .parent = ~SET(String), .newline = true,
-		.pattern = "/[*]" "([^*]|[*][^/])*" "[*]/" },
+		.pattern = PATTERN_BC },
 	{ Todo, .parent = SET(Comment),
 		.pattern = PATTERN_TODO },
 };
@@ -166,6 +167,43 @@ static const struct Syntax MdocSyntax[] = {
 };
 // }}}
 
+// Rust syntax {{{
+#define RUST_IDENT "[[:alpha:]][_[:alnum:]]*"
+static const struct Syntax RustSyntax[] = {
+	{ Keyword, .subexp = 2, .pattern = WB
+		"(" "'?static|[Ss]elf|abstract|as|async|await|become|box|break|const"
+		"|" "continue|crate|do|dyn|else|enum|extern|false|final|fn|for|if"
+		"|" "impl|in|let|loop|macro|match|mod|move|mut|override|priv|pub|ref"
+		"|" "return|struct|super|trait|true|try|type(of)?|union|uns(afe|ized)"
+		"|" "use|virtual|where|while|yield"
+		")" WB },
+	{ Macro, .newline = true,
+		.pattern = "#!?[[][^]]*[]]" },
+	{ Macro,
+		.pattern = RUST_IDENT "!" },
+	{ Interp,
+		.pattern = "[$]" RUST_IDENT },
+	{ String,
+		.pattern = "b?'([^']|[\\]')'" },
+	{ String,
+		.pattern = "b?" "\"([^\"]|[\\][\n\"])*\"" },
+	{ Escape, .parent = SET(String),
+		.pattern = "[\\]([\"'0\\nrt]|u[{][0-9A-Fa-f]{1,6}[}]|x[0-9A-Fa-f]{2})" },
+	{ Format, .parent = SET(String),
+		.pattern = "[{][{]|[{][^{}]*[}]|[}][}]" },
+	{ String, .newline = true,
+		.pattern = "b?r\"[^\"]*\"" },
+	{ String, .newline = true,
+		.pattern = "b?r#+\"" "([^\"]|\"[^#])*" "\"+#+" },
+	{ Comment, .parent = ~SET(String),
+		.pattern = "//.*" },
+	{ Comment, .parent = ~SET(String), .newline = true,
+		.pattern = PATTERN_BC },
+	{ Todo, .parent = SET(Comment),
+		.pattern = PATTERN_TODO },
+};
+// }}}
+
 // sh syntax {{{
 static const struct Syntax ShSyntax[] = {
 	{ Keyword, .subexp = 2, .pattern = WB
@@ -213,6 +251,7 @@ static const struct Language {
 	{ "c",    "[.][ch]$", CSyntax, ARRAY_LEN(CSyntax) },
 	{ "make", "[.]mk$|^Makefile$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
 	{ "mdoc", "[.][1-9]$", MdocSyntax, ARRAY_LEN(MdocSyntax) },
+	{ "rust", "[.]rs$", RustSyntax, ARRAY_LEN(RustSyntax) },
 	{ "sh",   "[.]sh$", ShSyntax, ARRAY_LEN(ShSyntax) },
 	{ "text", "[.]txt$", NULL, 0 },
 };
