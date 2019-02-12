@@ -236,7 +236,7 @@ static const struct Syntax ShSyntax[] = {
 		"(([^\n]|\n\t*[^E]|\n\t*E[^O]|\n\t*EO[^F]|\n\t*EOF[^\n])*)"
 		"\n\t*EOF\n" },
 	{ Comment, .parent = ~SET(String), .subexp = 2,
-		.pattern = "(^|" WS ")" "(#.*)" },
+		.pattern = "(^|[[:blank:]]+)(#.*)" },
 	{ Todo, .parent = SET(Comment),
 		.pattern = PATTERN_TODO },
 };
