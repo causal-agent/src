@@ -24,6 +24,7 @@ DESCRIPTION
      psf2png(1)  PSF2 to PNG renderer
      psfed(1)    PSF2 font editor
      ttpre(1)    man output to HTML
+     up(1)       upload file
      wake(1)     wake-on-LAN
      wat(1)      watch files
      xx(1)       hexdump
@@ -34,4 +35,4 @@ DESCRIPTION
            GFX=fb
            GFX=x11
 
-Causal Agency                  Feburary 6, 2019                  Causal Agency
+Causal Agency                  Feburary 12, 2019                 Causal Agency

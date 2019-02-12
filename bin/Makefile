@@ -19,6 +19,7 @@ BINS += pngo
 BINS += psf2png
 BINS += scheme
 BINS += ttpre
+BINS += up
 BINS += wake
 BINS += xx
 
@@ -104,6 +105,13 @@ $(HTMLS): ttpre hi
 	@echo '<title>$(<:%.c=%)</title>' >> $@
 	@echo '<code><a href="$(GITEA_URL)/$<">$< in git</a></code>' >> $@
 	man -P cat ./man1/$(<:%.c=%.1) | ./ttpre >> $@
+	./hi -f html -o inline,tab=4 $< >> $@
+
+.sh.html:
+	@echo '<!DOCTYPE html>' > $@
+	@echo '<title>$(<:%.sh=%)</title>' >> $@
+	@echo '<code><a href="$(GITEA_URL)/$<">$< in git</a></code>' >> $@
+	man -P cat ./man1/$(<:%.sh=%.1) | ./ttpre >> $@
 	./hi -f html -o inline,tab=4 $< >> $@
 
 clean:

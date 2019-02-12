@@ -1,7 +1,0 @@
-#!/bin/sh
-set -e -u
-
-dir=$(mktemp -d)
-cat > "$dir/input.txt"
-up "$dir/input.txt"
-rm -r "$dir"

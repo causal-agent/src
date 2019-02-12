@@ -1,0 +1,60 @@
+.Dd February 2, 2019
+.Dt UP 1
+.Os
+.
+.Sh NAME
+.Nm up
+.Nd upload file
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl hs
+.Op Ar file
+.
+.Sh DESCRIPTION
+.Nm
+uploads a file
+to temp.causal.agency with
+.Xr scp 1 .
+If no
+.Ar file
+is provided,
+standard input is read
+and uploaded as text.
+.
+.Pp
+The destination file name
+is chosen using
+.Xr date 1
+and
+.Xr openssl 1
+.Cm rand .
+The URL of the uploaded file is printed
+and copied to the pasteboard with
+.Xr pbcopy 1
+if available.
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl h
+Use
+.Xr hi 1
+to produce an HTML file for upload.
+.It Fl s
+Use
+.Xr screencapture 1
+to produce a PNG file for upload.
+The file is optimized by
+.Xr pngo 1
+if available.
+.El
+.
+.Pp
+Any arguments after
+.Ql \-\-
+are passed to
+.Xr hi 1
+and
+.Xr screencapture 1 ,
+respectively.
