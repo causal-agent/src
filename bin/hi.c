@@ -17,6 +17,7 @@
 
 #include <assert.h>
 #include <err.h>
+#include <locale.h>
 #include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -588,6 +589,8 @@ static bool findOption(enum Option *opt, const char *key) {
 }
 
 int main(int argc, char *argv[]) {
+	setlocale(LC_CTYPE, "");
+
 	const char *name = NULL;
 	struct Language lang = {0};
 	struct Format format = Formats[0];
