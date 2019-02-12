@@ -682,18 +682,22 @@ int main(int argc, char *argv[]) {
 	}
 	if (!opts[Title]) opts[Title] = name;
 
-	size_t len = 32 * 1024;
-	if (file != stdin) {
-		struct stat stat;
-		int error = fstat(fileno(file), &stat);
-		if (error) err(EX_IOERR, "fstat");
-		len = stat.st_size;
-	}
+	struct stat stat;
+	int error = fstat(fileno(file), &stat);
+	if (error) err(EX_IOERR, "fstat");
 
-	char *str = malloc(len + 1);
+	size_t cap = (stat.st_mode & S_IFREG ? stat.st_size + 1 : 4096);
+	char *str = malloc(cap);
 	if (!str) err(EX_OSERR, "malloc");
 
-	len = fread(str, 1, len, file);
+	size_t len = 0, read;
+	while (0 < (read = fread(&str[len], 1, cap - len - 1, file))) {
+		len += read;
+		if (len + 1 < cap) continue;
+		cap *= 2;
+		str = realloc(str, cap);
+		if (!str) err(EX_OSERR, "realloc");
+	}
 	if (ferror(file)) err(EX_IOERR, "fread");
 	str[len] = '\0';
 
