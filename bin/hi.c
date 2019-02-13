@@ -213,7 +213,7 @@ static const struct Syntax ShSyntax[] = {
 		"|" "[.:]|break|continue|eval|exec|exit|export|local|readonly|return"
 		"|" "set|shift|times|trap|unset"
 		")" WB },
-	{ String,
+	{ String, .newline = true,
 		.pattern = PATTERN_DQ },
 	{ String, .newline = true, .subexp = 1, .pattern =
 		"<<-?" WS "EOF[^\n]*\n"
@@ -229,7 +229,7 @@ static const struct Syntax ShSyntax[] = {
 		.pattern = "[$][{][^}]*[}]" },
 	{ Interp, .parent = ~SET(Escape),
 		.pattern = "[$][(][^)]*[)]" "|" "`[^`]*`" },
-	{ String,
+	{ String, .newline = true,
 		.pattern = "'[^']*'" },
 	{ String, .subexp = 1, .newline = true, .pattern =
 		"<<-?" WS "'EOF'[^\n]*\n"
