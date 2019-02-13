@@ -1,10 +1,10 @@
-.Dd September 7, 2018
+.Dd February 12, 2019
 .Dt SCHEME 1
 .Os
 .
 .Sh NAME
 .Nm scheme
-.Nd terminal color scheme
+.Nd color scheme
 .
 .Sh SYNOPSIS
 .Nm
@@ -13,51 +13,38 @@
 .
 .Sh DESCRIPTION
 .Nm
-generates a terminal color scheme
+generates a color scheme
 and outputs it in a number of formats.
 .
 .Pp
 The arguments are as follows:
 .Bl -tag -width Ds
 .It Fl a
-Output only the 16 ANSI colors.
+Generate the 16 ANSI colors.
 This is the default.
-.
 .It Fl c
 Output a C enum.
-.
 .It Fl g
 Output a swatch PNG.
-.
 .It Fl h
-Output HSV.
-.
+Output floating point HSV.
 .It Fl i
-Swap white and black.
-.
+Swap black and white.
 .It Fl l
 Output Linux console OSC sequences.
-.
 .It Fl m
 Output a
 .Xr mintty 1
 theme.
-Should be used with
+Use with
 .Fl t .
-.
 .It Fl p Ar n
-Only output the color
+Generate only the color
 .Ar n .
-.
 .It Fl t
-Additionally output terminal
-background,
-foreground,
-bold,
-selection
-and cursor
-colors.
-.
+Generate the 16 ANSI colors as well as
+background, foreground, bold, selection and cursor colors.
 .It Fl x
 Output hexadecimal RGB.
+This is the default.
 .El

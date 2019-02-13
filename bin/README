@@ -23,6 +23,7 @@ DESCRIPTION
      pngo(1)     PNG optimizer
      psf2png(1)  PSF2 to PNG renderer
      psfed(1)    PSF2 font editor
+     scheme(1)   color scheme
      ttpre(1)    man output to HTML
      up(1)       upload file
      wake(1)     wake-on-LAN

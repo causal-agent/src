@@ -31,23 +31,15 @@ struct HSV {
 	double h, s, v;
 };
 
-static const struct HSV
-	R = {   0.0, 1.0, 1.0 },
-	Y = {  60.0, 1.0, 1.0 },
-	G = { 120.0, 1.0, 1.0 },
-	C = { 180.0, 1.0, 1.0 },
-	B = { 240.0, 1.0, 1.0 },
-	M = { 300.0, 1.0, 1.0 };
-
 struct RGB {
 	byte r, g, b;
 };
 
-static struct RGB rgb(struct HSV hsv) {
-	double c = hsv.v * hsv.s;
-	double h = hsv.h / 60.0;
+static struct RGB convert(struct HSV o) {
+	double c = o.v * o.s;
+	double h = o.h / 60.0;
 	double x = c * (1.0 - fabs(fmod(h, 2.0) - 1.0));
-	double m = hsv.v - c;
+	double m = o.v - c;
 	double r = m, g = m, b = m;
 	if      (h <= 1.0) { r += c; g += x; }
 	else if (h <= 2.0) { r += x; g += c; }
@@ -57,6 +49,14 @@ static struct RGB rgb(struct HSV hsv) {
 	else if (h <= 6.0) { r += c; b += x; }
 	return (struct RGB) { r * 255.0, g * 255.0, b * 255.0 };
 }
+
+static const struct HSV
+R = {   0.0, 1.0, 1.0 },
+Y = {  60.0, 1.0, 1.0 },
+G = { 120.0, 1.0, 1.0 },
+C = { 180.0, 1.0, 1.0 },
+B = { 240.0, 1.0, 1.0 },
+M = { 300.0, 1.0, 1.0 };
 
 static struct HSV x(struct HSV o, double hd, double sf, double vf) {
 	return (struct HSV) {
@@ -68,196 +68,172 @@ static struct HSV x(struct HSV o, double hd, double sf, double vf) {
 
 enum {
 	Black, Red, Green, Yellow, Blue, Magenta, Cyan, White,
-	Dark = 0, Light = 8,
-	Background = 16, Foreground, Bold, Selection, Cursor,
+	Dark = 0,
+	Light = 8,
+	Background = 16,
+	Foreground,
+	Bold,
+	Selection,
+	Cursor,
 	SchemeLen,
 };
 static struct HSV scheme[SchemeLen];
+static struct HSV *dark = &scheme[Dark];
+static struct HSV *light = &scheme[Light];
 
 static void generate(void) {
-	scheme[Light + Black]   = x(R, +45.0, 0.3, 0.3);
-	scheme[Light + Red]     = x(R, +10.0, 0.9, 0.8);
-	scheme[Light + Green]   = x(G, -55.0, 0.8, 0.6);
-	scheme[Light + Yellow]  = x(Y, -20.0, 0.8, 0.8);
-	scheme[Light + Blue]    = x(B, -55.0, 0.4, 0.5);
-	scheme[Light + Magenta] = x(M, +45.0, 0.4, 0.6);
-	scheme[Light + Cyan]    = x(C, -60.0, 0.3, 0.6);
-	scheme[Light + White]   = x(R, +45.0, 0.3, 0.8);
+	light[Black]   = x(R, +45.0, 0.3, 0.3);
+	light[Red]     = x(R, +10.0, 0.9, 0.8);
+	light[Green]   = x(G, -55.0, 0.8, 0.6);
+	light[Yellow]  = x(Y, -20.0, 0.8, 0.8);
+	light[Blue]    = x(B, -55.0, 0.4, 0.5);
+	light[Magenta] = x(M, +45.0, 0.4, 0.6);
+	light[Cyan]    = x(C, -60.0, 0.3, 0.6);
+	light[White]   = x(R, +45.0, 0.3, 0.8);
 
-	scheme[Dark + Black] = x(scheme[Light + Black], 0.0, 1.0, 0.3);
-	scheme[Dark + White] = x(scheme[Light + White], 0.0, 1.0, 0.6);
+	dark[Black] = x(light[Black], 0.0, 1.0, 0.3);
+	dark[White] = x(light[White], 0.0, 1.0, 0.6);
 	for (uint i = Red; i < White; ++i) {
-		scheme[Dark + i] = x(scheme[Light + i], 0.0, 1.0, 0.8);
+		dark[i] = x(light[i], 0.0, 1.0, 0.8);
 	}
 
-	scheme[Background] = x(scheme[Dark + Black],    0.0, 1.0, 0.9);
-	scheme[Foreground] = x(scheme[Light + White],   0.0, 1.0, 0.9);
-	scheme[Bold]       = x(scheme[Light + White],   0.0, 1.0, 1.0);
-	scheme[Selection]  = x(scheme[Light + Red],   +10.0, 1.0, 0.8);
-	scheme[Cursor]     = x(scheme[Dark + White],    0.0, 1.0, 0.8);
+	scheme[Background] = x(dark[Black],  0.0, 1.0, 0.9);
+	scheme[Foreground] = x(light[White], 0.0, 1.0, 0.9);
+	scheme[Bold]       = x(light[White], 0.0, 1.0, 1.0);
+	scheme[Selection]  = x(light[Red], +10.0, 1.0, 0.8);
+	scheme[Cursor]     = x(dark[White],  0.0, 1.0, 0.8);
 }
 
-static void swap(uint a, uint b) {
-	struct HSV t = scheme[a];
-	scheme[a] = scheme[b];
-	scheme[b] = t;
+static void swap(struct HSV *a, struct HSV *b) {
+	struct HSV c = *a;
+	*a = *b;
+	*b = c;
 }
 
 static void invert(void) {
-	swap(Dark + Black, Light + White);
-	swap(Light + Black, Dark + White);
+	swap(&dark[Black], &light[White]);
+	swap(&dark[White], &light[Black]);
 }
 
-static void printHSV(uint n) {
-	printf("%g,%g,%g\n", scheme[n].h, scheme[n].s, scheme[n].v);
+typedef void OutputFn(const struct HSV *hsv, uint len);
+
+static void outputHSV(const struct HSV *hsv, uint len) {
+	for (uint i = 0; i < len; ++i) {
+		printf("%g,%g,%g\n", hsv[i].h, hsv[i].s, hsv[i].v);
+	}
 }
 
-static void printRGB(uint n) {
-	printf(
-		"%02hhX%02hhX%02hhX\n",
-		rgb(scheme[n]).r, rgb(scheme[n]).g, rgb(scheme[n]).b
-	);
+#define FORMAT_RGB "%02hhX%02hhX%02hhX"
+
+static void outputRGB(const struct HSV *hsv, uint len) {
+	for (uint i = 0; i < len; ++i) {
+		struct RGB rgb = convert(hsv[i]);
+		printf(FORMAT_RGB "\n", rgb.r, rgb.g, rgb.b);
+	}
 }
 
-static const char *CNames[SchemeLen] = {
-	[Dark + Black]    = "DarkBlack",
-	[Dark + Red]      = "DarkRed",
-	[Dark + Green]    = "DarkGreen",
-	[Dark + Yellow]   = "DarkYellow",
-	[Dark + Blue]     = "DarkBlue",
-	[Dark + Magenta]  = "DarkMagenta",
-	[Dark + Cyan]     = "DarkCyan",
-	[Dark + White]    = "DarkWhite",
-	[Light + Black]   = "LightBlack",
-	[Light + Red]     = "LightRed",
-	[Light + Green]   = "LightGreen",
-	[Light + Yellow]  = "LightYellow",
-	[Light + Blue]    = "LightBlue",
-	[Light + Magenta] = "LightMagenta",
-	[Light + Cyan]    = "LightCyan",
-	[Light + White]   = "LightWhite",
-	[Background]      = "Background",
-	[Foreground]      = "Foreground",
-	[Bold]            = "Bold",
-	[Selection]       = "Selection",
-	[Cursor]          = "Cursor",
+static void outputLinux(const struct HSV *hsv, uint len) {
+	for (uint i = 0; i < len; ++i) {
+		struct RGB rgb = convert(hsv[i]);
+		printf("\x1B]P%X" FORMAT_RGB, i, rgb.r, rgb.g, rgb.b);
+	}
+}
+
+static const char *Enum[SchemeLen] = {
+	"DarkBlack", "DarkRed", "DarkGreen", "DarkYellow",
+	"DarkBlue", "DarkMagenta", "DarkCyan", "DarkWhite",
+	"LightBlack", "LightRed", "LightGreen", "LightYellow",
+	"LightBlue", "LightMagenta", "LightCyan", "LightWhite",
+	"Background", "Foreground", "Bold", "Selection", "Cursor",
 };
-static void printCHead(void) {
+
+static void outputEnum(const struct HSV *hsv, uint len) {
 	printf("enum {\n");
-}
-static void printC(uint n) {
-	printf(
-		"\t%s = 0x%02hhX%02hhX%02hhX,\n",
-		CNames[n], rgb(scheme[n]).r, rgb(scheme[n]).g, rgb(scheme[n]).b
-	);
-}
-static void printCTail(void) {
+	for (uint i = 0; i < len; ++i) {
+		struct RGB rgb = convert(hsv[i]);
+		printf("\t%s = 0x" FORMAT_RGB ",\n", Enum[i], rgb.r, rgb.g, rgb.b);
+	}
 	printf("};\n");
 }
 
-static void printLinux(uint n) {
-	printf(
-		"\x1B]P%X%02hhX%02hhX%02hhX",
-		n, rgb(scheme[n]).r, rgb(scheme[n]).g, rgb(scheme[n]).b
-	);
-}
-
-static const char *MinttyNames[SchemeLen] = {
-	[Dark + Black]    = "Black",
-	[Dark + Red]      = "Red",
-	[Dark + Green]    = "Green",
-	[Dark + Yellow]   = "Yellow",
-	[Dark + Blue]     = "Blue",
-	[Dark + Magenta]  = "Magenta",
-	[Dark + Cyan]     = "Cyan",
-	[Dark + White]    = "White",
-	[Light + Black]   = "BoldBlack",
-	[Light + Red]     = "BoldRed",
-	[Light + Green]   = "BoldGreen",
-	[Light + Yellow]  = "BoldYellow",
-	[Light + Blue]    = "BoldBlue",
-	[Light + Magenta] = "BoldMagenta",
-	[Light + Cyan]    = "BoldCyan",
-	[Light + White]   = "BoldWhite",
-	[Background]      = "BackgroundColour",
-	[Foreground]      = "ForegroundColour",
-	[Cursor]          = "CursorColour",
+static const char *Mintty[SchemeLen] = {
+	"Black", "Red", "Green", "Yellow",
+	"Blue", "Magenta", "Cyan", "White",
+	"BoldBlack", "BoldRed", "BoldGreen", "BoldYellow",
+	"BoldBlue", "BoldMagenta", "BoldCyan", "BoldWhite",
+	[Background] = "BackgroundColour",
+	[Foreground] = "ForegroundColour",
+	[Cursor]     = "CursorColour",
 };
-static void printMintty(uint n) {
-	if (!MinttyNames[n]) return;
-	printf(
-		"%s=%hhu,%hhu,%hhu\n",
-		MinttyNames[n], rgb(scheme[n]).r, rgb(scheme[n]).g, rgb(scheme[n]).b
-	);
+
+static void outputMintty(const struct HSV *hsv, uint len) {
+	for (uint i = 0; i < len; ++i) {
+		if (!Mintty[i]) continue;
+		struct RGB rgb = convert(hsv[i]);
+		printf("%s=%hhu,%hhu,%hhu\n", Mintty[i], rgb.r, rgb.g, rgb.b);
+	}
 }
 
-static void png(uint at, uint to) {
-	if (to - at > 256) to = at + 256;
+enum {
+	SwatchWidth = 64,
+	SwatchHeight = 64,
+	SwatchCols = 8,
+};
 
-	uint len = to - at;
-	uint swatchWidth = 64;
-	uint swatchHeight = 64;
-	uint cols = 8;
-	uint rows = (len + cols - 1) / cols;
-	uint width = swatchWidth * cols;
-	uint height = swatchHeight * rows;
-
+static void outputPNG(const struct HSV *hsv, uint len) {
+	uint rows = (len + SwatchCols - 1) / SwatchCols;
+	uint width = SwatchWidth * SwatchCols;
+	uint height = SwatchHeight * rows;
 	pngHead(stdout, width, height, 8, PNGIndexed);
 
 	struct RGB pal[len];
 	for (uint i = 0; i < len; ++i) {
-		pal[i] = rgb(scheme[at + i]);
+		pal[i] = convert(hsv[i]);
 	}
 	pngPalette(stdout, (byte *)pal, sizeof(pal));
 
-	uint8_t data[height][1 + width];
+	byte data[height][1 + width];
 	memset(data, 0, sizeof(data));
-	for (uint32_t y = 0; y < height; ++y) {
-		data[y][0] = (y % swatchHeight) ? PNGUp : PNGSub;
+	for (uint y = 0; y < height; ++y) {
+		data[y][0] = (y % SwatchHeight ? PNGUp : PNGSub);
 	}
-	for (uint i = at; i < to; ++i) {
-		uint p = i - at;
-		uint32_t y = swatchHeight * (p / cols);
-		uint32_t x = swatchWidth * (p % cols);
-		data[y][1 + x] = x ? 1 : p;
+	for (uint i = 0; i < len; ++i) {
+		uint y = SwatchHeight * (i / SwatchCols);
+		uint x = SwatchWidth * (i % SwatchCols);
+		data[y][1 + x] = (x ? 1 : i);
 	}
-
 	pngData(stdout, (byte *)data, sizeof(data));
 	pngTail(stdout);
 }
 
-static void print(void fn(uint), uint at, uint to) {
-	for (uint i = at; i < to; ++i) {
-		fn(i);
-	}
-}
-
 int main(int argc, char *argv[]) {
 	generate();
-	uint at = 0;
-	uint to = Background;
-	char out = 'x';
+
+	OutputFn *output = outputRGB;
+	const struct HSV *hsv = scheme;
+	uint len = 16;
 
 	int opt;
 	while (0 < (opt = getopt(argc, argv, "acghilmp:tx"))) {
 		switch (opt) {
-			break; case 'a': to = Background;
+			break; case 'a': len = 16;
+			break; case 'c': output = outputEnum;
+			break; case 'g': output = outputPNG;
+			break; case 'h': output = outputHSV;
 			break; case 'i': invert();
-			break; case 'p': at = strtoul(optarg, NULL, 0); to = at + 1;
-			break; case 't': to = SchemeLen;
-			break; case '?': return EX_USAGE;
-			break; default: out = opt;
+			break; case 'l': output = outputLinux;
+			break; case 'm': output = outputMintty;
+			break; case 'p': {
+				uint p = strtoul(optarg, NULL, 0);
+				if (p >= SchemeLen) return EX_USAGE;
+				hsv = &scheme[p];
+				len = 1;
+			}
+			break; case 't': len = SchemeLen;
+			break; case 'x': output = outputRGB;
+			break; default:  return EX_USAGE;
 		}
 	}
 
-	switch (out) {
-		break; case 'c': printCHead(); print(printC, at, to); printCTail();
-		break; case 'g': png(at, to);
-		break; case 'h': print(printHSV, at, to);
-		break; case 'l': print(printLinux, at, to);
-		break; case 'm': print(printMintty, at, to);
-		break; case 'x': print(printRGB, at, to);
-	}
-
-	return EX_OK;
+	output(hsv, len);
 }
