@@ -54,5 +54,5 @@ done
 : ${fn:=upload}
 
 url=$($fn "$@")
-echo "$url" | pbcopy || true
+printf '%s' "$url" | pbcopy || true
 echo "$url"
