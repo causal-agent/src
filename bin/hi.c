@@ -358,7 +358,7 @@ static const enum SGR ANSIStyle[ClassLen][3] = {
 	[String]  = { SGRCyan },
 	[Escape]  = { SGRDefault },
 	[Format]  = { SGRCyan, SGRBoldOn, SGRBoldOff },
-	[Interp]  = { SGRGreen },
+	[Interp]  = { SGRYellow },
 	[Comment] = { SGRBlue },
 	[Todo]    = { SGRBlue, SGRBoldOn, SGRBoldOff },
 };
@@ -492,7 +492,7 @@ static const char *HTMLStyle[ClassLen] = {
 	[Macro]    = "color: green;",
 	[String]   = "color: teal;",
 	[Format]   = "color: teal; font-weight: bold;",
-	[Interp]   = "color: green;",
+	[Interp]   = "color: olive;",
 	[Comment]  = "color: navy;",
 	[Todo]     = "color: navy; font-weight: bold;",
 };
