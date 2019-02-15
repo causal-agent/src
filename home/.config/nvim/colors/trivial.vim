@@ -51,6 +51,8 @@ hi! link Todo SpecialComment
 
 " Language-specifics.
 
+hi cFormat ctermfg=14
+
 hi diffAdded ctermfg=10
 hi diffRemoved ctermfg=9
 
