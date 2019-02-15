@@ -26,6 +26,7 @@ autocmd BufEnter term://* startinsert
 tmap <C-w> <C-\><C-n><C-w>
 
 let g:clipboard = {'copy':{'+':'pbcopy'},'paste':{'+':'pbpaste'}}
+nmap gp `[v`]
 
 nmap <leader>s vip:sort<CR>
 nmap <leader>a :0/^#include <<CR>:nohlsearch<CR>O#include <
