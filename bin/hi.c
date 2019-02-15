@@ -213,28 +213,28 @@ static const struct Syntax ShSyntax[] = {
 		"|" "[.:]|break|continue|eval|exec|exit|export|local|readonly|return"
 		"|" "set|shift|times|trap|unset"
 		")" WB },
-	{ String, .newline = true,
-		.pattern = PATTERN_DQ },
 	{ String, .newline = true, .subexp = 1, .pattern =
 		"<<-?" WS "EOF[^\n]*\n"
 		"(([^\n]|\n\t*[^E]|\n\t*E[^O]|\n\t*EO[^F]|\n\t*EOF[^\n])*)"
 		"\n\t*EOF\n" },
+	{ String, .parent = ~SET(String), .newline = true,
+		.pattern = PATTERN_DQ },
 	{ Escape, .parent = SET(String),
 		.pattern = "[\\][\"$\\`]" },
-	{ String, .parent = ~SET(Escape),
-		.pattern = "[\\]." },
-	{ Interp, .parent = ~SET(Escape),
-		.pattern = "[$]([!#$*?@-]|[_[:alnum:]]+)" },
-	{ Interp, .parent = ~SET(Escape),
-		.pattern = "[$][{][^}]*[}]" },
 	{ Interp, .parent = ~SET(Escape),
 		.pattern = "[$][(][^)]*[)]" "|" "`[^`]*`" },
-	{ String, .newline = true,
-		.pattern = "'[^']*'" },
+	{ String, .parent = SET(Interp),
+		.pattern = PATTERN_DQ },
+	{ Interp, .parent = ~SET(Escape),
+		.pattern = "[$]([!#$*?@-]|[_[:alnum:]]+|[{][^}]*[}])" },
+	{ String, .parent = ~SET(Escape),
+		.pattern = "[\\]." },
 	{ String, .subexp = 1, .newline = true, .pattern =
 		"<<-?" WS "'EOF'[^\n]*\n"
 		"(([^\n]|\n\t*[^E]|\n\t*E[^O]|\n\t*EO[^F]|\n\t*EOF[^\n])*)"
 		"\n\t*EOF\n" },
+	{ String, .parent = ~SET(String), .newline = true,
+		.pattern = "'[^']*'" },
 	{ Comment, .parent = ~SET(String), .subexp = 2,
 		.pattern = "(^|[[:blank:]]+)(#.*)" },
 	{ Todo, .parent = SET(Comment),
