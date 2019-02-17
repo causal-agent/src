@@ -1,4 +1,4 @@
-.Dd February 12, 2019
+.Dd February 17, 2019
 .Dt HI 1
 .Os
 .
@@ -8,9 +8,10 @@
 .
 .Sh SYNOPSIS
 .Nm
+.Op Fl n
 .Op Fl f Ar format
 .Op Fl l Ar lang
-.Op Fl n Ar name
+.Op Fl m Ar name
 .Op Fl o Ar opts
 .Op Ar file
 .Nm
@@ -33,9 +34,11 @@ Compile all regular expressions and exit.
 Set the output format.
 .It Fl l Ar lang
 Set the input language.
-.It Fl n Ar name
+.It Fl m Ar name
 Override the name used
 to infer the input language.
+.It Fl n
+Output line numbers.
 .It Fl o Ar opts
 Set output format options.
 .Ar opts
@@ -111,7 +114,7 @@ name.
 If no input language is set with
 .Fl l ,
 it may be inferred from the name set by
-.Fl n
+.Fl m
 or from the provided
 .Ar file
 name.
