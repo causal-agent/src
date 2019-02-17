@@ -366,26 +366,15 @@ static const enum SGR ANSIStyle[ClassLen][3] = {
 static void
 ansiOutput(const char *opts[], enum Class class, const char *str, size_t len) {
 	(void)opts;
-	// Style each line separately, otherwise less -R won't look right.
-	while (len) {
-		size_t line = strcspn(str, "\n");
-		if (line > len) line = len;
-		if (ANSIStyle[class][1]) {
-			printf(
-				"\x1B[%d;%dm%.*s\x1B[%dm",
-				ANSIStyle[class][0], ANSIStyle[class][1],
-				(int)line, str,
-				ANSIStyle[class][2]
-			);
-		} else {
-			printf("\x1B[%dm%.*s", ANSIStyle[class][0], (int)line, str);
-		}
-		if (line < len) {
-			printf("\n");
-			line++;
-		}
-		str += line;
-		len -= line;
+	if (ANSIStyle[class][1]) {
+		printf(
+			"\x1B[%d;%dm%.*s\x1B[%dm",
+			ANSIStyle[class][0], ANSIStyle[class][1],
+			(int)len, str,
+			ANSIStyle[class][2]
+		);
+	} else {
+		printf("\x1B[%dm%.*s", ANSIStyle[class][0], (int)len, str);
 	}
 }
 
@@ -439,32 +428,22 @@ ircOutput(const char *opts[], enum Class class, const char *str, size_t len) {
 	if (ANSIStyle[class][0] != SGRDefault) {
 		snprintf(cc, sizeof(cc), "%d", SGRIRC[ANSIStyle[class][0]]);
 	}
-	// Style each line separately, for multiple IRC messages.
-	while (len) {
-		size_t line = strcspn(str, "\n");
-		if (line > len) line = len;
-		if (ANSIStyle[class][1]) {
-			printf(
-				"%c%s%c%.*s%c",
-				IRCColor, cc, SGRIRC[ANSIStyle[class][1]],
-				(int)line, str,
-				SGRIRC[ANSIStyle[class][2]]
-			);
-		} else {
-			// Double-toggle bold to prevent str being interpreted as color.
-			printf(
-				"%c%s%c%c%.*s",
-				IRCColor, cc, IRCBold, IRCBold, (int)line, str
-			);
-		}
-		if (line < len) {
-			printf("\n");
-			line++;
-			if (opts[Monospace] && line < len) printf("%c", IRCMonospace);
-		}
-		str += line;
-		len -= line;
+	// Prevent trailing formatting after newline ...
+	bool newline = (str[len - 1] == '\n');
+	if (ANSIStyle[class][1]) {
+		printf(
+			"%c%s%c%.*s%c%s",
+			IRCColor, cc, SGRIRC[ANSIStyle[class][1]],
+			(int)(newline ? len - 1 : len), str,
+			SGRIRC[ANSIStyle[class][2]],
+			(newline ? "\n" : "")
+		);
+	} else {
+		// Double-toggle bold to prevent str being interpreted as color.
+		printf("%c%s%c%c%.*s", IRCColor, cc, IRCBold, IRCBold, (int)len, str);
 	}
+	// ... except for monospace, at the beginning of each line.
+	if (newline && opts[Monospace]) printf("%c", IRCMonospace);
 }
 
 // }}}
@@ -709,8 +688,9 @@ int main(int argc, char *argv[]) {
 	if (format.header) format.header(opts);
 	size_t run = 0;
 	for (size_t i = 0; i < len; i += run) {
-		for (run = 0; i + run < len; ++run) {
+		for (run = 1; i + run < len; ++run) {
 			if (hi[i + run] != hi[i]) break;
+			if (str[i + run - 1] == '\n') break;
 		}
 		format.output(opts, hi[i], &str[i], run);
 	}
