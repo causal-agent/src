@@ -16,10 +16,7 @@ upload() {
 
 temp() {
 	temp=$(mktemp -d)
-	trap rmtemp EXIT
-}
-rmtemp() {
-	rm -r "$temp"
+	trap "rm -r '$temp'" EXIT
 }
 
 uploadText() {
