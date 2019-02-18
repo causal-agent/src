@@ -228,6 +228,8 @@ static const struct Syntax ShSyntax[] = {
 		"|" "[.:]|break|continue|eval|exec|exit|export|local|readonly|return"
 		"|" "set|shift|times|trap|unset"
 		")" WB },
+	{ Tag, .subexp = 2,
+		.pattern = WB "(" PATTERN_ID ")" BL0 "[(]" BL0 "[)]" },
 	{ String, .newline = true, .subexp = 1, .pattern =
 		"<<-?" BL0 "EOF[^\n]*\n"
 		"(([^\n]|\n\t*[^E]|\n\t*E[^O]|\n\t*EO[^F]|\n\t*EOF[^\n])*)"
