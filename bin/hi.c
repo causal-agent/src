@@ -500,7 +500,7 @@ static void htmlTabSize(const char *tab) {
 }
 
 static void htmlHeader(const char *opts[]) {
-	if (!opts[Document]) goto pre;
+	if (!opts[Document]) goto body;
 	printf("<!DOCTYPE html>\n<title>");
 	if (opts[Title]) htmlEscape(opts[Title], strlen(opts[Title]));
 	printf("</title>\n");
@@ -515,17 +515,17 @@ static void htmlHeader(const char *opts[]) {
 			htmlTabSize(opts[Tab]);
 			printf(" }\n");
 		}
-		printf(
-			".hi.%s:focus { outline-style: none; color: goldenrod; }",
-			ClassName[Tag]
-		);
 		for (enum Class class = 0; class < ClassLen; ++class) {
 			if (!HTMLStyle[class]) continue;
 			printf(".hi.%s { %s }\n", ClassName[class], HTMLStyle[class]);
 		}
+		printf(
+			".hi.%s:focus { color: goldenrod; outline: none; }\n",
+			ClassName[Tag]
+		);
 		printf("</style>\n");
 	}
-pre:
+body:
 	if (opts[Inline] && opts[Tab]) {
 		printf("<pre class=\"hi\" style=\"");
 		htmlTabSize(opts[Tab]);
@@ -540,7 +540,7 @@ static void htmlFooter(const char *opts[]) {
 	printf("</pre>\n");
 }
 
-static void htmlAnchorTag(const char *opts[], const char *str, size_t len) {
+static void htmlAnchor(const char *opts[], const char *str, size_t len) {
 	if (opts[Inline]) {
 		printf("<a style=\"%s\" id=\"", HTMLStyle[Tag] ? HTMLStyle[Tag] : "");
 	} else {
@@ -557,7 +557,7 @@ static void htmlAnchorTag(const char *opts[], const char *str, size_t len) {
 static void
 htmlOutput(const char *opts[], enum Class class, const char *str, size_t len) {
 	if (opts[Anchor] && class == Tag) {
-		htmlAnchorTag(opts, str, len);
+		htmlAnchor(opts, str, len);
 		return;
 	}
 	if (opts[Inline]) {
