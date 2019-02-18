@@ -312,6 +312,7 @@ static void check(void) {
 }
 
 #define ENUM_OPTION \
+	X(Anchor, "anchor") \
 	X(CSS, "css") \
 	X(Document, "document") \
 	X(Inline, "inline") \
@@ -503,6 +504,19 @@ static void htmlHeader(const char *opts[]) {
 			htmlTabSize(opts[Tab]);
 			printf(" }\n");
 		}
+		if (opts[Anchor]) {
+			printf(
+				"a.hi.%s { text-decoration: none; %s }\n"
+				"a.hi.%s:focus {"
+				" outline-style: none;"
+				" font-weight: bold;"
+				" text-decoration: underline;"
+				" }\n"
+				"a.hi.%s::before { content: attr(data-line); }\n",
+				ClassName[Line], HTMLStyle[Line],
+				ClassName[Line], ClassName[Line]
+			);
+		}
 		for (enum Class class = 0; class < ClassLen; ++class) {
 			if (!HTMLStyle[class]) continue;
 			printf("span.hi.%s { %s }\n", ClassName[class], HTMLStyle[class]);
@@ -526,6 +540,16 @@ static void htmlFooter(const char *opts[]) {
 
 static void
 htmlOutput(const char *opts[], enum Class class, const char *str, size_t len) {
+	if (opts[Anchor] && class == Line) {
+		size_t num = 0;
+		sscanf(str, " %zu", &num);
+		printf(
+			"<a class=\"hi %s\" id=\"L%zu\" href=\"#L%zu\" data-line=\"%.*s\">"
+			"</a>",
+			ClassName[class], num, num, (int)len, str
+		);
+		return;
+	}
 	if (opts[Inline]) {
 		printf("<span style=\"%s\">", HTMLStyle[class] ? HTMLStyle[class] : "");
 	} else {
