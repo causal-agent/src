@@ -42,8 +42,7 @@ typedef unsigned Set;
 	X(Format)  \
 	X(Interp)  \
 	X(Comment) \
-	X(Todo)    \
-	X(Line)
+	X(Todo)
 
 enum Class {
 #define X(class) class,
@@ -376,7 +375,6 @@ static const enum SGR ANSIStyle[ClassLen][3] = {
 	[Interp]  = { SGRYellow },
 	[Comment] = { SGRBlue },
 	[Todo]    = { SGRBlue, SGRBoldOn, SGRBoldOff },
-	[Line]    = { SGRRed },
 };
 
 static void
@@ -491,7 +489,6 @@ static const char *HTMLStyle[ClassLen] = {
 	[Interp]   = "color: olive;",
 	[Comment]  = "color: navy;",
 	[Todo]     = "color: navy; font-weight: bold;",
-	[Line]     = "color: maroon;",
 };
 
 static void htmlTabSize(const char *tab) {
@@ -518,23 +515,10 @@ static void htmlHeader(const char *opts[]) {
 			htmlTabSize(opts[Tab]);
 			printf(" }\n");
 		}
-		if (opts[Anchor]) {
-			printf(
-				".hi.%s:focus { outline-style: none; color: goldenrod; }",
-				ClassName[Tag]
-			);
-			printf(
-				".hi.%s { text-decoration: none; %s }\n"
-				".hi.%s:focus {"
-				" outline-style: none;"
-				" font-weight: bold;"
-				" text-decoration: underline;"
-				" }\n"
-				".hi.%s::before { content: attr(data-line); }\n",
-				ClassName[Line], HTMLStyle[Line],
-				ClassName[Line], ClassName[Line]
-			);
-		}
+		printf(
+			".hi.%s:focus { outline-style: none; color: goldenrod; }",
+			ClassName[Tag]
+		);
 		for (enum Class class = 0; class < ClassLen; ++class) {
 			if (!HTMLStyle[class]) continue;
 			printf(".hi.%s { %s }\n", ClassName[class], HTMLStyle[class]);
@@ -570,24 +554,10 @@ static void htmlAnchorTag(const char *opts[], const char *str, size_t len) {
 	printf("</a>");
 }
 
-static void htmlAnchorLine(const char *str, size_t len) {
-	size_t num = 0;
-	sscanf(str, " %zu", &num);
-	printf(
-		"<a class=\"hi %s\" id=\"L%zu\" href=\"#L%zu\" data-line=\"%.*s\">"
-		"</a>",
-		ClassName[Line], num, num, (int)len, str
-	);
-}
-
 static void
 htmlOutput(const char *opts[], enum Class class, const char *str, size_t len) {
 	if (opts[Anchor] && class == Tag) {
 		htmlAnchorTag(opts, str, len);
-		return;
-	}
-	if (opts[Anchor] && class == Line) {
-		htmlAnchorLine(str, len);
 		return;
 	}
 	if (opts[Inline]) {
@@ -680,10 +650,9 @@ int main(int argc, char *argv[]) {
 	struct Language lang = {0};
 	struct Format format = Formats[0];
 	const char *opts[OptionLen] = {0};
-	bool number = false;
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "cf:l:m:no:"))) {
+	while (0 < (opt = getopt(argc, argv, "cf:l:n:o:"))) {
 		switch (opt) {
 			break; case 'c': check(); return EX_OK;
 			break; case 'f': {
@@ -696,8 +665,7 @@ int main(int argc, char *argv[]) {
 					errx(EX_USAGE, "no such language %s", optarg);
 				}
 			}
-			break; case 'm': name = optarg;
-			break; case 'n': number = true;
+			break; case 'n': name = optarg;
 			break; case 'o': {
 				enum Option key;
 				char *keystr, *valstr;
@@ -755,14 +723,8 @@ int main(int argc, char *argv[]) {
 	highlight(lang, hi, str);
 
 	size_t run = 0;
-	size_t line = 0;
 	if (format.header) format.header(opts);
 	for (size_t i = 0; i < len; i += run) {
-		if (number && (!i || str[i - 1] == '\n')) {
-			char num[sizeof("9999 ")];
-			snprintf(num, sizeof(num), "%4zu ", ++line);
-			format.output(opts, Line, num, sizeof(num) - 1);
-		}
 		for (run = 1; i + run < len; ++run) {
 			if (hi[i + run] != hi[i]) break;
 			if (str[i + run - 1] == '\n') break;

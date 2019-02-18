@@ -101,16 +101,16 @@ $(HTMLS): ttpre hi
 .SUFFIXES: .html
 
 .c.html:
-	@./hi -f html -o document,anchor,tab=4 -m $< /dev/null > $@
+	@./hi -f html -o document,tab=4 -n $< /dev/null > $@
 	@echo '<code><a href="$(GITEA_URL)/$<">$< in git</a></code>' >> $@
 	man -P cat ./man1/$(<:%.c=%.1) | ./ttpre >> $@
-	./hi -n -f html -o anchor $< >> $@
+	./hi -f html -o anchor $< >> $@
 
 .sh.html:
-	@./hi -f html -o document,anchor,tab=4 -m $< /dev/null > $@
+	@./hi -f html -o document,tab=4 -n $< /dev/null > $@
 	@echo '<code><a href="$(GITEA_URL)/$<">$< in git</a></code>' >> $@
 	man -P cat ./man1/$(<:%.sh=%.1) | ./ttpre >> $@
-	./hi -n -f html -o anchor $< >> $@
+	./hi -f html -o anchor $< >> $@
 
 clean:
 	rm -f $(BINS_ALL) $(LINKS) tags scheme.h scheme.png *.o *.html

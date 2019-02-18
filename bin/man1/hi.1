@@ -1,4 +1,4 @@
-.Dd February 17, 2019
+.Dd February 18, 2019
 .Dt HI 1
 .Os
 .
@@ -8,10 +8,9 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl n
 .Op Fl f Ar format
 .Op Fl l Ar lang
-.Op Fl m Ar name
+.Op Fl n Ar name
 .Op Fl o Ar opts
 .Op Ar file
 .Nm
@@ -34,11 +33,9 @@ Compile all regular expressions and exit.
 Set the output format.
 .It Fl l Ar lang
 Set the input language.
-.It Fl m Ar name
+.It Fl n Ar name
 Override the name used
 to infer the input language.
-.It Fl n
-Output line numbers.
 .It Fl o Ar opts
 Set output format options.
 .Ar opts
@@ -74,12 +71,9 @@ classes.
 The options are as follows:
 .Bl -tag -width "title=..."
 .It Cm anchor
-With
-.Fl n ,
-output line numbers
-as un-selectable anchor links.
-Incompatible with
-.Cm inline .
+Output tags
+(type and function definitions)
+as anchor links.
 .
 .It Cm css Ns = Ns Ar url
 With
