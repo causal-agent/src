@@ -36,6 +36,7 @@ typedef unsigned Set;
 	X(Normal)  \
 	X(Keyword) \
 	X(Macro)   \
+	X(Tag)     \
 	X(String)  \
 	X(Escape)  \
 	X(Format)  \
@@ -66,7 +67,11 @@ struct Syntax {
 };
 
 #define WB "(^|[^_[:alnum:]]|\n)"
-#define WS "[[:blank:]]*"
+#define BL0 "[[:blank:]]*"
+#define BL1 "[[:blank:]]+"
+#define SP0 "[[:space:]]*"
+#define SP1 "[[:space:]]+"
+#define PATTERN_ID "[_[:alpha:]][_[:alnum:]]*"
 #define PATTERN_SQ "'([^']|[\\]')*'"
 #define PATTERN_DQ "\"([^\"]|[\\]\")*\""
 #define PATTERN_BC "/[*]" "([^*]|[*][^/])*" "[*]+/"
@@ -84,9 +89,15 @@ static const struct Syntax CSyntax[] = {
 		"|" "break|case|continue|default|goto|return"
 		")" WB },
 	{ Macro,
-		.pattern = "^" WS "#(.|[\\]\n)*" },
+		.pattern = "^" BL0 "#(.|[\\]\n)*" },
+	{ Tag, .parent = SET(Macro), .subexp = 1,
+		.pattern = "define" BL1 "(" PATTERN_ID ")" BL0 "[(]" },
+	{ Tag, .subexp = 2,
+		.pattern = "(enum|struct|union)" SP1 "(" PATTERN_ID ")" SP0 "[{]" },
+	{ Tag, .parent = ~SET(Keyword), .subexp = 1,
+		.pattern = "(" PATTERN_ID ")" SP0 "[(][^)]*[)]" SP0 "[{]" },
 	{ String, .parent = SET(Macro), .subexp = 1,
-		.pattern = "include" WS "(<[^>]*>)" },
+		.pattern = "include" BL0 "(<[^>]*>)" },
 	{ String,
 		.pattern = "[LUu]?" PATTERN_SQ },
 	{ String, .parent = ~SET(String),
@@ -118,7 +129,7 @@ static const struct Syntax MakeSyntax[] = {
 	{ Macro,
 		.pattern = "^ *-?include" },
 	{ String, .subexp = 1,
-		.pattern = "[._[:alnum:]]+" WS "[!+:?]?=" WS "(.*)" },
+		.pattern = "[._[:alnum:]]+" BL0 "[!+:?]?=" BL0 "(.*)" },
 	{ Normal,
 		.pattern = "^\t.*" },
 	{ String,
@@ -169,7 +180,6 @@ static const struct Syntax MdocSyntax[] = {
 // }}}
 
 // Rust syntax {{{
-#define RUST_IDENT "[[:alpha:]][_[:alnum:]]*"
 static const struct Syntax RustSyntax[] = {
 	{ Keyword, .subexp = 2, .pattern = WB
 		"(" "'?static|[Ss]elf|abstract|as|async|await|become|box|break|const"
@@ -181,9 +191,9 @@ static const struct Syntax RustSyntax[] = {
 	{ Macro, .newline = true,
 		.pattern = "#!?[[][^]]*[]]" },
 	{ Macro,
-		.pattern = RUST_IDENT "!" },
+		.pattern = PATTERN_ID "!" },
 	{ Interp,
-		.pattern = "[$]" RUST_IDENT },
+		.pattern = "[$]" PATTERN_ID },
 	{ String,
 		.pattern = "b?'([^']|[\\]')'" },
 	{ String,
@@ -215,7 +225,7 @@ static const struct Syntax ShSyntax[] = {
 		"|" "set|shift|times|trap|unset"
 		")" WB },
 	{ String, .newline = true, .subexp = 1, .pattern =
-		"<<-?" WS "EOF[^\n]*\n"
+		"<<-?" BL0 "EOF[^\n]*\n"
 		"(([^\n]|\n\t*[^E]|\n\t*E[^O]|\n\t*EO[^F]|\n\t*EOF[^\n])*)"
 		"\n\t*EOF\n" },
 	{ String, .parent = ~SET(String), .newline = true,
@@ -231,7 +241,7 @@ static const struct Syntax ShSyntax[] = {
 	{ String, .parent = ~SET(Escape),
 		.pattern = "[\\]." },
 	{ String, .subexp = 1, .newline = true, .pattern =
-		"<<-?" WS "'EOF'[^\n]*\n"
+		"<<-?" BL0 "'EOF'[^\n]*\n"
 		"(([^\n]|\n\t*[^E]|\n\t*E[^O]|\n\t*EO[^F]|\n\t*EOF[^\n])*)"
 		"\n\t*EOF\n" },
 	{ String, .parent = ~SET(String), .newline = true,
@@ -341,7 +351,9 @@ OutputFn(const char *opts[], enum Class class, const char *str, size_t len);
 
 enum SGR {
 	SGRBoldOn = 1,
+	SGRUnderlineOn = 4,
 	SGRBoldOff = 22,
+	SGRUnderlineOff = 24,
 	SGRBlack = 30,
 	SGRRed,
 	SGRGreen,
@@ -357,6 +369,7 @@ static const enum SGR ANSIStyle[ClassLen][3] = {
 	[Normal]  = { SGRDefault },
 	[Keyword] = { SGRWhite },
 	[Macro]   = { SGRGreen },
+	[Tag]     = { SGRDefault, SGRUnderlineOn, SGRUnderlineOff },
 	[String]  = { SGRCyan },
 	[Escape]  = { SGRDefault },
 	[Format]  = { SGRCyan, SGRBoldOn, SGRBoldOff },
@@ -472,6 +485,7 @@ static void htmlEscape(const char *str, size_t len) {
 static const char *HTMLStyle[ClassLen] = {
 	[Keyword]  = "color: dimgray;",
 	[Macro]    = "color: green;",
+	[Tag]      = "color: inherit; text-decoration: underline;",
 	[String]   = "color: teal;",
 	[Format]   = "color: teal; font-weight: bold;",
 	[Interp]   = "color: olive;",
@@ -506,20 +520,24 @@ static void htmlHeader(const char *opts[]) {
 		}
 		if (opts[Anchor]) {
 			printf(
-				"a.hi.%s { text-decoration: none; %s }\n"
-				"a.hi.%s:focus {"
+				".hi.%s:focus { outline-style: none; color: goldenrod; }",
+				ClassName[Tag]
+			);
+			printf(
+				".hi.%s { text-decoration: none; %s }\n"
+				".hi.%s:focus {"
 				" outline-style: none;"
 				" font-weight: bold;"
 				" text-decoration: underline;"
 				" }\n"
-				"a.hi.%s::before { content: attr(data-line); }\n",
+				".hi.%s::before { content: attr(data-line); }\n",
 				ClassName[Line], HTMLStyle[Line],
 				ClassName[Line], ClassName[Line]
 			);
 		}
 		for (enum Class class = 0; class < ClassLen; ++class) {
 			if (!HTMLStyle[class]) continue;
-			printf("span.hi.%s { %s }\n", ClassName[class], HTMLStyle[class]);
+			printf(".hi.%s { %s }\n", ClassName[class], HTMLStyle[class]);
 		}
 		printf("</style>\n");
 	}
@@ -538,16 +556,38 @@ static void htmlFooter(const char *opts[]) {
 	printf("</pre>\n");
 }
 
+static void htmlAnchorTag(const char *opts[], const char *str, size_t len) {
+	if (opts[Inline]) {
+		printf("<a style=\"%s\" id=\"", HTMLStyle[Tag] ? HTMLStyle[Tag] : "");
+	} else {
+		printf("<a class=\"hi %s\" id=\"", ClassName[Tag]);
+	}
+	htmlEscape(str, len);
+	printf("\" href=\"#");
+	htmlEscape(str, len);
+	printf("\">");
+	htmlEscape(str, len);
+	printf("</a>");
+}
+
+static void htmlAnchorLine(const char *str, size_t len) {
+	size_t num = 0;
+	sscanf(str, " %zu", &num);
+	printf(
+		"<a class=\"hi %s\" id=\"L%zu\" href=\"#L%zu\" data-line=\"%.*s\">"
+		"</a>",
+		ClassName[Line], num, num, (int)len, str
+	);
+}
+
 static void
 htmlOutput(const char *opts[], enum Class class, const char *str, size_t len) {
+	if (opts[Anchor] && class == Tag) {
+		htmlAnchorTag(opts, str, len);
+		return;
+	}
 	if (opts[Anchor] && class == Line) {
-		size_t num = 0;
-		sscanf(str, " %zu", &num);
-		printf(
-			"<a class=\"hi %s\" id=\"L%zu\" href=\"#L%zu\" data-line=\"%.*s\">"
-			"</a>",
-			ClassName[class], num, num, (int)len, str
-		);
+		htmlAnchorLine(str, len);
 		return;
 	}
 	if (opts[Inline]) {
