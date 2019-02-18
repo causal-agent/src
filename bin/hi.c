@@ -168,6 +168,8 @@ static const struct Syntax MdocSyntax[] = {
 		"|" "(Br|[ABDPQS])[coq]|E[co]"
 		"|" "At|(Bs|[BDEFNO])x|Rv|St"
 		")" WB },
+	{ Tag, .subexp = 1,
+		.pattern = "^[.]S[hs]" BL1 "(.+)" },
 	{ String,
 		.pattern = PATTERN_DQ },
 	{ Normal,
