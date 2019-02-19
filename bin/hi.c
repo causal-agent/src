@@ -94,7 +94,7 @@ static const struct Syntax CSyntax[] = {
 	{ Tag, .subexp = 2,
 		.pattern = "(enum|struct|union)" SP1 "(" PATTERN_ID ")" SP0 "[{]" },
 	{ Tag, .parent = ~SET(Keyword), .newline = true, .subexp = 1,
-		.pattern = "(" PATTERN_ID ")" SP0 "[(][^)]*[)]" SP0 "[{]" },
+		.pattern = "(" PATTERN_ID ")" SP0 "[(][^()]*[)]" SP0 "[{]" },
 	{ Tag, .newline = true, .subexp = 3, .pattern =
 		"(static|typedef)" SP1
 		"(" "(" PATTERN_ID ")" SP0
