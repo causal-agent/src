@@ -192,6 +192,8 @@ static const struct Syntax RustSyntax[] = {
 		"|" "return|struct|super|trait|true|try|type(of)?|union|uns(afe|ized)"
 		"|" "use|virtual|where|while|yield"
 		")" WB },
+	{ Tag, .subexp = 2, .pattern =
+		"(enum|fn|macro_rules!|mod|struct|type|union)" SP1 "(" PATTERN_ID ")" },
 	{ Macro, .newline = true,
 		.pattern = "#!?[[][^]]*[]]" },
 	{ Macro,
