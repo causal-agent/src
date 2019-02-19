@@ -27,7 +27,7 @@ uploadText() {
 
 uploadHi() {
 	temp
-	hi -f html -o document,tab=4 "$@" > "${temp}/hi.html"
+	hi -f html -o document,anchor,tab=4 "$@" > "${temp}/hi.html"
 	upload "${temp}/hi.html"
 }
 
