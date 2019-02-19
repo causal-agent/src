@@ -1,3 +1,6 @@
+PREFIX ?= ~/.local
+MANDIR ?= ${PREFIX}/share/man
+
 MAN += adler32.3
 MAN += adler32_combine.3
 MAN += compress.3
@@ -69,4 +72,16 @@ MLINKS += gzseek.3 gztell.3
 MLINKS += inflateReset.3 inflateReset2.3
 MLINKS += uncompress.3 uncompress2.3
 
-.include <bsd.lib.mk>
+lint:
+	mandoc -T lint ${MAN} | grep -v 'referenced manual not found'
+
+install:
+	install -d ${MANDIR}/man3
+	install -m 644 ${MAN} ${MANDIR}/man3
+	set -- ${MLINKS}; while [ -n "$$*" ]; do \
+		ln -fs $$1 ${MANDIR}/man3/$$2; shift 2; done
+
+uninstall:
+	rm -f ${MAN:%=${MANDIR}/man3/%}
+	set -- ${MLINKS}; while [ -n "$$*" ]; do \
+		rm -f ${MANDIR}/man3/$$2; shift 2; done
