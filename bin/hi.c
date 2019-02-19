@@ -97,7 +97,8 @@ static const struct Syntax CSyntax[] = {
 		.pattern = "(" PATTERN_ID ")" SP0 "[(][^)]*[)]" SP0 "[{]" },
 	{ Tag, .newline = true, .subexp = 3, .pattern =
 		"(static|typedef)" SP1
-		"(" "(" PATTERN_ID ")" SP0 "([*]|[[][^]]*[]]|[{][^}]*[}])*" SP0 ")+" },
+		"(" "(" PATTERN_ID ")" SP0
+		"(" "[*]" "|" "[[][^]]*[]]" "|" "[{][^}]*[}]" "|" SP0 ")*" ")+" },
 	{ String, .parent = SET(Macro), .subexp = 1,
 		.pattern = "include" BL0 "(<[^>]*>)" },
 	{ String,
