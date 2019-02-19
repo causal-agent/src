@@ -90,7 +90,7 @@ static const struct Syntax CSyntax[] = {
 	{ Macro,
 		.pattern = "^" BL0 "#(.|[\\]\n)*" },
 	{ Tag, .parent = SET(Macro), .subexp = 1,
-		.pattern = "define" BL1 "(" PATTERN_ID ")" BL0 "[(]" },
+		.pattern = "define" BL1 "(" PATTERN_ID ")" "[(]" },
 	{ Tag, .subexp = 2,
 		.pattern = "(enum|struct|union)" SP1 "(" PATTERN_ID ")" SP0 "[{]" },
 	{ Tag, .parent = ~SET(Keyword), .newline = true, .subexp = 1,
