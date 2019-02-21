@@ -107,16 +107,16 @@ $(HTMLS): ttpre hi html.sh
 .SUFFIXES: .html
 
 .c.html:
-	sh html.sh $< ./man1/$(<:.c=.1) > $@
+	sh html.sh $< man1/$(<:.c=.1) > $@
 
 .sh.html:
-	sh html.sh $< ./man1/$(<:.sh=.1) > $@
+	sh html.sh $< man1/$(<:.sh=.1) > $@
 
 .h.html:
 	sh html.sh $< > $@
 
 Makefile.html: Makefile bin.7
-	sh html.sh Makefile ./bin.7 > Makefile.html
+	sh html.sh Makefile bin.7 > Makefile.html
 
 clean:
 	rm -f $(BINS_ALL) $(LINKS) tags scheme.h scheme.png *.o *.html

@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-readonly GiteaURL=https://code.causal.agency/june/src/src/branch/master/bin
+readonly GiteaURL='https://code.causal.agency/june/src/src/branch/master/bin'
 
 src=$1
 man=${2:-}
@@ -10,5 +10,5 @@ man=${2:-}
 cat <<- EOF
 	<code><a href="${GiteaURL}/${src}">${src} in git</a></code>
 EOF
-[ -f "${man}" ] && man -P cat "${man}" | ./ttpre
+[ -f "${man}" ] && man -P cat "${PWD}/${man}" | ./ttpre
 ./hi -f html -o anchor "${src}"
