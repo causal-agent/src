@@ -91,26 +91,32 @@ scheme.png: scheme
 	./scheme -gt > scheme.png
 
 HTMLS = $(BINS_ALL:%=%.html)
+HTMLS += Makefile.html
+HTMLS += gfx-fb.html
+HTMLS += gfx-x11.html
+HTMLS += gfx.html
+HTMLS += html.html
+HTMLS += png.html
 WEBROOT = /usr/local/www/causal.agency
-GITEA_URL = https://code.causal.agency/june/src/src/branch/master/bin
 
 html: $(HTMLS)
+	@true
 
-$(HTMLS): ttpre hi
+$(HTMLS): ttpre hi html.sh
 
 .SUFFIXES: .html
 
 .c.html:
-	@./hi -f html -o document,tab=4 -n $< /dev/null > $@
-	@echo '<code><a href="$(GITEA_URL)/$<">$< in git</a></code>' >> $@
-	man -P cat ./man1/$(<:%.c=%.1) | ./ttpre >> $@
-	./hi -f html -o anchor $< >> $@
+	sh html.sh $< ./man1/$(<:.c=.1) > $@
 
 .sh.html:
-	@./hi -f html -o document,tab=4 -n $< /dev/null > $@
-	@echo '<code><a href="$(GITEA_URL)/$<">$< in git</a></code>' >> $@
-	man -P cat ./man1/$(<:%.sh=%.1) | ./ttpre >> $@
-	./hi -f html -o anchor $< >> $@
+	sh html.sh $< ./man1/$(<:.sh=.1) > $@
+
+.h.html:
+	sh html.sh $< > $@
+
+Makefile.html: Makefile bin.7
+	sh html.sh Makefile ./bin.7 > Makefile.html
 
 clean:
 	rm -f $(BINS_ALL) $(LINKS) tags scheme.h scheme.png *.o *.html
