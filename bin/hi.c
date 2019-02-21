@@ -126,11 +126,14 @@ static const struct Syntax CSyntax[] = {
 // }}}
 
 // make syntax {{{
+#define MAKE_TARGET "[-./_[:alnum:]]+"
 static const struct Syntax MakeSyntax[] = {
 	{ Keyword, .subexp = 2,
 		.pattern = WB "([.](PHONY|PRECIOUS|SUFFIXES))" WB },
 	{ Macro,
 		.pattern = "^ *-?include" },
+	{ Tag, .parent = ~SET(Keyword), .subexp = 1,
+		.pattern = "(" MAKE_TARGET ")" "(" BL0 MAKE_TARGET ")*" BL0 ":" },
 	{ String, .subexp = 1,
 		.pattern = "[._[:alnum:]]+" BL0 "[!+:?]?=" BL0 "(.*)" },
 	{ Normal,
