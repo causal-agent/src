@@ -38,8 +38,8 @@ uploadScreen() {
 	upload "${temp}/capture.png"
 }
 
-args=$(getopt 'hs' $*)
-set -- $args
+args=$(setopt 'hs' "$@")
+eval set -- "$args"
 for opt; do
 	case "$opt" in
 		(-h) shift; fn=uploadHi;;
