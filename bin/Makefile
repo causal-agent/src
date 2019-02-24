@@ -18,6 +18,7 @@ BINS += pbd
 BINS += pngo
 BINS += psf2png
 BINS += scheme
+BINS += setopt
 BINS += ttpre
 BINS += up
 BINS += wake
