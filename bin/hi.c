@@ -133,7 +133,7 @@ static const struct Syntax MakeSyntax[] = {
 	{ Macro,
 		.pattern = "^ *-?include" },
 	{ Tag, .parent = ~SET(Keyword), .subexp = 1,
-		.pattern = "(" MAKE_TARGET ")" "(" BL0 MAKE_TARGET ")*" BL0 ":" },
+		.pattern = "(" MAKE_TARGET ")" "(" BL1 MAKE_TARGET ")*" BL0 ":" },
 	{ String, .subexp = 1,
 		.pattern = "[._[:alnum:]]+" BL0 "[!+:?]?=" BL0 "(.*)" },
 	{ Normal,
