@@ -230,7 +230,7 @@ static const struct Syntax ShSyntax[] = {
 	{ Keyword, .subexp = 2, .pattern = WB
 		"(" "!|case|do|done|elif|else|esac|fi|for|if|in|then|until|while"
 		"|" "alias|bg|cd|command|false|fc|fg|getopts|jobs|kill|newgrp|pwd|read"
-		"|" "true|umask|unalias|wait"
+		"|" "true|type|ulimit|umask|unalias|wait"
 		"|" "[.:]|break|continue|eval|exec|exit|export|local|readonly|return"
 		"|" "set|shift|times|trap|unset"
 		")" WB },
