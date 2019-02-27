@@ -349,10 +349,11 @@ enum Option {
 	OptionLen,
 };
 
-static const char *OptionKey[OptionLen] = {
+static const char *OptionKey[OptionLen + 1] = {
 #define X(option, key) [option] = key,
 	ENUM_OPTION
 #undef X
+	NULL,
 };
 
 typedef void HeaderFn(const char *opts[]);
@@ -649,13 +650,6 @@ static bool findFormat(struct Format *format, const char *name) {
 	return false;
 }
 
-static bool findOption(enum Option *opt, const char *key) {
-	for (*opt = 0; *opt < OptionLen; ++*opt) {
-		if (!strcmp(key, OptionKey[*opt])) return true;
-	}
-	return false;
-}
-
 int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 
@@ -680,14 +674,14 @@ int main(int argc, char *argv[]) {
 			}
 			break; case 'n': name = optarg;
 			break; case 'o': {
+				char *val;
 				enum Option key;
-				char *keystr, *valstr;
-				while (NULL != (valstr = strsep(&optarg, ","))) {
-					keystr = strsep(&valstr, "=");
-					if (!findOption(&key, keystr)) {
-						errx(EX_USAGE, "no such option %s", keystr);
+				while (optarg[0]) {
+					key = getsubopt(&optarg, (char *const *)OptionKey, &val);
+					if (key >= OptionLen) {
+						errx(EX_USAGE, "no such option %s", suboptarg);
 					}
-					opts[key] = (valstr ? valstr : keystr);
+					opts[key] = (val ? val : "");
 				}
 			}
 			break; default: return EX_USAGE;
