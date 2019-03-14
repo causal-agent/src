@@ -117,7 +117,7 @@ static const struct Syntax CSyntax[] = {
 		"[AEFGXacdefginopsux]" // format specifier
 	},
 	{ Comment, .parent = ~SET(String),
-		.pattern = "//.*" },
+		.pattern = "//(.|[\\]\n)*" },
 	{ Comment, .parent = ~SET(String), .newline = true,
 		.pattern = PATTERN_BC },
 	{ Todo, .parent = SET(Comment),
