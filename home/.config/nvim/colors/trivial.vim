@@ -49,14 +49,14 @@ hi Error ctermbg=NONE ctermfg=9
 hi SpellBad ctermbg=NONE ctermfg=1
 hi! link Todo SpecialComment
 
-" Language-specifics.
-
 hi cFormat ctermfg=14
 
 hi diffAdded ctermfg=10
 hi diffRemoved ctermfg=9
 
 hi manUnderline cterm=italic
+
+hi link pythonInclude Statement
 
 hi link rubyDefine Structure
 hi link rubyStringDelimiter String
