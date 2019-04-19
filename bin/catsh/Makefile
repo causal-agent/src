@@ -40,11 +40,11 @@ GENHDRS = builtins.h nodes.h syntax.h token.h
 SRCS += $(GENSRCS)
 OBJS = $(SRCS:.c=.o) libedit/libedit.a
 
-MAN1 = cash.1 cash-kill.1 cash-printf.1 cash-test.1
+MAN1 = catsh.1 catsh-kill.1 catsh-printf.1 catsh-test.1
 
-all: tags cash
+all: tags catsh
 
-cash: $(OBJS)
+catsh: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
 
 $(OBJS): $(GENHDRS)
@@ -73,22 +73,22 @@ depend: $(SRCS) $(GENHDRS)
 -include .depend
 
 clean:
-	rm -f cash $(OBJS) mknodes mksyntax $(GENSRCS) $(GENHDRS) tags .depend
+	rm -f catsh $(OBJS) mknodes mksyntax $(GENSRCS) $(GENHDRS) tags .depend
 
-install: cash $(MAN1)
+install: catsh $(MAN1)
 	install -d $(PREFIX)/bin $(MANDIR)/man1
-	install cash $(PREFIX)/bin
+	install catsh $(PREFIX)/bin
 	install -m 644 $(MAN1) $(MANDIR)/man1
 
 uninstall:
-	rm -f $(PREFIX)/bin/cash $(MAN1:%=$(MANDIR)/man1/%)
+	rm -f $(PREFIX)/bin/catsh $(MAN1:%=$(MANDIR)/man1/%)
 
 shell:
-	grep -q '^$(PREFIX)/bin/cash$$' /etc/shells \
-		|| echo '$(PREFIX)/bin/cash' >> /etc/shells
+	grep -q '^$(PREFIX)/bin/catsh$$' /etc/shells \
+		|| echo '$(PREFIX)/bin/catsh' >> /etc/shells
 
 unshell:
-	sed -i sed '\;^$(PREFIX)/bin/cash$$;d' /etc/shells
+	sed -i sed '\;^$(PREFIX)/bin/catsh$$;d' /etc/shells
 
-README: cash.7
-	mandoc cash.7 | col -bx > README
+README: catsh.7
+	mandoc catsh.7 | col -bx > README

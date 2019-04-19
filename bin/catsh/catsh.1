@@ -33,12 +33,12 @@
 .\" $FreeBSD: releng/12.0/bin/sh/sh.1 336483 2018-07-19 13:09:29Z 0mp $
 .
 .Dd January 10, 2019
-.Dt CASH 1
+.Dt CATSH 1
 .Os
 .
 .Sh NAME
-.Nm cash
-.Nd the Causal Agency shell
+.Nm catsh
+.Nd a shell
 .
 .Sh SYNOPSIS
 .Nm
@@ -142,7 +142,7 @@ The default value of
 .Ev ENV
 is:
 .Pp
-.Dl "ENV=${XDG_CONFIG_HOME:-${HOME}/.config}/cash/env.sh"
+.Dl "ENV=${XDG_CONFIG_HOME:-${HOME}/.config}/catsh/env.sh"
 .
 .Pp
 The first non-option argument specified on the command line
@@ -335,7 +335,7 @@ The surrounding shell may kill the child
 or it may just return control to the tty and leave the child alone,
 like this:
 .Bd -literal -offset indent
-cash -T -c "trap 'exit 1' 2 ; some-blocking-program"
+catsh -T -c "trap 'exit 1' 2 ; some-blocking-program"
 .Ed
 .
 .It Fl u Li nounset
@@ -2143,7 +2143,7 @@ it is sought in the current working directory.
 A built-in equivalent of
 .Xr test 1 .
 This version is documented in
-.Xr cash-test 1 .
+.Xr catsh-test 1 .
 .
 .It Ic alias Oo Ar name Ns Oo = Ns Ar string Oc ... Oc
 If
@@ -2656,7 +2656,7 @@ A built-in equivalent of
 .Xr kill 1
 that additionally supports sending signals to jobs.
 This version is documented in
-.Xr cash-kill 1 .
+.Xr catsh-kill 1 .
 .
 .It Ic local Oo Ar variable ... Oc Op Fl
 See the
@@ -2667,7 +2667,7 @@ subsection.
 A built-in equivalent of
 .Xr printf 1 .
 This version is documented in
-.Xr cash-printf 1 .
+.Xr catsh-printf 1 .
 .
 .It Ic pwd Op Fl L | P
 Print the path of the current directory.
@@ -2874,7 +2874,7 @@ should be avoided, since the shell may abort.
 A built-in equivalent of
 .Xr test 1 .
 This version is documented in
-.Xr cash-test 1 .
+.Xr catsh-test 1 .
 .
 .It Ic times
 Print the amount of time spent executing the shell process and its children.
@@ -3168,9 +3168,9 @@ will return the argument.
 .
 .Sh SEE ALSO
 .Xr builtin 1 ,
-.Xr cash-kill 1 ,
-.Xr cash-printf 1 ,
-.Xr cash-test 1 ,
+.Xr catsh-kill 1 ,
+.Xr catsh-printf 1 ,
+.Xr catsh-test 1 ,
 .Xr chsh 1 ,
 .Xr echo 1 ,
 .Xr ed 1 ,

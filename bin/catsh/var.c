@@ -110,13 +110,13 @@ int forcelocal;
 static const struct varinit varinit[] = {
 	{
 		&venv, 0,
-		"ENV=${XDG_CONFIG_HOME:-${HOME}/.config}/cash/env.sh",
+		"ENV=${XDG_CONFIG_HOME:-${HOME}/.config}/catsh/env.sh",
 		NULL,
 	},
 #ifndef NO_HISTORY
 	{
 		&vhistfile, 0,
-		"HISTFILE=${XDG_DATA_HOME:-${HOME}/.local/share}/cash/history",
+		"HISTFILE=${XDG_DATA_HOME:-${HOME}/.local/share}/catsh/history",
 		sethistfile,
 	},
 	{ &vhistsize,	VUNSET,				"HISTSIZE=",

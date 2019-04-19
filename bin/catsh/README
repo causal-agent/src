@@ -1,14 +1,14 @@
-CASH(7)            FreeBSD Miscellaneous Information Manual            CASH(7)
+CATSH(7)               Miscellaneous Information Manual               CATSH(7)
 
 NAME
-     cash – the Causal Agency shell
+     catsh – a shell
 
 DESCRIPTION
-     cash is a shell derived from FreeBSD sh(1), which is in turn derived from
-     Almquist shell.  It includes editline(3) from NetBSD.
+     catsh is a shell derived from FreeBSD sh(1), which is in turn derived
+     from Almquist shell.  It includes editline(3) from NetBSD.
 
    Differences from sh(1)
-     •   ENV defaults to ‘${XDG_CONFIG_HOME:-${HOME}/.config}/cash/env.sh’.
+     •   ENV defaults to ‘${XDG_CONFIG_HOME:-${HOME}/.config}/catsh/env.sh’.
 
      •   PS0 is printed before each prompt, allowing multi-line prompts.
 

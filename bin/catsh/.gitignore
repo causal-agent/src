@@ -2,7 +2,7 @@
 .depend
 builtins.c
 builtins.h
-cash
+catsh
 config.mk
 mknodes
 mksyntax
