@@ -1,13 +1,11 @@
 set -o noclobber -o nounset -o vi
 
-colon() {
-	IFS=:
-	echo "$*"
-}
-
-# {,/opt/pkg,/usr{/local,/pkg,},$HOME/.local}/{s,}bin /usr/games
 _PATH=$PATH
-PATH=$(colon /sbin /bin /opt/pkg/sbin /opt/pkg/bin /usr/local/sbin /usr/local/bin /usr/pkg/sbin /usr/pkg/bin /usr/sbin /usr/bin ~/.local/sbin ~/.local/bin /usr/games)
+PATH=
+for prefix in '' /usr/local /usr/pkg /usr /opt/pkg ~/.local; do
+	PATH=${PATH}${PATH:+:}${prefix}/sbin:${prefix}/bin
+done
+PATH=$PATH:/usr/games
 CDPATH=:~
 
 export PAGER=less
@@ -19,7 +17,7 @@ export GPG_TTY=$(tty)
 export NETHACKOPTIONS='pickup_types:$!?+/=, color, DECgraphics'
 type nvim > /dev/null || EDITOR=vim
 
-alias vim="$EDITOR"
+alias vim=$EDITOR
 alias !!='fc -s'
 alias ls='ls -p'
 alias ll='ls -hl'
@@ -33,7 +31,9 @@ alias gp='git push' gu='git pull' gf='git fetch'
 alias gr='git rebase' gra='gr --abort' grc='gr --continue' grs='gr --skip'
 alias rand='openssl rand -base64 33'
 alias private='eval "$(gpg -d ~/.private)"'
-[ "$(uname)" = 'Linux' ] && alias ls='ls --color=auto' grep='grep --color'
+if [ "$(uname)" = 'Linux' ]; then
+	alias ls='ls --color=auto' grep='grep --color'
+fi
 
 af0=$(tput setaf 0 || tput AF 0)
 af7=$(tput setaf 7 || tput AF 7)
