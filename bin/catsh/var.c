@@ -129,9 +129,8 @@ static const struct varinit varinit[] = {
 	  changepath },
 	{ &vps0,	VUNSET,				"PS0=",
 	  NULL },
-	/*
-	 * vps1 depends on uid
-	 */
+	{ &vps1,	0,				"PS1=\\$ ",
+	  NULL },
 	{ &vps2,	0,				"PS2=> ",
 	  NULL },
 	{ &vps4,	0,				"PS4=+ ",
@@ -193,15 +192,6 @@ initvar(void)
 		vp->text = __DECONST(char *, ip->text);
 		vp->flags = ip->flags | VSTRFIXED | VTEXTFIXED;
 		vp->func = ip->func;
-	}
-	/*
-	 * PS1 depends on uid
-	 */
-	if (find_var("PS1", &vpp, &vps1.name_len) == NULL) {
-		vps1.next = *vpp;
-		*vpp = &vps1;
-		vps1.text = __DECONST(char *, geteuid() ? "PS1=$ " : "PS1=# ");
-		vps1.flags = VSTRFIXED|VTEXTFIXED;
 	}
 	fmtstr(ppid, sizeof(ppid), "%d", (int)getppid());
 	setvarsafe("PPID", ppid, 0);
