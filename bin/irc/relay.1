@@ -1,0 +1,48 @@
+.Dd April 28, 2019
+.Dt RELAY 1
+.Os
+.
+.Sh NAME
+.Nm relay
+.Nd IRC relay bot
+.
+.Sh SYNOPSIS
+.Nm
+.Ar host
+.Ar port
+.Ar nick
+.Ar chan
+.
+.Sh DESCRIPTION
+.Nm
+is one half of an IRC relay pair.
+It connects to
+.Ar host Ns : Ns Ar port
+over TLS
+as
+.Ar nick
+and joins
+.Ar chan .
+.
+.Pp
+.Nm
+outputs messages from
+.Ar chan
+to standard output
+and sends messages to
+.Ar chan
+from standard input.
+Two
+.Nm
+processes can be connected with
+.Xr mkfifo 1 .
+.
+.Sh EXAMPLES
+.Bd -literal -offset indent
+mkfifo a b
+relay a.example.com 6697 relay '#example' <>a >b
+relay b.example.com 6697 relay '#example' <>b >a
+.Ed
+.
+.Sh SEE ALSO
+.Xr mkfifo 1
