@@ -27,6 +27,10 @@
 #include <tls.h>
 #include <unistd.h>
 
+#ifdef __FreeBSD__
+#include <sys/capsicum.h>
+#endif
+
 static void clientWrite(struct tls *client, const char *ptr, size_t len) {
 	while (len) {
 		ssize_t ret = tls_write(client, ptr, len);
@@ -134,6 +138,28 @@ int main(int argc, char *argv[]) {
 
 	error = tls_connect_socket(client, sock, host);
 	if (error) errx(EX_PROTOCOL, "tls_connect: %s", tls_error(client));
+
+#ifdef __FreeBSD__
+	cap_rights_t rights;
+
+	error = cap_enter();
+	if (error) err(EX_OSERR, "cap_enter");
+
+	cap_rights_init(&rights, CAP_READ, CAP_EVENT);
+	error = cap_rights_limit(STDIN_FILENO, &rights);
+	if (error) err(EX_OSERR, "cap_rights_limit");
+
+	cap_rights_init(&rights, CAP_WRITE);
+	error = cap_rights_limit(STDOUT_FILENO, &rights);
+	if (error) err(EX_OSERR, "cap_rights_limit");
+
+	error = cap_rights_limit(STDERR_FILENO, &rights);
+	if (error) err(EX_OSERR, "cap_rights_limit");
+
+	cap_rights_init(&rights, CAP_READ, CAP_WRITE, CAP_EVENT);
+	error = cap_rights_limit(sock, &rights);
+	if (error) err(EX_OSERR, "cap_rights_limit");
+#endif
 
 	clientFormat(client, "NICK :%s\r\nUSER %s 0 * :%s\r\n", nick, nick, nick);
 
