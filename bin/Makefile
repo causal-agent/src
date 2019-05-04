@@ -1,12 +1,21 @@
-PREFIX = ~/.local
-MANDIR = $(PREFIX)/share/man
 GFX = cocoa
+LIBRESSL_PREFIX = /usr/local
+
+PREFIX = ~/.local
+MANIDR = $(PREFIX)/share/man
 
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lm -lutil -lz
+
+CFLAGS_tls = $(CFLAGS) -I$(LIBRESSL_PREFIX)/include
+LDFLAGS_tls = $(LDFLAGS) -L$(LIBRESSL_PREFIX)/lib
+LDLIBS_tls = $(LDLIBS) -ltls
+
 LDLIBS_cocoa = $(LDLIBS) -framework Cocoa
 LDLIBS_fb = $(LDLIBS)
 LDLIBS_x11 = $(LDLIBS) -lX11
+
+-include config.mk
 
 BINS += aes
 BINS += dtch
@@ -32,24 +41,28 @@ LINKS += pbpaste
 BINS_BSD += beef
 BINS_BSD += wat
 
+BINS_GFX += brot
+BINS_GFX += gfxx
+
 BINS_LINUX += bri
 BINS_LINUX += fbatt
 BINS_LINUX += fbclock
 BINS_LINUX += psfed
 
-BINS_GFX += brot
-BINS_GFX += gfxx
+BINS_TLS += relay
 
-BINS_ALL = $(BINS) $(BINS_BSD) $(BINS_LINUX) $(BINS_GFX)
+BINS_ALL = $(BINS) $(BINS_BSD) $(BINS_GFX) $(BINS_LINUX) $(BINS_TLS)
 MAN1_ALL = $(BINS_ALL:%=man1/%.1)
 
 any: .gitignore tags $(BINS) $(LINKS)
 
-bsd: any $(BINS_BSD)
+bsd: $(BINS_BSD)
 
-linux: any $(BINS_LINUX)
+gfx: $(BINS_GFX)
 
-gfx: any $(BINS_GFX)
+linux: $(BINS_LINUX)
+
+tls: $(BINS_TLS)
 
 .o:
 	$(CC) $(LDFLAGS) $< $(LDLIBS) -o $@
@@ -75,21 +88,25 @@ hi: hi.c
 	$(CC) $(CFLAGS) $(LDFLAGS) hi.c $(LDLIBS) -o $@
 	./hi -c
 
+relay: relay.c
+	$(CC) $(CFLAGS_tls) $(LDFLAGS_tls) relay.c $(LDLIBS_tls) -o $@
+
 atch: dtch
 	ln -f dtch atch
 
 open pbcopy pbpaste: pbd
 	ln -f pbd $@
 
-.gitignore: Makefile
-	echo $(BINS_ALL) $(LINKS) tags scheme.h scheme.png '*.o' '*.html' \
-		| tr ' ' '\n' | sort > .gitignore
-
 tags: *.h *.c
 	ctags -w *.h *.c
 
 scheme.png: scheme
 	./scheme -gt > scheme.png
+
+IGNORE = '*.o' '*.html' config.mk tags scheme.h scheme.png $(BINS_ALL) $(LINKS)
+
+.gitignore: Makefile
+	echo $(IGNORE) | tr ' ' '\n' | sort > .gitignore
 
 HTMLS = $(BINS_ALL:%=%.html)
 HTMLS += Makefile.html

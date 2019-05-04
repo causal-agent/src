@@ -5,6 +5,7 @@ atch
 beef
 bri
 brot
+config.mk
 dtch
 fbatt
 fbclock
@@ -20,6 +21,7 @@ pbpaste
 pngo
 psf2png
 psfed
+relay
 scheme
 scheme.h
 scheme.png

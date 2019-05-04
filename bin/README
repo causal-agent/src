@@ -23,6 +23,7 @@ DESCRIPTION
      pngo(1)     PNG optimizer
      psf2png(1)  PSF2 to PNG renderer
      psfed(1)    PSF2 font editor
+     relay(1)    IRC relay
      scheme(1)   color scheme
      ttpre(1)    man output to HTML
      up(1)       upload file
@@ -36,4 +37,4 @@ DESCRIPTION
            GFX=fb
            GFX=x11
 
-Causal Agency                  Feburary 12, 2019                 Causal Agency
+Causal Agency                     May 4, 2019                    Causal Agency
