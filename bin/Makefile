@@ -2,7 +2,7 @@ GFX = cocoa
 LIBRESSL_PREFIX = /usr/local
 
 PREFIX = ~/.local
-MANIDR = $(PREFIX)/share/man
+MANDIR = $(PREFIX)/share/man
 
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lm -lutil -lz
