@@ -271,7 +271,7 @@ static const struct Language {
 	const struct Syntax *syntax;
 	size_t len;
 } Languages[] = {
-	{ "c",    "[.][ch]$", CSyntax, ARRAY_LEN(CSyntax) },
+	{ "c",    "[.][chly]$", CSyntax, ARRAY_LEN(CSyntax) },
 	{ "make", "[.]mk$|^Makefile$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
 	{ "mdoc", "[.][1-9]$", MdocSyntax, ARRAY_LEN(MdocSyntax) },
 	{ "rust", "[.]rs$", RustSyntax, ARRAY_LEN(RustSyntax) },
