@@ -679,7 +679,7 @@ int main(int argc, char *argv[]) {
 				while (optarg[0]) {
 					key = getsubopt(&optarg, (char *const *)OptionKey, &val);
 					if (key >= OptionLen) {
-						errx(EX_USAGE, "no such option %s", suboptarg);
+						errx(EX_USAGE, "no such option %s", val);
 					}
 					opts[key] = (val ? val : "");
 				}
