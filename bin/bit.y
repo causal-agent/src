@@ -54,7 +54,7 @@ static uint64_t get(size_t i) {
 %left '+' '-'
 %left '*' '/' '%'
 %right '~'
-%left 'K' 'M' 'G'
+%left 'K' 'M' 'G' 'T'
 
 %%
 
@@ -72,6 +72,7 @@ expr:
 	| expr 'K' { $$ = $1 << 10; }
 	| expr 'M' { $$ = $1 << 20; }
 	| expr 'G' { $$ = $1 << 30; }
+	| expr 'T' { $$ = $1 << 40; }
 	| '~' expr { $$ = ~$2; }
 	| '-' expr { $$ = -$2; }
 	| expr '*' expr { $$ = $1 * $3; }
@@ -129,7 +130,9 @@ static void print(size_t i) {
 	);
 
 	if (val) {
-		if (!(val & (1 << 30) - 1)) {
+		if (!(val & (1ULL << 40) - 1)) {
+			printf(" %"PRId64"T", val >> 40);
+		} else if (!(val & (1 << 30) - 1)) {
 			printf(" %"PRId64"G", val >> 30);
 		} else if (!(val & (1 << 20) - 1)) {
 			printf(" %"PRId64"M", val >> 20);
