@@ -21,6 +21,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sysexits.h>
 
 static void yyerror(const char *str) {
@@ -43,7 +44,7 @@ static int yylex(void);
 
 %}
 
-%token Var Arr Inc Dec Shl Shr Le Ge Eq Ne And Or
+%token Var Arr Inc Dec Sizeof Shl Shr Le Ge Eq Ne And Or
 
 %left ','
 %right '?' ':'
@@ -57,7 +58,7 @@ static int yylex(void);
 %left Shl Shr
 %left '+' '-'
 %left '*' '/' '%'
-%right '!' '~' Inc Dec
+%right '!' '~' Inc Dec Sizeof
 %left '[' ']' Arr '.'
 
 %%
@@ -81,6 +82,7 @@ expr:
 	| '-' expr { $$ = fmt("(-%s)", $2); }
 	| '*' expr { $$ = fmt("(*%s)", $2); }
 	| '&' expr { $$ = fmt("(&%s)", $2); }
+	| Sizeof expr { $$ = fmt("(sizeof %s)", $2); }
 	| expr '*' expr { $$ = fmt("(%s * %s)", $1, $3); }
 	| expr '/' expr { $$ = fmt("(%s / %s)", $1, $3); }
 	| expr '%' expr { $$ = fmt("(%s %% %s)", $1, $3); }
@@ -116,6 +118,10 @@ static int yylex(void) {
 	int len;
 	for (len = 0; isalnum(input[len]) || input[len] == '_'; ++len);
 	if (len) {
+		if (!strncmp(input, "sizeof", len)) {
+			input += len;
+			return Sizeof;
+		}
 		yylval = fmt("%.*s", len, input);
 		input += len;
 		return Var;
