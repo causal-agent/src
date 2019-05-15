@@ -19,6 +19,7 @@ DESCRIPTION
      hi(1)       syntax highlighter
      hnel(1)     PTY input remapper
      modem(1)    fixed baud rate wrapper
+     order(1)    operator precedence
      pbd(1)      macOS pasteboard daemon
      pngo(1)     PNG optimizer
      psf2png(1)  PSF2 to PNG renderer

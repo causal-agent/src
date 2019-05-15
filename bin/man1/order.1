@@ -1,0 +1,34 @@
+.Dd May 15, 2019
+.Dt ORDER 1
+.Os
+.
+.Sh NAME
+.Nm order
+.Nd operator precedence
+.
+.Sh SYNOPSIS
+.Nm
+.Ar expr ...
+.
+.Sh DESCRIPTION
+.Nm
+parses C expressions
+and prints them with parentheses
+according to the precedence rules in
+.Xr operator 7 .
+.
+.Sh EXAMPLES
+.Bd -literal
+$ order 'a & b << 1'
+(a & (b << 1))
+.Ed
+.
+.Sh SEE ALSO
+.Xr operator 7
+.
+.Sh CAVEATS
+.Nm
+does not support the
+.Sy (type) ,
+.Sy sizeof
+or assignment operators.

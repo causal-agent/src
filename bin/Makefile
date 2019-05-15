@@ -23,6 +23,7 @@ BINS += glitch
 BINS += hi
 BINS += hnel
 BINS += modem
+BINS += order
 BINS += pbd
 BINS += pngo
 BINS += psf2png
@@ -126,6 +127,9 @@ $(HTMLS): ttpre hi html.sh
 
 .c.html:
 	sh html.sh $< man1/$(<:.c=.1) > $@
+
+.y.html:
+	sh html.sh $< man1/$(<:.y=.1) > $@
 
 .sh.html:
 	sh html.sh $< man1/$(<:.sh=.1) > $@
