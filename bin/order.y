@@ -44,9 +44,10 @@ static int yylex(void);
 
 %}
 
-%token Var Arr Inc Dec Sizeof Shl Shr Le Ge Eq Ne And Or
+%token Var
 
 %left ','
+%right '='
 %right '?' ':'
 %left Or
 %left And
@@ -102,6 +103,7 @@ expr:
 	| expr And expr { $$ = fmt("(%s && %s)", $1, $3); }
 	| expr Or expr { $$ = fmt("(%s || %s)", $1, $3); }
 	| expr '?' expr ':' expr { $$ = fmt("(%s ? %s : %s)", $1, $3, $5); }
+	| expr '=' expr { $$ = fmt("(%s = %s)", $1, $3); }
 	| expr ',' expr { $$ = fmt("(%s, %s)", $1, $3); }
 	;
 
