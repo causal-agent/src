@@ -44,10 +44,8 @@ static int yylex(void);
 
 %}
 
-%token Var
-
 %left ','
-%right '='
+%right '=' MulAss DivAss ModAss AddAss SubAss ShlAss ShrAss AndAss XorAss OrAss
 %right '?' ':'
 %left Or
 %left And
@@ -60,7 +58,9 @@ static int yylex(void);
 %left '+' '-'
 %left '*' '/' '%'
 %right '!' '~' Inc Dec Sizeof
-%left '[' ']' Arr '.'
+%left '(' ')' '[' ']' Arr '.'
+
+%token Var
 
 %%
 
@@ -103,8 +103,22 @@ expr:
 	| expr And expr { $$ = fmt("(%s && %s)", $1, $3); }
 	| expr Or expr { $$ = fmt("(%s || %s)", $1, $3); }
 	| expr '?' expr ':' expr { $$ = fmt("(%s ? %s : %s)", $1, $3, $5); }
-	| expr '=' expr { $$ = fmt("(%s = %s)", $1, $3); }
+	| expr ass expr %prec '=' { $$ = fmt("(%s %s %s)", $1, $2, $3); }
 	| expr ',' expr { $$ = fmt("(%s, %s)", $1, $3); }
+	;
+
+ass:
+	'=' { $$ = "="; }
+	| MulAss { $$ = "*="; }
+	| DivAss { $$ = "/="; }
+	| ModAss { $$ = "%="; }
+	| AddAss { $$ = "+="; }
+	| SubAss { $$ = "-="; }
+	| ShlAss { $$ = "<<="; }
+	| ShrAss { $$ = ">>="; }
+	| AndAss { $$ = "&="; }
+	| XorAss { $$ = "^="; }
+	| OrAss { $$ = "|="; }
 	;
 
 %%
@@ -129,7 +143,7 @@ static int yylex(void) {
 		return Var;
 	}
 
-	int tok = 0;
+	int tok;
 	switch (T(input[0], input[1])) {
 		break; case T('-', '>'): tok = Arr;
 		break; case T('+', '+'): tok = Inc;
@@ -142,13 +156,24 @@ static int yylex(void) {
 		break; case T('!', '='): tok = Ne;
 		break; case T('&', '&'): tok = And;
 		break; case T('|', '|'): tok = Or;
+		break; case T('*', '='): tok = MulAss;
+		break; case T('/', '='): tok = DivAss;
+		break; case T('%', '='): tok = ModAss;
+		break; case T('+', '='): tok = AddAss;
+		break; case T('-', '='): tok = SubAss;
+		break; case T('&', '='): tok = AndAss;
+		break; case T('^', '='): tok = XorAss;
+		break; case T('|', '='): tok = OrAss;
+		break; default: return *input++;
 	}
-	if (tok) {
-		input += 2;
-		return tok;
+	input += 2;
+
+	switch (T(tok, input[0])) {
+		case T(Shl, '='): input++; return ShlAss;
+		case T(Shr, '='): input++; return ShrAss;
 	}
 
-	return *input++;
+	return tok;
 }
 
 int main(int argc, char *argv[]) {
