@@ -80,9 +80,9 @@ expr:
 	| Dec expr { $$ = fmt("(--%s)", $2); }
 	| expr Inc { $$ = fmt("(%s++)", $1); }
 	| expr Dec { $$ = fmt("(%s--)", $1); }
-	| '-' expr { $$ = fmt("(-%s)", $2); }
-	| '*' expr { $$ = fmt("(*%s)", $2); }
-	| '&' expr { $$ = fmt("(&%s)", $2); }
+	| '-' expr %prec '!' { $$ = fmt("(-%s)", $2); }
+	| '*' expr %prec '!' { $$ = fmt("(*%s)", $2); }
+	| '&' expr %prec '!' { $$ = fmt("(&%s)", $2); }
 	| Sizeof expr { $$ = fmt("(sizeof %s)", $2); }
 	| expr '*' expr { $$ = fmt("(%s * %s)", $1, $3); }
 	| expr '/' expr { $$ = fmt("(%s / %s)", $1, $3); }
