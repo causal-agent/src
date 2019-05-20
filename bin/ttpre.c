@@ -58,7 +58,7 @@ static void push(wchar_t ch) {
 int main(void) {
 	setlocale(LC_CTYPE, "");
 	printf("<pre>");
-	wchar_t ch;
+	wint_t ch;
 	while (WEOF != (ch = getwchar())) push(ch);
 	push(0); push(0); push(0);
 	printf("</pre>\n");
