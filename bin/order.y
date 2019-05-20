@@ -24,6 +24,8 @@
 #include <string.h>
 #include <sysexits.h>
 
+int vasprintf(char **ret, const char *format, va_list ap);
+
 static void yyerror(const char *str) {
 	errx(EX_DATAERR, "%s", str);
 }
