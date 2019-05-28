@@ -79,11 +79,11 @@ static void clientHandle(struct tls *client, const char *chan, char *line) {
 	if (!strncmp(line, "\1ACTION ", 8)) {
 		line = &line[8];
 		size_t len = strcspn(line, "\1");
-		printf("* %c\u200B%s %.*s\n", nick[0], &nick[1], (int)len, line);
+		printf("* %c\u200C%s %.*s\n", nick[0], &nick[1], (int)len, line);
 	} else if (command[0] == 'N') {
-		printf("-%c\u200B%s- %s\n", nick[0], &nick[1], line);
+		printf("-%c\u200C%s- %s\n", nick[0], &nick[1], line);
 	} else {
-		printf("<%c\u200B%s> %s\n", nick[0], &nick[1], line);
+		printf("<%c\u200C%s> %s\n", nick[0], &nick[1], line);
 	}
 }
 
