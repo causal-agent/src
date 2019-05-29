@@ -34,10 +34,11 @@ static bool zero(const byte *ptr, size_t size) {
 static struct {
 	size_t cols;
 	size_t group;
+	size_t blank;
 	bool ascii;
 	bool offset;
 	bool skip;
-} options = { 16, 8, true, true, false };
+} options = { 16, 8, 0, true, true, false };
 
 static void dump(FILE *file) {
 	bool skip = false;
@@ -56,6 +57,12 @@ static void dump(FILE *file) {
 				continue;
 			} else {
 				skip = false;
+			}
+		}
+
+		if (options.blank) {
+			if (offset && offset % options.blank == 0) {
+				printf("\n");
 			}
 		}
 
@@ -106,11 +113,12 @@ int main(int argc, char *argv[]) {
 	const char *path = NULL;
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "ac:g:rsz"))) {
+	while (0 < (opt = getopt(argc, argv, "ac:g:p:rsz"))) {
 		switch (opt) {
 			break; case 'a': options.ascii ^= true;
 			break; case 'c': options.cols = strtoul(optarg, NULL, 0);
 			break; case 'g': options.group = strtoul(optarg, NULL, 0);
+			break; case 'p': options.blank = strtoul(optarg, NULL, 0);
 			break; case 'r': reverse = true;
 			break; case 's': options.offset ^= true;
 			break; case 'z': options.skip ^= true;

@@ -11,6 +11,7 @@
 .Op Fl arsz
 .Op Fl c Ar cols
 .Op Fl g Ar group
+.Op Fl p Ar count
 .Op Ar file
 .
 .Sh DESCRIPTION
@@ -41,6 +42,14 @@ bytes.
 The default
 .Ar group
 is 8.
+.
+.It Fl p Ar count
+Output a blank line after every
+.Ar count
+bytes.
+.Ar count
+must be a multiple of
+.Ar cols .
 .
 .It Fl r
 Reverse hexdump.
