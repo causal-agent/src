@@ -5,7 +5,7 @@ PREFIX = ~/.local
 MANDIR = $(PREFIX)/share/man
 
 CFLAGS += -Wall -Wextra -Wpedantic
-LDLIBS = -lm -lutil -lz
+LDLIBS = -ledit -lm -lutil -lz
 
 CFLAGS_tls = $(CFLAGS) -I$(LIBRESSL_PREFIX)/include
 LDFLAGS_tls = $(LDFLAGS) -L$(LIBRESSL_PREFIX)/lib
@@ -18,6 +18,7 @@ LDLIBS_x11 = $(LDLIBS) -lX11
 -include config.mk
 
 BINS += aes
+BINS += bit
 BINS += dtch
 BINS += glitch
 BINS += hi

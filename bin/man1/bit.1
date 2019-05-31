@@ -1,0 +1,43 @@
+.Dd May 12, 2019
+.Dt BIT 1
+.Os
+.
+.Sh NAME
+.Nm bit
+.Nd a calculator
+.
+.Sh SYNOPSIS
+.Nm
+.
+.Sh DESCRIPTION
+.Nm
+is an integer calculator.
+Its syntax resembles that of C,
+with the following additions:
+.
+.Bl -bullet
+.It
+Underscores are allowed in integer literals.
+.It
+The
+.Sy 0b
+prefix is used for binary literals.
+.It
+The
+.Sy ->
+operator is used for arithmetic shift.
+.It
+The postfix operators
+.Sy K ,
+.Sy M ,
+.Sy G ,
+.Sy T
+are used as constant multipliers.
+.It
+The symbol
+.Sy _
+is used to refer to the previous result.
+.El
+.
+.Sh SEE ALSO
+.Xr operator 7

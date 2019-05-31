@@ -25,27 +25,19 @@
 #include <stdlib.h>
 #include <sysexits.h>
 
-int yylex(void);
-void yyerror(const char *str);
+#define MASK(b) ((1ULL << (b)) - 1)
 
 #define YYSTYPE uint64_t
 
-enum { RingLen = 64 };
-static struct {
-	uint64_t vals[RingLen];
-	size_t len;
-} ring;
+static void yyerror(const char *str) {
+	warnx("%s", str);
+}
 
-static void push(uint64_t val) {
-	ring.vals[ring.len++ % RingLen] = val;
-}
-static uint64_t get(size_t i) {
-	return ring.vals[i % RingLen];
-}
+static int yylex(void);
+
+static uint64_t result;
 
 %}
-
-%token Int Shl Shr Sar
 
 %left '|'
 %left '^'
@@ -56,18 +48,17 @@ static uint64_t get(size_t i) {
 %right '~'
 %left 'K' 'M' 'G' 'T'
 
+%token Int
+
 %%
 
-input:
-	expr { push($1); }
-	| input ',' expr { push($3); }
-	|
+start:
+	expr { result = $1; }
 	;
 
 expr:
 	Int
-	| '_' { $$ = get(ring.len - 1); }
-	| '[' Int ']' { $$ = get($2); }
+	| '_' { $$ = result; }
 	| '(' expr ')' { $$ = $2; }
 	| expr 'K' { $$ = $1 << 10; }
 	| expr 'M' { $$ = $1 << 20; }
@@ -90,69 +81,74 @@ expr:
 
 %%
 
-#include "bitlex.c"
+#define T(a, b) ((int)(a) << 8 | (int)(b))
 
-int yywrap(void) {
-	return 1;
+static const char *input;
+
+static int lexInt(uint64_t base) {
+	for (yylval = 0; input[0]; ++input) {
+		uint64_t digit;
+		if (input[0] == '_') {
+			continue;
+		} else if (input[0] >= '0' && input[0] <= '9') {
+			digit = input[0] - '0';
+		} else if (input[0] >= 'A' && input[0] <= 'F') {
+			digit = 0xA + input[0] - 'A';
+		} else if (input[0] >= 'a' && input[0] <= 'f') {
+			digit = 0xA + input[0] - 'a';
+		} else {
+			return Int;
+		}
+		if (digit >= base) return Int;
+		yylval *= base;
+		yylval += digit;
+	}
+	return Int;
 }
 
-void yyerror(const char *str) {
-	if (yychar < 128 && isprint(yychar)) {
-		warnx("%s at '%c'", str, yychar);
-	} else {
-		warnx("%s at %d", str, yychar);
+static int yylex(void) {
+	while (isspace(input[0])) input++;
+	if (!input[0]) return EOF;
+
+	if (input[0] == '\'' && input[1] && input[2] == '\'') {
+		yylval = input[1];
+		input += 3;
+		return Int;
+	}
+
+	if (input[0] == '0') {
+		if (input[1] == 'b') {
+			input += 2;
+			return lexInt(2);
+		} else if (input[1] == 'x') {
+			input += 2;
+			return lexInt(16);
+		} else {
+			input += 1;
+			return lexInt(8);
+		}
+	} else if (isdigit(input[0])) {
+		return lexInt(10);
+	}
+
+	switch (T(input[0], input[1])) {
+		case T('<', '<'): input += 2; return Shl;
+		case T('>', '>'): input += 2; return Shr;
+		case T('-', '>'): input += 2; return Sar;
+		default: return *input++;
 	}
 }
 
 static char *prompt(EditLine *el) {
 	(void)el;
-	static char buf[64];
-	snprintf(buf, sizeof(buf), "[%zu]: ", ring.len);
-	return buf;
-}
-
-static void print(size_t i) {
-	uint64_t val = get(i);
-
-	int bits = val > UINT32_MAX ? 64
-		: val > UINT16_MAX ? 32
-		: val > UINT8_MAX ? 16
-		: 8;
-
-	char bin[65] = {0};
-	for (int i = 0; i < 64; ++i) {
-		bin[i] = '0' + (val >> (63 - i) & 1);
-	}
-
-	printf(
-		"[%zu]: %"PRId64" 0x%0*"PRIX64" 0b%s",
-		i, (int64_t)val, bits >> 2, val, &bin[64 - bits]
-	);
-
-	if (val) {
-		if (!(val & (1ULL << 40) - 1)) {
-			printf(" %"PRId64"T", val >> 40);
-		} else if (!(val & (1 << 30) - 1)) {
-			printf(" %"PRId64"G", val >> 30);
-		} else if (!(val & (1 << 20) - 1)) {
-			printf(" %"PRId64"M", val >> 20);
-		} else if (!(val & (1 << 10) - 1)) {
-			printf(" %"PRId64"K", val >> 10);
-		}
-	}
-
-	if (val < 128 && isprint(val)) {
-		printf(" '%c'", (char)val);
-	}
-
-	printf("\n");
+	return "";
 }
 
 int main(void) {
 	HistEvent ev;
 	History *hist = history_init();
 	if (!hist) err(EX_OSERR, "history_init");
-	history(hist, &ev, H_SETSIZE, 64);
+	history(hist, &ev, H_SETSIZE, 100);
 	history(hist, &ev, H_SETUNIQUE, 1);
 
 	EditLine *el = el_init("bit", stdin, stdout, stderr);
@@ -162,23 +158,46 @@ int main(void) {
 
 	for (;;) {
 		int len;
-		const char *line = el_gets(el, &len);
-		if (!len) break;
+		input = el_gets(el, &len);
+		if (len == 0) break;
+		if (len == 1) continue;
+		history(hist, &ev, H_ENTER, input);
 
-		HistEvent ev;
-		history(hist, &ev, H_ENTER, line);
-
-		size_t i = ring.len;
-
-		YY_BUFFER_STATE state = yy_scan_string(line);
 		int error = yyparse();
-		yy_delete_buffer(state);
 		if (error) continue;
 
-		for (; i < ring.len; ++i) {
-			print(i);
+		int bits = result > UINT32_MAX ? 64
+			: result > UINT16_MAX ? 32
+			: result > UINT8_MAX ? 16
+			: 8;
+
+		printf("0x%0*"PRIX64" %"PRId64"", bits >> 2, result, (int64_t)result);
+
+		if (bits == 8) {
+			char bin[9] = {0};
+			for (int i = 0; i < 8; ++i) {
+				bin[i] = '0' + (result >> (7 - i) & 1);
+			}
+			printf(" 0b%s", bin);
 		}
-		printf("\n");
+
+		if (result < 128 && isprint(result)) {
+			printf(" '%c'", (char)result);
+		}
+
+		if (result) {
+			if (!(result & MASK(40))) {
+				printf(" %"PRIu64"T", result >> 40);
+			} else if (!(result & MASK(30))) {
+				printf(" %"PRIu64"G", result >> 30);
+			} else if (!(result & MASK(20))) {
+				printf(" %"PRIu64"M", result >> 20);
+			} else if (!(result & MASK(10))) {
+				printf(" %"PRIu64"K", result >> 10);
+			}
+		}
+
+		printf("\n\n");
 	}
 
 	el_end(el);
