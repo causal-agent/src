@@ -9,6 +9,7 @@ DESCRIPTION
 
      aes(1)      fullwidth output
      beef(1)     Befunge-93 interpreter
+     bit(1)      calculator
      bri(1)      backlight brightness control
      brot(1)     Mandelbrot renderer
      dtch(1)     detached sessions
