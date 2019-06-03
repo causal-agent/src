@@ -1,3 +1,4 @@
+- [Colin Stetson — Reborn][72]
 - [Holly Herndon — Frontier][71]
 - [Bleachers — Tiny Desk Concert][70]
 - [Girlpool — Tiny Desk Concert][69]
@@ -151,3 +152,4 @@
 [69]: https://youtu.be/VNM8Tg9pvDU
 [70]: https://youtu.be/QCtkkX2f18M
 [71]: https://youtu.be/rvNqNgHAEys
+[72]: https://youtu.be/MVnSFj6XQZY
