@@ -1,4 +1,4 @@
-.Dd May 12, 2019
+.Dd June 7, 2019
 .Dt BIT 1
 .Os
 .
@@ -12,8 +12,8 @@
 .Sh DESCRIPTION
 .Nm
 is an integer calculator.
-Its syntax resembles that of C,
-with the following additions:
+Its syntax resembles that of C expressions,
+with the following changes:
 .
 .Bl -bullet
 .It
@@ -34,9 +34,11 @@ The postfix operators
 .Sy T
 are used as constant multipliers.
 .It
-The symbol
+Single-letter (lower case) variables
+can be assigned.
+The variable
 .Sy _
-is used to refer to the previous result.
+stores the previous result.
 .El
 .
 .Sh SEE ALSO

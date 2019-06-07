@@ -27,18 +27,16 @@
 
 #define MASK(b) ((1ULL << (b)) - 1)
 
-#define YYSTYPE uint64_t
-
-static void yyerror(const char *str) {
-	warnx("%s", str);
-}
-
+static void yyerror(const char *str);
 static int yylex(void);
 
-static uint64_t result;
+#define YYSTYPE uint64_t
+
+static uint64_t vars[128];
 
 %}
 
+%right '='
 %left '|'
 %left '^'
 %left '&'
@@ -48,17 +46,17 @@ static uint64_t result;
 %right '~'
 %left 'K' 'M' 'G' 'T'
 
-%token Int
+%token Int Var
 
 %%
 
-start:
-	expr { result = $1; }
+stmt:
+	expr { vars['_'] = $1; }
 	;
 
 expr:
 	Int
-	| '_' { $$ = result; }
+	| Var { $$ = vars[$1]; }
 	| '(' expr ')' { $$ = $2; }
 	| expr 'K' { $$ = $1 << 10; }
 	| expr 'M' { $$ = $1 << 20; }
@@ -77,9 +75,14 @@ expr:
 	| expr '&' expr { $$ = $1 & $3; }
 	| expr '^' expr { $$ = $1 ^ $3; }
 	| expr '|' expr { $$ = $1 | $3; }
+	| Var '=' expr { $$ = vars[$1] = $3; }
 	;
 
 %%
+
+static void yyerror(const char *str) {
+	warnx("%s", str);
+}
 
 #define T(a, b) ((int)(a) << 8 | (int)(b))
 
@@ -130,6 +133,11 @@ static int yylex(void) {
 	} else if (isdigit(input[0])) {
 		return lexInt(10);
 	}
+	
+	if (input[0] == '_' || islower(input[0])) {
+		yylval = *input++;
+		return Var;
+	}
 
 	switch (T(input[0], input[1])) {
 		case T('<', '<'): input += 2; return Shl;
@@ -165,6 +173,8 @@ int main(void) {
 
 		int error = yyparse();
 		if (error) continue;
+
+		uint64_t result = vars['_'];
 
 		int bits = result > UINT32_MAX ? 64
 			: result > UINT16_MAX ? 32
