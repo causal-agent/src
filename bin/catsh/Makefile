@@ -89,6 +89,3 @@ shell:
 
 unshell:
 	sed -i sed '\;^$(PREFIX)/bin/catsh$$;d' /etc/shells
-
-README: catsh.7
-	mandoc catsh.7 | col -bx > README

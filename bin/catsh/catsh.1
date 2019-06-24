@@ -32,7 +32,7 @@
 .\"	from: @(#)sh.1	8.6 (Berkeley) 5/4/95
 .\" $FreeBSD: releng/12.0/bin/sh/sh.1 336483 2018-07-19 13:09:29Z 0mp $
 .
-.Dd January 10, 2019
+.Dd June 24, 2019
 .Dt CATSH 1
 .Os
 .
@@ -3205,10 +3205,34 @@ license after the Bourne shell from
 .Pp
 The
 .Nm
-utility is based on
-.Xr sh 1
-from
-.Fx 12.0 .
+sources were imported from
+.Fx 12.0
+.Xr sh 1 .
+Bundled
+.Xr editline 3
+sources were imported from
+.Nx 8.0 .
+.
+.Ss Differences from sh
+.Bl -bullet -compact
+.It
+.Va ENV
+has a default value.
+.It
+Further prompt customization with
+.Va PS0 ,
+.Va RPS1 ,
+.Va RPS2 ,
+.Va PSlit .
+.It
+.Va HOME
+is shortened to
+.Sq ~
+in prompt expansion.
+.It
+.Ic fc Fl s Ar = Ns Ar new
+prefixes commands.
+.El
 .
 .Sh AUTHORS
 .An -nosplit
