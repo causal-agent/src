@@ -1,4 +1,5 @@
 set -o noclobber -o nounset -o vi
+HISTSIZE=1000
 
 _PATH=$PATH
 PATH=
