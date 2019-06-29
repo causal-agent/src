@@ -37,11 +37,17 @@ if [ "$(uname)" = 'Linux' ]; then
 	alias ls='ls --color=auto' grep='grep --color'
 fi
 
+PS0=$'\n'
+PS1='\$ '
+RPS1="${SSH_CLIENT:+\h:}\w"
+
 af0=$(tput setaf 0 || tput AF 0)
 af7=$(tput setaf 7 || tput AF 7)
 sgr0=$(tput sgr0 || tput me)
+tsl=$'\e]0;'
+fsl=$'\a'
 
 PSlit=$'\1'
-[ "${TERM%-*}" = 'xterm' ] && PS0=$'\e]0;\\W\a\n' || PS0=$'\n'
-PS1="${PSlit}${af7}${PSlit}\\\$${PSlit}${sgr0}${PSlit} "
-RPS1="${PSlit}${af0}${PSlit}# ${PSlit}${af7}${PSlit}\\w${PSlit}${sgr0}${PSlit}"
+PS1="${PSlit}${af7}${PSlit}${PS1% }${PSlit}${sgr0}${PSlit} "
+RPS1="${PSlit}${af0}${PSlit}# ${PSlit}${af7}${PSlit}${RPS1}${PSlit}${sgr0}${PSlit}"
+[ "${TERM%-*}" = 'xterm' ] && PS0="${tsl}${SSH_CLIENT:+\h:}\W${fsl}${PS0}"
