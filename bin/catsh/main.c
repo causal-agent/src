@@ -173,6 +173,8 @@ state4:
 	if (sflag || minusc == NULL) {
 		cmdloop(1);
 	}
+	iflag = 0;
+	optschanged();
 	exitshell(exitstatus);
 	/*NOTREACHED*/
 	return 0;
@@ -339,6 +341,8 @@ exitcmd(int argc, char **argv)
 {
 	if (stoppedjobs())
 		return 0;
+	iflag = 0;
+	optschanged();
 	if (argc > 1)
 		exitshell(number(argv[1]));
 	else
