@@ -1,8 +1,8 @@
 *.o
 .depend
+1sh
 builtins.c
 builtins.h
-catsh
 config.mk
 mknodes
 mksyntax

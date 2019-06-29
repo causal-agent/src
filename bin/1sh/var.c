@@ -111,10 +111,10 @@ int forcelocal;
 #define XDG_DATA_HOME "${XDG_DATA_HOME:-${HOME}/.local/share}"
 
 static const struct varinit varinit[] = {
-	{ &venv, 0, "ENV=" XDG_CONFIG_HOME "/catsh/env.sh",
+	{ &venv, 0, "ENV=" XDG_CONFIG_HOME "/1sh/env.sh",
 	  NULL },
 #ifndef NO_HISTORY
-	{ &vhistfile, 0, "HISTFILE=" XDG_DATA_HOME "/catsh/history",
+	{ &vhistfile, 0, "HISTFILE=" XDG_DATA_HOME "/1sh/history",
 	  sethistfile },
 	{ &vhistsize,	VUNSET,				"HISTSIZE=",
 	  sethistsize },
