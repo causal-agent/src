@@ -42,7 +42,9 @@ typedef unsigned Set;
 	X(Format)  \
 	X(Interp)  \
 	X(Comment) \
-	X(Todo)
+	X(Todo)    \
+	X(DiffOld) \
+	X(DiffNew)
 
 enum Class {
 #define X(class) class,
@@ -122,6 +124,14 @@ static const struct Syntax CSyntax[] = {
 		.pattern = PATTERN_BC },
 	{ Todo, .parent = SET(Comment),
 		.pattern = PATTERN_TODO },
+};
+// }}}
+
+// diff syntax {{{
+static const struct Syntax DiffSyntax[] = {
+	{ Comment, .pattern = "^@@.*" },
+	{ DiffOld, .pattern = "^[-].*" },
+	{ DiffNew, .pattern = "^[+].*" },
 };
 // }}}
 
@@ -272,6 +282,7 @@ static const struct Language {
 	size_t len;
 } Languages[] = {
 	{ "c",    "[.][chly]$", CSyntax, ARRAY_LEN(CSyntax) },
+	{ "diff", "[.](diff|patch)$", DiffSyntax, ARRAY_LEN(DiffSyntax) },
 	{ "make", "[.]mk$|^Makefile$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
 	{ "mdoc", "[.][1-9]$", MdocSyntax, ARRAY_LEN(MdocSyntax) },
 	{ "rust", "[.]rs$", RustSyntax, ARRAY_LEN(RustSyntax) },
@@ -389,6 +400,8 @@ static const enum SGR ANSIStyle[ClassLen][3] = {
 	[Interp]  = { SGRYellow },
 	[Comment] = { SGRBlue },
 	[Todo]    = { SGRBlue, SGRBoldOn, SGRBoldOff },
+	[DiffOld] = { SGRRed },
+	[DiffNew] = { SGRGreen },
 };
 
 static void
@@ -495,14 +508,16 @@ static void htmlEscape(const char *str, size_t len) {
 }
 
 static const char *HTMLStyle[ClassLen] = {
-	[Keyword]  = "color: dimgray;",
-	[Macro]    = "color: green;",
-	[Tag]      = "color: inherit; text-decoration: underline;",
-	[String]   = "color: teal;",
-	[Format]   = "color: teal; font-weight: bold;",
-	[Interp]   = "color: olive;",
-	[Comment]  = "color: navy;",
-	[Todo]     = "color: navy; font-weight: bold;",
+	[Keyword] = "color: dimgray;",
+	[Macro]   = "color: green;",
+	[Tag]     = "color: inherit; text-decoration: underline;",
+	[String]  = "color: teal;",
+	[Format]  = "color: teal; font-weight: bold;",
+	[Interp]  = "color: olive;",
+	[Comment] = "color: navy;",
+	[Todo]    = "color: navy; font-weight: bold;",
+	[DiffOld] = "color: red;",
+	[DiffNew] = "color: green;",
 };
 
 static void htmlTabSize(const char *tab) {
