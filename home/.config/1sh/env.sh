@@ -1,4 +1,5 @@
 set -o noclobber -o nounset -o vi
+# FIXME: History is loaded before HISTSIZE gets set.
 HISTSIZE=1000
 
 _PATH=$PATH
@@ -37,6 +38,7 @@ if [ "$(uname)" = 'Linux' ]; then
 	alias ls='ls --color=auto' grep='grep --color'
 fi
 
+# TODO: $? indicator.
 PS0=$'\n'
 PS1='\$ '
 RPS1="${SSH_CLIENT:+\h:}\w"
@@ -47,6 +49,7 @@ sgr0=$(tput sgr0 || tput me)
 tsl=$'\e]0;'
 fsl=$'\a'
 
+# FIXME: Trailing PSlit sequence gets dropped.
 PSlit=$'\1'
 PS1="${PSlit}${af7}${PSlit}${PS1% }${PSlit}${sgr0}${PSlit} "
 RPS1="${PSlit}${af0}${PSlit}# ${PSlit}${af7}${PSlit}${RPS1}${PSlit}${sgr0}${PSlit}"
