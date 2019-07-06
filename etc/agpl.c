@@ -13,3 +13,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sysexits.h>
