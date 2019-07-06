@@ -1,4 +1,4 @@
-.Dd February 12, 2019
+.Dd July 6, 2019
 .Dt SCHEME 1
 .Os
 .
@@ -8,7 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl acghilmtx
+.Op Fl acghilmstx
 .Op Fl p Ar n
 .
 .Sh DESCRIPTION
@@ -41,6 +41,12 @@ Use with
 .It Fl p Ar n
 Generate only the color
 .Ar n .
+.It Fl s
+Output CSS
+for classes named
+.Sy fg Ns Ar n
+and
+.Sy bg Ns Ar n .
 .It Fl t
 Generate the 16 ANSI colors as well as
 background, foreground, bold, selection and cursor colors.

@@ -1,4 +1,4 @@
-/* Copyright (C) 2018  June McEnroe <june@causal.agency>
+/* Copyright (C) 2018, 2019  June McEnroe <june@causal.agency>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -174,6 +174,18 @@ static void outputMintty(const struct HSV *hsv, uint len) {
 	}
 }
 
+static void outputCSS(const struct HSV *hsv, uint len) {
+	for (uint i = 0; i < len; ++i) {
+		struct RGB rgb = convert(hsv[i]);
+		printf(
+			".fg%u { color: #" FORMAT_RGB "; }\n"
+			".bg%u { background-color: #" FORMAT_RGB "; }\n",
+			i, rgb.r, rgb.g, rgb.b,
+			i, rgb.r, rgb.g, rgb.b
+		);
+	}
+}
+
 enum {
 	SwatchWidth = 64,
 	SwatchHeight = 64,
@@ -214,7 +226,7 @@ int main(int argc, char *argv[]) {
 	uint len = 16;
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "acghilmp:tx"))) {
+	while (0 < (opt = getopt(argc, argv, "acghilmp:stx"))) {
 		switch (opt) {
 			break; case 'a': len = 16;
 			break; case 'c': output = outputEnum;
@@ -229,6 +241,7 @@ int main(int argc, char *argv[]) {
 				hsv = &scheme[p];
 				len = 1;
 			}
+			break; case 's': output = outputCSS;
 			break; case 't': len = SchemeLen;
 			break; case 'x': output = outputRGB;
 			break; default:  return EX_USAGE;
