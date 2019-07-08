@@ -28,6 +28,7 @@ BINS += order
 BINS += pbd
 BINS += pngo
 BINS += psf2png
+BINS += ptee
 BINS += scheme
 BINS += setopt
 BINS += ttpre

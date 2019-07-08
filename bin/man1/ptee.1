@@ -1,0 +1,27 @@
+.Dd July 8, 2019
+.Dt PTEE 1
+.Os
+.
+.Sh NAME
+.Nm ptee
+.Nd tee for PTYs
+.
+.Sh SYNOPSIS
+.Nm
+.Ar command ...
+.Cm >
+.Ar file
+.
+.Sh DESCRIPTION
+.Nm
+runs
+.Ar command
+in a new PTY
+which is mirrored to
+the current PTY
+and standard output.
+Standard output must be redirected
+to a file or pipe.
+.
+.Sh SEE ALSO
+.Xr tee 1
