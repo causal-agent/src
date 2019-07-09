@@ -16,6 +16,7 @@
 
 #include <err.h>
 #include <poll.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
@@ -65,6 +66,8 @@ int main(int argc, char *argv[]) {
 		err(EX_NOINPUT, "%s", argv[1]);
 	}
 
+	bool stop = false;
+
 	byte buf[4096];
 	struct pollfd fds[2] = {
 		{ .events = POLLIN, .fd = STDIN_FILENO },
@@ -74,6 +77,12 @@ int main(int argc, char *argv[]) {
 		if (fds[0].revents & POLLIN) {
 			ssize_t rlen = read(STDIN_FILENO, buf, sizeof(buf));
 			if (rlen < 0) err(EX_IOERR, "read");
+
+			if (rlen == 1 && buf[0] == CTRL('S')) {
+				stop ^= true;
+				continue;
+			}
+
 			ssize_t wlen = write(pty, buf, rlen);
 			if (wlen < 0) err(EX_IOERR, "write");
 		}
@@ -85,8 +94,10 @@ int main(int argc, char *argv[]) {
 			ssize_t wlen = write(STDIN_FILENO, buf, rlen);
 			if (wlen < 0) err(EX_IOERR, "write");
 
-			wlen = write(STDOUT_FILENO, buf, rlen);
-			if (wlen < 0) err(EX_IOERR, "write");
+			if (!stop) {
+				wlen = write(STDOUT_FILENO, buf, rlen);
+				if (wlen < 0) err(EX_IOERR, "write");
+			}
 		}
 
 		int status;
