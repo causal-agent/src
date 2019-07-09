@@ -1,4 +1,4 @@
-.Dd September 7, 2018
+.Dd July 8, 2019
 .Dt MODEM 1
 .Os
 .
@@ -18,5 +18,6 @@ in a new PTY
 with a fixed baud rate
 of 19.2 kbps.
 .
-.Sh SEE ALSO
-.Xr forkpty 3
+.Sh BUGS
+Window size changes are not propagated
+to the child PTY.

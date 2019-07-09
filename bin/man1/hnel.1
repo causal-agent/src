@@ -1,4 +1,4 @@
-.Dd September 7, 2018
+.Dd July 8, 2019
 .Dt HNEL 1
 .Os
 .
@@ -29,5 +29,8 @@ to toggle remapping.
 .Dl hnel '[]{}' '{}[]' vim
 .
 .Sh SEE ALSO
-.Xr tr 1 ,
-.Xr forkpty 3
+.Xr tr 1
+.
+.Sh BUGS
+Window size changes are not propagated
+to the child PTY.
