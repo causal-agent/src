@@ -79,7 +79,7 @@ static char updateNUL(wchar_t ch) {
 
 	for (int i = 1; i < width; ++i) {
 		cell(y, x + i)->style = style;
-		cell(y, x + i)->ch = L'\0';
+		cell(y, x + i)->ch = '\0';
 	}
 	x = MIN(x + width, cols - 1);
 
@@ -157,7 +157,7 @@ static char updateCSI(wchar_t ch) {
 			if (ps[0] == 1) to = cell(y, x);
 			for (struct Cell *clear = from; clear <= to; ++clear) {
 				clear->style = style;
-				clear->ch = L' ';
+				clear->ch = ' ';
 			}
 		}
 		break; case EL: {
@@ -167,7 +167,7 @@ static char updateCSI(wchar_t ch) {
 			if (ps[0] == 1) to = cell(y, x);
 			for (struct Cell *clear = from; clear <= to; ++clear) {
 				clear->style = style;
-				clear->ch = L' ';
+				clear->ch = ' ';
 			}
 		}
 
