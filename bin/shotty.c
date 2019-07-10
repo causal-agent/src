@@ -101,7 +101,9 @@ enum {
 	ED = 'J',
 	EL,
 	VPA = 'd',
-	SGR = 'm',
+	SM = 'h',
+	RM = 'l',
+	SGR,
 };
 
 static char updateESC(wchar_t ch) {
@@ -112,6 +114,7 @@ static char updateESC(wchar_t ch) {
 	}
 	switch (ch) {
 		case '(': discard = true; return ESC;
+		case '=': return NUL;
 		case CSI: return CSI;
 		default: warnx("unhandled ESC %lc", ch); return NUL;
 	}
@@ -172,6 +175,9 @@ static char updateCSI(wchar_t ch) {
 				clear->ch = ' ';
 			}
 		}
+
+		break; case SM: // ignore
+		break; case RM: // ignore
 
 		break; case SGR: {
 			for (uint i = 0; i < p + 1; ++i) {
