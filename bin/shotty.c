@@ -47,9 +47,11 @@ struct Cell {
 	wchar_t ch;
 };
 
+static struct Style def = { .fg = 7 };
 static uint rows, cols;
+
 static uint y, x;
-static struct Style style = { .fg = 7 };
+static struct Style style;
 static struct Cell *cells;
 
 static struct Cell *cell(uint y, uint x) {
@@ -174,7 +176,7 @@ static char updateCSI(wchar_t ch) {
 		break; case SGR: {
 			for (uint i = 0; i < p + 1; ++i) {
 				switch (ps[i]) {
-					break; case 0: style = (struct Style) { .fg = 7 };
+					break; case 0: style = def;
 					break; case 1: style.bold = true;
 					break; case 3: style.italic = true;
 					break; case 4: style.underline = true;
@@ -184,8 +186,8 @@ static char updateCSI(wchar_t ch) {
 					break; case 23: style.italic = false;
 					break; case 24: style.underline = false;
 					break; case 27: style.reverse = false;
-					break; case 39: style.fg = 7;
-					break; case 49: style.bg = 0;
+					break; case 39: style.fg = def.fg;
+					break; case 49: style.bg = def.bg;
 					break; default: {
 						if (ps[i] >= 30 && ps[i] <= 37) {
 							style.fg = ps[i] - 30;
@@ -247,8 +249,10 @@ int main(int argc, char *argv[]) {
 	FILE *file = stdin;
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "h:w:"))) {
+	while (0 < (opt = getopt(argc, argv, "b:f:h:w:"))) {
 		switch (opt) {
+			break; case 'b': def.bg = strtoul(optarg, NULL, 0);
+			break; case 'f': def.fg = strtoul(optarg, NULL, 0);
 			break; case 'h': rows = strtoul(optarg, NULL, 0);
 			break; case 'w': cols = strtoul(optarg, NULL, 0);
 			break; default:  return EX_USAGE;
@@ -264,13 +268,14 @@ int main(int argc, char *argv[]) {
 		struct winsize window;
 		int error = ioctl(STDERR_FILENO, TIOCGWINSZ, &window);
 		if (error) err(EX_IOERR, "ioctl");
-		rows = window.ws_row;
-		cols = window.ws_col;
+		if (!rows) rows = window.ws_row;
+		if (!cols) cols = window.ws_col;
 	}
 
 	cells = calloc(rows * cols, sizeof(*cells));
 	if (!cells) err(EX_OSERR, "calloc");
 
+	style = def;
 	for (uint y = 0; y < rows; ++y) {
 		for (uint x = 0; x < cols; ++x) {
 			cell(y, x)->style = style;
@@ -284,7 +289,10 @@ int main(int argc, char *argv[]) {
 	}
 	if (ferror(file)) err(EX_IOERR, "getwc");
 
-	printf("<pre style=\"width: %uch;\" class=\"bg0 fg7\">", cols);
+	printf(
+		"<pre style=\"width: %uch;\" class=\"bg%u fg%u\">",
+		cols, def.bg, def.fg
+	);
 	for (uint y = 0; y < rows; ++y) {
 		for (uint x = 0; x < cols; ++x) {
 			if (!cell(y, x)->ch) continue;
