@@ -1,0 +1,48 @@
+.Dd July 9, 2019
+.Dt SHOTTY 1
+.Os
+.
+.Sh NAME
+.Nm shotty
+.Nd terminal capture
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl b Ar bg
+.Op Fl f Ar fg
+.Op Fl h Ar rows
+.Op Fl w Ar cols
+.Op Ar file
+.
+.Sh DESCRIPTION
+.Nm
+interprets terminal output from
+.Ar file
+or standard input
+and produces HTML
+.Sy <pre>
+on standard output.
+Terminal output can be captured with
+.Xr ptee 1 .
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width "-w cols"
+.It Fl b Ar bg
+Set the default background color.
+The default value is 0 (black).
+.It Fl f Ar fg
+Set the default foreground color.
+The default value is 7 (white).
+.It Fl h Ar rows
+Set the terminal height.
+If unset,
+the height of the current terminal is used.
+.It Fl w Ar cols
+Set the terminal width.
+If unset,
+the width of the current terminal is used.
+.El
+.
+.Sh SEE ALSO
+.Xr ptee 1

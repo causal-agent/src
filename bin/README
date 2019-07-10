@@ -28,6 +28,7 @@ DESCRIPTION
      ptee(1)     tee for PTYs
      relay(1)    IRC relay
      scheme(1)   color scheme
+     shotty(1)   terminal capture
      ttpre(1)    man output to HTML
      up(1)       upload file
      wake(1)     wake-on-LAN
@@ -40,4 +41,4 @@ DESCRIPTION
            GFX=fb
            GFX=x11
 
-Causal Agency                    July 8, 2019                    Causal Agency
+Causal Agency                    July 9, 2019                    Causal Agency
