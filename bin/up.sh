@@ -25,6 +25,13 @@ uploadText() {
 	upload "${temp}/input.txt"
 }
 
+uploadCommand() {
+	temp
+	echo "$ $*" > "${temp}/exec.txt"
+	"$@" >> "${temp}/exec.txt"
+	upload "${temp}/exec.txt"
+}
+
 uploadHi() {
 	temp
 	hi -f html -o document,anchor,tab=4 "$@" > "${temp}/hi.html"
@@ -38,10 +45,11 @@ uploadScreen() {
 	upload "${temp}/capture.png"
 }
 
-args=$(setopt 'hs' "$@")
+args=$(setopt 'chs' "$@")
 eval set -- "$args"
 for opt; do
 	case "$opt" in
+		(-c) shift; fn=uploadCommand;;
 		(-h) shift; fn=uploadHi;;
 		(-s) shift; fn=uploadScreen;;
 		(--) shift; break;;
