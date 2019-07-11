@@ -231,15 +231,18 @@ static void update(wchar_t ch) {
 static void
 html(const struct Style *prev, const struct Cell *cell) {
 	if (!prev || memcmp(&cell->style, prev, sizeof(cell->style))) {
-		if (prev) printf("</span>");
-		printf("<span class=\"");
-		if (cell->style.bold) printf("bold ");
-		if (cell->style.italic) printf("italic ");
-		if (cell->style.underline) printf("underline ");
+		if (prev) {
+			if (prev->bold) printf("</b>");
+			if (prev->italic) printf("</i>");
+			if (prev->underline) printf("</u>");
+			printf("</span>");
+		}
 		uint bg = (cell->style.reverse ? cell->style.fg : cell->style.bg);
 		uint fg = (cell->style.reverse ? cell->style.bg : cell->style.fg);
-		if (cell->style.bold && fg < 8) fg += 8;
-		printf("bg%u fg%u\">", bg, fg);
+		printf("<span class=\"bg%u fg%u\">", bg, fg);
+		if (cell->style.bold) printf("<b>");
+		if (cell->style.italic) printf("<i>");
+		if (cell->style.underline) printf("<u>");
 	}
 	switch (cell->ch) {
 		break; case '&': printf("&amp;");
