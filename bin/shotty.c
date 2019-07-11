@@ -181,6 +181,14 @@ static char updateCSI(wchar_t ch) {
 		break; case RM: // ignore
 
 		break; case SGR: {
+			if (ps[0] == 38 && ps[1] == 5) {
+				style.fg = ps[2];
+				break;
+			}
+			if (ps[0] == 48 && ps[1] == 5) {
+				style.bg = ps[2];
+				break;
+			}
 			for (uint i = 0; i < p + 1; ++i) {
 				switch (ps[i]) {
 					break; case 0: style = def;
