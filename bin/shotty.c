@@ -232,18 +232,16 @@ static void update(wchar_t ch) {
 static void
 html(const struct Style *prev, const struct Cell *cell) {
 	if (!prev || memcmp(&cell->style, prev, sizeof(cell->style))) {
-		if (prev) {
-			if (prev->bold) printf("</b>");
-			if (prev->italic) printf("</i>");
-			if (prev->underline) printf("</u>");
-			printf("</span>");
-		}
+		if (prev) printf("</span>");
 		uint bg = (cell->style.reverse ? cell->style.fg : cell->style.bg);
 		uint fg = (cell->style.reverse ? cell->style.bg : cell->style.fg);
-		printf("<span class=\"bg%u fg%u\">", bg, fg);
-		if (cell->style.bold) printf("<b>");
-		if (cell->style.italic) printf("<i>");
-		if (cell->style.underline) printf("<u>");
+		printf(
+			"<span style=\"%s%s%s\" class=\"bg%u fg%u\">",
+			cell->style.bold ? "font-weight:bold;" : "",
+			cell->style.italic ? "font-style:italic;" : "",
+			cell->style.underline ? "text-decoration:underline;" : "",
+			bg, fg
+		);
 	}
 	switch (cell->ch) {
 		break; case '&': printf("&amp;");
