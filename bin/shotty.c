@@ -58,6 +58,13 @@ static struct Cell *cell(uint y, uint x) {
 	return &cells[y * cols + x];
 }
 
+static void clear(struct Cell *a, struct Cell *b) {
+	for (; a <= b; ++a) {
+		a->style = style;
+		a->ch = ' ';
+	}
+}
+
 static char updateNUL(wchar_t ch) {
 	switch (ch) {
 		case BS: if (x) x--; return NUL;
@@ -156,24 +163,18 @@ static char updateCSI(wchar_t ch) {
 		}
 
 		break; case ED: {
-			struct Cell *from = cell(0, 0);
-			struct Cell *to = cell(rows - 1, cols - 1);
-			if (ps[0] == 0) from = cell(y, x);
-			if (ps[0] == 1) to = cell(y, x);
-			for (struct Cell *clear = from; clear <= to; ++clear) {
-				clear->style = style;
-				clear->ch = ' ';
-			}
+			struct Cell *a = cell(0, 0);
+			struct Cell *b = cell(rows - 1, cols - 1);
+			if (ps[0] == 0) a = cell(y, x);
+			if (ps[0] == 1) b = cell(y, x);
+			clear(a, b);
 		}
 		break; case EL: {
-			struct Cell *from = cell(y, 0);
-			struct Cell *to = cell(y, cols - 1);
-			if (ps[0] == 0) from = cell(y, x);
-			if (ps[0] == 1) to = cell(y, x);
-			for (struct Cell *clear = from; clear <= to; ++clear) {
-				clear->style = style;
-				clear->ch = ' ';
-			}
+			struct Cell *a = cell(y, 0);
+			struct Cell *b = cell(y, cols - 1);
+			if (ps[0] == 0) a = cell(y, x);
+			if (ps[0] == 1) b = cell(y, x);
+			clear(a, b);
 		}
 
 		break; case SM: // ignore
@@ -287,10 +288,7 @@ int main(int argc, char *argv[]) {
 	if (!cells) err(EX_OSERR, "calloc");
 
 	style = def;
-	for (uint i = 0; i < rows * cols; ++i) {
-		cells[i].style = style;
-		cells[i].ch = ' ';
-	}
+	clear(cell(0, 0), cell(rows - 1, cols - 1));
 
 	wint_t ch;
 	while (WEOF != (ch = getwc(file))) {
