@@ -255,11 +255,13 @@ html(const struct Style *prev, const struct Cell *cell) {
 int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 
+	bool bright = false;
 	FILE *file = stdin;
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "b:f:h:w:"))) {
+	while (0 < (opt = getopt(argc, argv, "Bb:f:h:w:"))) {
 		switch (opt) {
+			break; case 'B': bright = true;
 			break; case 'b': def.bg = strtoul(optarg, NULL, 0);
 			break; case 'f': def.fg = strtoul(optarg, NULL, 0);
 			break; case 'h': rows = strtoul(optarg, NULL, 0);
@@ -285,11 +287,9 @@ int main(int argc, char *argv[]) {
 	if (!cells) err(EX_OSERR, "calloc");
 
 	style = def;
-	for (uint y = 0; y < rows; ++y) {
-		for (uint x = 0; x < cols; ++x) {
-			cell(y, x)->style = style;
-			cell(y, x)->ch = ' ';
-		}
+	for (uint i = 0; i < rows * cols; ++i) {
+		cells[i].style = style;
+		cells[i].ch = ' ';
 	}
 
 	wint_t ch;
@@ -297,6 +297,14 @@ int main(int argc, char *argv[]) {
 		update(ch);
 	}
 	if (ferror(file)) err(EX_IOERR, "getwc");
+
+	if (bright) {
+		for (uint i = 0; i < rows * cols; ++i) {
+			if (!cells[i].style.bold || cells[i].style.fg > 7) continue;
+			cells[i].style.bold = false;
+			cells[i].style.fg += 8;
+		}
+	}
 
 	printf(
 		"<pre style=\"width: %uch;\" class=\"bg%u fg%u\">",

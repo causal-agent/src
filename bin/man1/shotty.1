@@ -1,4 +1,4 @@
-.Dd July 9, 2019
+.Dd July 11, 2019
 .Dt SHOTTY 1
 .Os
 .
@@ -8,6 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
+.Op Fl B
 .Op Fl b Ar bg
 .Op Fl f Ar fg
 .Op Fl h Ar rows
@@ -28,16 +29,22 @@ Terminal output can be captured with
 .Pp
 The arguments are as follows:
 .Bl -tag -width "-w cols"
+.It Fl B
+Replace bold with bright colors.
+.
 .It Fl b Ar bg
 Set the default background color.
 The default value is 0 (black).
+.
 .It Fl f Ar fg
 Set the default foreground color.
 The default value is 7 (white).
+.
 .It Fl h Ar rows
 Set the terminal height.
 If unset,
 the height of the current terminal is used.
+.
 .It Fl w Ar cols
 Set the terminal width.
 If unset,
