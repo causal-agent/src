@@ -68,7 +68,7 @@ static void clear(struct Cell *a, struct Cell *b) {
 static char updateNUL(wchar_t ch) {
 	switch (ch) {
 		case BS: if (x) x--; return NUL;
-		case NL: y = MIN(y + 1, rows - 1); x = 0; return NUL;
+		case NL: y = MIN(y + 1, rows - 1); return NUL;
 		case CR: x = 0; return NUL;
 		case ESC: return ESC;
 	}
