@@ -119,6 +119,7 @@ enum {
 	CUP,
 	ED = 'J',
 	EL,
+	DCH = 'P',
 	VPA = 'd',
 	SM = 'h',
 	RM = 'l',
@@ -187,6 +188,12 @@ static char updateCSI(wchar_t ch) {
 			if (ps[0] == 0) a = cell(y, x);
 			if (ps[0] == 1) b = cell(y, x);
 			clear(a, b);
+		}
+
+		break; case DCH: {
+			uint i = MIN((n ? ps[0] : 1), cols - x);
+			move(cell(y, x), cell(y, x + i), cols - x - i);
+			clear(cell(y, cols - i), cell(y, cols - 1));
 		}
 
 		break; case SM: {
