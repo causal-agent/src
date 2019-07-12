@@ -51,6 +51,7 @@ static struct Style def = { .fg = 7 };
 static uint rows, cols;
 
 static uint y, x;
+static bool insert;
 static struct Style style;
 static struct Cell *cells;
 
@@ -63,6 +64,10 @@ static void clear(struct Cell *a, struct Cell *b) {
 		a->style = style;
 		a->ch = ' ';
 	}
+}
+
+static void move(struct Cell *dst, struct Cell *src, uint len) {
+	memmove(dst, src, sizeof(*dst) * len);
 }
 
 static char updateNUL(wchar_t ch) {
@@ -82,7 +87,14 @@ static char updateNUL(wchar_t ch) {
 		warnx("unhandled \\u%X", ch);
 		return NUL;
 	}
+	if (x + width > cols) {
+		warnx("cannot fit '%lc'", ch);
+		return NUL;
+	}
 
+	if (insert) {
+		move(cell(y, x + width), cell(y, x), cols - x - width);
+	}
 	cell(y, x)->style = style;
 	cell(y, x)->ch = ch;
 
@@ -177,8 +189,20 @@ static char updateCSI(wchar_t ch) {
 			clear(a, b);
 		}
 
-		break; case SM: // ignore
-		break; case RM: // ignore
+		break; case SM: {
+			if (dec) break;
+			switch (ps[0]) {
+				break; case 4: insert = true;
+				break; default: warnx("unhandled SM %u", ps[0]);
+			}
+		}
+		break; case RM: {
+			if (dec) break;
+			switch (ps[0]) {
+				break; case 4: insert = false;
+				break; default: warnx("unhandled RM %u", ps[0]);
+			}
+		}
 
 		break; case SGR: {
 			if (ps[0] == 38 && ps[1] == 5) {
