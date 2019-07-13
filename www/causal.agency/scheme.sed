@@ -1,5 +1,5 @@
-s/[.]bg0/body, &/
-s/[.]fg15/body, &/
+s/[.]bg0/html, &/
+s/[.]fg15/html, &/
 s/[.]fg12/a, &/
 s/[.]fg13/a:visited, &/
 
