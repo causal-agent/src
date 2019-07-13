@@ -48,7 +48,7 @@ struct Cell {
 };
 
 static struct Style def = { .fg = 7 };
-static uint rows, cols;
+static uint rows = 24, cols = 80;
 
 static uint y, x;
 static bool insert;
@@ -294,15 +294,17 @@ int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 
 	bool bright = false;
+	bool size = false;
 	FILE *file = stdin;
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "Bb:f:h:w:"))) {
+	while (0 < (opt = getopt(argc, argv, "Bb:f:h:sw:"))) {
 		switch (opt) {
 			break; case 'B': bright = true;
 			break; case 'b': def.bg = strtoul(optarg, NULL, 0);
 			break; case 'f': def.fg = strtoul(optarg, NULL, 0);
 			break; case 'h': rows = strtoul(optarg, NULL, 0);
+			break; case 's': size = true;
 			break; case 'w': cols = strtoul(optarg, NULL, 0);
 			break; default:  return EX_USAGE;
 		}
@@ -313,12 +315,12 @@ int main(int argc, char *argv[]) {
 		if (!file) err(EX_NOINPUT, "%s", argv[optind]);
 	}
 
-	if (!rows || !cols) {
+	if (size) {
 		struct winsize window;
 		int error = ioctl(STDERR_FILENO, TIOCGWINSZ, &window);
 		if (error) err(EX_IOERR, "ioctl");
-		if (!rows) rows = window.ws_row;
-		if (!cols) cols = window.ws_col;
+		rows = window.ws_row;
+		cols = window.ws_col;
 	}
 
 	cells = calloc(rows * cols, sizeof(*cells));
