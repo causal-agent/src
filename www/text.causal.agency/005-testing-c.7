@@ -1,0 +1,79 @@
+.Dd December 21, 2018
+.Dt TESTING-C 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm Testing C
+.Nd a simple unit testing setup
+.
+.Sh DESCRIPTION
+This is a simple approach
+to unit testing in C
+that I've used in a couple projects.
+At the bottom of a C file
+with some code I want to test,
+I add:
+.
+.Bd -literal -offset indent
+#ifdef TEST
+#include <assert.h>
+
+int main(void) {
+	assert(...);
+	assert(...);
+}
+
+#endif
+.Ed
+.
+.Pp
+This file normally produces a
+.Pa .o
+to be linked into the main binary.
+For testing,
+I produce separate binaries
+and run them with
+.Xr make 1 :
+.
+.Bd -literal -offset indent
+TESTS = foo.t bar.t
+
+\&.SUFFIXES: .t
+
+\&.c.t:
+	$(CC) $(CFLAGS) -DTEST $(LDFLAGS) $< $(LDLIBS) -o $@
+
+test: $(TESTS)
+	set -e; $(TESTS:%=./%;)
+.Ed
+.
+.Pp
+Note that the test binaries
+aren't linked with the rest of the code,
+so there is potential for simple stubbing or mocking.
+.
+.Pp
+To get the best output
+from C's simple
+.Xr assert 3 ,
+it's best to assert the result
+of a helper function
+which takes the expected output
+and the test input,
+rather than calling
+.Xr assert 3
+inside the helper function.
+This way,
+the message printed by the assert failure
+contains a useful line number
+and the expected output
+rather than just variable names.
+.
+.Pp
+For a real example,
+check
+.Lk https://code.causal.agency/june/catgirl/src/branch/master/term.c term.c
+from my IRC client project.
+.
+.Sh AUTHORS
+.An June McEnroe Aq Mt june@causal.agency

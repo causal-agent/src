@@ -1,0 +1,64 @@
+.Dd December 14, 2018
+.Dt ULOC 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm ULOC
+.Nd unique lines of code
+.
+.Sh DESCRIPTION
+There are many tools available
+which measure SLOC: source lines of code.
+These tools are strangely complex
+for what they intend to do,
+which is to estimate the relative sizes of projects.
+They perform some amount of parsing
+in order to discount comments in various languages,
+and for reasons unknown each format their ouput
+in some oddly encumbered way.
+.
+.Pp
+I propose a much simpler method
+of estimating relative sizes of projects:
+unique lines of code.
+ULOC can be calculated with standard tools as follows:
+.
+.Bd -literal -offset indent
+sort -u *.h *.c | wc -l
+.Ed
+.
+.Pp
+In my opinion,
+the number this produces
+should be a better estimate of
+the complexity of a project.
+Compared to SLOC,
+not only are blank lines discounted,
+but so are close-brace lines
+and other repetitive code
+such as common includes.
+On the other hand,
+ULOC counts comments,
+which require just as much maintenance
+as the code around them does,
+while avoiding inflating the result
+with license headers which appear in every file,
+for example.
+.
+.Pp
+It can also be amusing
+to read all of your code sorted alphabetically.
+.
+.Sh AUTHORS
+.An June McEnroe Aq Mt june@causal.agency
+.
+.Pp
+This document is produced from
+.Xr mdoc 7
+source available from
+.Lk https://code.causal.agency/june/text.causal.agency "Code Toilet"
+.
+.Sh CAVEATS
+Estimates such as these
+should not be used for decision making
+as if they were data.
