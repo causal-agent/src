@@ -1,4 +1,4 @@
-.Dd July 12, 2019
+.Dd July 13, 2019
 .Dt SHOTTY 1
 .Os
 .
@@ -8,7 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl Bs
+.Op Fl Bcs
 .Op Fl b Ar bg
 .Op Fl f Ar fg
 .Op Fl h Ar rows
@@ -35,6 +35,10 @@ Replace bold with bright colors.
 .It Fl b Ar bg
 Set the default background color.
 The default value is 0 (black).
+.
+.It Fl c
+Show the position of the cursor
+with reverse video.
 .
 .It Fl f Ar fg
 Set the default foreground color.

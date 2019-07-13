@@ -300,14 +300,16 @@ int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 
 	bool bright = false;
+	bool cursor = false;
 	bool size = false;
 	FILE *file = stdin;
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "Bb:f:h:sw:"))) {
+	while (0 < (opt = getopt(argc, argv, "Bb:cf:h:sw:"))) {
 		switch (opt) {
 			break; case 'B': bright = true;
 			break; case 'b': def.bg = strtoul(optarg, NULL, 0);
+			break; case 'c': cursor = true;
 			break; case 'f': def.fg = strtoul(optarg, NULL, 0);
 			break; case 'h': rows = strtoul(optarg, NULL, 0);
 			break; case 's': size = true;
@@ -347,6 +349,10 @@ int main(int argc, char *argv[]) {
 			cells[i].style.bold = false;
 			cells[i].style.fg += 8;
 		}
+	}
+
+	if (cursor) {
+		cell(y, x)->style.reverse ^= true;
 	}
 
 	printf(
