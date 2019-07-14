@@ -23,8 +23,28 @@ or standard input
 and produces HTML
 .Sy <pre>
 on standard output.
-Terminal output can be captured with
+.
+.Pp
+Terminal output
+can be captured with
 .Xr ptee 1 .
+.Nm
+targets compatibility with
+.Ev TERM Ns = Ns Cm xterm
+and
+.Ev TERM Ns = Ns Cm xterm-256color
+as used by
+.Xr ncurses 3 .
+.
+.Pp
+HTML output uses the classes
+.Sy bg Ns Va n
+and
+.Sy fg Ns Va n ,
+and inline styles for
+bold, italic and underline.
+CSS for colors can be generated with
+.Xr scheme 1 .
 .
 .Pp
 The arguments are as follows:
@@ -61,5 +81,9 @@ Set the terminal width.
 The default value is 80.
 .El
 .
+.Sh EXAMPLES
+.Dl ptee htop | shotty -s > htop.html
+.
 .Sh SEE ALSO
-.Xr ptee 1
+.Xr ptee 1 ,
+.Xr scheme 1
