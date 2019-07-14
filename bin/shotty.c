@@ -148,22 +148,24 @@ static char updateNUL(wchar_t ch) {
 
 enum {
 	CSI = '[',
+	ST  = '\\',
+	OSC = ']',
 	CUU = 'A',
-	CUD,
-	CUF,
-	CUB,
-	CNL,
-	CPL,
-	CHA,
-	CUP,
-	ED = 'J',
-	EL,
-	DL = 'M',
+	CUD = 'B',
+	CUF = 'C',
+	CUB = 'D',
+	CNL = 'E',
+	CPL = 'F',
+	CHA = 'G',
+	CUP = 'H',
+	ED  = 'J',
+	EL  = 'K',
+	DL  = 'M',
 	DCH = 'P',
 	VPA = 'd',
-	SM = 'h',
-	RM = 'l',
-	SGR,
+	SM  = 'h',
+	RM  = 'l',
+	SGR = 'm',
 };
 
 static char updateESC(wchar_t ch) {
@@ -176,6 +178,7 @@ static char updateESC(wchar_t ch) {
 		case '(': discard = true; return ESC;
 		case '=': return NUL;
 		case CSI: return CSI;
+		case OSC: return OSC;
 		default: warnx("unhandled ESC %lc", ch); return NUL;
 	}
 }
@@ -313,12 +316,28 @@ static char updateCSI(wchar_t ch) {
 	return NUL;
 }
 
+static char updateOSC(wchar_t ch) {
+	static bool esc;
+	switch (ch) {
+		break; case BEL: return NUL;
+		break; case ESC: esc = true;
+		break; case ST: {
+			if (!esc) break;
+			esc = false;
+			return NUL;
+		}
+	}
+	esc = false;
+	return NUL;
+}
+
 static void update(wchar_t ch) {
 	static char seq;
 	switch (seq) {
 		break; case NUL: seq = updateNUL(ch);
 		break; case ESC: seq = updateESC(ch);
 		break; case CSI: seq = updateCSI(ch);
+		break; case OSC: seq = updateOSC(ch);
 	}
 }
 
