@@ -146,26 +146,38 @@ static char updateNUL(wchar_t ch) {
 	return NUL;
 }
 
+#define ENUM_CHARS \
+	X('?', DEC) \
+	X('A', CUU) \
+	X('B', CUD) \
+	X('C', CUF) \
+	X('D', CUB) \
+	X('E', CNL) \
+	X('F', CPL) \
+	X('G', CHA) \
+	X('H', CUP) \
+	X('J', ED)  \
+	X('K', EL)  \
+	X('M', DL)  \
+	X('P', DCH) \
+	X('[', CSI) \
+	X('\\', ST) \
+	X(']', OSC) \
+	X('d', VPA) \
+	X('h', SM)  \
+	X('l', RM)  \
+	X('m', SGR)
+
 enum {
-	CSI = '[',
-	ST  = '\\',
-	OSC = ']',
-	CUU = 'A',
-	CUD = 'B',
-	CUF = 'C',
-	CUB = 'D',
-	CNL = 'E',
-	CPL = 'F',
-	CHA = 'G',
-	CUP = 'H',
-	ED  = 'J',
-	EL  = 'K',
-	DL  = 'M',
-	DCH = 'P',
-	VPA = 'd',
-	SM  = 'h',
-	RM  = 'l',
-	SGR = 'm',
+#define X(ch, name) name = ch,
+	ENUM_CHARS
+#undef X
+};
+
+static const char *Name[128] = {
+#define X(ch, name) [ch] = #name,
+	ENUM_CHARS
+#undef X
 };
 
 static char updateESC(wchar_t ch) {
@@ -185,7 +197,7 @@ static char updateESC(wchar_t ch) {
 
 static char updateCSI(wchar_t ch) {
 	static bool dec;
-	if (ch == '?') {
+	if (ch == DEC) {
 		dec = true;
 		return CSI;
 	}
@@ -305,11 +317,15 @@ static char updateCSI(wchar_t ch) {
 	}
 
 	if (debug) {
-		printf("CSI %s", (dec ? "? " : ""));
+		printf("CSI %s", (dec ? "DEC " : ""));
 		for (uint i = 0; i < n; ++i) {
 			printf("%s%u ", (i ? "; " : ""), ps[i]);
 		}
-		printf("%lc\n", ch);
+		if (ch < 128 && Name[ch]) {
+			printf("%s\n", Name[ch]);
+		} else {
+			printf("%lc\n", ch);
+		}
 		html(true);
 	}
 
