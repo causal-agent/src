@@ -299,6 +299,8 @@ static char updateCSI(wchar_t ch) {
 			}
 		}
 
+		break; case 't': // ignore
+
 		break; default: warnx("unhandled CSI %lc", ch);
 	}
 
