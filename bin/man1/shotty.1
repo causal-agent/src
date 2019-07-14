@@ -1,4 +1,4 @@
-.Dd July 13, 2019
+.Dd July 14, 2019
 .Dt SHOTTY 1
 .Os
 .
@@ -8,7 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl Bcs
+.Op Fl Bcds
 .Op Fl b Ar bg
 .Op Fl f Ar fg
 .Op Fl h Ar rows
@@ -39,6 +39,10 @@ The default value is 0 (black).
 .It Fl c
 Show the position of the cursor
 with reverse video.
+.
+.It Fl d
+Output the terminal state
+for each CSI sequence.
 .
 .It Fl f Ar fg
 Set the default foreground color.

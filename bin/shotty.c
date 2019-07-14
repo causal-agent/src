@@ -49,6 +49,7 @@ struct Cell {
 
 static struct Style def = { .fg = 7 };
 static uint rows = 24, cols = 80;
+static bool debug;
 
 static uint y, x;
 static bool insert;
@@ -68,6 +69,44 @@ static void clear(struct Cell *a, struct Cell *b) {
 
 static void move(struct Cell *dst, struct Cell *src, uint len) {
 	memmove(dst, src, sizeof(*dst) * len);
+}
+
+static void span(const struct Style *prev, const struct Cell *cell) {
+	if (!prev || memcmp(&cell->style, prev, sizeof(cell->style))) {
+		if (prev) printf("</span>");
+		uint bg = (cell->style.reverse ? cell->style.fg : cell->style.bg);
+		uint fg = (cell->style.reverse ? cell->style.bg : cell->style.fg);
+		printf(
+			"<span style=\"%s%s%s\" class=\"bg%u fg%u\">",
+			cell->style.bold ? "font-weight:bold;" : "",
+			cell->style.italic ? "font-style:italic;" : "",
+			cell->style.underline ? "text-decoration:underline;" : "",
+			bg, fg
+		);
+	}
+	switch (cell->ch) {
+		break; case '&': printf("&amp;");
+		break; case '<': printf("&lt;");
+		break; case '>': printf("&gt;");
+		break; default:  printf("%lc", cell->ch);
+	}
+}
+
+static void html(bool cursor) {
+	if (cursor) cell(y, x)->style.reverse ^= true;
+	printf(
+		"<pre style=\"width: %uch;\" class=\"bg%u fg%u\">",
+		cols, def.bg, def.fg
+	);
+	for (uint y = 0; y < rows; ++y) {
+		for (uint x = 0; x < cols; ++x) {
+			if (!cell(y, x)->ch) continue;
+			span(x ? &cell(y, x - 1)->style : NULL, cell(y, x));
+		}
+		printf("</span>\n");
+	}
+	printf("</pre>\n");
+	if (cursor) cell(y, x)->style.reverse ^= true;
 }
 
 static char updateNUL(wchar_t ch) {
@@ -260,6 +299,15 @@ static char updateCSI(wchar_t ch) {
 		break; default: warnx("unhandled CSI %lc", ch);
 	}
 
+	if (debug) {
+		printf("CSI %s", (dec ? "? " : ""));
+		for (uint i = 0; i < n; ++i) {
+			printf("%s%u ", (i ? "; " : ""), ps[i]);
+		}
+		printf("%lc\n", ch);
+		html(true);
+	}
+
 	dec = false;
 	ps[n = p = 0] = 0;
 	return NUL;
@@ -274,28 +322,6 @@ static void update(wchar_t ch) {
 	}
 }
 
-static void
-html(const struct Style *prev, const struct Cell *cell) {
-	if (!prev || memcmp(&cell->style, prev, sizeof(cell->style))) {
-		if (prev) printf("</span>");
-		uint bg = (cell->style.reverse ? cell->style.fg : cell->style.bg);
-		uint fg = (cell->style.reverse ? cell->style.bg : cell->style.fg);
-		printf(
-			"<span style=\"%s%s%s\" class=\"bg%u fg%u\">",
-			cell->style.bold ? "font-weight:bold;" : "",
-			cell->style.italic ? "font-style:italic;" : "",
-			cell->style.underline ? "text-decoration:underline;" : "",
-			bg, fg
-		);
-	}
-	switch (cell->ch) {
-		break; case '&': printf("&amp;");
-		break; case '<': printf("&lt;");
-		break; case '>': printf("&gt;");
-		break; default:  printf("%lc", cell->ch);
-	}
-}
-
 int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 
@@ -305,11 +331,12 @@ int main(int argc, char *argv[]) {
 	FILE *file = stdin;
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "Bb:cf:h:sw:"))) {
+	while (0 < (opt = getopt(argc, argv, "Bb:cdf:h:sw:"))) {
 		switch (opt) {
 			break; case 'B': bright = true;
 			break; case 'b': def.bg = strtoul(optarg, NULL, 0);
 			break; case 'c': cursor = true;
+			break; case 'd': debug = true;
 			break; case 'f': def.fg = strtoul(optarg, NULL, 0);
 			break; case 'h': rows = strtoul(optarg, NULL, 0);
 			break; case 's': size = true;
@@ -351,20 +378,5 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if (cursor) {
-		cell(y, x)->style.reverse ^= true;
-	}
-
-	printf(
-		"<pre style=\"width: %uch;\" class=\"bg%u fg%u\">",
-		cols, def.bg, def.fg
-	);
-	for (uint y = 0; y < rows; ++y) {
-		for (uint x = 0; x < cols; ++x) {
-			if (!cell(y, x)->ch) continue;
-			html(x ? &cell(y, x - 1)->style : NULL, cell(y, x));
-		}
-		printf("</span>\n");
-	}
-	printf("</pre>\n");
+	html(cursor);
 }
