@@ -327,8 +327,7 @@ static char updateOSC(wchar_t ch) {
 			return NUL;
 		}
 	}
-	esc = false;
-	return NUL;
+	return OSC;
 }
 
 static void update(wchar_t ch) {
