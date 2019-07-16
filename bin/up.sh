@@ -45,13 +45,27 @@ uploadScreen() {
 	upload "${temp}/capture.png"
 }
 
-args=$(setopt 'chs' "$@")
+uploadTerminal() {
+	temp
+	cat > "${temp}/term.html" <<-EOF
+	<!DOCTYPE html>
+	<title>${1}</title>
+	<style>
+	$(scheme -s)
+	</style>
+	EOF
+	ptee "$@" | shotty -Bcs >> "${temp}/term.html"
+	upload "${temp}/term.html"
+}
+
+args=$(setopt 'chst' "$@")
 eval set -- "$args"
 for opt; do
 	case "$opt" in
 		(-c) shift; fn=uploadCommand;;
 		(-h) shift; fn=uploadHi;;
 		(-s) shift; fn=uploadScreen;;
+		(-t) shift; fn=uploadTerminal;;
 		(--) shift; break;;
 	esac
 done

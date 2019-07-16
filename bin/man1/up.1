@@ -1,4 +1,4 @@
-.Dd July 9, 2019
+.Dd July 15, 2019
 .Dt UP 1
 .Os
 .
@@ -8,8 +8,15 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl chs
+.Op Fl h
 .Op Ar file
+.
+.Nm
+.Fl c | t
+.Ar command ...
+.
+.Nm
+.Fl s
 .
 .Sh DESCRIPTION
 .Nm
@@ -51,6 +58,12 @@ to produce a PNG file for upload.
 The file is optimized by
 .Xr pngo 1
 if available.
+.It Fl t
+Run a command with
+.Xr ptee 1
+and
+.Xr shotty 1
+to produce an HTML file for upload.
 .El
 .
 .Pp
