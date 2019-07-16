@@ -53,6 +53,9 @@ static bool debug;
 
 static uint y, x;
 static bool insert;
+static struct {
+	uint top, bot;
+} scroll;
 static struct Style style;
 static struct Cell *cells;
 
@@ -111,38 +114,52 @@ static void html(bool cursor) {
 
 static char updateNUL(wchar_t ch) {
 	switch (ch) {
-		case BS: if (x) x--; return NUL;
-		case NL: y = MIN(y + 1, rows - 1); return NUL;
-		case CR: x = 0; return NUL;
-		case ESC: return ESC;
-	}
-	if (ch < ' ') {
-		warnx("unhandled \\x%02X", ch);
-		return NUL;
-	}
+		break; case ESC: return ESC;
 
-	int width = wcwidth(ch);
-	if (width < 0) {
-		warnx("unhandled \\u%X", ch);
-		return NUL;
-	}
-	if (x + width > cols) {
-		warnx("cannot fit '%lc'", ch);
-		return NUL;
-	}
+		break; case BS: if (x) x--;
+		break; case CR: x = 0;
 
-	if (insert) {
-		move(cell(y, x + width), cell(y, x), cols - x - width);
-	}
-	cell(y, x)->style = style;
-	cell(y, x)->ch = ch;
+		break; case NL: {
+			if (y == scroll.bot) {
+				move(
+					cell(scroll.top, 0), cell(scroll.top + 1, 0),
+					cols * (scroll.bot - scroll.top)
+				);
+				clear(cell(scroll.bot, 0), cell(scroll.bot, cols - 1));
+			} else {
+				y = MIN(y + 1, rows - 1);
+			}
+		}
 
-	for (int i = 1; i < width; ++i) {
-		cell(y, x + i)->style = style;
-		cell(y, x + i)->ch = '\0';
-	}
-	x = MIN(x + width, cols - 1);
+		break; default: {
+			if (ch < ' ') {
+				warnx("unhandled \\x%02X", ch);
+				return NUL;
+			}
 
+			int width = wcwidth(ch);
+			if (width < 0) {
+				warnx("unhandled \\u%X", ch);
+				return NUL;
+			}
+			if (x + width > cols) {
+				warnx("cannot fit '%lc'", ch);
+				return NUL;
+			}
+
+			if (insert) {
+				move(cell(y, x + width), cell(y, x), cols - x - width);
+			}
+			cell(y, x)->style = style;
+			cell(y, x)->ch = ch;
+
+			for (int i = 1; i < width; ++i) {
+				cell(y, x + i)->style = style;
+				cell(y, x + i)->ch = '\0';
+			}
+			x = MIN(x + width, cols - 1);
+		}
+	}
 	return NUL;
 }
 
@@ -166,7 +183,8 @@ static char updateNUL(wchar_t ch) {
 	X('d', VPA) \
 	X('h', SM)  \
 	X('l', RM)  \
-	X('m', SGR)
+	X('m', SGR) \
+	X('r', DECSTBM)
 
 enum {
 #define X(ch, name) name = ch,
@@ -311,6 +329,11 @@ static char updateCSI(wchar_t ch) {
 			}
 		}
 
+		break; case DECSTBM: {
+			scroll.top = (n > 0 ? ps[0] - 1 : 0);
+			scroll.bot = (n > 1 ? ps[1] - 1 : rows - 1);
+		}
+
 		break; case 't': // ignore
 
 		break; default: warnx("unhandled CSI %lc", ch);
@@ -393,6 +416,7 @@ int main(int argc, char *argv[]) {
 		rows = window.ws_row;
 		cols = window.ws_col;
 	}
+	scroll.bot = rows - 1;
 
 	cells = calloc(rows * cols, sizeof(*cells));
 	if (!cells) err(EX_OSERR, "calloc");
