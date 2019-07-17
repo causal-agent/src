@@ -318,9 +318,9 @@ static char updateCSI(wchar_t ch) {
 						} else if (ps[i] >= 40 && ps[i] <= 47) {
 							style.bg = ps[i] - 40;
 						} else if (ps[i] >= 90 && ps[i] <= 97) {
-							style.fg = 7 + ps[i] - 90;
+							style.fg = 8 + ps[i] - 90;
 						} else if (ps[i] >= 100 && ps[i] <= 107) {
-							style.bg = 7 + ps[i] - 100;
+							style.bg = 8 + ps[i] - 100;
 						} else {
 							warnx("unhandled SGR %u", ps[i]);
 						}
