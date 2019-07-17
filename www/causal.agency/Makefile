@@ -12,13 +12,13 @@ INCLUDES = scheme.css torus.html play.html catgirl.html
 index.html: index.html.in index.sed $(INCLUDES)
 	sed -f index.sed index.html.in > index.html
 
+FLAGS_catgirl.pty = -c
+FLAGS_torus.pty = -h 25
+
 .SUFFIXES: .html .pty
 
 .pty.html:
-	shotty $< > $@
-
-torus.html: torus.pty
-	shotty -h 25 $< > $@
+	shotty $(FLAGS_$<) $< > $@
 
 scheme.css: scheme.sed
 	scheme -s | sed -f scheme.sed > scheme.css
