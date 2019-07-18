@@ -83,6 +83,13 @@ int main(int argc, char *argv[]) {
 				continue;
 			}
 
+			if (rlen == 1 && buf[0] == CTRL('Q')) {
+				char dump[] = "\x1B[10i";
+				ssize_t wlen = write(STDOUT_FILENO, dump, sizeof(dump) - 1);
+				if (wlen < 0) err(EX_IOERR, "write");
+				continue;
+			}
+
 			ssize_t wlen = write(pty, buf, rlen);
 			if (wlen < 0) err(EX_IOERR, "write");
 		}
