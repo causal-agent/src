@@ -74,7 +74,10 @@ static void move(struct Cell *dst, struct Cell *src, uint len) {
 }
 
 static struct {
-	bool debug, cursor, bright;
+	bool debug;
+	bool cursor;
+	bool bright;
+	bool done;
 } opts;
 
 static void span(const struct Style *prev, const struct Cell *cell) {
@@ -186,6 +189,7 @@ static char updateNUL(wchar_t ch) {
 	X(']', OSC) \
 	X('d', VPA) \
 	X('h', SM)  \
+	X('i', MC)  \
 	X('l', RM)  \
 	X('m', SGR) \
 	X('r', DECSTBM)
@@ -211,6 +215,7 @@ static char updateESC(wchar_t ch) {
 	switch (ch) {
 		case '(': discard = true; return ESC;
 		case '=': return NUL;
+		case '>': return NUL;
 		case CSI: return CSI;
 		case OSC: return OSC;
 		default: warnx("unhandled ESC %lc", ch); return NUL;
@@ -338,8 +343,13 @@ static char updateCSI(wchar_t ch) {
 			scroll.bot = (n > 1 ? ps[1] - 1 : rows - 1);
 		}
 
-		break; case 't': // ignore
+		break; case MC: {
+			if (ps[0] != 10) break;
+			opts.done = true;
+			html();
+		}
 
+		break; case 't': // ignore
 		break; default: warnx("unhandled CSI %lc", ch);
 	}
 
@@ -432,5 +442,5 @@ int main(int argc, char *argv[]) {
 	}
 	if (ferror(file)) err(EX_IOERR, "getwc");
 
-	html();
+	if (!opts.done) html();
 }
