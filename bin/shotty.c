@@ -49,7 +49,6 @@ struct Cell {
 
 static struct Style def = { .fg = 7 };
 static uint rows = 24, cols = 80;
-static bool debug;
 
 static uint y, x;
 static bool insert;
@@ -74,14 +73,19 @@ static void move(struct Cell *dst, struct Cell *src, uint len) {
 	memmove(dst, src, sizeof(*dst) * len);
 }
 
+static struct {
+	bool debug, cursor, bright;
+} opts;
+
 static void span(const struct Style *prev, const struct Cell *cell) {
 	if (!prev || memcmp(&cell->style, prev, sizeof(cell->style))) {
 		if (prev) printf("</span>");
 		uint bg = (cell->style.reverse ? cell->style.fg : cell->style.bg);
 		uint fg = (cell->style.reverse ? cell->style.bg : cell->style.fg);
+		if (opts.bright && cell->style.bold && fg < 8) fg += 8;
 		printf(
 			"<span style=\"%s%s%s\" class=\"bg%u fg%u\">",
-			cell->style.bold ? "font-weight:bold;" : "",
+			cell->style.bold && !opts.bright ? "font-weight:bold;" : "",
 			cell->style.italic ? "font-style:italic;" : "",
 			cell->style.underline ? "text-decoration:underline;" : "",
 			bg, fg
@@ -95,8 +99,8 @@ static void span(const struct Style *prev, const struct Cell *cell) {
 	}
 }
 
-static void html(bool cursor) {
-	if (cursor) cell(y, x)->style.reverse ^= true;
+static void html(void) {
+	if (opts.cursor || opts.debug) cell(y, x)->style.reverse ^= true;
 	printf(
 		"<pre style=\"width: %uch;\" class=\"bg%u fg%u\">",
 		cols, def.bg, def.fg
@@ -109,7 +113,7 @@ static void html(bool cursor) {
 		printf("</span>\n");
 	}
 	printf("</pre>\n");
-	if (cursor) cell(y, x)->style.reverse ^= true;
+	if (opts.cursor || opts.debug) cell(y, x)->style.reverse ^= true;
 }
 
 static char updateNUL(wchar_t ch) {
@@ -339,7 +343,7 @@ static char updateCSI(wchar_t ch) {
 		break; default: warnx("unhandled CSI %lc", ch);
 	}
 
-	if (debug) {
+	if (opts.debug) {
 		printf("CSI %s", (dec ? "DEC " : ""));
 		for (uint i = 0; i < n; ++i) {
 			printf("%s%u ", (i ? "; " : ""), ps[i]);
@@ -349,7 +353,7 @@ static char updateCSI(wchar_t ch) {
 		} else {
 			printf("%lc\n", ch);
 		}
-		html(true);
+		html();
 	}
 
 	dec = false;
@@ -384,18 +388,16 @@ static void update(wchar_t ch) {
 int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 
-	bool bright = false;
-	bool cursor = false;
 	bool size = false;
 	FILE *file = stdin;
 
 	int opt;
 	while (0 < (opt = getopt(argc, argv, "Bb:cdf:h:sw:"))) {
 		switch (opt) {
-			break; case 'B': bright = true;
+			break; case 'B': opts.bright = true;
 			break; case 'b': def.bg = strtoul(optarg, NULL, 0);
-			break; case 'c': cursor = true;
-			break; case 'd': debug = true;
+			break; case 'c': opts.cursor = true;
+			break; case 'd': opts.debug = true;
 			break; case 'f': def.fg = strtoul(optarg, NULL, 0);
 			break; case 'h': rows = strtoul(optarg, NULL, 0);
 			break; case 's': size = true;
@@ -430,13 +432,5 @@ int main(int argc, char *argv[]) {
 	}
 	if (ferror(file)) err(EX_IOERR, "getwc");
 
-	if (bright) {
-		for (uint i = 0; i < rows * cols; ++i) {
-			if (!cells[i].style.bold || cells[i].style.fg > 7) continue;
-			cells[i].style.bold = false;
-			cells[i].style.fg += 8;
-		}
-	}
-
-	html(cursor);
+	html();
 }
