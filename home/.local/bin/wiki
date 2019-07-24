@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+
+curl -Gs 'https://en.wikipedia.org/w/api.php' \
+    -d 'action=opensearch' --data-urlencode "search=$1" \
+    | jq -r '.[2][]' \
+    | sed -En "s/^([^ ]| [^i]| i[^s]| is[^ ])* is /It's not a $1, what we need is /p"
