@@ -5,7 +5,7 @@ PREFIX = ~/.local
 MANDIR = $(PREFIX)/share/man
 
 CFLAGS += -Wall -Wextra -Wpedantic
-LDLIBS = -ledit -lm -lutil -lz
+LDLIBS = -lm -lutil -lz
 
 CFLAGS_tls = $(CFLAGS) -I$(LIBRESSL_PREFIX)/include
 LDFLAGS_tls = $(LDFLAGS) -L$(LIBRESSL_PREFIX)/lib

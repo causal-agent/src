@@ -18,7 +18,6 @@
 
 #include <ctype.h>
 #include <err.h>
-#include <histedit.h>
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -147,30 +146,13 @@ static int yylex(void) {
 	}
 }
 
-static char *prompt(EditLine *el) {
-	(void)el;
-	return "";
-}
-
 int main(void) {
-	HistEvent ev;
-	History *hist = history_init();
-	if (!hist) err(EX_OSERR, "history_init");
-	history(hist, &ev, H_SETSIZE, 100);
-	history(hist, &ev, H_SETUNIQUE, 1);
+	char *line = NULL;
+	size_t cap = 0;
+	while (0 < getline(&line, &cap, stdin)) {
+		if (line[0] == '\n') continue;
 
-	EditLine *el = el_init("bit", stdin, stdout, stderr);
-	if (!el) err(EX_IOERR, "el_init");
-	el_set(el, EL_PROMPT, prompt);
-	el_set(el, EL_HIST, history, hist);
-
-	for (;;) {
-		int len;
-		input = el_gets(el, &len);
-		if (len == 0) break;
-		if (len == 1) continue;
-		history(hist, &ev, H_ENTER, input);
-
+		input = line;
 		int error = yyparse();
 		if (error) continue;
 
@@ -209,7 +191,4 @@ int main(void) {
 
 		printf("\n\n");
 	}
-
-	el_end(el);
-	history_end(hist);
 }
