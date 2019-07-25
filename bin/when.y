@@ -229,13 +229,20 @@ int main(int argc, char *argv[]) {
 		return yyparse();
 	}
 
-	printDate(today());
+	struct tm date = today();
+	printDate(date);
 	printf("\n");
 
 	char *line = NULL;
 	size_t cap = 0;
 	while (0 < getline(&line, &cap, stdin)) {
 		if (line[0] == '\n') continue;
+
+		if (today().tm_mday != date.tm_mday) {
+			warnx("the date has changed");
+			date = today();
+		}
+
 		input = line;
 		yyparse();
 		printf("\n");
