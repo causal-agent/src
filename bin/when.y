@@ -29,19 +29,34 @@ static int yylex(void);
 
 #define YYSTYPE struct tm
 
+static const char *Days[7] = {
+	"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat",
+};
+
+static const char *Months[12] = {
+	"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+};
+
+static const struct tm Week = { .tm_mday = 7 };
+
 static struct tm normalize(struct tm date) {
-	time_t time = mktime(&date);
-	struct tm *norm = localtime(&time);
-	if (!norm) err(EX_OSERR, "localtime");
+	time_t time = timegm(&date);
+	struct tm *norm = gmtime(&time);
+	if (!norm) err(EX_OSERR, "gmtime");
 	return *norm;
 }
 
 static struct tm today(void) {
 	time_t now = time(NULL);
-	struct tm *date = localtime(&now);
-	if (!date) err(EX_OSERR, "localtime");
-	date->tm_hour = date->tm_min = date->tm_sec = 0;
-	return *date;
+	struct tm *local = localtime(&now);
+	if (!local) err(EX_OSERR, "localtime");
+	struct tm date = {
+		.tm_year = local->tm_year,
+		.tm_mon = local->tm_mon,
+		.tm_mday = local->tm_mday,
+	};
+	return normalize(date);
 }
 
 static struct tm monthDay(int month, int day) {
@@ -52,11 +67,10 @@ static struct tm monthDay(int month, int day) {
 }
 
 static struct tm monthDayYear(int month, int day, int year) {
-	struct tm date = {
-		.tm_mon = month,
-		.tm_mday = day,
-		.tm_year = year - 1900,
-	};
+	struct tm date = today();
+	date.tm_mon = month;
+	date.tm_mday = day;
+	date.tm_year = year - 1900;
 	return normalize(date);
 }
 
@@ -89,25 +103,24 @@ static struct tm dateSub(struct tm date, struct tm scalar) {
 }
 
 static struct tm dateDiff(struct tm a, struct tm b) {
-	struct tm diff = { .tm_year = a.tm_year - b.tm_year };
-	if (a.tm_mday < b.tm_mday) {
-		diff.tm_mon = a.tm_mon - b.tm_mon - 1;
-		while (dateAdd(b, diff).tm_mday != a.tm_mday) diff.tm_mday++;
-	} else {
-		diff.tm_mon = a.tm_mon - b.tm_mon;
-		diff.tm_mday = a.tm_mday - b.tm_mday;
+	struct tm diff = {
+		.tm_year = a.tm_year - b.tm_year,
+		.tm_mon = a.tm_mon - b.tm_mon,
+		.tm_mday = a.tm_mday - b.tm_mday,
+	};
+	if (a.tm_mon < b.tm_mon) {
+		diff.tm_year--;
+		diff.tm_mon += 12;
 	}
+	if (a.tm_mday < b.tm_mday) {
+		diff.tm_mon--;
+		diff.tm_mday = 0;
+		while (dateAdd(b, diff).tm_mday != a.tm_mday) diff.tm_mday++;
+	}
+	time_t atime = timegm(&a), btime = timegm(&b);
+	diff.tm_yday = (atime - btime) / 24 / 60 / 60;
 	return diff;
 }
-
-static const char *Days[7] = {
-	"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat",
-};
-
-static const char *Months[12] = {
-	"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-};
 
 static void printDate(struct tm date) {
 	printf(
@@ -121,16 +134,19 @@ static void printScalar(struct tm scalar) {
 	if (scalar.tm_year) printf("%dy ", scalar.tm_year);
 	if (scalar.tm_mon) printf("%dm ", scalar.tm_mon);
 	if (scalar.tm_mday % 7) {
-		printf("%dd\n", scalar.tm_mday);
-	} else {
-		printf("%dw\n", scalar.tm_mday / 7);
+		printf("%dd ", scalar.tm_mday);
+	} else if (scalar.tm_mday) {
+		printf("%dw ", scalar.tm_mday / 7);
 	}
+	if (scalar.tm_yday && scalar.tm_mon) printf("(%dd) ", scalar.tm_yday);
+	printf("\n");
 }
 
 %}
 
 %token Number Month Day
 %left '+' '-'
+%right '<' '>'
 
 %%
 
@@ -140,26 +156,31 @@ expr:
 	;
 
 date:
-	dateSpec
+	dateLit
+	| '(' date ')' { $$ = $2; }
+	| '<' date { $$ = dateSub($2, Week); }
+	| '>' date { $$ = dateAdd($2, Week); }
 	| date '+' scalar { $$ = dateAdd($1, $3); }
 	| date '-' scalar { $$ = dateSub($1, $3); }
 	;
 
 scalar:
-	scalarSpec
+	scalarLit
+	| '(' scalar ')' { $$ = $2; }
 	| scalar '+' scalar { $$ = scalarAdd($1, $3); }
 	| scalar '-' scalar { $$ = scalarSub($1, $3); }
 	| date '-' date { $$ = dateDiff($1, $3); }
 	;
 
-dateSpec:
-	'.' { $$ = today(); }
+dateLit:
+	{ $$ = today(); }
+	| '.' { $$ = today(); }
 	| Month Number { $$ = monthDay($1.tm_mon, $2.tm_sec); }
 	| Month Number Number { $$ = monthDayYear($1.tm_mon, $2.tm_sec, $3.tm_sec); }
 	| Day { $$ = weekDay($1.tm_wday); }
 	;
 
-scalarSpec:
+scalarLit:
 	Number 'd' { $$ = (struct tm) { .tm_mday = $1.tm_sec }; }
 	| Number 'w' { $$ = (struct tm) { .tm_mday = 7 * $1.tm_sec }; }
 	| Number 'm' { $$ = (struct tm) { .tm_mon = $1.tm_sec }; }
@@ -202,11 +223,20 @@ static int yylex(void) {
 	return *input++;
 }
 
-int main(void) {
-	char *buf = NULL;
+int main(int argc, char *argv[]) {
+	if (argc > 1) {
+		input = argv[1];
+		return yyparse();
+	}
+
+	printDate(today());
+	printf("\n");
+
+	char *line = NULL;
 	size_t cap = 0;
-	while (0 < getline(&buf, &cap, stdin)) {
-		input = buf;
+	while (0 < getline(&line, &cap, stdin)) {
+		if (line[0] == '\n') continue;
+		input = line;
 		yyparse();
 		printf("\n");
 	}

@@ -1,0 +1,76 @@
+.Dd July 24, 2019
+.Dt WHEN 1
+.Os
+.
+.Sh NAME
+.Nm when
+.Nd date calculator
+.
+.Sh SYNOPSIS
+.Nm
+.Op Ar expr
+.
+.Sh DESCRIPTION
+.Nm
+is a date calculator.
+If no
+.Ar expr
+is given,
+expressions are read
+from standard input.
+.
+.Pp
+The grammar is as follows:
+.Bl -tag -width Ds
+.It Sy \&.
+Today's date.
+.
+.It Ar month Ar date Op Ar year
+A full date,
+or a date in the current year.
+.Ar month
+must be at least three letters.
+.
+.It Ar day
+A day of the week
+in the current week.
+.Ar day
+must be at least three letters.
+.
+.It Sy < Ar date
+The date one week before.
+.
+.It Sy > Ar date
+The date one week after.
+.
+.It Ar date Sy + Ar interval
+The date after some interval.
+.
+.It Ar date Sy - Ar interval
+The date before some interval.
+.
+.It Ar date Sy - Ar date
+The interval between two dates.
+.
+.It Ar num Sy d
+A number of days.
+.
+.It Ar num Sy w
+A number of weeks.
+.
+.It Ar num Sy m
+A number of months.
+.
+.It Ar num Sy y
+A number of years.
+.El
+.
+.Sh EXAMPLES
+.Bl -tag -width "Dec 25 - ."
+.It Ic Dec 25 - \&.
+How long until Christmas.
+.It Ic >Fri
+The date next Friday.
+.It Ic \&. + 2w
+Your last day at work.
+.El

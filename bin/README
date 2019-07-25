@@ -33,6 +33,7 @@ DESCRIPTION
      up(1)       upload file
      wake(1)     wake-on-LAN
      wat(1)      watch files
+     when(1)     date calculator
      xx(1)       hexdump
 
      To build graphical tools, set one of:
@@ -41,4 +42,4 @@ DESCRIPTION
            GFX=fb
            GFX=x11
 
-Causal Agency                    July 9, 2019                    Causal Agency
+Causal Agency                    July 24, 2019                   Causal Agency

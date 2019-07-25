@@ -35,6 +35,7 @@ BINS += shotty
 BINS += ttpre
 BINS += up
 BINS += wake
+BINS += when
 BINS += xx
 
 LINKS += atch
