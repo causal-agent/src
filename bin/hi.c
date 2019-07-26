@@ -161,7 +161,7 @@ static const struct Syntax MakeSyntax[] = {
 		.pattern = "[$][{](" "[^$}]" "|" "[$][{][^}]*[}]" ")*[}]" },
 	{ Escape,
 		.pattern = "[$][$]" },
-	{ Comment,
+	{ Comment, .parent = ~SET(String),
 		.pattern = "#.*" },
 	{ Todo, .parent = SET(Comment),
 		.pattern = PATTERN_TODO },
