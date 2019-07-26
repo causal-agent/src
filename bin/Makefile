@@ -114,11 +114,7 @@ IGNORE = '*.o' '*.html' config.mk tags scheme.h scheme.png $(BINS_ALL) $(LINKS)
 	echo $(IGNORE) | tr ' ' '\n' | sort > .gitignore
 
 HTMLS = $(BINS_ALL:%=%.html)
-HTMLS += Makefile.html
-HTMLS += gfx-fb.html
-HTMLS += gfx-x11.html
-HTMLS += gfx.html
-HTMLS += html.html
+HTMLS += index.html
 HTMLS += png.html
 WEBROOT = /usr/local/www/causal.agency
 
@@ -141,8 +137,10 @@ $(HTMLS): ttpre hi html.sh
 .h.html:
 	sh html.sh $< > $@
 
-Makefile.html: Makefile bin.7
-	sh html.sh Makefile bin.7 > Makefile.html
+index.html: Makefile bin.7
+	sh html.sh Makefile bin.7 \
+		| sed -E -e 's#([a-z0-9-]+)[(]1[)]#<a href="\1.html">&</a>#' \
+		> index.html
 
 clean:
 	rm -f $(BINS_ALL) $(LINKS) tags scheme.h scheme.png *.o *.html
