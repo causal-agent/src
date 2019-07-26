@@ -135,7 +135,7 @@ $(HTMLS): html.sh style.sed hi scheme ttpre
 	sh html.sh $< man1/$(<:.sh=.1) > $@
 
 .h.html:
-	sh html.sh $< > $@
+	sh html.sh $< man3/$(<:.h=.3) > $@
 
 index.html: Makefile bin.7
 	sh html.sh Makefile bin.7 \

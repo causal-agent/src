@@ -1,0 +1,90 @@
+.Dd July 25, 2019
+.Dt PNG 3
+.Os
+.
+.Sh NAME
+.Nm png
+.Nd basic PNG output
+.
+.Sh SYNOPSIS
+.In png.h
+.
+.Ft void
+.Fo pngHead
+.Fa "FILE *file"
+.Fa "uint32_t width"
+.Fa "uint32_t height"
+.Fa "uint8_t depth"
+.Fa "uint8_t color"
+.Fc
+.
+.Ft void
+.Fn pngPalette "FILE *file" "const uint8_t *pal" "uint32_t len"
+.
+.Ft void
+.Fn pngData "FILE *file" "const uint8_t *data" "uint32_t len"
+.
+.Ft void
+.Fn pngTail "FILE *file"
+.
+.Sh DESCRIPTION
+The
+.Fn pngHead
+function
+writes the
+.Sy IHDR
+chunk to
+.Fa file .
+The
+.Fa color
+parameter can be one of
+.Dv PNGGrayscale ,
+.Dv PNGTruecolor
+optionally
+.Em or Ns 'ed
+with
+.Dv PNGAlpha ,
+or
+.Dv PNGIndexed .
+.
+.Pp
+The
+.Fn pngPalette
+function
+writes the
+.Sy PLTE
+chunk to
+.Fa file .
+.
+.Pp
+The
+.Fn pngData
+function
+writes the
+.Sy IDAT
+chunk to
+.Fa file
+without compression.
+The constants
+.Dv PNGNone ,
+.Dv PNGSub ,
+.Dv PNGUp ,
+.Dv PNGAverage ,
+.Dv PNGPaeth
+are defined
+for use in PNG data.
+.
+.Pp
+The
+.Fn pngTail
+function
+writes the
+.Sy IEND
+chunk to
+.Fa file .
+.
+.Sh ERRORS
+Any errors from writing to
+.Fa file
+are handled by calling
+.Xr err 3 .
