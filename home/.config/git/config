@@ -1,19 +1,19 @@
 [user]
-    name = June McEnroe
-    email = june@causal.agency
+	name = June McEnroe
+	email = june@causal.agency
 
 [commit]
-    gpgSign = true
-    verbose = true
+	gpgSign = true
+	verbose = true
 
 [merge]
-    conflictStyle = diff3
+	conflictStyle = diff3
 
 [rebase]
-    autosquash = true
+	autosquash = true
 
 [pretty]
-    log = %Cred%h %Creset%s%C(yellow)%d %Cgreen(%ar) %Cblue<%an>
+	log = %Cred%h %Creset%s%C(yellow)%d %Cgreen(%ar) %Cblue<%an>
 
 [include]
-    path = ./private
+	path = ./private
