@@ -92,7 +92,7 @@ static void generate(void) {
 	light[White]   = x(R, +45.0, 0.3, 0.8);
 
 	dark[Black] = x(light[Black], 0.0, 1.0, 0.3);
-	dark[White] = x(light[White], 0.0, 1.0, 0.6);
+	dark[White] = x(light[White], 0.0, 1.0, 0.7);
 	for (uint i = Red; i < White; ++i) {
 		dark[i] = x(light[i], 0.0, 1.0, 0.8);
 	}
