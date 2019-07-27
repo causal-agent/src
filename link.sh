@@ -1,18 +1,18 @@
 #!/bin/sh
-set -e -u
+set -eu
 
 if [ $# -eq 1 ]; then
-	linkPath=$1
-	filePath="$PWD/home/${linkPath#$HOME/}"
-	[ ! -f "$filePath" ]
-	mkdir -p "$(dirname "$filePath")"
-	mv "$linkPath" "$filePath"
+	link=$1
+	file="${PWD}/home/${link#${HOME}/}"
+	[ ! -f "$file" ]
+	mkdir -p "${file%/*}"
+	mv "$link" "$file"
 fi
 
-find home -type f | while read -r findPath; do
-	filePath="$PWD/$findPath"
-	linkPath="$HOME/${findPath#home/}"
-	mkdir -p "$(dirname "$linkPath")"
-	[ \( -f "$linkPath" -a -L "$linkPath" \) -o ! -f "$linkPath" ]
-	ln -s -f "$filePath" "$linkPath"
+find home -type f | while read -r find; do
+	file="${PWD}/${find}"
+	link="${HOME}/${find#home/}"
+	mkdir -p "${link%/*}"
+	[ \( -f "$link" -a -L "$link" \) -o ! -f "$link" ]
+	ln -fs "$file" "$link"
 done

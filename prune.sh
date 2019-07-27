@@ -1,7 +1,7 @@
 #!/bin/sh
-set -e -u
+set -eu
 
-find -L ~ -type l -lname "$PWD/*" | while read -r linkPath; do
-	rm "$linkPath"
-	echo "$linkPath"
+find -L ~ -type l -lname "${PWD}/*" | while read -r link; do
+	echo "$link"
+	rm "$link"
 done

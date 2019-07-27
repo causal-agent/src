@@ -6,18 +6,18 @@ TXTS += 003-pleasant-c.txt
 TXTS += 004-uloc.txt
 TXTS += 005-testing-c.txt
 
-all: $(TXTS)
+all: ${TXTS}
 
 .SUFFIXES: .7 .txt
 
 .7.txt:
-	mandoc $< | col -b -x > $@
+	mandoc $< | col -bx > $@
 
-feed.atom: $(TXTS)
-	./feed.sh > feed.atom
+feed.atom: feed.sh ${TXTS}
+	sh feed.sh > feed.atom
 
 clean:
-	rm -f $(TXTS) feed.atom
+	rm -f ${TXTS} feed.atom
 
-install: $(TXTS) feed.atom
-	install -p -m 644 $(TXTS) feed.atom $(WEBROOT)
+install: ${TXTS} feed.atom
+	install -p -m 644 ${TXTS} feed.atom ${WEBROOT}
