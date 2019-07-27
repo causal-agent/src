@@ -36,10 +36,8 @@ DESCRIPTION
      when(1)     date calculator
      xx(1)       hexdump
 
-     To build graphical tools, set one of:
+     One piece of reused code.
 
-           GFX=cocoa
-           GFX=fb
-           GFX=x11
+     png(3)  basic PNG output
 
 Causal Agency                    July 24, 2019                   Causal Agency

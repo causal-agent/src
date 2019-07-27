@@ -139,7 +139,7 @@ $(HTMLS): ttpre hi html.sh
 
 index.html: Makefile bin.7
 	sh html.sh Makefile bin.7 \
-		| sed -E -e 's#([a-z0-9-]+)[(]1[)]#<a href="\1.html">&</a>#' \
+		| sed -E 's#([a-z0-9-]+)[(][13][)]#<a href="\1.html">&</a>#' \
 		> index.html
 
 clean:
