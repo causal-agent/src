@@ -1,9 +1,9 @@
 #!/bin/sh
-set -e -u
+set -eu
 
 dir=$(mktemp -d)
-echo 'bits 64' > $dir/input
-cat >> $dir/input
-nasm -o $dir/output $dir/input || true
-ndisasm -b 64 $dir/output || true
-rm -r $dir
+echo 'bits 64' > "${dir}/input"
+cat >> "${dir}/input"
+nasm -o "${dir}/output" "${dir}/input" || true
+ndisasm -b 64 "${dir}/output" || true
+rm -r "$dir"

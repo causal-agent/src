@@ -42,6 +42,6 @@ for header in $headers; do
 		| tail -n 1
 	)
 	[ $? -ne 0 -o "$defined" = "$macro" ] && continue
-	echo "#include <$header>"
+	echo "#include <${header}>"
 	echo "$defined"
 done
