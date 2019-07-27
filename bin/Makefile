@@ -2,46 +2,47 @@ GFX = cocoa
 LIBRESSL_PREFIX = /usr/local
 
 PREFIX = ~/.local
-MANDIR = $(PREFIX)/share/man
+MANDIR = ${PREFIX}/share/man
 
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lm -lutil -lz
 
-CFLAGS_tls = $(CFLAGS) -I$(LIBRESSL_PREFIX)/include
-LDFLAGS_tls = $(LDFLAGS) -L$(LIBRESSL_PREFIX)/lib
-LDLIBS_tls = $(LDLIBS) -ltls
+CFLAGS_tls = ${CFLAGS} -I${LIBRESSL_PREFIX}/include
+LDFLAGS_tls = ${LDFLAGS} -L${LIBRESSL_PREFIX}/lib
+LDLIBS_tls = ${LDLIBS} -ltls
 
-LDLIBS_cocoa = $(LDLIBS) -framework Cocoa
-LDLIBS_fb = $(LDLIBS)
-LDLIBS_x11 = $(LDLIBS) -lX11
+GFX_OBJ = gfx-${GFX}.o
+LDLIBS_cocoa = ${LDLIBS} -framework Cocoa
+LDLIBS_fb = ${LDLIBS}
+LDLIBS_x11 = ${LDLIBS} -lX11
 
 -include config.mk
 
-BINS += aes
-BINS += bit
-BINS += dtch
-BINS += glitch
-BINS += hi
-BINS += hnel
-BINS += modem
-BINS += order
-BINS += pbd
-BINS += pngo
-BINS += psf2png
-BINS += ptee
-BINS += scheme
-BINS += setopt
-BINS += shotty
-BINS += ttpre
-BINS += up
-BINS += wake
-BINS += when
-BINS += xx
+BINS_ANY += aes
+BINS_ANY += bit
+BINS_ANY += dtch
+BINS_ANY += glitch
+BINS_ANY += hi
+BINS_ANY += hnel
+BINS_ANY += modem
+BINS_ANY += order
+BINS_ANY += pbd
+BINS_ANY += pngo
+BINS_ANY += psf2png
+BINS_ANY += ptee
+BINS_ANY += scheme
+BINS_ANY += setopt
+BINS_ANY += shotty
+BINS_ANY += ttpre
+BINS_ANY += up
+BINS_ANY += wake
+BINS_ANY += when
+BINS_ANY += xx
 
-LINKS += atch
-LINKS += open
-LINKS += pbcopy
-LINKS += pbpaste
+LINKS_ANY += atch
+LINKS_ANY += open
+LINKS_ANY += pbcopy
+LINKS_ANY += pbpaste
 
 BINS_BSD += beef
 BINS_BSD += wat
@@ -56,24 +57,46 @@ BINS_LINUX += psfed
 
 BINS_TLS += relay
 
-BINS_ALL = $(BINS) $(BINS_BSD) $(BINS_GFX) $(BINS_LINUX) $(BINS_TLS)
-MAN1_ALL = $(BINS_ALL:%=man1/%.1)
+BINS = ${BINS_ANY} ${BINS_BSD} ${BINS_GFX} ${BINS_LINUX} ${BINS_TLS}
+MANS = ${BINS:%=man1/%.1}
+LINKS = ${LINKS_ANY}
 
-any: .gitignore tags $(BINS) $(LINKS)
+# Groups
 
-bsd: $(BINS_BSD)
+any: meta ${BINS_ANY} ${LINKS_ANY}
 
-gfx: $(BINS_GFX)
+bsd: meta ${BINS_BSD}
 
-linux: $(BINS_LINUX)
+gfx: meta ${BINS_GFX}
 
-tls: $(BINS_TLS)
+linux: meta ${BINS_LINUX}
 
-.o:
-	$(CC) $(LDFLAGS) $< $(LDLIBS) -o $@
+tls: meta ${BINS_TLS}
 
-scheme.h: scheme
-	./scheme -c > scheme.h
+meta: tags .gitignore
+
+# Binaries
+
+atch: dtch
+	ln -f dtch atch
+
+brot: brot.o ${GFX_OBJ}
+	${CC} ${LDFLAGS} $@.o ${GFX_OBJ} ${LDLIBS_${GFX}} -o $@
+
+gfxx: gfxx.o ${GFX_OBJ}
+	${CC} ${LDFLAGS} $@.o ${GFX_OBJ} ${LDLIBS_${GFX}} -o $@
+
+hi: hi.c
+	${CC} ${CFLAGS} ${LDFLAGS} hi.c ${LDLIBS} -o $@
+	./hi -c
+
+open pbcopy pbpaste: pbd
+	ln -f pbd $@
+
+relay: relay.c
+	${CC} ${CFLAGS_tls} ${LDFLAGS_tls} $@.c ${LDLIBS_tls} -o $@
+
+# Headers
 
 brot.o gfxx.o gfx-cocoa.o gfx-fb.o gfx-x11.o: gfx.h
 
@@ -81,86 +104,75 @@ fbatt.o fbclock.o: scheme.h
 
 gfxx.o psf2png.o scheme.o: png.h
 
-GFX_OBJ = gfx-$(GFX).o
+scheme.h: scheme
+	./scheme -c > scheme.h
 
-brot: brot.o $(GFX_OBJ)
-	$(CC) $(LDFLAGS) $@.o $(GFX_OBJ) $(LDLIBS_$(GFX)) -o $@
+.o:
+	${CC} ${LDFLAGS} $< ${LDLIBS} -o $@
 
-gfxx: gfxx.o $(GFX_OBJ)
-	$(CC) $(LDFLAGS) $@.o $(GFX_OBJ) $(LDLIBS_$(GFX)) -o $@
+# HTML
 
-hi: hi.c
-	$(CC) $(CFLAGS) $(LDFLAGS) hi.c $(LDLIBS) -o $@
-	./hi -c
-
-relay: relay.c
-	$(CC) $(CFLAGS_tls) $(LDFLAGS_tls) relay.c $(LDLIBS_tls) -o $@
-
-atch: dtch
-	ln -f dtch atch
-
-open pbcopy pbpaste: pbd
-	ln -f pbd $@
-
-tags: *.h *.c
-	ctags -w *.h *.c
-
-scheme.png: scheme
-	./scheme -gt > scheme.png
-
-IGNORE = '*.o' '*.html' config.mk tags scheme.h scheme.png $(BINS_ALL) $(LINKS)
-
-.gitignore: Makefile
-	echo $(IGNORE) | tr ' ' '\n' | sort > .gitignore
-
-HTMLS = $(BINS_ALL:%=%.html)
-HTMLS += index.html
-HTMLS += png.html
+HTMLS = index.html ${BINS:%=%.html} png.html
 WEBROOT = /usr/local/www/causal.agency
 
-html: $(HTMLS)
+html: ${HTMLS}
 	@true
 
-$(HTMLS): ttpre hi html.sh
+${HTMLS}: html.sh hi ttpre
 
 .SUFFIXES: .html
 
 .c.html:
-	sh html.sh $< man1/$(<:.c=.1) > $@
-
-.y.html:
-	sh html.sh $< man1/$(<:.y=.1) > $@
-
-.sh.html:
-	sh html.sh $< man1/$(<:.sh=.1) > $@
+	sh html.sh $< man1/${<:.c=.1} > $@
 
 .h.html:
-	sh html.sh $< man3/$(<:.h=.3) > $@
+	sh html.sh $< man3/${<:.h=.3} > $@
+
+.sh.html:
+	sh html.sh $< man1/${<:.sh=.1} > $@
+
+.y.html:
+	sh html.sh $< man1/${<:.y=.1} > $@
 
 index.html: Makefile bin.7
 	sh html.sh Makefile bin.7 \
-		| sed -E 's#([a-z0-9-]+)[(][13][)]#<a href="\1.html">&</a>#' \
+		| sed -E 's,([a-z0-9-]+)[(][1-9][)],<a href="\1.html">&</a>,' \
 		> index.html
 
-clean:
-	rm -f $(BINS_ALL) $(LINKS) tags scheme.h scheme.png *.o *.html
+# Meta
 
 README: bin.7
 	mandoc bin.7 | col -bx > README
 
+scheme.png: scheme
+	./scheme -gt > scheme.png
+
+tags: *.h *.c
+	ctags -w *.h *.c
+
+IGNORE = '*.o' '*.html' scheme.h scheme.png tags ${BINS} ${LINKS}
+
+.gitignore: Makefile
+	echo config.mk ${IGNORE} | tr ' ' '\n' | sort > .gitignore
+
+clean:
+	rm -f ${IGNORE}
+
+# Install
+
+link:
+	install -d ${PREFIX}/bin ${MANDIR}/man1
+	ln -fs ${BINS:%=${PWD}/%} ${LINKS:%=${PWD}/%} ${PREFIX}/bin
+	ln -fs ${MANS:%=${PWD}/%} ${MANDIR}/man1
+
+unlink:
+	rm -f ${BINS:%=${PREFIX}/bin/%} ${LINKS:%=${PREFIX}/bin/%}
+	rm -f ${MANS:%=${MANDIR}/%}
+
+install-html: ${HTMLS}
+	install -d ${WEBROOT}/bin
+	install -C -m 644 ${HTMLS} ${WEBROOT}/bin
+
 setuid: bri
 	chown root bri
 	chmod u+s bri
-
-link:
-	install -d $(PREFIX)/bin $(MANDIR)/man1
-	ln -fs $(BINS_ALL:%=$(PWD)/%) $(LINKS:%=$(PWD)/%) $(PREFIX)/bin
-	ln -fs $(MAN1_ALL:%=$(PWD)/%) $(MANDIR)/man1
-
-unlink:
-	rm -f $(BINS_ALL:%=$(PREFIX)/bin/%) $(LINKS:%=$(PREFIX)/bin/%)
-	rm -f $(MAN1_ALL:%=$(MANDIR)/%)
-
-install-html: $(HTMLS)
-	install -d $(WEBROOT)/bin
-	install -C -m 644 $(HTMLS) $(WEBROOT)/bin
