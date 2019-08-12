@@ -1,4 +1,4 @@
-/* Copyright (C) 2017, 2018  June McEnroe <june@causal.agency>
+/* Copyright (C) 2017-2019  June McEnroe <june@causal.agency>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -19,8 +19,10 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -38,25 +40,17 @@
 #include <util.h>
 #endif
 
-typedef unsigned char byte;
+static char _;
+static struct iovec iov = { .iov_base = &_, .iov_len = 1 };
 
-static struct sockaddr_un sockAddr(const char *home, const char *name) {
-	struct sockaddr_un addr = { .sun_family = AF_UNIX };
-	snprintf(addr.sun_path, sizeof(addr.sun_path), "%s/.dtch/%s", home, name);
-	return addr;
-}
-
-static byte z;
-static struct iovec iov = { .iov_base = &z, .iov_len = 1 };
-
-static ssize_t sendFD(int sock, int fd) {
-	size_t size = CMSG_SPACE(sizeof(int));
-	byte buf[size];
+static ssize_t sendfd(int sock, int fd) {
+	size_t len = CMSG_SPACE(sizeof(int));
+	char buf[len];
 	struct msghdr msg = {
 		.msg_iov = &iov,
 		.msg_iovlen = 1,
 		.msg_control = buf,
-		.msg_controllen = size,
+		.msg_controllen = len,
 	};
 
 	struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
@@ -68,70 +62,33 @@ static ssize_t sendFD(int sock, int fd) {
 	return sendmsg(sock, &msg, 0);
 }
 
-static int recvFD(int sock) {
-	size_t size = CMSG_SPACE(sizeof(int));
-	char buf[size];
+static int recvfd(int sock) {
+	size_t len = CMSG_SPACE(sizeof(int));
+	char buf[len];
 	struct msghdr msg = {
 		.msg_iov = &iov,
 		.msg_iovlen = 1,
 		.msg_control = buf,
-		.msg_controllen = size,
+		.msg_controllen = len,
 	};
-
-	ssize_t n =  recvmsg(sock, &msg, 0);
-	if (n < 0) return -1;
+	if (0 > recvmsg(sock, &msg, 0)) return -1;
 
 	struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
 	if (!cmsg || cmsg->cmsg_type != SCM_RIGHTS) {
 		errno = ENOMSG;
 		return -1;
 	}
-
 	return *(int *)CMSG_DATA(cmsg);
 }
 
-static struct sockaddr_un addr;
+static struct sockaddr_un addr = { .sun_family = AF_UNIX };
 
-static void sigExit(int sig) {
+static void handler(int sig) {
 	unlink(addr.sun_path);
-	_exit(128 + sig);
+	_exit(-sig);
 }
 
-static int dtch(int argc, char *argv[]) {
-	int error;
-
-	const char *name = "dtch";
-	if (argc > 1) {
-		name = argv[1];
-		argv++;
-		argc--;
-	}
-	if (argc > 1) {
-		argv++;
-	} else {
-		argv[0] = getenv("SHELL");
-		if (!argv[0]) argv[0] = "/bin/sh";
-	}
-
-	const char *home = getenv("HOME");
-	if (!home) errx(EX_CONFIG, "HOME unset");
-
-	int fd = open(home, 0);
-	if (fd < 0) err(EX_CANTCREAT, "%s", home);
-
-	error = mkdirat(fd, ".dtch", 0700);
-	if (error && errno != EEXIST) err(EX_CANTCREAT, "%s/.dtch", home);
-
-	close(fd);
-
-	int server = socket(PF_UNIX, SOCK_STREAM, 0);
-	if (server < 0) err(EX_OSERR, "socket");
-
-	addr = sockAddr(home, name);
-	error = bind(server, (struct sockaddr *)&addr, sizeof(addr));
-	if (error) err(EX_CANTCREAT, "%s", addr.sun_path);
-	fcntl(server, F_SETFD, FD_CLOEXEC);
-
+static void detach(int server, bool sink, char *argv[]) {
 	int pty;
 	pid_t pid = forkpty(&pty, NULL, NULL, NULL);
 	if (pid < 0) err(EX_OSERR, "forkpty");
@@ -141,62 +98,64 @@ static int dtch(int argc, char *argv[]) {
 		err(EX_NOINPUT, "%s", argv[0]);
 	}
 
-	signal(SIGINT, sigExit);
-	signal(SIGTERM, sigExit);
+	signal(SIGINT, handler);
+	signal(SIGTERM, handler);
 
-	error = listen(server, 0);
+	int error = listen(server, 0);
 	if (error) err(EX_OSERR, "listen");
 
-	for (;;) {
-		int client = accept(server, NULL, NULL);
-		if (client < 0) err(EX_IOERR, "accept");
+	struct pollfd fds[] = {
+		{ .events = POLLIN, .fd = server },
+		{ .events = POLLIN, .fd = pty },
+	};
+	while (0 < poll(fds, (sink ? 2 : 1), -1)) {
+		if (fds[0].revents) {
+			int client = accept(server, NULL, NULL);
+			if (client < 0) err(EX_IOERR, "accept");
 
-		ssize_t size = sendFD(client, pty);
-		if (size < 0) warn("sendmsg");
+			ssize_t len = sendfd(client, pty);
+			if (len < 0) warn("sendfd");
 
-		size = recv(client, &z, sizeof(z), 0);
-		if (size < 0) warn("recv");
+			len = recv(client, &_, sizeof(_), 0);
+			if (len < 0) warn("recv");
 
-		close(client);
+			close(client);
+		}
+
+		if (fds[1].revents) {
+			char buf[4096];
+			ssize_t len = read(pty, buf, sizeof(buf));
+			if (len < 0) err(EX_IOERR, "read");
+		}
 
 		int status;
 		pid_t dead = waitpid(pid, &status, WNOHANG);
 		if (dead < 0) err(EX_OSERR, "waitpid");
 		if (dead) {
 			unlink(addr.sun_path);
-			if (WIFEXITED(status)) return WEXITSTATUS(status);
-			else return 128 + WTERMSIG(status);
+			exit(WIFEXITED(status) ? WEXITSTATUS(status) : -WTERMSIG(status));
 		}
 	}
+	err(EX_IOERR, "poll");
 }
 
 static struct termios saveTerm;
 static void restoreTerm(void) {
 	tcsetattr(STDIN_FILENO, TCSADRAIN, &saveTerm);
-	printf("\x1B\x63"); // rs1
+	fprintf(stderr, "\33c"); // RIS
+	warnx("detached");
 }
 
-static void sigNop(int sig) {
+static void nop(int sig) {
 	(void)sig;
 }
 
-static int atch(int argc, char *argv[]) {
+static void attach(int client) {
 	int error;
 
-	const char *home = getenv("HOME");
-	if (!home) errx(EX_CONFIG, "HOME unset");
-
-	const char *name = (argc > 1) ? argv[1] : "dtch";
-
-	int client = socket(PF_UNIX, SOCK_STREAM, 0);
-	if (client < 0) err(EX_OSERR, "socket");
-
-	struct sockaddr_un addr = sockAddr(home, name);
-	error = connect(client, (struct sockaddr *)&addr, sizeof(addr));
-	if (error) err(EX_NOINPUT, "%s", addr.sun_path);
-
-	int pty = recvFD(client);
-	if (pty < 0) err(EX_IOERR, "recvmsg");
+	int pty = recvfd(client);
+	if (pty < 0) err(EX_IOERR, "recvfd");
+	warnx("attached");
 
 	struct winsize window;
 	error = ioctl(STDIN_FILENO, TIOCGWINSZ, &window);
@@ -218,16 +177,16 @@ static int atch(int argc, char *argv[]) {
 	error = tcsetattr(STDIN_FILENO, TCSADRAIN, &raw);
 	if (error) err(EX_IOERR, "tcsetattr");
 
-	signal(SIGWINCH, sigNop);
+	signal(SIGWINCH, nop);
 
-	byte buf[4096];
-	struct pollfd fds[2] = {
+	char buf[4096];
+	struct pollfd fds[] = {
 		{ .events = POLLIN, .fd = STDIN_FILENO },
 		{ .events = POLLIN, .fd = pty },
 	};
 	for (;;) {
-		int n = poll(fds, 2, -1);
-		if (n < 0) {
+		int nfds = poll(fds, 2, -1);
+		if (nfds < 0) {
 			if (errno != EINTR) err(EX_IOERR, "poll");
 
 			error = ioctl(STDIN_FILENO, TIOCGWINSZ, &window);
@@ -240,29 +199,73 @@ static int atch(int argc, char *argv[]) {
 		}
 
 		if (fds[0].revents) {
-			ssize_t size = read(STDIN_FILENO, buf, sizeof(buf));
-			if (size < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
+			ssize_t len = read(STDIN_FILENO, buf, sizeof(buf));
+			if (len < 0) err(EX_IOERR, "read");
+			if (!len) break;
 
-			if (size == 1 && buf[0] == CTRL('Q')) return EX_OK;
+			if (len == 1 && buf[0] == CTRL('Q')) break;
 
-			size = write(pty, buf, size);
-			if (size < 0) err(EX_IOERR, "write(%d)", pty);
+			len = write(pty, buf, len);
+			if (len < 0) err(EX_IOERR, "write");
 		}
 
 		if (fds[1].revents) {
-			ssize_t size = read(pty, buf, sizeof(buf));
-			if (size < 0) err(EX_IOERR, "read(%d)", pty);
+			ssize_t len = read(pty, buf, sizeof(buf));
+			if (len < 0) err(EX_IOERR, "read");
+			if (!len) break;
 
-			size = write(STDOUT_FILENO, buf, size);
-			if (size < 0) err(EX_IOERR, "write(%d)", STDOUT_FILENO);
+			len = write(STDOUT_FILENO, buf, len);
+			if (len < 0) err(EX_IOERR, "write");
 		}
 	}
 }
 
 int main(int argc, char *argv[]) {
-	switch (argv[0][0]) {
-		case 'd': return dtch(argc, argv);
-		case 'a': return atch(argc, argv);
-		default:  return EX_USAGE;
+	int error;
+
+	bool atch = false;
+	bool sink = false;
+
+	int opt;
+	while (0 < (opt = getopt(argc, argv, "as"))) {
+		switch (opt) {
+			break; case 'a': atch = true;
+			break; case 's': sink = true;
+			break; default:  return EX_USAGE;
+		}
+	}
+	if (optind == argc) errx(EX_USAGE, "no session name");
+	const char *name = argv[optind++];
+
+	if (optind == argc) {
+		argv[--optind] = getenv("SHELL");
+		if (!argv[optind]) errx(EX_CONFIG, "SHELL unset");
+	}
+
+	const char *home = getenv("HOME");
+	if (!home) errx(EX_CONFIG, "HOME unset");
+
+	int fd = open(home, 0);
+	if (fd < 0) err(EX_CANTCREAT, "%s", home);
+
+	error = mkdirat(fd, ".dtch", 0700);
+	if (error && errno != EEXIST) err(EX_CANTCREAT, "%s/.dtch", home);
+
+	close(fd);
+
+	int sock = socket(PF_UNIX, SOCK_STREAM, 0);
+	if (sock < 0) err(EX_OSERR, "socket");
+	fcntl(sock, F_SETFD, FD_CLOEXEC);
+
+	snprintf(addr.sun_path, sizeof(addr.sun_path), "%s/.dtch/%s", home, name);
+
+	if (atch) {
+		error = connect(sock, (struct sockaddr *)&addr, SUN_LEN(&addr));
+		if (error) err(EX_NOINPUT, "%s", addr.sun_path);
+		attach(sock);
+	} else {
+		error = bind(sock, (struct sockaddr *)&addr, SUN_LEN(&addr));
+		if (error) err(EX_CANTCREAT, "%s", addr.sun_path);
+		detach(sock, sink, &argv[optind]);
 	}
 }

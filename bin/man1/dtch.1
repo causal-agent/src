@@ -1,64 +1,67 @@
-.Dd September 7, 2018
+.Dd August 12, 2019
 .Dt DTCH 1
 .Os
 .
 .Sh NAME
-.Nm dtch ,
-.Nm atch
+.Nm dtch
 .Nd detached sessions
 .
 .Sh SYNOPSIS
 .Nm
-.Op Ar name Op Ar command ...
-.Nm atch
-.Op Ar name
+.Op Fl s
+.Ar name
+.Op Ar command ...
+.Nm
+.Fl a
+.Ar name
 .
 .Sh DESCRIPTION
 .Nm
-spawns the
+spawns a
 .Ar command
-.Po
-by default,
+in a detachable session.
+If no
+.Ar command
+is given,
 the value of
 .Ev SHELL
-.Pc
-inside a new PTY.
-It then lends control of the detached PTY to
-.Nm atch
-over a UNIX-domain socket.
+is used.
+The
 .Nm
-should be run as a background job or with
+process
+should be run as a background job
+or with
 .Xr nohup 1 .
 .
 .Pp
-.Nm atch
-attaches to the
-.Nm
-session with the corresponding
-.Ar name .
-To detach from a session, type
+To attach to an existing session,
+pass the
+.Fl a
+flag.
+To detach from the session,
+type
 .Ic ^Q .
 .
-.Sh ENVIRONMENT
-.Bl -tag -width "SHELL"
-.It Ev HOME
-Location of
-.Pa .dtch
-directory for UNIX-domain sockets.
-.It Ev SHELL
-The default command to run,
-or
-.Pa /bin/sh
-if unset.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl a
+Attach to an existing session.
+.It Fl s
+Sink the output of
+.Ar command
+while detached.
+.El
+.
+.Sh FILES
+.Bl -tag -width Ds
+.It Pa ~/.dtch
+Directory of UNIX-domain sockets
+for each session.
 .El
 .
 .Sh EXAMPLES
 .Bd -literal -offset indent
 dtch foo vim &
-atch foo
+dtch -a foo
 .Ed
-.
-.Sh SEE ALSO
-.Xr nohup 1 ,
-.Xr screen 1 ,
-.Xr forkpty 3

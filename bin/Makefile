@@ -39,7 +39,6 @@ BINS_ANY += wake
 BINS_ANY += when
 BINS_ANY += xx
 
-LINKS_ANY += atch
 LINKS_ANY += open
 LINKS_ANY += pbcopy
 LINKS_ANY += pbpaste
@@ -76,9 +75,6 @@ tls: meta ${BINS_TLS}
 meta: tags .gitignore
 
 # Binaries
-
-atch: dtch
-	ln -f dtch atch
 
 brot: brot.o ${GFX_OBJ}
 	${CC} ${LDFLAGS} $@.o ${GFX_OBJ} ${LDLIBS_${GFX}} -o $@
