@@ -57,9 +57,15 @@ artisanal IRC client
 <p>
 <a href="ssh://chat@ascii.town">ssh chat@ascii.town</a>
 --
-<a href="http://code.causal.agency/june/catgirl">code</a>
+<a href="https://code.causal.agency/june/catgirl">code</a>
 <p>
 <!-- catgirl.html -->
+
+<h1>cards</h1>
+<p>
+CARDS.DLL loader for SDL
+<p>
+<a href="https://code.causal.agency/june/cards">code</a>
 
 <h1>scheme</h1>
 <p>
