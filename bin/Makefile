@@ -36,7 +36,7 @@ LINKS_ANY += open
 LINKS_ANY += pbcopy
 LINKS_ANY += pbpaste
 
-BINS_BSD += wat
+BINS_BSD += ever
 
 BINS_LINUX += bri
 BINS_LINUX += fbatt

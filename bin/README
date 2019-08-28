@@ -12,6 +12,7 @@ DESCRIPTION
      bit(1)      calculator
      bri(1)      backlight brightness control
      dtch(1)     detached sessions
+     ever(1)     watch files
      fbatt(1)    framebuffer battery indicator
      fbclock(1)  framebuffer clock
      glitch(1)   PNG glitcher
@@ -29,7 +30,6 @@ DESCRIPTION
      shotty(1)   terminal capture
      ttpre(1)    man output to HTML
      up(1)       upload file
-     wat(1)      watch files
      when(1)     date calculator
      xx(1)       hexdump
 
