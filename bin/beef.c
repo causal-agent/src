@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
+#include <time.h>
 
 enum {
 	Cols = 80,
@@ -78,7 +79,7 @@ static bool step(void) {
 		return true;
 	}
 
-	if (ch == '?') ch = "><^v"[arc4random_uniform(4)];
+	if (ch == '?') ch = "><^v"[rand() % 4];
 
 	long x, y, v;
 	switch (ch) {
@@ -114,6 +115,7 @@ static bool step(void) {
 }
 
 int main(int argc, char *argv[]) {
+	srand(time(NULL));
 	memset(page, ' ', sizeof(page));
 
 	FILE *file = stdin;

@@ -19,6 +19,7 @@ LDLIBS_x11 = ${LDLIBS} -lX11
 -include config.mk
 
 BINS_ANY += aes
+BINS_ANY += beef
 BINS_ANY += bit
 BINS_ANY += dtch
 BINS_ANY += glitch
@@ -42,7 +43,6 @@ LINKS_ANY += open
 LINKS_ANY += pbcopy
 LINKS_ANY += pbpaste
 
-BINS_BSD += beef
 BINS_BSD += wat
 
 BINS_GFX += brot
