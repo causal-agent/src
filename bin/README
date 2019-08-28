@@ -31,7 +31,6 @@ DESCRIPTION
      shotty(1)   terminal capture
      ttpre(1)    man output to HTML
      up(1)       upload file
-     wake(1)     wake-on-LAN
      wat(1)      watch files
      when(1)     date calculator
      xx(1)       hexdump
@@ -40,4 +39,4 @@ DESCRIPTION
 
      png(3)  basic PNG output
 
-Causal Agency                    July 24, 2019                   Causal Agency
+Causal Agency                   August 28, 2019                  Causal Agency

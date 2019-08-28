@@ -35,7 +35,6 @@ BINS_ANY += setopt
 BINS_ANY += shotty
 BINS_ANY += ttpre
 BINS_ANY += up
-BINS_ANY += wake
 BINS_ANY += when
 BINS_ANY += xx
 
