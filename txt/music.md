@@ -1,3 +1,4 @@
+- [Zhaoze — Birds Contending][73]
 - [Colin Stetson — Reborn][72]
 - [Holly Herndon — Frontier][71]
 - [Bleachers — Tiny Desk Concert][70]
@@ -153,3 +154,4 @@
 [70]: https://youtu.be/QCtkkX2f18M
 [71]: https://youtu.be/rvNqNgHAEys
 [72]: https://youtu.be/MVnSFj6XQZY
+[73]: https://zhaoze.bandcamp.com/album/birds-contending
