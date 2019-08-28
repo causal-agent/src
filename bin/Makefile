@@ -1,20 +1,13 @@
-GFX = cocoa
-LIBRESSL_PREFIX = /usr/local
-
 PREFIX = ~/.local
 MANDIR = ${PREFIX}/share/man
 
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lm -lutil -lz
 
+LIBRESSL_PREFIX = /usr/local
 CFLAGS_tls = ${CFLAGS} -I${LIBRESSL_PREFIX}/include
 LDFLAGS_tls = ${LDFLAGS} -L${LIBRESSL_PREFIX}/lib
 LDLIBS_tls = ${LDLIBS} -ltls
-
-GFX_OBJ = gfx-${GFX}.o
-LDLIBS_cocoa = ${LDLIBS} -framework Cocoa
-LDLIBS_fb = ${LDLIBS}
-LDLIBS_x11 = ${LDLIBS} -lX11
 
 -include config.mk
 
@@ -45,9 +38,6 @@ LINKS_ANY += pbpaste
 
 BINS_BSD += wat
 
-BINS_GFX += brot
-BINS_GFX += gfxx
-
 BINS_LINUX += bri
 BINS_LINUX += fbatt
 BINS_LINUX += fbclock
@@ -55,7 +45,7 @@ BINS_LINUX += psfed
 
 BINS_TLS += relay
 
-BINS = ${BINS_ANY} ${BINS_BSD} ${BINS_GFX} ${BINS_LINUX} ${BINS_TLS}
+BINS = ${BINS_ANY} ${BINS_BSD} ${BINS_LINUX} ${BINS_TLS}
 MANS = ${BINS:%=man1/%.1}
 LINKS = ${LINKS_ANY}
 
@@ -65,8 +55,6 @@ any: meta ${BINS_ANY} ${LINKS_ANY}
 
 bsd: meta ${BINS_BSD}
 
-gfx: meta ${BINS_GFX}
-
 linux: meta ${BINS_LINUX}
 
 tls: meta ${BINS_TLS}
@@ -74,12 +62,6 @@ tls: meta ${BINS_TLS}
 meta: tags .gitignore
 
 # Binaries
-
-brot: brot.o ${GFX_OBJ}
-	${CC} ${LDFLAGS} $@.o ${GFX_OBJ} ${LDLIBS_${GFX}} -o $@
-
-gfxx: gfxx.o ${GFX_OBJ}
-	${CC} ${LDFLAGS} $@.o ${GFX_OBJ} ${LDLIBS_${GFX}} -o $@
 
 hi: hi.c
 	${CC} ${CFLAGS} ${LDFLAGS} hi.c ${LDLIBS} -o $@
@@ -93,11 +75,9 @@ relay: relay.c
 
 # Headers
 
-brot.o gfxx.o gfx-cocoa.o gfx-fb.o gfx-x11.o: gfx.h
-
 fbatt.o fbclock.o: scheme.h
 
-gfxx.o psf2png.o scheme.o: png.h
+psf2png.o scheme.o: png.h
 
 scheme.h: scheme
 	./scheme -c > scheme.h

@@ -11,11 +11,9 @@ DESCRIPTION
      beef(1)     Befunge-93 interpreter
      bit(1)      calculator
      bri(1)      backlight brightness control
-     brot(1)     Mandelbrot renderer
      dtch(1)     detached sessions
      fbatt(1)    framebuffer battery indicator
      fbclock(1)  framebuffer clock
-     gfxx(1)     graphics data explorer
      glitch(1)   PNG glitcher
      hi(1)       syntax highlighter
      hnel(1)     PTY input remapper
