@@ -24,7 +24,7 @@ static void put(wchar_t ch) {
 		break; case L'&': printf("&amp;");
 		break; case L'<': printf("&lt;");
 		break; case L'>': printf("&gt;");
-		break; default:   printf("%lc", ch);
+		break; default:   printf("%lc", (wint_t)ch);
 	}
 }
 

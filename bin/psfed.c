@@ -289,7 +289,10 @@ static void normalInc(uint32_t n) {
 }
 static void normalPrint(const char *prefix) {
 	if (normal.index <= 256) {
-		printf("%s: %02X '%lc'\n", prefix, normal.index, CP437[normal.index]);
+		printf(
+			"%s: %02X '%lc'\n",
+			prefix, normal.index, (wint_t)CP437[normal.index]
+		);
 	} else {
 		printf("%s: %02X\n", prefix, normal.index);
 	}

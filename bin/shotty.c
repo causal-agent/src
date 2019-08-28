@@ -98,7 +98,7 @@ static void span(const struct Style *prev, const struct Cell *cell) {
 		break; case '&': printf("&amp;");
 		break; case '<': printf("&lt;");
 		break; case '>': printf("&gt;");
-		break; default:  printf("%lc", cell->ch);
+		break; default:  printf("%lc", (wint_t)cell->ch);
 	}
 }
 
@@ -150,7 +150,7 @@ static char updateNUL(wchar_t ch) {
 				return NUL;
 			}
 			if (x + width > cols) {
-				warnx("cannot fit '%lc'", ch);
+				warnx("cannot fit '%lc'", (wint_t)ch);
 				return NUL;
 			}
 
@@ -218,7 +218,7 @@ static char updateESC(wchar_t ch) {
 		case '>': return NUL;
 		case CSI: return CSI;
 		case OSC: return OSC;
-		default: warnx("unhandled ESC %lc", ch); return NUL;
+		default: warnx("unhandled ESC %lc", (wint_t)ch); return NUL;
 	}
 }
 
@@ -350,7 +350,7 @@ static char updateCSI(wchar_t ch) {
 		}
 
 		break; case 't': // ignore
-		break; default: warnx("unhandled CSI %lc", ch);
+		break; default: warnx("unhandled CSI %lc", (wint_t)ch);
 	}
 
 	if (opts.debug) {
@@ -361,7 +361,7 @@ static char updateCSI(wchar_t ch) {
 		if (ch < 128 && Name[ch]) {
 			printf("%s\n", Name[ch]);
 		} else {
-			printf("%lc\n", ch);
+			printf("%lc\n", (wint_t)ch);
 		}
 		html();
 	}

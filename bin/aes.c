@@ -36,7 +36,7 @@ static const wchar_t Table[128] = {
 
 static void enwiden(const char *ch) {
 	for (; *ch; ++ch) {
-		if ((byte)*ch < 128) printf("%lc", Table[(byte)*ch]);
+		if ((byte)*ch < 128) printf("%lc", (wint_t)Table[(byte)*ch]);
 		else printf("%c", *ch);
 	}
 }
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 	for (int i = 1; i < argc; ++i) {
 		enwiden(argv[i]);
-		if (i < argc - 1) printf("%lc", Table[' ']);
+		if (i < argc - 1) printf("%lc", (wint_t)Table[' ']);
 		else printf("\n");
 	}
 	if (argc > 1) return EXIT_SUCCESS;
