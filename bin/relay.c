@@ -87,6 +87,13 @@ static void clientHandle(struct tls *client, const char *chan, char *line) {
 	}
 }
 
+#ifdef __FreeBSD__
+static void limit(int fd, const cap_rights_t *rights) {
+	int error = cap_rights_limit(fd, rights);
+	if (error) err(EX_OSERR, "cap_rights_limit");
+}
+#endif
+
 int main(int argc, char *argv[]) {
 	int error;
 
@@ -140,25 +147,19 @@ int main(int argc, char *argv[]) {
 	if (error) errx(EX_PROTOCOL, "tls_connect: %s", tls_error(client));
 
 #ifdef __FreeBSD__
-	cap_rights_t rights;
-
 	error = cap_enter();
 	if (error) err(EX_OSERR, "cap_enter");
 
-	cap_rights_init(&rights, CAP_READ, CAP_EVENT);
-	error = cap_rights_limit(STDIN_FILENO, &rights);
-	if (error) err(EX_OSERR, "cap_rights_limit");
-
+	cap_rights_t rights;
 	cap_rights_init(&rights, CAP_WRITE);
-	error = cap_rights_limit(STDOUT_FILENO, &rights);
-	if (error) err(EX_OSERR, "cap_rights_limit");
+	limit(STDOUT_FILENO, &rights);
+	limit(STDERR_FILENO, &rights);
 
-	error = cap_rights_limit(STDERR_FILENO, &rights);
-	if (error) err(EX_OSERR, "cap_rights_limit");
+	cap_rights_init(&rights, CAP_EVENT, CAP_READ);
+	limit(STDIN_FILENO, &rights);
 
-	cap_rights_init(&rights, CAP_READ, CAP_WRITE, CAP_EVENT);
-	error = cap_rights_limit(sock, &rights);
-	if (error) err(EX_OSERR, "cap_rights_limit");
+	cap_rights_set(&rights, CAP_WRITE);
+	limit(sock, &rights);
 #endif
 
 	clientFormat(client, "NICK :%s\r\nUSER %s 0 * :%s\r\n", nick, nick, nick);
