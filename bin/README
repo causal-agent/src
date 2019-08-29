@@ -26,8 +26,9 @@ DESCRIPTION
      psf2png(1)  PSF2 to PNG renderer
      psfed(1)    PSF2 font editor
      ptee(1)     tee for PTYs
-     relay(1)    IRC relay
+     relay(1)    IRC relay bot
      scheme(1)   color scheme
+     setopt(1)   quoting getopt
      shotty(1)   terminal capture
      ttpre(1)    man output to HTML
      up(1)       upload file
