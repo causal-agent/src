@@ -12,6 +12,7 @@ DESCRIPTION
      bit(1)      calculator
      bri(1)      backlight brightness control
      dtch(1)     detached sessions
+     edit(1)     interactive script
      ever(1)     watch files
      fbatt(1)    framebuffer battery indicator
      fbclock(1)  framebuffer clock
@@ -37,4 +38,4 @@ DESCRIPTION
 
      png(3)  basic PNG output
 
-Causal Agency                   August 28, 2019                  Causal Agency
+Causal Agency                   August 29, 2019                  Causal Agency

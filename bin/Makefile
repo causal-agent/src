@@ -15,6 +15,7 @@ BINS_ANY += aes
 BINS_ANY += beef
 BINS_ANY += bit
 BINS_ANY += dtch
+BINS_ANY += edit
 BINS_ANY += glitch
 BINS_ANY += hi
 BINS_ANY += hnel
@@ -59,7 +60,7 @@ linux: meta ${BINS_LINUX}
 
 tls: meta ${BINS_TLS}
 
-meta: tags .gitignore
+meta: tags .gitignore README
 
 # Binaries
 
