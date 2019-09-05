@@ -1,3 +1,4 @@
+- [Anomie — Avorter n'est pas tuer][74]
 - [Zhaoze — Birds Contending][73]
 - [Colin Stetson — Reborn][72]
 - [Holly Herndon — Frontier][71]
@@ -155,3 +156,4 @@
 [71]: https://youtu.be/rvNqNgHAEys
 [72]: https://youtu.be/MVnSFj6XQZY
 [73]: https://zhaoze.bandcamp.com/album/birds-contending
+[74]: https://youtu.be/W1iGXRDeZf4
