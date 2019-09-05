@@ -36,7 +36,48 @@ static regex_t regex(const char *pattern) {
 	errx(EX_SOFTWARE, "regcomp: %s: %s", buf, pattern);
 }
 
+static const struct Entity {
+	wchar_t ch;
+	const char *name;
+} Entities[] = {
+	{ L'"', "&quot;" },
+	{ L'&', "&amp;" },
+	{ L'<', "&lt;" },
+	{ L'>', "&gt;" },
+	{ L'␤', "&#10;" },
+};
+
+static wchar_t entity(const char *name) {
+	for (size_t i = 0; i < sizeof(Entities) / sizeof(Entities[0]); ++i) {
+		struct Entity entity = Entities[i];
+		if (strncmp(name, entity.name, strlen(entity.name))) continue;
+		return entity.ch;
+	}
+	if (!strncmp(name, "&#x", 3)) return strtoul(&name[3], NULL, 16);
+	if (!strncmp(name, "&#", 2)) return strtoul(&name[2], NULL, 10);
+	return 0;
+}
+
+static const char EntityPattern[] = {
+	"[[:space:]]+|&([[:alpha:]]+|#([[:digit:]]+|x[[:xdigit:]]+));"
+};
+static regex_t EntityRegex;
+
 static void showTitle(const char *title) {
+	regmatch_t match = {0};
+	for (; *title; title += match.rm_eo) {
+		if (regexec(&EntityRegex, title, 1, &match, 0)) break;
+		if (title[match.rm_so] != '&') {
+			printf("%.*s ", (int)match.rm_so, title);
+			continue;
+		}
+		wchar_t ch = entity(&title[match.rm_so]);
+		if (ch) {
+			printf("%.*s%lc", (int)match.rm_so, title, (wint_t)ch);
+		} else {
+			printf("%.*s", (int)match.rm_eo, title);
+		}
+	}
 	printf("%s\n", title);
 }
 
@@ -98,6 +139,7 @@ static CURLcode fetchTitle(const char *url) {
 }
 
 int main(int argc, char *argv[]) {
+	EntityRegex = regex(EntityPattern);
 	TitleRegex = regex(TitlePattern);
 
 	setlocale(LC_CTYPE, "");
