@@ -44,9 +44,11 @@ BINS_LINUX += fbatt
 BINS_LINUX += fbclock
 BINS_LINUX += psfed
 
+BINS_CURL += title
+
 BINS_TLS += relay
 
-BINS = ${BINS_ANY} ${BINS_BSD} ${BINS_LINUX} ${BINS_TLS}
+BINS = ${BINS_ANY} ${BINS_BSD} ${BINS_LINUX} ${BINS_CURL} ${BINS_TLS}
 MANS = ${BINS:%=man1/%.1}
 LINKS = ${LINKS_ANY}
 
@@ -57,6 +59,8 @@ any: meta ${BINS_ANY} ${LINKS_ANY}
 bsd: meta ${BINS_BSD}
 
 linux: meta ${BINS_LINUX}
+
+curl: meta ${BINS_CURL}
 
 tls: meta ${BINS_TLS}
 
@@ -73,6 +77,9 @@ open pbcopy pbpaste: pbd
 
 relay: relay.c
 	${CC} ${CFLAGS_tls} ${LDFLAGS_tls} $@.c ${LDLIBS_tls} -o $@
+
+title: title.c
+	${CC} ${CFLAGS} ${LDFLAGS} $@.c ${LDLIBS} -lcurl -o $@
 
 # Headers
 

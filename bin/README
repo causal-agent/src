@@ -30,6 +30,7 @@ DESCRIPTION
      scheme(1)   color scheme
      setopt(1)   quoting getopt
      shotty(1)   terminal capture
+     title(1)    page titles
      ttpre(1)    man output to HTML
      up(1)       upload file
      when(1)     date calculator
@@ -39,4 +40,4 @@ DESCRIPTION
 
      png(3)  basic PNG output
 
-Causal Agency                   August 29, 2019                  Causal Agency
+Causal Agency                  September 3, 2019                 Causal Agency

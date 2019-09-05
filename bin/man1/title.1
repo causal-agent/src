@@ -1,0 +1,34 @@
+.Dd September 5, 2019
+.Dt TITLE 1
+.Os
+.
+.Sh NAME
+.Nm title
+.Nd page titles
+.
+.Sh SYNOPSIS
+.Nm
+.Op Ar url
+.
+.Sh DESCRIPTION
+.Nm
+fetches HTML page titles
+over HTTP and HTTPS.
+.Nm
+scans standard input for URLs
+and writes their titles to standard output.
+If a
+.Ar url
+argument is given,
+.Nm
+exits after fetching its title.
+.
+.Sh EXAMPLES
+.Bd -literal -offset indent
+mkfifo snarf titles
+relay irc.example.org 6697 snarf '#example' <>titles >snarf
+title <snarf >titles
+.Ed
+.
+.Sh SEE ALSO
+.Xr relay 1
