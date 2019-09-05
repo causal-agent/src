@@ -4,6 +4,11 @@ MANDIR = ${PREFIX}/share/man
 CFLAGS += -Wall -Wextra -Wpedantic
 LDLIBS = -lm -lutil -lz
 
+CURL_PREFIX = /usr/local
+CFLAGS_curl = ${CFLAGS} -I${CURL_PREFIX}/include
+LDFLAGS_curl = ${LDFLAGS} -L${CURL_PREFIX}/lib
+LDLIBS_curl = ${LDLIBS} -lcurl
+
 LIBRESSL_PREFIX = /usr/local
 CFLAGS_tls = ${CFLAGS} -I${LIBRESSL_PREFIX}/include
 LDFLAGS_tls = ${LDFLAGS} -L${LIBRESSL_PREFIX}/lib
@@ -79,7 +84,7 @@ relay: relay.c
 	${CC} ${CFLAGS_tls} ${LDFLAGS_tls} $@.c ${LDLIBS_tls} -o $@
 
 title: title.c
-	${CC} ${CFLAGS} ${LDFLAGS} $@.c ${LDLIBS} -lcurl -o $@
+	${CC} ${CFLAGS_curl} ${LDFLAGS_curl} $@.c ${LDLIBS_curl} -o $@
 
 # Headers
 
