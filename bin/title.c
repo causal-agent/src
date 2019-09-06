@@ -119,7 +119,7 @@ static CURLcode fetchTitle(const char *url) {
 	char *type;
 	code = curl_easy_getinfo(curl, CURLINFO_CONTENT_TYPE, &type);
 	if (code) return code;
-	if (strncmp(type, "text/html", 9)) return CURLE_OK;
+	if (!type || strncmp(type, "text/html", 9)) return CURLE_OK;
 
 	body.len = 0;
 	curl_easy_setopt(curl, CURLOPT_NOBODY, 0L);
