@@ -18,11 +18,9 @@
 #include <err.h>
 #include <locale.h>
 #include <regex.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 #include <sysexits.h>
 #include <wchar.h>
 
@@ -82,21 +80,10 @@ static void showTitle(const char *title) {
 }
 
 static CURL *curl;
-static bool html;
 static struct {
 	char buf[8192];
 	size_t len;
 } body;
-
-static const char ContentType[] = "Content-Type: text/html";
-
-static size_t handleHeader(char *buf, size_t size, size_t nitems, void *user) {
-	(void)user;
-	size_t len = size * nitems;
-	if (sizeof(ContentType) - 1 < len) len = sizeof(ContentType) - 1;
-	if (!strncasecmp(buf, ContentType, len)) html = true;
-	return size * nitems;
-}
 
 // HE COMES
 static const char TitlePattern[] = "<title>([^<]*)</title>";
@@ -125,11 +112,14 @@ static CURLcode fetchTitle(const char *url) {
 	CURLcode code = curl_easy_setopt(curl, CURLOPT_URL, url);
 	if (code) return code;
 
-	html = false;
 	curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
 	code = curl_easy_perform(curl);
 	if (code) return code;
-	if (!html) return CURLE_OK;
+
+	char *type;
+	code = curl_easy_getinfo(curl, CURLINFO_CONTENT_TYPE, &type);
+	if (code) return code;
+	if (strncmp(type, "text/html", 9)) return CURLE_OK;
 
 	body.len = 0;
 	curl_easy_setopt(curl, CURLOPT_NOBODY, 0L);
@@ -155,7 +145,6 @@ int main(int argc, char *argv[]) {
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 3L);
 
-	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, handleHeader);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handleBody);
 
 	if (argc > 1) {
