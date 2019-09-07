@@ -1,4 +1,4 @@
-.Dd September 5, 2019
+.Dd September 7, 2019
 .Dt TITLE 1
 .Os
 .
@@ -8,6 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
+.Op Fl x Ar pattern
 .Op Ar url
 .
 .Sh DESCRIPTION
@@ -22,6 +23,17 @@ If a
 argument is given,
 .Nm
 exits after fetching its title.
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl x Ar pattern
+Exclude URLs matching
+.Ar pattern ,
+which is a modern regular expression.
+See
+.Xr re_format 7 .
+.El
 .
 .Sh EXAMPLES
 .Bd -literal -offset indent

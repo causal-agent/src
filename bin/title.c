@@ -18,15 +18,17 @@
 #include <err.h>
 #include <locale.h>
 #include <regex.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
+#include <unistd.h>
 #include <wchar.h>
 
-static regex_t regex(const char *pattern) {
+static regex_t regex(const char *pattern, int flags) {
 	regex_t regex;
-	int error = regcomp(&regex, pattern, REG_EXTENDED);
+	int error = regcomp(&regex, pattern, REG_EXTENDED | flags);
 	if (!error) return regex;
 
 	char buf[256];
@@ -129,11 +131,25 @@ static CURLcode fetchTitle(const char *url) {
 }
 
 int main(int argc, char *argv[]) {
-	EntityRegex = regex(EntityPattern);
-	TitleRegex = regex(TitlePattern);
+	EntityRegex = regex(EntityPattern, 0);
+	TitleRegex = regex(TitlePattern, REG_ICASE);
 
 	setlocale(LC_CTYPE, "");
 	setlinebuf(stdout);
+
+	bool exclude = false;
+	regex_t excludeRegex;
+
+	int opt;
+	while (0 < (opt = getopt(argc, argv, "x:"))) {
+		switch (opt) {
+			break; case 'x': {
+				exclude = true;
+				excludeRegex = regex(optarg, REG_NOSUB);
+			}
+			break; default:  return EX_USAGE;
+		}
+	}
 
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
 	if (code) errx(EX_OSERR, "curl_global_init: %s", curl_easy_strerror(code));
@@ -147,8 +163,8 @@ int main(int argc, char *argv[]) {
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handleBody);
 
-	if (argc > 1) {
-		code = fetchTitle(argv[1]);
+	if (optind < argc) {
+		code = fetchTitle(argv[optind]);
 		if (!code) return EX_OK;
 		errx(EX_DATAERR, "curl_easy_perform: %s", curl_easy_strerror(code));
 	}
@@ -156,15 +172,20 @@ int main(int argc, char *argv[]) {
 	char *buf = NULL;
 	size_t cap = 0;
 
-	regex_t urlRegex = regex("https?://[^[:space:]>\"]+");
+	regex_t urlRegex = regex("https?://[^[:space:]>\"]+", 0);
 	while (0 < getline(&buf, &cap, stdin)) {
 		regmatch_t match = {0};
-		for (char *url = buf; *url; url += match.rm_eo) {
-			if (regexec(&urlRegex, url, 1, &match, 0)) break;
-			url[match.rm_eo] = '\0';
-			code = fetchTitle(&url[match.rm_so]);
-			if (code) warnx("curl_easy_perform: %s", curl_easy_strerror(code));
-			url[match.rm_eo] = ' ';
+		for (char *ptr = buf; *ptr; ptr += match.rm_eo) {
+			if (regexec(&urlRegex, ptr, 1, &match, 0)) break;
+			ptr[match.rm_eo] = '\0';
+			const char *url = &ptr[match.rm_so];
+			if (!exclude || regexec(&excludeRegex, url, 0, NULL, 0)) {
+				code = fetchTitle(url);
+				if (code) {
+					warnx("curl_easy_perform: %s", curl_easy_strerror(code));
+				}
+			}
+			ptr[match.rm_eo] = ' ';
 		}
 	}
 	if (ferror(stdin)) err(EX_IOERR, "getline");
