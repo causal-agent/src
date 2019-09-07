@@ -18,6 +18,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <poll.h>
+#include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -104,6 +105,7 @@ int main(int argc, char *argv[]) {
 	const char *chan = argv[4];
 
 	setlinebuf(stdout);
+	signal(SIGPIPE, SIG_IGN);
 
 	struct tls_config *config = tls_config_new();
 	if (!config) errx(EX_SOFTWARE, "tls_config_new");
