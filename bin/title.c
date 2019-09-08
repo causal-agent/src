@@ -158,6 +158,7 @@ int main(int argc, char *argv[]) {
 	if (!curl) errx(EX_SOFTWARE, "curl_easy_init");
 
 	curl_easy_setopt(curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, "title/1.0");
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 3L);
 
