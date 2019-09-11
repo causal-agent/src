@@ -165,10 +165,13 @@ int main(int argc, char *argv[]) {
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handleBody);
 
+	static char error[CURL_ERROR_SIZE];
+	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, error);
+
 	if (optind < argc) {
 		code = fetchTitle(argv[optind]);
 		if (!code) return EX_OK;
-		errx(EX_DATAERR, "curl_easy_perform: %s", curl_easy_strerror(code));
+		errx(EX_DATAERR, "curl_easy_perform: %s", error);
 	}
 
 	char *buf = NULL;
@@ -183,9 +186,7 @@ int main(int argc, char *argv[]) {
 			const char *url = &ptr[match.rm_so];
 			if (!exclude || regexec(&excludeRegex, url, 0, NULL, 0)) {
 				code = fetchTitle(url);
-				if (code) {
-					warnx("curl_easy_perform: %s", curl_easy_strerror(code));
-				}
+				if (code) warnx("curl_easy_perform: %s", error);
 			}
 			ptr[match.rm_eo] = ' ';
 		}
