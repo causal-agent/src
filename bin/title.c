@@ -137,25 +137,14 @@ int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 	setlinebuf(stdout);
 
-	bool exclude = false;
-	regex_t excludeRegex;
-
-	int opt;
-	while (0 < (opt = getopt(argc, argv, "x:"))) {
-		switch (opt) {
-			break; case 'x': {
-				exclude = true;
-				excludeRegex = regex(optarg, REG_NOSUB);
-			}
-			break; default:  return EX_USAGE;
-		}
-	}
-
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
 	if (code) errx(EX_OSERR, "curl_global_init: %s", curl_easy_strerror(code));
 
 	curl = curl_easy_init();
 	if (!curl) errx(EX_SOFTWARE, "curl_easy_init");
+
+	static char error[CURL_ERROR_SIZE];
+	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, error);
 
 	curl_easy_setopt(curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, "title/1.0");
@@ -165,8 +154,20 @@ int main(int argc, char *argv[]) {
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handleBody);
 
-	static char error[CURL_ERROR_SIZE];
-	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, error);
+	bool exclude = false;
+	regex_t excludeRegex;
+
+	int opt;
+	while (0 < (opt = getopt(argc, argv, "x:v"))) {
+		switch (opt) {
+			break; case 'x': {
+				exclude = true;
+				excludeRegex = regex(optarg, REG_NOSUB);
+			}
+			break; case 'v': curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+			break; default:  return EX_USAGE;
+		}
+	}
 
 	if (optind < argc) {
 		code = fetchTitle(argv[optind]);

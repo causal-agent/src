@@ -1,4 +1,4 @@
-.Dd September 7, 2019
+.Dd September 10, 2019
 .Dt TITLE 1
 .Os
 .
@@ -8,6 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
+.Op Fl v
 .Op Fl x Ar pattern
 .Op Ar url
 .
@@ -33,6 +34,10 @@ Exclude URLs matching
 which is a modern regular expression.
 See
 .Xr re_format 7 .
+.It Fl v
+Enable
+.Xr libcurl 3
+verbose output.
 .El
 .
 .Sh EXAMPLES
