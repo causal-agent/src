@@ -82,6 +82,7 @@ static void showTitle(const char *title) {
 }
 
 static CURL *curl;
+static bool title;
 static struct {
 	char buf[8192];
 	size_t len;
@@ -93,11 +94,10 @@ static regex_t TitleRegex;
 
 static size_t handleBody(char *buf, size_t size, size_t nitems, void *user) {
 	(void)user;
-
 	size_t len = size * nitems;
 	size_t cap = sizeof(body.buf) - body.len - 1;
 	size_t new = (len < cap ? len : cap);
-	if (!new) return 0;
+	if (title || !new) return len;
 
 	memcpy(&body.buf[body.len], buf, new);
 	body.len += new;
@@ -107,7 +107,9 @@ static size_t handleBody(char *buf, size_t size, size_t nitems, void *user) {
 	if (regexec(&TitleRegex, body.buf, 2, match, 0)) return len;
 	body.buf[match[1].rm_eo] = '\0';
 	showTitle(&body.buf[match[1].rm_so]);
-	return 0;
+	title = true;
+
+	return len;
 }
 
 static CURLcode fetchTitle(const char *url) {
@@ -124,9 +126,9 @@ static CURLcode fetchTitle(const char *url) {
 	if (!type || strncmp(type, "text/html", 9)) return CURLE_OK;
 
 	body.len = 0;
+	title = false;
 	curl_easy_setopt(curl, CURLOPT_NOBODY, 0L);
 	code = curl_easy_perform(curl);
-	if (code == CURLE_WRITE_ERROR) return CURLE_OK;
 	return code;
 }
 
