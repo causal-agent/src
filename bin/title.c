@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, error);
 
 	curl_easy_setopt(curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, "title/1.0");
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, "curl/7.54.0");
 	curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 3L);
