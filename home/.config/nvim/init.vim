@@ -14,7 +14,7 @@ set foldmethod=syntax foldlevel=99 foldopen-=block
 let asmsyntax = "nasm"
 let c_syntax_for_h = 1
 let is_posix = 1
-let man_hard_wrap = 1
+let man_hardwrap = 1
 
 set title laststatus=1
 set scrolloff=1
