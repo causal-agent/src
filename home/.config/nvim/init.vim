@@ -30,5 +30,5 @@ let g:clipboard = {'copy':{'+':'pbcopy'},'paste':{'+':'pbpaste'}}
 nmap gp `[v`]
 
 nmap <leader>s vip:sort<CR>
-nmap <leader>a :0/^#include <<CR>:nohlsearch<CR>O#include <
+nmap <leader>a m':0/^#include <<CR>:nohlsearch<CR>O#include <
 nmap <leader>l :0read ~/src/etc/agpl.c<CR>''
