@@ -7,13 +7,14 @@ all: $(FILES)
 install: $(FILES)
 	install -C -m 644 $(FILES) $(WEBROOT)
 
-INCLUDES = scheme.css torus.html play.html catgirl.html
+INCLUDES = scheme.css torus.html play.html catgirl.html scheme.html
 
 index.html: index.html.in index.sed $(INCLUDES)
 	sed -f index.sed index.html.in > index.html
 
 FLAGS_catgirl.pty = -c
 FLAGS_torus.pty = -h 25
+FLAGS_scheme.pty = -h 10
 
 .SUFFIXES: .html .pty
 
