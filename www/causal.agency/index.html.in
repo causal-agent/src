@@ -61,6 +61,12 @@ artisanal IRC client
 <p>
 <!-- catgirl.html -->
 
+<h1>pounce</h1>
+<p>
+multi-client IRC bouncer
+<p>
+<a href="https://code.causal.agency/june/pounce">code</a>
+
 <h1>cards</h1>
 <p>
 CARDS.DLL loader for SDL
