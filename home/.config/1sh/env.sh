@@ -43,14 +43,6 @@ PS0=$'\n'
 PS1='\$ '
 RPS1="${SSH_CLIENT:+\h:}\w"
 
-af0=$(tput setaf 0 || tput AF 0)
-af7=$(tput setaf 7 || tput AF 7)
-sgr0=$(tput sgr0 || tput me)
 tsl=$'\e]0;'
-fsl=$'\a'
-
-# FIXME: Trailing PSlit sequence gets dropped.
-PSlit=$'\1'
-PS1="${PSlit}${af7}${PSlit}${PS1% }${PSlit}${sgr0}${PSlit} "
-RPS1="${PSlit}${af0}${PSlit}# ${PSlit}${af7}${PSlit}${RPS1}${PSlit}${sgr0}${PSlit}"
+fsl=$'\e\\'
 [ "${TERM%-*}" = 'xterm' ] && PS0="${tsl}${SSH_CLIENT:+\h:}\W${fsl}${PS0}"
