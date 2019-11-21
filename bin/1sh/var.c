@@ -113,7 +113,7 @@ static const struct varinit varinit[] = {
 	{ &venv, 0, "ENV=" XDG_CONFIG_HOME "/1sh/env.sh",
 	  NULL },
 #ifndef NO_HISTORY
-	{ &vhistfile, 0, "HISTFILE=" XDG_DATA_HOME "/1sh/history",
+	{ &vhistfile,	VUNSET,				"HISTFILE=",
 	  sethistfile },
 	{ &vhistsize,	VUNSET,				"HISTSIZE=",
 	  sethistsize },
