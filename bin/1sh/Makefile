@@ -1,8 +1,8 @@
 PREFIX = /usr/local
 MANDIR = ${PREFIX}/share/man
 
-CFLAGS += -std=c99 -Wall -Wextra -DSHELL -Ilibedit
-LDLIBS = -lcurses
+CFLAGS += -std=c99 -Wall -Wextra -DSHELL
+LDLIBS = -ledit
 
 -include config.mk
 
@@ -38,7 +38,7 @@ GENSRCS = builtins.c nodes.c syntax.c
 GENHDRS = builtins.h nodes.h syntax.h token.h
 
 SRCS += ${GENSRCS}
-OBJS = ${SRCS:.c=.o} libedit/libedit.a
+OBJS = ${SRCS:.c=.o}
 
 MANS = 1sh.1 1sh-kill.1 1sh-printf.1 1sh-test.1
 
@@ -48,9 +48,6 @@ all: tags 1sh
 	${CC} ${LDFLAGS} ${OBJS} ${LDLIBS} -o $@
 
 ${OBJS}: ${GENHDRS}
-
-libedit/libedit.a:
-	${MAKE} -C libedit libedit.a
 
 builtins.c builtins.h: mkbuiltins builtins.def
 	sh mkbuiltins .
