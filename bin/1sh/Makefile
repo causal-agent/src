@@ -1,5 +1,5 @@
 PREFIX = /usr/local
-MANDIR = $(PREFIX)/share/man
+MANDIR = ${PREFIX}/share/man
 
 CFLAGS += -std=c99 -Wall -Wextra -DSHELL -Ilibedit
 LDLIBS = -lcurses
@@ -37,20 +37,20 @@ SRCS += var.c
 GENSRCS = builtins.c nodes.c syntax.c
 GENHDRS = builtins.h nodes.h syntax.h token.h
 
-SRCS += $(GENSRCS)
-OBJS = $(SRCS:.c=.o) libedit/libedit.a
+SRCS += ${GENSRCS}
+OBJS = ${SRCS:.c=.o} libedit/libedit.a
 
-MAN1 = 1sh.1 1sh-kill.1 1sh-printf.1 1sh-test.1
+MANS = 1sh.1 1sh-kill.1 1sh-printf.1 1sh-test.1
 
 all: tags 1sh
 
-1sh: $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
+1sh: ${OBJS}
+	${CC} ${LDFLAGS} ${OBJS} ${LDLIBS} -o $@
 
-$(OBJS): $(GENHDRS)
+${OBJS}: ${GENHDRS}
 
 libedit/libedit.a:
-	$(MAKE) -C libedit libedit.a
+	${MAKE} -C libedit libedit.a
 
 builtins.c builtins.h: mkbuiltins builtins.def
 	sh mkbuiltins .
@@ -67,25 +67,25 @@ token.h: mktokens
 tags: *.h *.c
 	ctags -w *.h *.c
 
-depend: $(SRCS) $(GENHDRS)
-	$(CC) $(CFLAGS) -MM $(SRCS) > .depend
+depend: ${SRCS} ${GENHDRS}
+	${CC} ${CFLAGS} -MM ${SRCS} > .depend
 
 -include .depend
 
 clean:
-	rm -f 1sh $(OBJS) mknodes mksyntax $(GENSRCS) $(GENHDRS) tags .depend
+	rm -f 1sh ${OBJS} mknodes mksyntax ${GENSRCS} ${GENHDRS} tags .depend
 
-install: 1sh $(MAN1)
-	install -d $(PREFIX)/bin $(MANDIR)/man1
-	install 1sh $(PREFIX)/bin
-	install -m 644 $(MAN1) $(MANDIR)/man1
+install: 1sh ${MANS}
+	install -d ${PREFIX}/bin ${MANDIR}/man1
+	install 1sh ${PREFIX}/bin
+	install -m 644 ${MANS} ${MANDIR}/man1
 
 uninstall:
-	rm -f $(PREFIX)/bin/1sh $(MAN1:%=$(MANDIR)/man1/%)
+	rm -f ${PREFIX}/bin/1sh ${MANS:%=${MANDIR}/man1/%}
 
 shell:
-	grep -q '^$(PREFIX)/bin/1sh$$' /etc/shells \
-		|| echo '$(PREFIX)/bin/1sh' >> /etc/shells
+	grep -q '^${PREFIX}/bin/1sh$$' /etc/shells \
+		|| echo '${PREFIX}/bin/1sh' >> /etc/shells
 
 unshell:
-	sed -i sed '\;^$(PREFIX)/bin/1sh$$;d' /etc/shells
+	sed -i sed '\;^${PREFIX}/bin/1sh$$;d' /etc/shells
