@@ -41,6 +41,5 @@ extern int displayhist;
 void histedit(void);
 void sethistfile(const char *);
 void sethistsize(const char *);
-void setpslit(const char *);
 void setterm(const char *);
 
