@@ -32,7 +32,7 @@
 .\"	from: @(#)sh.1	8.6 (Berkeley) 5/4/95
 .\" $FreeBSD: releng/12.0/bin/sh/sh.1 336483 2018-07-19 13:09:29Z 0mp $
 .
-.Dd June 24, 2019
+.Dd November 20, 2019
 .Dt 1SH 1
 .Os
 .
@@ -1561,6 +1561,8 @@ This system's hostname.
 The final component of the current working directory.
 .It Li \ew
 The entire path of the current working directory.
+.It Li \e?
+Exit status if it is non-zero, empty string otherwise.
 .It Li \e$
 Superuser status.
 .Dq Li "$ "
@@ -3206,13 +3208,14 @@ has a default value.
 Further prompt customization with
 .Va PS0 ,
 .Va RPS1 ,
-.Va RPS2 ,
-.Va PSlit .
+.Va RPS2 .
 .It
 .Va HOME
 is shortened to
 .Sq ~
 in prompt expansion.
+.It
+Exit status prompt expansion.
 .It
 .Ic fc Fl s Ar = Ns Ar new
 prefixes commands.
