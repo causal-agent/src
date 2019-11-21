@@ -89,7 +89,6 @@ struct var vhistfile;
 struct var vhistsize;
 struct var vterm;
 #endif
-struct var venv;
 struct var vifs;
 struct var vmail;
 struct var vmpath;
@@ -106,12 +105,7 @@ struct var vdisvfork;
 struct localvar *localvars;
 int forcelocal;
 
-#define XDG_CONFIG_HOME "${XDG_CONFIG_HOME:-${HOME}/.config}"
-#define XDG_DATA_HOME "${XDG_DATA_HOME:-${HOME}/.local/share}"
-
 static const struct varinit varinit[] = {
-	{ &venv, 0, "ENV=" XDG_CONFIG_HOME "/1sh/env.sh",
-	  NULL },
 #ifndef NO_HISTORY
 	{ &vhistfile,	VUNSET,				"HISTFILE=",
 	  sethistfile },

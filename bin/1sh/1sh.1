@@ -138,11 +138,17 @@ at login time in the
 file, and commands that are executed for every shell inside the
 .Ev ENV
 file.
-The default value of
+The user can set the
 .Ev ENV
-is:
+variable to some file by placing the following line in the file
+.Pa .profile
+in the home directory,
+substituting for
+.Pa .shrc
+the filename desired:
+.
 .Pp
-.Dl "ENV=$XDG_CONFIG_HOME/1sh/env.sh"
+.Dl "ENV=$HOME/.shrc; export ENV"
 .
 .Pp
 The first non-option argument specified on the command line
