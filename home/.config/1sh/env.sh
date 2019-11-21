@@ -38,10 +38,9 @@ if [ "$(uname)" = 'Linux' ]; then
 	alias ls='ls --color=auto' grep='grep --color'
 fi
 
-# TODO: $? indicator.
 PS0=$'\n'
 PS1='\$ '
-RPS1="${SSH_CLIENT:+\h:}\w"
+RPS1="\? ${SSH_CLIENT:+\h:}\w"
 
 tsl=$'\e]0;'
 fsl=$'\e\\'
