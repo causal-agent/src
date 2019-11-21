@@ -177,26 +177,18 @@ sethistfile(const char *hf)
 static void
 history_load(const char *hf) {
 	HistEvent he;
-	const char *ehf;
 
-	ehf = expandstr(hf);
-	if (ehf == NULL)
-		return;
-	if (history(hist, &he, H_LOAD, ehf) == -1)
-		warning("%s: %s", he.str, ehf);
+	if (history(hist, &he, H_LOAD, hf) == -1)
+		warning("%s: %s", he.str, hf);
 }
 
 
 static void
 history_save(const char *hf) {
 	HistEvent he;
-	const char *ehf;
 
-	ehf = expandstr(hf);
-	if (ehf == NULL)
-		return;
-	if (history(hist, &he, H_SAVE, ehf) == -1)
-		warning("%s: %s", he.str, ehf);
+	if (history(hist, &he, H_SAVE, hf) == -1)
+		warning("%s: %s", he.str, hf);
 }
 
 
