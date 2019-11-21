@@ -68,7 +68,6 @@ History *hist;	/* history cookie */
 EditLine *el;	/* editline cookie */
 int displayhist;
 static FILE *el_in, *el_out, *el_err;
-static HistEvent he_saved;
 
 static void history_load(const char *hf);
 static void history_save(const char *hf);
@@ -185,8 +184,6 @@ history_load(const char *hf) {
 		return;
 	if (history(hist, &he, H_LOAD, ehf) == -1)
 		warning("%s: %s", he.str, ehf);
-	else
-		history(hist, &he_saved, H_FIRST);
 }
 
 
@@ -198,11 +195,7 @@ history_save(const char *hf) {
 	ehf = expandstr(hf);
 	if (ehf == NULL)
 		return;
-	if (he_saved.num == 0)
-		history(hist, &he_saved, H_LAST);
-	else
-		history(hist, &he_saved, H_NEXT_EVENT, he_saved.num + 1);
-	if (history(hist, &he, H_SAVE_INCR, ehf, he_saved.num) == -1)
+	if (history(hist, &he, H_SAVE, ehf) == -1)
 		warning("%s: %s", he.str, ehf);
 }
 
