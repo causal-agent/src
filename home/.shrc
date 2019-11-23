@@ -16,9 +16,6 @@ alias gp='git push' gu='git pull' gf='git fetch'
 alias gr='git rebase' gra='gr --abort' grc='gr --continue' grs='gr --skip'
 alias rand='openssl rand -base64 33'
 alias private='eval "$(gpg -d ~/.private)"'
-if [ "$(uname)" = 'Linux' ]; then
-	alias ls='ls --color=auto' grep='grep --color'
-fi
 
 PS0=$'\n'
 PS1='\$ '
