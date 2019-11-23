@@ -16,6 +16,7 @@ alias gp='git push' gu='git pull' gf='git fetch'
 alias gr='git rebase' gra='gr --abort' grc='gr --continue' grs='gr --skip'
 alias rand='openssl rand -base64 33'
 alias private='eval "$(gpg -d ~/.private)"'
+bman() { ssh ${freebsd:-monday} man "$@" | sh -c "$MANPAGER"; }
 
 PS0=$'\n'
 PS1='\$ '
