@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include <err.h>
 #include <locale.h>
 #include <stdbool.h>
@@ -25,7 +26,7 @@
 #include <unistd.h>
 #include <wchar.h>
 
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define BIT(x) x##Bit, x = 1 << x##Bit, x##Bit_ = x##Bit
 
 typedef unsigned uint;
 
@@ -37,9 +38,18 @@ enum {
 	DEL = 0x7F,
 };
 
+enum Attr {
+	BIT(Bold),
+	BIT(Dim),
+	BIT(Italic),
+	BIT(Underline),
+	BIT(Blink),
+	BIT(Reverse),
+};
+
 struct Style {
-	bool bold, italic, underline, reverse;
-	uint bg, fg;
+	enum Attr attr;
+	int bg, fg;
 };
 
 struct Cell {
@@ -47,51 +57,512 @@ struct Cell {
 	wchar_t ch;
 };
 
-static struct Style def = { .fg = 7 };
 static uint rows = 24, cols = 80;
-
-static uint y, x;
-static bool insert;
-static struct {
-	uint top, bot;
-} scroll;
-static struct Style style;
 static struct Cell *cells;
 
 static struct Cell *cell(uint y, uint x) {
+	assert(y <= rows);
+	assert(x <= cols);
+	assert(y * cols + x <= rows * cols);
 	return &cells[y * cols + x];
 }
 
-static void clear(struct Cell *a, struct Cell *b) {
-	for (; a <= b; ++a) {
-		a->style = style;
-		a->ch = ' ';
-	}
+static uint y, x;
+static struct Style style = { .bg = -1, .fg = -1 };
+
+static struct {
+	uint y, x;
+} save;
+
+enum { ParamCap = 16 };
+static struct {
+	uint s[ParamCap];
+	uint n, i;
+} param;
+
+static uint p(uint i, uint z) {
+	return (i < param.n ? param.s[i] : z);
 }
 
-static void move(struct Cell *dst, struct Cell *src, uint len) {
+static uint min(uint a, uint b) {
+	return (a < b ? a : b);
+}
+
+#define _ch ch __attribute__((unused))
+typedef void Action(wchar_t ch);
+
+static void nop(wchar_t _ch) {
+}
+
+static void csi(wchar_t _ch) {
+	memset(&param, 0, sizeof(param));
+}
+
+static void csiSep(wchar_t _ch) {
+	if (param.n == ParamCap) return;
+	if (!param.n) param.n++;
+	param.n++;
+	param.i++;
+}
+
+static void csiDigit(wchar_t ch) {
+	param.s[param.i] *= 10;
+	param.s[param.i] += ch - L'0';
+	if (!param.n) param.n++;
+}
+
+static void bs(wchar_t _ch)  { if (x) x--; }
+static void ht(wchar_t _ch)  { x = min(x - x % 8 + 8, cols - 1); }
+static void cr(wchar_t _ch)  { x = 0; }
+static void cuu(wchar_t _ch) { y -= min(p(0, 1), y); }
+static void cud(wchar_t _ch) { y  = min(y + p(0, 1), rows - 1); }
+static void cuf(wchar_t _ch) { x  = min(x + p(0, 1), cols - 1); }
+static void cub(wchar_t _ch) { x -= min(p(0, 1), x); }
+static void cnl(wchar_t _ch) { x = 0; cud(0); }
+static void cpl(wchar_t _ch) { x = 0; cuu(0); }
+static void cha(wchar_t _ch) { x = min(p(0, 1) - 1, cols - 1); }
+static void vpa(wchar_t _ch) { y = min(p(0, 1) - 1, rows - 1); }
+static void cup(wchar_t _ch) {
+	y = min(p(0, 1) - 1, rows - 1);
+	x = min(p(1, 1) - 1, cols - 1);
+}
+static void decsc(wchar_t _ch) {
+	save.y = y;
+	save.x = x;
+}
+static void decrc(wchar_t _ch) {
+	y = save.y;
+	x = save.x;
+}
+
+static void move(struct Cell *dst, struct Cell *src, size_t len) {
 	memmove(dst, src, sizeof(*dst) * len);
 }
 
+static void erase(struct Cell *at, struct Cell *to) {
+	for (; at < to; ++at) {
+		at->style = style;
+		at->ch = L' ';
+	}
+}
+
+static void ed(wchar_t _ch) {
+	erase(
+		(p(0, 0) == 0 ? cell(y, x) : cell(0, 0)),
+		(p(0, 0) == 1 ? cell(y, x) : cell(rows - 1, cols))
+	);
+}
+static void el(wchar_t _ch) {
+	erase(
+		(p(0, 0) == 0 ? cell(y, x) : cell(y, 0)),
+		(p(0, 0) == 1 ? cell(y, x) : cell(y, cols))
+	);
+}
+static void ech(wchar_t _ch) {
+	erase(cell(y, x), cell(y, min(x + p(0, 1), cols)));
+}
+
+static void dch(wchar_t _ch) {
+	uint n = min(p(0, 1), cols - x);
+	move(cell(y, x), cell(y, x + n), cols - x - n);
+	erase(cell(y, cols - n), cell(y, cols));
+}
+static void ich(wchar_t _ch) {
+	uint n = min(p(0, 1), cols - x);
+	move(cell(y, x + n), cell(y, x), cols - x - n);
+	erase(cell(y, x), cell(y, x + n));
+}
+
 static struct {
-	bool debug;
-	bool cursor;
-	bool bright;
-	bool done;
-} opts;
+	uint top, bot;
+} scroll;
+
+static void scrollUp(uint top, uint n) {
+	n = min(n, scroll.bot - top);
+	move(cell(top, 0), cell(top + n, 0), cols * (scroll.bot - top - n));
+	erase(cell(scroll.bot - n, 0), cell(scroll.bot, 0));
+}
+
+static void scrollDown(uint top, uint n) {
+	n = min(n, scroll.bot - top);
+	move(cell(top + n, 0), cell(top, 0), cols * (scroll.bot - top - n));
+	erase(cell(top, 0), cell(top + n, 0));
+}
+
+static void decstbm(wchar_t _ch) {
+	scroll.bot = min(p(1, rows), rows);
+	scroll.top = min(p(0, 1) - 1, scroll.bot);
+}
+
+static void su(wchar_t _ch) { scrollUp(scroll.top, p(0, 1)); }
+static void sd(wchar_t _ch) { scrollDown(scroll.top, p(0, 1)); }
+static void dl(wchar_t _ch) { scrollUp(min(y, scroll.bot), p(0, 1)); }
+static void il(wchar_t _ch) { scrollDown(min(y, scroll.bot), p(0, 1)); }
+
+static void nl(wchar_t _ch) {
+	if (y + 1 == scroll.bot) {
+		scrollUp(scroll.top, 1);
+	} else {
+		y = min(y + 1, rows - 1);
+	}
+}
+static void ri(wchar_t _ch) {
+	if (y == scroll.top) {
+		scrollDown(scroll.top, 1);
+	} else {
+		if (y) y--;
+	}
+}
+
+static enum Mode {
+	BIT(Insert),
+	BIT(Wrap),
+	BIT(Cursor),
+} mode = Wrap | Cursor;
+
+static enum Mode paramMode(void) {
+	enum Mode mode = 0;
+	for (uint i = 0; i < param.n; ++i) {
+		switch (param.s[i]) {
+			break; case 4: mode |= Insert;
+			break; default: warnx("unhandled SM/RM %u", param.s[i]);
+		}
+	}
+	return mode;
+}
+
+static enum Mode paramDECMode(void) {
+	enum Mode mode = 0;
+	for (uint i = 0; i < param.n; ++i) {
+		switch (param.s[i]) {
+			break; case 1: // DECCKM
+			break; case 7: mode |= Wrap;
+			break; case 12: // "Start Blinking Cursor"
+			break; case 25: mode |= Cursor;
+			break; default: {
+				if (param.s[i] < 1000) {
+					warnx("unhandled DECSET/DECRST %u", param.s[i]);
+				}
+			}
+		}
+	}
+	return mode;
+}
+
+static void sm(wchar_t _ch) { mode |= paramMode(); }
+static void rm(wchar_t _ch) { mode &= ~paramMode(); }
+static void decset(wchar_t _ch) { mode |= paramDECMode(); }
+static void decrst(wchar_t _ch) { mode &= ~paramDECMode(); }
+
+enum {
+	Reset,
+	SetBold,
+	SetDim,
+	SetItalic,
+	SetUnderline,
+	SetBlink,
+	SetReverse = 7,
+
+	UnsetBoldDim = 22,
+	UnsetItalic,
+	UnsetUnderline,
+	UnsetBlink,
+	UnsetReverse = 27,
+
+	SetFg0 = 30,
+	SetFg7 = 37,
+	SetFg,
+	ResetFg,
+	SetBg0 = 40,
+	SetBg7 = 47,
+	SetBg,
+	ResetBg,
+
+	SetFg8 = 90,
+	SetFgF = 97,
+	SetBg8 = 100,
+	SetBgF = 107,
+
+	Color256 = 5,
+};
+
+static void sgr(wchar_t _ch) {
+	uint n = param.i + 1;
+	for (uint i = 0; i < n; ++i) {
+		switch (param.s[i]) {
+			break; case Reset: style = (struct Style) { .bg = -1, .fg = -1 };
+
+			break; case SetBold:      style.attr |= Bold; style.attr &= ~Dim;
+			break; case SetDim:       style.attr |= Dim; style.attr &= ~Bold;
+			break; case SetItalic:    style.attr |= Italic;
+			break; case SetUnderline: style.attr |= Underline;
+			break; case SetBlink:     style.attr |= Blink;
+			break; case SetReverse:   style.attr |= Reverse;
+
+			break; case UnsetBoldDim:   style.attr &= ~(Bold | Dim);
+			break; case UnsetItalic:    style.attr &= ~Italic;
+			break; case UnsetUnderline: style.attr &= ~Underline;
+			break; case UnsetBlink:     style.attr &= ~Blink;
+			break; case UnsetReverse:   style.attr &= ~Reverse;
+
+			break; case SetFg: {
+				if (++i < n && param.s[i] == Color256) {
+					if (++i < n) style.fg = param.s[i];
+				}
+			}
+			break; case SetBg: {
+				if (++i < n && param.s[i] == Color256) {
+					if (++i < n) style.bg = param.s[i];
+				}
+			}
+
+			break; case ResetFg: style.fg = -1;
+			break; case ResetBg: style.bg = -1;
+
+			break; default: {
+				uint p = param.s[i];
+				if (p >= SetFg0 && p <= SetFg7) {
+					style.fg = p - SetFg0;
+				} else if (p >= SetBg0 && p <= SetBg7) {
+					style.bg = p - SetBg0;
+				} else if (p >= SetFg8 && p <= SetFgF) {
+					style.fg = 8 + p - SetFg8;
+				} else if (p >= SetBg8 && p <= SetBgF) {
+					style.bg = 8 + p - SetBg8;
+				} else {
+					warnx("unhandled SGR %u", p);
+				}
+			}
+		}
+	}
+}
+
+static enum {
+	USASCII,
+	DECSpecial,
+} charset;
+
+static void usascii(wchar_t _ch) { charset = USASCII; }
+static void decSpecial(wchar_t _ch) { charset = DECSpecial; }
+
+static const wchar_t AltCharset[128] = {
+	['`'] = L'◆', ['a'] = L'▒', ['f'] = L'°', ['g'] = L'±', ['i'] = L'␋',
+	['j'] = L'┘', ['k'] = L'┐', ['l'] = L'┌', ['m'] = L'└', ['n'] = L'┼',
+	['o'] = L'⎺', ['p'] = L'⎻', ['q'] = L'─', ['r'] = L'⎼', ['s'] = L'⎽',
+	['t'] = L'├', ['u'] = L'┤', ['v'] = L'┴', ['w'] = L'┬', ['x'] = L'│',
+	['y'] = L'≤', ['z'] = L'≥', ['{'] = L'π', ['|'] = L'≠', ['}'] = L'£',
+	['~'] = L'·',
+};
+
+static void add(wchar_t ch) {
+	if (charset == DECSpecial && ch < 128 && AltCharset[ch]) {
+		ch = AltCharset[ch];
+	}
+
+	int width = wcwidth(ch);
+	if (width < 0) {
+		warnx("unhandled \\u%02X", ch);
+		return;
+	}
+
+	if (mode & Insert) {
+		uint n = min(width, cols - x);
+		move(cell(y, x + n), cell(y, x), cols - x - n);
+	}
+	if (mode & Wrap && x + width > cols) {
+		cr(0);
+		nl(0);
+	}
+
+	cell(y, x)->style = style;
+	cell(y, x)->ch = ch;
+	for (int i = 1; i < width && x + i < cols; ++i) {
+		cell(y, x + i)->style = style;
+		cell(y, x + i)->ch = L'\0';
+	}
+	x = min(x + width, (mode & Wrap ? cols : cols - 1));
+}
+
+static void html(void);
+static void mc(wchar_t _ch) {
+	if (p(0, 0) == 10) {
+		html();
+	} else {
+		warnx("unhandled CSI %u MC", p(0, 0));
+	}
+}
+
+static enum {
+	Data,
+	Esc,
+	G0,
+	CSI,
+	CSILt,
+	CSIEq,
+	CSIGt,
+	CSIQm,
+	CSIInter,
+	OSC,
+	OSCEsc,
+} state;
+
+static void escDefault(wchar_t ch) {
+	warnx("unhandled ESC %lc", ch);
+}
+
+static void g0Default(wchar_t ch) {
+	warnx("unhandled G0 %lc", ch);
+	charset = USASCII;
+}
+
+static void csiInter(wchar_t ch) {
+	switch (state) {
+		break; case CSI: warnx("unhandled CSI %lc ...", ch);
+		break; case CSILt: warnx("unhandled CSI < %lc ...", ch);
+		break; case CSIEq: warnx("unhandled CSI = %lc ...", ch);
+		break; case CSIGt: warnx("unhandled CSI > %lc ...", ch);
+		break; case CSIQm: warnx("unhandled CSI ? %lc ...", ch);
+		break; default: abort();
+	}
+}
+
+static void csiFinal(wchar_t ch) {
+	switch (state) {
+		break; case CSI: warnx("unhandled CSI %lc", ch);
+		break; case CSILt: warnx("unhandled CSI < %lc", ch);
+		break; case CSIEq: warnx("unhandled CSI = %lc", ch);
+		break; case CSIGt: warnx("unhandled CSI > %lc", ch);
+		break; case CSIQm: warnx("unhandled CSI ? %lc", ch);
+		break; case CSIInter: warnx("unhandled CSI ... %lc", ch);
+		break; default: abort();
+	}
+}
+
+#define S(s) break; case s: switch (ch)
+#define A(c, a, s) break; case c: a(ch); state = s
+#define D(a, s) break; default: a(ch); state = s
+static void update(wchar_t ch) {
+	switch (state) {
+		default: abort();
+
+		S(Data) {
+			A(BEL, nop, Data);
+			A(BS,  bs,  Data);
+			A(HT,  ht,  Data);
+			A(NL,  nl,  Data);
+			A(CR,  cr,  Data);
+			A(ESC, nop, Esc);
+			D(add, Data);
+		}
+
+		S(Esc) {
+			A('(', nop, G0);
+			A('7', decsc, Data);
+			A('8', decrc, Data);
+			A('=', nop, Data);
+			A('>', nop, Data);
+			A('M', ri,  Data);
+			A('[', csi, CSI);
+			A(']', nop, OSC);
+			D(escDefault, Data);
+		}
+		S(G0) {
+			A('0', decSpecial, Data);
+			A('B', usascii, Data);
+			D(g0Default, Data);
+		}
+
+		S(CSI) {
+			A(' ' ... '/', csiInter, CSIInter);
+			A('0' ... '9', csiDigit, CSI);
+			A(':', nop, CSI);
+			A(';', csiSep, CSI);
+			A('<', nop, CSILt);
+			A('=', nop, CSIEq);
+			A('>', nop, CSIGt);
+			A('?', nop, CSIQm);
+			A('@', ich, Data);
+			A('A', cuu, Data);
+			A('B', cud, Data);
+			A('C', cuf, Data);
+			A('D', cub, Data);
+			A('E', cnl, Data);
+			A('F', cpl, Data);
+			A('G', cha, Data);
+			A('H', cup, Data);
+			A('J', ed,  Data);
+			A('K', el,  Data);
+			A('L', il,  Data);
+			A('M', dl,  Data);
+			A('P', dch, Data);
+			A('S', su,  Data);
+			A('T', sd,  Data);
+			A('X', ech, Data);
+			A('d', vpa, Data);
+			A('h', sm,  Data);
+			A('i', mc,  Data);
+			A('l', rm,  Data);
+			A('m', sgr, Data);
+			A('r', decstbm, Data);
+			A('t', nop, Data);
+			D(csiFinal, Data);
+		}
+
+		S(CSILt ... CSIGt) {
+			A(' ' ... '/', csiInter, CSIInter);
+			A('0' ... '9', csiDigit, state);
+			A(':', nop, state);
+			A(';', csiSep, state);
+			D(csiFinal, Data);
+		}
+
+		S(CSIQm) {
+			A(' ' ... '/', csiInter, CSIInter);
+			A('0' ... '9', csiDigit, CSIQm);
+			A(':', nop, CSIQm);
+			A(';', csiSep, CSIQm);
+			A('h', decset, Data);
+			A('l', decrst, Data);
+			D(csiFinal, Data);
+		}
+
+		S(CSIInter) {
+			D(csiFinal, Data);
+		}
+
+		S(OSC) {
+			A(BEL, nop, Data);
+			A(ESC, nop, OSCEsc);
+			D(nop, OSC);
+		}
+		S(OSCEsc) {
+			A('\\', nop, Data);
+			D(nop, OSC);
+		}
+	}
+}
+
+static bool bright;
+static int defaultBg = 0;
+static int defaultFg = 7;
 
 static void span(const struct Style *prev, const struct Cell *cell) {
-	if (!prev || memcmp(&cell->style, prev, sizeof(cell->style))) {
+	struct Style style = cell->style;
+	if (!prev || memcmp(prev, &style, sizeof(*prev))) {
 		if (prev) printf("</span>");
-		uint bg = (cell->style.reverse ? cell->style.fg : cell->style.bg);
-		uint fg = (cell->style.reverse ? cell->style.bg : cell->style.fg);
-		if (opts.bright && cell->style.bold && fg < 8) fg += 8;
+		if (style.bg < 0) style.bg = defaultBg;
+		if (style.fg < 0) style.fg = defaultFg;
+		if (bright && style.attr & Bold) {
+			if (style.fg < 8) style.fg += 8;
+			style.attr ^= Bold;
+		}
 		printf(
 			"<span style=\"%s%s%s\" class=\"bg%u fg%u\">",
-			cell->style.bold && !opts.bright ? "font-weight:bold;" : "",
-			cell->style.italic ? "font-style:italic;" : "",
-			cell->style.underline ? "text-decoration:underline;" : "",
-			bg, fg
+			(style.attr & Bold ? "font-weight:bold;" : ""),
+			(style.attr & Italic ? "font-style:italic;" : ""),
+			(style.attr & Underline ? "text-decoration:underline;" : ""),
+			(style.attr & Reverse ? style.fg : style.bg),
+			(style.attr & Reverse ? style.bg : style.fg)
 		);
 	}
 	switch (cell->ch) {
@@ -102,11 +573,13 @@ static void span(const struct Style *prev, const struct Cell *cell) {
 	}
 }
 
+static bool mediaCopy;
 static void html(void) {
-	if (opts.cursor || opts.debug) cell(y, x)->style.reverse ^= true;
+	mediaCopy = true;
+	if (mode & Cursor) cell(y, x)->style.attr ^= Reverse;
 	printf(
 		"<pre style=\"width: %uch;\" class=\"bg%u fg%u\">",
-		cols, def.bg, def.fg
+		cols, defaultBg, defaultFg
 	);
 	for (uint y = 0; y < rows; ++y) {
 		for (uint x = 0; x < cols; ++x) {
@@ -116,306 +589,32 @@ static void html(void) {
 		printf("</span>\n");
 	}
 	printf("</pre>\n");
-	if (opts.cursor || opts.debug) cell(y, x)->style.reverse ^= true;
-}
-
-static char updateNUL(wchar_t ch) {
-	switch (ch) {
-		break; case ESC: return ESC;
-
-		break; case BS: if (x) x--;
-		break; case CR: x = 0;
-
-		break; case NL: {
-			if (y == scroll.bot) {
-				move(
-					cell(scroll.top, 0), cell(scroll.top + 1, 0),
-					cols * (scroll.bot - scroll.top)
-				);
-				clear(cell(scroll.bot, 0), cell(scroll.bot, cols - 1));
-			} else {
-				y = MIN(y + 1, rows - 1);
-			}
-		}
-
-		break; default: {
-			if (ch < ' ') {
-				warnx("unhandled \\x%02X", ch);
-				return NUL;
-			}
-
-			int width = wcwidth(ch);
-			if (width < 0) {
-				warnx("unhandled \\u%X", ch);
-				return NUL;
-			}
-			if (x + width > cols) {
-				warnx("cannot fit '%lc'", (wint_t)ch);
-				return NUL;
-			}
-
-			if (insert) {
-				move(cell(y, x + width), cell(y, x), cols - x - width);
-			}
-			cell(y, x)->style = style;
-			cell(y, x)->ch = ch;
-
-			for (int i = 1; i < width; ++i) {
-				cell(y, x + i)->style = style;
-				cell(y, x + i)->ch = '\0';
-			}
-			x = MIN(x + width, cols - 1);
-		}
-	}
-	return NUL;
-}
-
-#define ENUM_CHARS \
-	X('?', DEC) \
-	X('A', CUU) \
-	X('B', CUD) \
-	X('C', CUF) \
-	X('D', CUB) \
-	X('E', CNL) \
-	X('F', CPL) \
-	X('G', CHA) \
-	X('H', CUP) \
-	X('J', ED)  \
-	X('K', EL)  \
-	X('M', DL)  \
-	X('P', DCH) \
-	X('[', CSI) \
-	X('\\', ST) \
-	X(']', OSC) \
-	X('d', VPA) \
-	X('h', SM)  \
-	X('i', MC)  \
-	X('l', RM)  \
-	X('m', SGR) \
-	X('r', DECSTBM)
-
-enum {
-#define X(ch, name) name = ch,
-	ENUM_CHARS
-#undef X
-};
-
-static const char *Name[128] = {
-#define X(ch, name) [ch] = #name,
-	ENUM_CHARS
-#undef X
-};
-
-static char updateESC(wchar_t ch) {
-	static bool discard;
-	if (discard) {
-		discard = false;
-		return NUL;
-	}
-	switch (ch) {
-		case '(': discard = true; return ESC;
-		case '=': return NUL;
-		case '>': return NUL;
-		case CSI: return CSI;
-		case OSC: return OSC;
-		default: warnx("unhandled ESC %lc", (wint_t)ch); return NUL;
-	}
-}
-
-static char updateCSI(wchar_t ch) {
-	static bool dec;
-	if (ch == DEC) {
-		dec = true;
-		return CSI;
-	}
-
-	static uint n, p, ps[8];
-	if (ch == ';') {
-		n++;
-		p++;
-		ps[p %= 8] = 0;
-		return CSI;
-	}
-	if (ch >= '0' && ch <= '9') {
-		ps[p] *= 10;
-		ps[p] += ch - '0';
-		if (!n) n++;
-		return CSI;
-	}
-
-	switch (ch) {
-		break; case CUU: y -= MIN((n ? ps[0] : 1), y);
-		break; case CUD: y  = MIN(y + (n ? ps[0] : 1), rows - 1);
-		break; case CUF: x  = MIN(x + (n ? ps[0] : 1), cols - 1);
-		break; case CUB: x -= MIN((n ? ps[0] : 1), x);
-		break; case CNL: y  = MIN(y + (n ? ps[0] : 1), rows - 1); x = 0;
-		break; case CPL: y -= MIN((n ? ps[0] : 1), y); x = 0;
-		break; case CHA: x  = MIN((n ? ps[0] - 1 : 0), cols - 1);
-		break; case VPA: y  = MIN((n ? ps[0] - 1 : 0), rows - 1);
-		break; case CUP: {
-			y = MIN((n > 0 ? ps[0] - 1 : 0), rows - 1);
-			x = MIN((n > 1 ? ps[1] - 1 : 0), cols - 1);
-		}
-
-		break; case ED: {
-			struct Cell *a = cell(0, 0);
-			struct Cell *b = cell(rows - 1, cols - 1);
-			if (ps[0] == 0) a = cell(y, x);
-			if (ps[0] == 1) b = cell(y, x);
-			clear(a, b);
-		}
-		break; case EL: {
-			struct Cell *a = cell(y, 0);
-			struct Cell *b = cell(y, cols - 1);
-			if (ps[0] == 0) a = cell(y, x);
-			if (ps[0] == 1) b = cell(y, x);
-			clear(a, b);
-		}
-
-		break; case DL: {
-			uint i = MIN((n ? ps[0] : 1), rows - y);
-			move(cell(y, 0), cell(y + i, 0), cols * (rows - y - i));
-			clear(cell(rows - i, 0), cell(rows - 1, cols - 1));
-		}
-		break; case DCH: {
-			uint i = MIN((n ? ps[0] : 1), cols - x);
-			move(cell(y, x), cell(y, x + i), cols - x - i);
-			clear(cell(y, cols - i), cell(y, cols - 1));
-		}
-
-		break; case SM: {
-			if (dec) break;
-			switch (ps[0]) {
-				break; case 4: insert = true;
-				break; default: warnx("unhandled SM %u", ps[0]);
-			}
-		}
-		break; case RM: {
-			if (dec) break;
-			switch (ps[0]) {
-				break; case 4: insert = false;
-				break; default: warnx("unhandled RM %u", ps[0]);
-			}
-		}
-
-		break; case SGR: {
-			if (ps[0] == 38 && ps[1] == 5) {
-				style.fg = ps[2];
-				break;
-			}
-			if (ps[0] == 48 && ps[1] == 5) {
-				style.bg = ps[2];
-				break;
-			}
-			for (uint i = 0; i < p + 1; ++i) {
-				switch (ps[i]) {
-					break; case 0: style = def;
-					break; case 1: style.bold = true;
-					break; case 3: style.italic = true;
-					break; case 4: style.underline = true;
-					break; case 7: style.reverse = true;
-					break; case 21: style.bold = false;
-					break; case 22: style.bold = false;
-					break; case 23: style.italic = false;
-					break; case 24: style.underline = false;
-					break; case 27: style.reverse = false;
-					break; case 39: style.fg = def.fg;
-					break; case 49: style.bg = def.bg;
-					break; default: {
-						if (ps[i] >= 30 && ps[i] <= 37) {
-							style.fg = ps[i] - 30;
-						} else if (ps[i] >= 40 && ps[i] <= 47) {
-							style.bg = ps[i] - 40;
-						} else if (ps[i] >= 90 && ps[i] <= 97) {
-							style.fg = 8 + ps[i] - 90;
-						} else if (ps[i] >= 100 && ps[i] <= 107) {
-							style.bg = 8 + ps[i] - 100;
-						} else {
-							warnx("unhandled SGR %u", ps[i]);
-						}
-					}
-				}
-			}
-		}
-
-		break; case DECSTBM: {
-			scroll.top = (n > 0 ? ps[0] - 1 : 0);
-			scroll.bot = (n > 1 ? ps[1] - 1 : rows - 1);
-		}
-
-		break; case MC: {
-			if (ps[0] != 10) break;
-			opts.done = true;
-			html();
-		}
-
-		break; case 't': // ignore
-		break; default: warnx("unhandled CSI %lc", (wint_t)ch);
-	}
-
-	if (opts.debug) {
-		printf("CSI %s", (dec ? "DEC " : ""));
-		for (uint i = 0; i < n; ++i) {
-			printf("%s%u ", (i ? "; " : ""), ps[i]);
-		}
-		if (ch < 128 && Name[ch]) {
-			printf("%s\n", Name[ch]);
-		} else {
-			printf("%lc\n", (wint_t)ch);
-		}
-		html();
-	}
-
-	dec = false;
-	ps[n = p = 0] = 0;
-	return NUL;
-}
-
-static char updateOSC(wchar_t ch) {
-	static bool esc;
-	switch (ch) {
-		break; case BEL: return NUL;
-		break; case ESC: esc = true;
-		break; case ST: {
-			if (!esc) break;
-			esc = false;
-			return NUL;
-		}
-	}
-	return OSC;
-}
-
-static void update(wchar_t ch) {
-	static char seq;
-	switch (seq) {
-		break; case NUL: seq = updateNUL(ch);
-		break; case ESC: seq = updateESC(ch);
-		break; case CSI: seq = updateCSI(ch);
-		break; case OSC: seq = updateOSC(ch);
-	}
+	if (mode & Cursor) cell(y, x)->style.attr ^= Reverse;
 }
 
 int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 
+	bool debug = false;
 	bool size = false;
-	FILE *file = stdin;
+	bool hide = false;
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "Bb:cdf:h:sw:"))) {
+	while (0 < (opt = getopt(argc, argv, "Bb:df:h:nsw:"))) {
 		switch (opt) {
-			break; case 'B': opts.bright = true;
-			break; case 'b': def.bg = strtoul(optarg, NULL, 0);
-			break; case 'c': opts.cursor = true;
-			break; case 'd': opts.debug = true;
-			break; case 'f': def.fg = strtoul(optarg, NULL, 0);
+			break; case 'B': bright = true;
+			break; case 'b': defaultBg = strtol(optarg, NULL, 0);
+			break; case 'd': debug = true;
+			break; case 'f': defaultFg = strtol(optarg, NULL, 0);
 			break; case 'h': rows = strtoul(optarg, NULL, 0);
+			break; case 'n': hide = true;
 			break; case 's': size = true;
 			break; case 'w': cols = strtoul(optarg, NULL, 0);
 			break; default:  return EX_USAGE;
 		}
 	}
 
+	FILE *file = stdin;
 	if (optind < argc) {
 		file = fopen(argv[optind], "r");
 		if (!file) err(EX_NOINPUT, "%s", argv[optind]);
@@ -428,19 +627,22 @@ int main(int argc, char *argv[]) {
 		rows = window.ws_row;
 		cols = window.ws_col;
 	}
-	scroll.bot = rows - 1;
+	scroll.bot = rows;
 
 	cells = calloc(rows * cols, sizeof(*cells));
 	if (!cells) err(EX_OSERR, "calloc");
-
-	style = def;
-	clear(cell(0, 0), cell(rows - 1, cols - 1));
+	erase(cell(0, 0), cell(rows - 1, cols));
 
 	wint_t ch;
 	while (WEOF != (ch = getwc(file))) {
+		uint prev = state;
 		update(ch);
+		if (debug && state != prev && state == Data) html();
 	}
 	if (ferror(file)) err(EX_IOERR, "getwc");
 
-	if (!opts.done) html();
+	if (!mediaCopy) {
+		if (hide) mode &= ~Cursor;
+		html();
+	}
 }

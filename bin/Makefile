@@ -1,7 +1,7 @@
 PREFIX = ~/.local
 MANDIR = ${PREFIX}/share/man
 
-CFLAGS += -Wall -Wextra -Wpedantic
+CFLAGS += -Wall -Wextra -Wpedantic -Wno-gnu-case-range
 LDLIBS = -lm -lutil -lz
 
 CURL_PREFIX = /usr/local

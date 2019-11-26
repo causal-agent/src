@@ -1,4 +1,4 @@
-.Dd July 20, 2019
+.Dd November 25, 2019
 .Dt SHOTTY 1
 .Os
 .
@@ -8,7 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl Bcds
+.Op Fl Bdns
 .Op Fl b Ar bg
 .Op Fl f Ar fg
 .Op Fl h Ar rows
@@ -60,15 +60,9 @@ Replace bold with bright colors.
 Set the default background color.
 The default value is 0 (black).
 .
-.It Fl c
-Show the position of the cursor
-with reverse video.
-.
 .It Fl d
 Output the terminal state
-for each CSI sequence.
-Implies
-.Fl c .
+following each control sequence.
 .
 .It Fl f Ar fg
 Set the default foreground color.
@@ -77,6 +71,9 @@ The default value is 7 (white).
 .It Fl h Ar rows
 Set the terminal height.
 The default value is 24.
+.
+.It Fl n
+Do not show the cursor.
 .
 .It Fl s
 Set the terminal size
