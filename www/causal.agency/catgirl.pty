@@ -1,17 +1,94 @@
-[?1049h[22;0;0t[1;24r(B[m[4l[?7h[39;49m[?1h=[39;49m(B[m[H[2J[24d]0;<status>\[H(B[0;7m 0 <status> [23d(B[mTraveling to ascii.town...
+Name: catgirl
+[1;24r[m[4l[39;49m[?1h=[?1004h[39;49m[m[H[2J[23B]0;<status>\[H[7m 0 <status> [22B[mTraveling to chat.freenode.net...
 [H
-[11M[13dYou have arrived
-ascii.town message of the day
-.______________________________________________________________.
-|[16;64H|
-|[17;21HWelcome to ascii.town IRC![17;64H|
-|[18;64H|
-|[19;19HType (B[0;1m/join &town(B[m to join us :)[19;64H|
-|[20;64H|
-'--------------------------------------------------------------'
-Connected using Cipher ECDHE-RSA-AES256-GCM-SHA384 TLSv1.2 Kx=ECDH     Au=RSA
-Enc=AESGCM(256) Mac=AEAD
-]0;&town\[H(B[0;7m[36m 1 &town [39m(B[m[K[12d[K
+[4M[18B-wolfe.freenode.net- *** Looking up your hostname...
+-wolfe.freenode.net- *** Checking Ident
+-wolfe.freenode.net- *** No Ident response
+-wolfe.freenode.net- *** Found your hostname
+[H
+[M[21BYou have arrived
+[H
+[5M[17Bwolfe.freenode.net Message of the Day -
+Welcome to wolfe.freenode.net in Stockholm, SE.
+Thanks to http://nordu.net/ for sponsoring
+this server!
+
+[H
+-wolfe.freenode.net- *** Checking Ident
+-wolfe.freenode.net- *** No Ident response
+-wolfe.freenode.net- *** Found your hostname
+You have arrived
+wolfe.freenode.net Message of the Day -
+Welcome to wolfe.freenode.net in Stockholm, SE.
+Thanks to http://nordu.net/ for sponsoring
+this server!
+
+WOLFE, GENE [1931-2019].  Prolific writer of short stories
+and novels. His best-known work is the multi-volume novel The
+Book of the New Sun. He has won multiple awards including
+the Nebula Award, the World Fantasy Award, The Campell
+Memorial Award and the Locus Award. He was awarded the World
+Fantasy Award for lifetime achievement in 1996.
+[K
+Welcome to freenode - supporting the free and open source
+software communities since 1998.[K
+[K
+By connecting to freenode you indicate that you have read and
+accept our policies and guidelines as set out on https://freenode.net
+
+[H
+[12M[10BIn the event that you observe behaviour that contravenes our policies,
+please notify a volunteer staff member via private message, or send us an
+e-mail to complaints@freenode.net -- we will do our best to address the
+situation within a reasonable period of time, and we may request further
+information or, as appropriate, involve other parties such as channel operators
+
+Group Contacts representing an on-topic group.
+
+freenode runs an open proxy scanner.
+
+If you are looking for assistance, you may be able to find a list of
+volunteer staff on '/stats p' (shows only on-call staff) or by joining
+[H
+[12M[10B#freenode and using the '/who freenode/staff/*' command. You may message
+any of us at any time. Please note that freenode predominantly provides
+assistance via private message, and while we have a network channel the
+primary venue for support requests is via private message to a member
+of the volunteer staff team.
+
+From time to time, volunteer staff may send server-wide notices relating to
+the project, or the communities that we host. The majority of such notices
+will be sent as wallops, and you can '/mode <yournick> +w' to ensure that you
+do not miss them. Important messages relating to the freenode project,
+including
+notices of upcoming maintenance and other scheduled downtime will be issued as
+[H
+primary venue for support requests is via private message to a member[K
+of the volunteer staff team.[K
+[K
+From time to time, volunteer staff may send server-wide notices relating to
+the project, or the communities that we host. The majority of such notices
+will be sent as wallops, and you can '/mode <yournick> +w' to ensure that you
+do not miss them. Important messages relating to the freenode project,
+including
+notices of upcoming maintenance and other scheduled downtime will be issued as
+global notices.[K
+[K
+Representing an on-topic project? Don't forget to register, more information
+can be found on the https://freenode.net website under "Group Registration".
+[K
+Thank you also to our server sponsors for the sustained support in keeping the
+network going for close to two decades.
+[K
+Thank you to all of our attendees, sponsors, speakers, exhibitors, helpers,
+and everyone else who made this year's freenode #live conference amazing.[K
+https://freenode.net/news/live-2018[K
+[K
+Thank you for using freenode![K
+]0;<status>\[1;13H[38;5;15m 1 freenode-connect (1) [23B[39m[m]0;<status>\[?1004l]0;#ascii.town\[H[38;5;15m 1 freenode-connect (1) [38;5;3m[7m 2 #ascii.town 
+[39m[m[K
+[K
+
 [K
 [K
 [K
@@ -19,13 +96,31 @@ Enc=AESGCM(256) Mac=AEAD
 [K
 [K
 [K
+
 [K
 [K
-[91mcatgirl[39m(B[m arrives in [36m&town[39m(B[m[K
-The sign in [36m&town[39m(B[m reads, "Welcome to ascii.town!"
-[91m<catgirl>[C[39m(B[m[2;23r[23;1H
-[1;24r[23;1HIn [36m&town[39m(B[m are [91mcatgirl[39m(B[m, [95mscott[39m(B[m, [37medef[39m(B[m, [97mjune[39m(B[m, [90mben[24;11H[39m(B[mhello, word ld![H
-[M[23d(B[0;4m[91m<catgirl>
-(B[0m[91m<catgirl>[C[39m(B[m[2;23r[23;1H
-[1;24r[23;1H[97m* june[39m(B[m waves
+
+[K
+[K
+
+[K
+[K
+[38;5;8mcatgirl[39m[m arrives in [38;5;3m#ascii.town[39m[m[K
+The sign in [38;5;3m#ascii.town[39m[m reads, "https://ascii.town public SSH services and IRC
+things <3 AGPL"[K
+[38;5;8m<catgirl>[C[39m[m[2;23r[2;1H[2M[1;24r[22;1HIn [38;5;3m#ascii.town[39m[m are [38;5;8mcatgirl[39m[m, [38;5;7mlarbob[39m[m, [38;5;12mjosuah[39m[m, [38;5;7msam_w[39m[m, [38;5;2myourfate[39m[m, [38;5;2mepilys[39m[m, [38;5;5mUniaika[39m[m,
+[38;5;15mjune[39m[m, [38;5;5mep[39m[m, [38;5;7mepoch[39m[m, [38;5;8mnonlinear[39m[m, [38;5;8mbenharri[39m[m, [38;5;12mdanopia[24;11H[39m[m/[K1]0;freenode-connect\[H[38;5;15m[7m 1 freenode-connect [39m[m[K[18B[K
+[K
+[38;5;15m-freenode-connect-[39m[m Welcome to freenode. To protect the network all new
+connections will be scanned for vulnerabilities. This will not harm your[K
+computer, and vulnerable hosts will be notified.
+[38;5;8m<catgirl>[C[39m[m/[Kclose]0;#ascii.town\[H[38;5;3m[7m 1 #ascii.town [39m[m[K[18B[38;5;8mcatgirl[39m[m arrives in [38;5;3m#ascii.town
+[39m[mThe sign in [38;5;3m#ascii.town[39m[m reads, "https://ascii.town public SSH services and IRC
+things <3 AGPL"[K
+In [38;5;3m#ascii.town[39m[m are [38;5;8mcatgirl[39m[m, [38;5;7mlarbob[39m[m, [38;5;12mjosuah[39m[m, [38;5;7msam_w[39m[m, [38;5;2myourfate[39m[m, [38;5;2mepilys[39m[m, [38;5;5mUniaika[39m[m,
+[38;5;15mjune[39m[m, [38;5;5mep[39m[m, [38;5;7mepoch[39m[m, [38;5;8mnonlinear[39m[m, [38;5;8mbenharri[39m[m, [38;5;12mdanopia[39m[m[K
+[38;5;8m<catgirl>[C[39m[mhello, world![H
+[M[21B[38;5;8m[4m<catgirl>
+[24m<catgirl>[C[39m[m[2;23r[23;1H
+[1;24r[23;1H[38;5;15m* june[39m[m waves
 
