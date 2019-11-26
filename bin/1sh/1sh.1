@@ -32,7 +32,7 @@
 .\"	from: @(#)sh.1	8.6 (Berkeley) 5/4/95
 .\" $FreeBSD: releng/12.0/bin/sh/sh.1 336483 2018-07-19 13:09:29Z 0mp $
 .
-.Dd November 21, 2019
+.Dd November 26, 2019
 .Dt 1SH 1
 .Os
 .
@@ -1482,6 +1482,12 @@ If not set, the default editor is
 The default editor used with the
 .Ic fc
 built-in.
+.
+.It Va HISTFILE
+The path to the file in which command history is saved.
+History is loaded when
+.Va HISTFILE
+is set and saved on exit.
 .
 .It Va HISTSIZE
 The number of previous commands that are accessible.
@@ -3207,6 +3213,9 @@ sources were imported from
 .
 .Ss Differences from sh
 .Bl -bullet -compact
+.It
+History is saved with
+.Va HISTFILE .
 .It
 Further prompt customization with
 .Va PS0 ,
