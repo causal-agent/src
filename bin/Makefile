@@ -69,7 +69,7 @@ curl: meta ${BINS_CURL}
 
 tls: meta ${BINS_TLS}
 
-meta: tags .gitignore README
+meta: tags .gitignore
 
 # Binaries
 
@@ -122,15 +122,12 @@ ${HTMLS}: html.sh hi ttpre
 .y.html:
 	sh html.sh $< man1/${<:.y=.1} > $@
 
-index.html: Makefile bin.7
-	sh html.sh Makefile bin.7 \
+index.html: Makefile README.7
+	sh html.sh Makefile README.7 \
 		| sed -E 's,([a-z0-9-]+)[(][1-9][)],<a href="\1.html">&</a>,' \
 		> index.html
 
 # Meta
-
-README: bin.7
-	mandoc bin.7 | col -bx > README
 
 scheme.png: scheme
 	./scheme -gt > scheme.png
