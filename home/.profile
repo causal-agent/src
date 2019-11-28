@@ -1,4 +1,5 @@
 _PATH=$PATH
+PATH=
 for prefix in '' /usr/local /usr/pkg /usr /opt/pkg ~/.local; do
 	PATH=${PATH}${PATH:+:}${prefix}/sbin:${prefix}/bin
 done
