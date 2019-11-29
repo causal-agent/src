@@ -1,9 +1,10 @@
-_PATH=$PATH
-PATH=
+_PATH=$PATH PATH=
+path() { [ -d "$1" ] && PATH="${PATH}${PATH:+:}${1}"; }
 for prefix in '' /usr/local /usr/pkg /usr /opt/pkg ~/.local; do
-	PATH=${PATH}${PATH:+:}${prefix}/sbin:${prefix}/bin
+	path "${prefix}/sbin"
+	path "${prefix}/bin"
 done
-PATH=$PATH:/usr/games
+path /usr/games
 
 export PAGER=less
 export LESS=FRX
