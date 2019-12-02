@@ -2042,10 +2042,12 @@ expandprompt(const char *fmt) {
 				 * Exit status if non-zero.
 				 */
 			case '?':
-				if (exitstatus != 0)
+				if (exitstatus != 0) {
 					snprintf(&ps[i], PROMPTLEN - i, "%d", exitstatus);
-				else
-					i--;
+					while (ps[i] != '\0')
+						i++;
+				}
+				i--;
 				break;
 
 				/*
