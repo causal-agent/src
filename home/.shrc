@@ -18,6 +18,16 @@ alias rand='openssl rand -base64 33'
 alias private='eval "$(gpg -d ~/.private)"'
 bman() { ssh ${freebsd:-monday} man "$@" | sh -c "$MANPAGER"; }
 
+cd() {
+	if [ $# -eq 0 ]; then
+		builtin cd
+	elif [ -e "$1" -a ! -d "$1" ]; then
+		builtin cd "${1%/*}" && $EDITOR "${1##*/}"
+	else
+		builtin cd "$@"
+	fi
+}
+
 PS0=$'\n'
 PS1='\$ '
 RPS1="\? ${SSH_CLIENT:+\h:}\w"
