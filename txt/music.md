@@ -1,3 +1,4 @@
+- [Lizzo — Truth Hurts][79]
 - [Hobo Johnson and The Lovemakers — Tiny Desk Concert][78]
 - [Poppy — Concrete][77]
 - [Kim Petras — Do Me][76]
@@ -165,3 +166,4 @@
 [76]: https://youtu.be/LShK0Yhd964
 [77]: https://youtu.be/WwoGhpYdebQ
 [78]: https://youtu.be/A8a2EosJIbM
+[79]: https://youtu.be/P00HMxdsVZI
