@@ -1,4 +1,4 @@
-.Dd December 10, 2019
+.Dd December 11, 2019
 .Dt SOME-LIBS 7
 .Os "Causal Agency"
 .
@@ -64,6 +64,8 @@ My one gripe with it is that the library and SQL documentation
 are not available as
 .Xr man 1
 pages.
+I'm currently working on a project using SQLite,
+but it hasn't gotten very far yet.
 .
 .It Fl ltls
 This is a new library in LibreSSL
@@ -77,6 +79,7 @@ with calls like
 .Xr tls_read 3
 and
 .Xr tls_write 3 .
+I've used this for IRC clients, bouncers and bots.
 .
 .It Fl lz
 An implementation of the DEFLATE compression algorithm
@@ -86,6 +89,7 @@ It's all documented in comments in
 which isn't bad,
 but for my own use I copied the docs into
 .Lk https://code.causal.agency/june/zlib-man-pages "manual pages" .
+I've used this for decoding and encoding PNG images.
 .El
 .
 .Sh AUTHORS
