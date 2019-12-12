@@ -1,0 +1,92 @@
+.Dd December 10, 2019
+.Dt SOME-LIBS 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm Some Libraries
+.Nd good ones
+.
+.Sh DESCRIPTION
+This is a little list of C libraries
+I've had good experiences using.
+.
+.Bl -tag -width Ds
+.It Fl lcurl
+The library behind the
+.Xr curl 1
+command.
+It downloads or uploads things on the internet
+through a number of protocols,
+not just HTTP.
+It has an easy-to-use library API,
+appropriately named
+.Xr libcurl-easy 3 .
+I've used it to implement a
+.Lk https://causal.agency/bin/title.html "page title fetcher" .
+.
+.It Fl lcurses
+Okay so this one really isn't great.
+Its interfaces can seem archaic
+and its documentation is often poor.
+However, it gets the job done
+and is commonly available pretty much everywhere.
+Interesting to note that
+.Nx
+uses its own implementation of curses
+that is not GNU ncurses,
+unlike
+.Fx .
+.
+.It Fl ledit
+This is a BSD line editing library,
+similar to GNU readline.
+It supports right-aligned prompts,
+which I prefer for variable-length
+information in shells.
+.
+.It Fl lkcgi
+A CGI and FastCGI library
+for web applications in C.
+Don't worry,
+it isolates HTTP parsing and input validation
+from application logic
+in sandboxed processes.
+I think it's an excellent example
+of how to design an API for C.
+I used it to implement the
+.Lk https://ascii.town/explore.html "torus web viewer" .
+.
+.It Fl lsqlite3
+An embedded relational database engine.
+It's amazing what you can do with this,
+and it's super easy to use!
+My one gripe with it is that the library and SQL documentation
+are not available as
+.Xr man 1
+pages.
+.
+.It Fl ltls
+This is a new library in LibreSSL
+which provides a much simpler interface for TLS sockets
+compared to
+.Fl lssl .
+It's much more like what you'd expect
+from other TLS socket wrappers,
+with calls like
+.Xr tls_connect 3 ,
+.Xr tls_read 3
+and
+.Xr tls_write 3 .
+.
+.It Fl lz
+An implementation of the DEFLATE compression algorithm
+and gzip format.
+It's all documented in comments in
+.In zlib.h ,
+which isn't bad,
+but for my own use I copied the docs into
+.Lk https://code.causal.agency/june/zlib-man-pages "manual pages" .
+.El
+.
+.Sh AUTHORS
+.An June Bug Aq Mt june@causal.agency

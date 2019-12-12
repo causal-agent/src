@@ -5,6 +5,7 @@ TXTS += 002-writing-mdoc.txt
 TXTS += 003-pleasant-c.txt
 TXTS += 004-uloc.txt
 TXTS += 005-testing-c.txt
+TXTS += 006-some-libs.txt
 
 all: ${TXTS}
 
