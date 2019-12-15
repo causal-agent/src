@@ -286,7 +286,7 @@ static const struct Language {
 	{ "make", "[.]mk$|^Makefile$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
 	{ "mdoc", "[.][1-9]$", MdocSyntax, ARRAY_LEN(MdocSyntax) },
 	{ "rust", "[.]rs$", RustSyntax, ARRAY_LEN(RustSyntax) },
-	{ "sh",   "[.]sh$", ShSyntax, ARRAY_LEN(ShSyntax) },
+	{ "sh",   "[.]sh$|^[.](profile|shrc)$", ShSyntax, ARRAY_LEN(ShSyntax) },
 	{ "text", "[.]txt$", NULL, 0 },
 };
 
