@@ -33,7 +33,7 @@ These are things I've made.
 <p>
 multi-client IRC bouncer
 <p>
-<a href="https://code.causal.agency/june/pounce">code</a>
+<a href="https://git.causal.agency/pounce">git</a>
 
 <h1>torus</h1>
 <p>
@@ -43,7 +43,7 @@ collaborative ASCII art project
 --
 <a href="https://ascii.town/explore.html">explore</a>
 --
-<a href="https://code.causal.agency/june/torus">code</a>
+<a href="https://git.causal.agency/torus">git</a>
 <p>
 <!-- torus.html -->
 
@@ -53,7 +53,7 @@ collaborative ASCII art project
 <p>
 <a href="ssh://play@ascii.town">ssh play@ascii.town</a>
 --
-<a href="https://code.causal.agency/june/play">code</a>
+<a href="https://git.causal.agency/play">git</a>
 <p>
 <!-- play.html -->
 
@@ -63,7 +63,7 @@ artisanal IRC client
 <p>
 <a href="ssh://chat@ascii.town">ssh chat@ascii.town</a>
 --
-<a href="https://code.causal.agency/june/catgirl">code</a>
+<a href="https://git.causal.agency/catgirl">git</a>
 <p>
 <!-- catgirl.html -->
 
@@ -71,7 +71,7 @@ artisanal IRC client
 <p>
 CARDS.DLL loader for SDL
 <p>
-<a href="https://code.causal.agency/june/cards">code</a>
+<a href="https://git.causal.agency/cards">git</a>
 
 <h1>scheme</h1>
 <p>
@@ -79,14 +79,14 @@ earthy terminal colours
 <p>
 <a href="scheme.png">palette</a>
 --
-<a href="bin/scheme.html">code</a>
+<a href="bin/scheme.html">src</a>
 <!-- scheme.html -->
 
 <h1>bin</h1>
 <p>
 little utilities
 <p>
-<a href="bin/">code</a>
+<a href="bin/">src</a>
 
 <h1>text</h1>
 <p>
