@@ -1,4 +1,4 @@
-.Dd December 11, 2019
+.Dd December 15, 2019
 .Dt HI 1
 .Os
 .
@@ -8,6 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
+.Op Fl t
 .Op Fl f Ar format
 .Op Fl l Ar lang
 .Op Fl n Ar name
@@ -40,6 +41,10 @@ to infer the input language.
 Set output format options.
 .Ar opts
 is a comma-separated list of options.
+.It Fl t
+Default to
+.Cm text
+if the input language cannot be inferred.
 .El
 .
 .Ss Output Formats

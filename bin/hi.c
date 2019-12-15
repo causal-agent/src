@@ -668,13 +668,14 @@ static bool findFormat(struct Format *format, const char *name) {
 int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 
+	bool text = false;
 	const char *name = NULL;
 	struct Language lang = {0};
 	struct Format format = Formats[0];
 	const char *opts[OptionLen] = {0};
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "cf:l:n:o:"))) {
+	while (0 < (opt = getopt(argc, argv, "cf:l:n:o:t"))) {
 		switch (opt) {
 			break; case 'c': check(); return EX_OK;
 			break; case 'f': {
@@ -699,6 +700,7 @@ int main(int argc, char *argv[]) {
 					opts[key] = (val ? val : "");
 				}
 			}
+			break; case 't': text = true;
 			break; default: return EX_USAGE;
 		}
 	}
@@ -715,7 +717,7 @@ int main(int argc, char *argv[]) {
 		name = strrchr(path, '/');
 		name = (name ? &name[1] : path);
 	}
-	if (!lang.name && !matchLanguage(&lang, name)) {
+	if (!lang.name && !matchLanguage(&lang, name) && !text) {
 		errx(EX_USAGE, "cannot infer language for %s", name);
 	}
 	if (!opts[Title]) opts[Title] = name;
