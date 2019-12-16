@@ -6,6 +6,7 @@ TXTS += 003-pleasant-c.txt
 TXTS += 004-uloc.txt
 TXTS += 005-testing-c.txt
 TXTS += 006-some-libs.txt
+TXTS += 007-cgit-setup.txt
 
 all: ${TXTS}
 

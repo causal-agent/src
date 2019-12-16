@@ -1,0 +1,244 @@
+.Dd December 15, 2019
+.Dt CGIT-SETUP 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm cgit setup
+.Nd configuration notes
+.
+.Sh DESCRIPTION
+I just set up cgit on
+.Lk https://git.causal.agency
+to replace an instance of gitea.
+After 30 days of uptime,
+gitea had accumulated over 11 hours of CPU time
+and was using hundreds of megabytes of memory.
+cgit is much more lightweight
+and much more in line with my aesthetic.
+I'm documenting how I set it up here
+mostly to remind myself in the future.
+.
+.Ss slowcgi
+cgit is CGI software,
+but
+.Xr nginx 8
+only supports FastCGI.
+I used
+.Xr slowcgi 8
+as a compatibility layer
+by adding the following to
+.Pa /etc/rc.conf :
+.Bd -literal -offset indent
+slowcgi_enable="YES"
+slowcgi_flags="-p / -s /var/run/slowcgi.sock"
+.Ed
+.
+.Ss nginx
+I added the following in a new
+.Cm server
+block to
+.Pa /usr/local/etc/nginx/nginx.conf :
+.Bd -literal -offset indent
+root /usr/local/www/cgit;
+location / {
+	try_files $uri @cgit;
+}
+location @cgit {
+	fastcgi_pass unix:/var/run/slowcgi.sock;
+	fastcgi_param SCRIPT_FILENAME $document_root/cgit.cgi;
+	fastcgi_param SCRIPT_NAME /;
+	fastcgi_param PATH_INFO $uri;
+	fastcgi_param QUERY_STRING $query_string;
+	fastcgi_param REQUEST_METHOD $request_method;
+	fastcgi_param CONTENT_TYPE $content_type;
+	fastcgi_param CONTENT_LENGTH $content_length;
+	fastcgi_param HTTPS $https if_not_empty;
+	fastcgi_param SERVER_PORT $server_port;
+	fastcgi_param SERVER_NAME $server_name;
+}
+.Ed
+.
+.Pp
+The
+.Cm try_files
+directive causes
+.Xr nginx 8
+to first try to serve static files from
+.Pa /usr/local/www/cgit
+before passing anything else on to FastCGI.
+.
+.Pp
+The
+.Va SCRIPT_FILENAME
+parameter tells
+.Xr slowcgi 8
+the path of the CGI binary to run.
+Setting
+.Va SCRIPT_NAME
+to
+.Pa /
+tells cgit its root URL
+and avoids it using query strings for everything.
+.
+.Ss cgit
+cgit doesn't provide any configuration to start from,
+so you have to just read
+.Xr cgitrc 5 .
+I added the following to
+.Pa /usr/local/etc/cgitrc :
+.Bd -literal -offset indent
+cache-size=1024
+clone-url=https://$HTTP_HOST/$CGIT_REPO_URL
+snapshots=tar.gz zip
+remove-suffix=1
+enable-git-config=1
+scan-path=/home/june/pub
+.Ed
+.
+.Pp
+The
+.Cm cache-size
+option enables caching,
+which by default is stored in
+.Pa /var/cache/cgit ,
+so I made sure that directory exists
+and is writable by the
+.Sy www
+user.
+The
+.Cm clone-url
+option sets the clone URL to advertise.
+cgit will automatically serve git over HTTP.
+The
+.Cm snapshots
+option makes tarballs available for tags and commits.
+.
+.Pp
+The
+.Cm scan-path
+option causes cgit to scan the given path
+for git repositories.
+I'm putting mine in
+.Pa ~/pub .
+The
+.Cm remove-suffix
+option causes cgit to remove the
+.Pa .git
+suffix from the URLs it uses
+for the repositories it finds,
+so that
+.Pa ~/pub/pounce.git
+is served at
+.Pa /pounce .
+The
+.Cm enable-git-config
+option allows controlling some cgit options
+from the
+.Xr git-config 1
+of each repository.
+See
+.Sx git
+below.
+.
+.Pp
+I also set up a filter to render
+.Xr mdoc 7
+files
+and do syntax highlighting
+by adding the following to
+.Pa cgitrc :
+.Bd -literal -offset indent
+readme=:README.7
+readme=:README
+about-filter=/usr/local/libexec/cgit-filter
+source-filter=/usr/local/libexec/cgit-filter
+.Ed
+.
+.Pp
+The
+.Cm readme
+options tell cgit which files to look for
+to render the
+.Dq about
+page.
+The colon prefix causes it to look for them
+in the git tree.
+The
+.Pa /usr/local/libexec/cgit-filter
+script contains the following:
+.Bd -literal -offset indent
+#!/bin/sh
+case "$1" in
+	(*.[1-9])
+		/usr/bin/mandoc -T utf8 | /usr/local/libexec/ttpre
+		;;
+	(*)
+		exec /usr/local/libexec/hi -t -n "$1" -f html -o anchor
+		;;
+esac
+.Ed
+.
+.Pp
+Filter scripts are run with the filename as their first argument
+and the contents of the file on standard input.
+The
+.Xr ttpre 1
+command is my own utility to convert
+.Xr man 1
+output to HTML.
+The
+.Xr hi 1
+command is my own
+.Lk https://causal.agency/bin/hi.html "syntax highlighter" .
+.
+.Ss git
+I create my repositories in
+.Pa ~/pub
+with
+.Ql git init --bare
+and use
+.Pa git.causal.agency:pub/example.git
+locally as the remote.
+Descriptions are set by editing the
+.Pa description
+file in each repository.
+The section and homepage can be set with
+.Xr git-config 1
+through the keys
+.Cm cgit.section
+and
+.Cm cgit.homepage ,
+respectively,
+thanks to the
+.Cm enable-git-config
+option above.
+.
+.Ss Redirects
+I added the following to the
+.Cm server
+block that used to serve gitea in
+.Pa nginx.conf :
+.Bd -literal -offset indent
+location ~* /june/([^.]+)[.]git(.*) {
+	return 301 https://git.causal.agency/$1$2?$query_string;
+}
+location ~* /june/([^/]+) {
+	return 301 https://git.causal.agency/$1;
+}
+location / {
+	return 301 https://git.causal.agency;
+}
+.Ed
+.
+.Pp
+This redirects any links to my gitea repos
+to the corresponding repo in cgit.
+The first
+.Sy location
+block also redirects gitea HTTP clone URLs to cgit
+so that
+.Xr git-pull 1
+continues to work on existing clones.
+.
+.Sh AUTHORS
+.An June Bug Aq Mt june@causal.agency
