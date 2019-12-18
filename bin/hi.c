@@ -739,6 +739,7 @@ int main(int argc, char *argv[]) {
 		if (!str) err(EX_OSERR, "realloc");
 	}
 	if (ferror(file)) err(EX_IOERR, "fread");
+	if (memchr(str, 0, len)) errx(EX_DATAERR, "input is binary");
 	str[len] = '\0';
 
 	enum Class *hi = calloc(len, sizeof(*hi));
