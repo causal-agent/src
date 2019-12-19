@@ -1,11 +1,41 @@
 @import url("cgit.css");
 
+* { line-height: 1.25em; }
+
 div#cgit {
+	max-width: 117ch;
+	margin: auto;
+	font-family: monospace;
 	-moz-tab-size: 4;
 	tab-size: 4;
 }
 
-div#cgit table.blob td.linenumbers a:focus {
+div#cgit table#header td.logo {
+	display: none;
+}
+div#cgit table#header td.sub {
+	border-top: none;
+}
+div#cgit table.tabs {
+	border-bottom: none;
+}
+div#cgit div.content {
+	border-bottom: none;
+}
+div#cgit table.list th a {
+	color: inherit;
+}
+div#cgit table.list tr:nth-child(even) {
+	background: inherit;
+}
+div#cgit table.list tr:hover {
+	background: inherit;
+}
+div#cgit table.list tr.nohover-highlight:hover:nth-child(even) {
+	background: inherit;
+}
+
+div#cgit table.blob td.linenumbers a:target {
 	color: goldenrod;
 	text-decoration: underline;
 	outline: none;
@@ -14,7 +44,6 @@ div#cgit table.blob td.linenumbers a:focus {
 div#cgit .hi.Keyword { color: dimgray; }
 div#cgit .hi.Macro { color: green; }
 div#cgit .hi.Tag { color: inherit; text-decoration: underline; }
-div#cgit .hi.Tag:focus { color: goldenrod; outline: none; }
 div#cgit .hi.String { color: teal; }
 div#cgit .hi.Format { color: teal; font-weight: bold; }
 div#cgit .hi.Interp { color: olive; }
@@ -22,3 +51,4 @@ div#cgit .hi.Comment { color: navy; }
 div#cgit .hi.Todo { color: navy; font-weight: bold; }
 div#cgit .hi.DiffOld { color: red; }
 div#cgit .hi.DiffNew { color: green; }
+div#cgit .hi.Tag:target { color: goldenrod; outline: none; }
