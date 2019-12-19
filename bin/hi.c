@@ -549,7 +549,7 @@ static void htmlHeader(const char *opts[]) {
 			printf(".hi.%s { %s }\n", ClassName[class], HTMLStyle[class]);
 		}
 		printf(
-			".hi.%s:focus { color: goldenrod; outline: none; }\n",
+			".hi.%s:target { color: goldenrod; outline: none; }\n",
 			ClassName[Tag]
 		);
 		printf("</style>\n");
