@@ -1,0 +1,24 @@
+@import url("cgit.css");
+
+div#cgit {
+	-moz-tab-size: 4;
+	tab-size: 4;
+}
+
+div#cgit table.blob td.linenumbers a:focus {
+	color: goldenrod;
+	text-decoration: underline;
+	outline: none;
+}
+
+div#cgit .hi.Keyword { color: dimgray; }
+div#cgit .hi.Macro { color: green; }
+div#cgit .hi.Tag { color: inherit; text-decoration: underline; }
+div#cgit .hi.Tag:focus { color: goldenrod; outline: none; }
+div#cgit .hi.String { color: teal; }
+div#cgit .hi.Format { color: teal; font-weight: bold; }
+div#cgit .hi.Interp { color: olive; }
+div#cgit .hi.Comment { color: navy; }
+div#cgit .hi.Todo { color: navy; font-weight: bold; }
+div#cgit .hi.DiffOld { color: red; }
+div#cgit .hi.DiffNew { color: green; }

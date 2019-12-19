@@ -1,0 +1,27 @@
+root-title=causal agency
+root-desc=code toilet
+
+clone-url=https://$HTTP_HOST/$CGIT_REPO_URL
+snapshots=tar.gz zip
+
+enable-blame=1
+enable-commit-graph=1
+enable-subject-links=1
+enable-follow-links=1
+enable-index-owner=0
+repository-sort=age
+branch-sort=age
+
+css=/custom.css
+email-filter=/usr/local/libexec/cgit-email
+about-filter=/usr/local/libexec/source-filter
+source-filter=/usr/local/libexec/source-filter
+
+readme=:README.7
+readme=:README
+
+remove-suffix=1
+enable-git-config=1
+scan-path=/home/june/pub
+
+cache-size=1024
