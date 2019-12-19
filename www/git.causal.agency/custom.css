@@ -35,6 +35,10 @@ div#cgit table.list tr.nohover-highlight:hover:nth-child(even) {
 	background: inherit;
 }
 
+div#cgit table.blob td.linenumbers:nth-last-child(3) {
+	display: none;
+}
+
 div#cgit table.blob td.linenumbers a:target {
 	color: goldenrod;
 	text-decoration: underline;

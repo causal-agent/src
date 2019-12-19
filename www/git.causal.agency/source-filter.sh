@@ -2,10 +2,8 @@
 
 case "$1" in
 	(*.[1-9])
-		/usr/bin/mandoc -T utf8 \
-			| /usr/local/libexec/ttpre \
-			| /usr/bin/sed -E \
-				's,([a-z0-9_-]+)[(]([1-9])[)],<a href="\1.\2">&</a>,g'
+		/usr/local/libexec/about-filter "$@"
+		printf '</code></pre></td><td><pre><code>'
 		;;
 	(*)
 		exec /usr/local/libexec/hi -t -n "$1" -f html -o anchor

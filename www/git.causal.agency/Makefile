@@ -3,7 +3,7 @@ WWW = /usr/local/www/cgit
 LIBEXEC = /usr/local/libexec
 
 BIN = ../../bin
-BINS = source-filter ttpre hi
+BINS = about-filter source-filter ttpre hi
 
 install: cgitrc custom.css ${BINS}
 	install -m 644 cgitrc ${ETC}
