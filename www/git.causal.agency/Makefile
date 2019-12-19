@@ -12,6 +12,7 @@ install: cgitrc custom.css ${BINS}
 
 ttpre hi:
 	${MAKE} -C ${BIN} $@
+	cp ${BIN}/$@ $@
 
 ttpre: ${BIN}/ttpre.c
 
