@@ -12,7 +12,7 @@
 	autosquash = true
 
 [pretty]
-	log = %Cred%h %Creset%s%C(yellow)%d %Cgreen(%ar) %Cblue<%an>
+	log = %Cred%h %Creset%s%C(yellow)%d %Cgreen(%ar) %Cblue<%aN>
 
 [include]
 	path = ./private
