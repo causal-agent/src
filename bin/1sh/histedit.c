@@ -142,12 +142,12 @@ bad:
 			INTON;
 		}
 		if (el) {
+			el_source(el, NULL);
 			if (Vflag)
 				el_set(el, EL_EDITOR, "vi");
 			else if (Eflag)
 				el_set(el, EL_EDITOR, "emacs");
 			el_set(el, EL_BIND, "^I", "sh-complete", NULL);
-			el_source(el, NULL);
 		}
 	} else {
 		INTOFF;
