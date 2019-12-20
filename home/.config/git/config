@@ -3,7 +3,6 @@
 	email = june@causal.agency
 
 [commit]
-	gpgSign = true
 	verbose = true
 
 [merge]
