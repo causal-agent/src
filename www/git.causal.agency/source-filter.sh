@@ -1,5 +1,6 @@
 #!/bin/sh
 
+export LANG=en_US.UTF-8
 case "$1" in
 	(*.[1-9])
 		/usr/local/libexec/about-filter "$@"
