@@ -51,7 +51,6 @@ BINS_LINUX += psfed
 
 BINS_CURL += title
 
-BINS_TLS += imbox
 BINS_TLS += relay
 
 BINS = ${BINS_ANY} ${BINS_BSD} ${BINS_LINUX} ${BINS_CURL} ${BINS_TLS}
@@ -80,9 +79,6 @@ hi: hi.c
 
 open pbcopy pbpaste: pbd
 	ln -f pbd $@
-
-imbox: imbox.c
-	${CC} ${CFLAGS_tls} ${LDFLAGS_tls} $@.c ${LDLIBS_tls} -o $@
 
 relay: relay.c
 	${CC} ${CFLAGS_tls} ${LDFLAGS_tls} $@.c ${LDLIBS_tls} -o $@
