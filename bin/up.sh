@@ -54,7 +54,7 @@ uploadTerminal() {
 	$(scheme -s)
 	</style>
 	EOF
-	ptee "$@" | shotty -Bcs >> "${temp}/term.html"
+	ptee "$@" | shotty -Bs >> "${temp}/term.html"
 	upload "${temp}/term.html"
 }
 
