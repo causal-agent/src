@@ -78,6 +78,7 @@ table.Nm td:first-child { padding-right: 1ch; }
 code.Fl { white-space: nowrap; }
 dl.Bl-tag:not(.Bl-compact) dt { margin-top: 1em; }
 div.Bd-indent { margin-left: 4ch; }
+table.Bl-column { width: 100%; }
 table.foot { margin-top: 1em; }
 
 div#cgit a.permalink { color: inherit; }
