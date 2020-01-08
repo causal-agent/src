@@ -76,7 +76,7 @@ code.Cd { font-weight: bold; font-family: inherit; }
 
 table.Nm td:first-child { padding-right: 1ch; }
 code.Fl { white-space: nowrap; }
-dl.Bl-tag dt { margin-top: 1em; }
+dl.Bl-tag:not(.Bl-compact) dt { margin-top: 1em; }
 div.Bd-indent { margin-left: 4ch; }
 table.foot { margin-top: 1em; }
 
