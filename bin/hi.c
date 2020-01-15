@@ -156,9 +156,9 @@ static const struct Syntax MakeSyntax[] = {
 		.pattern = "[$]." },
 	// Support one level of nesting with the same delimiter.
 	{ Interp,
-		.pattern = "[$][(](" "[^$)]" "|" "[$][(][^)]*[)]" ")*[)]" },
+		.pattern = "[$][(](" "[^$)]" "|" "[$]." "|" "[$][(][^)]*[)]" ")*[)]" },
 	{ Interp,
-		.pattern = "[$][{](" "[^$}]" "|" "[$][{][^}]*[}]" ")*[}]" },
+		.pattern = "[$][{](" "[^$}]" "|" "[$]." "|" "[$][{][^}]*[}]" ")*[}]" },
 	{ Escape,
 		.pattern = "[$][$]" },
 	{ Comment, .parent = ~SET(String),
