@@ -2,10 +2,10 @@
 set -eu
 
 pkgAny='curl htop mksh sl the_silver_searcher tree'
-pkgDarwin="${pkgAny} gnupg2"
-pkgFreeBSD="${pkgAny} ddate gnupg neovim"
-pkgNetBSD="${pkgAny} gnupg2 vim"
-pkgLinux="${pkgAny} bc ctags gdb gnupg neovim openssh"
+pkgDarwin="${pkgAny}"
+pkgFreeBSD="${pkgAny} ddate neovim"
+pkgNetBSD="${pkgAny} vim"
+pkgLinux="${pkgAny} bc ctags gdb neovim openssh"
 
 pkgsrcTag='20171103'
 neovimTag='v0.4.2'
