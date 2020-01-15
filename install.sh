@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-pkgAny='curl git htop mksh sl the_silver_searcher tree'
+pkgAny='curl htop mksh sl the_silver_searcher tree'
 pkgDarwin="${pkgAny} gnupg2"
 pkgFreeBSD="${pkgAny} ddate gnupg neovim"
 pkgNetBSD="${pkgAny} gnupg2 vim"
