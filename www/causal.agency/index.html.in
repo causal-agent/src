@@ -35,6 +35,12 @@ multi-client IRC bouncer
 <p>
 <a href="https://git.causal.agency/pounce">git</a>
 
+<h1>litterbox</h1>
+<p>
+full-text search IRC logger
+<p>
+<a href="https://git.causal.agency/litterbox">git</a>
+
 <h1>torus</h1>
 <p>
 collaborative ASCII art project
