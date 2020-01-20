@@ -101,8 +101,8 @@ static const struct Syntax CSyntax[] = {
 		"(static|typedef)" SP1
 		"(" "(" PATTERN_ID ")" SP0
 		"(" "[*]" "|" "[[][^]]*[]]" "|" "[{][^}]*[}]" "|" SP0 ")*" ")+" },
-	{ String, .parent = SET(Macro), .subexp = 1,
-		.pattern = "include" BL0 "(<[^>]*>)" },
+	{ String, .parent = SET(Macro), .subexp = 2,
+		.pattern = "(include|import)" BL0 "(<[^>]*>)" },
 	{ String,
 		.pattern = "[LUu]?" PATTERN_SQ },
 	{ String, .parent = ~SET(String),
@@ -281,7 +281,7 @@ static const struct Language {
 	const struct Syntax *syntax;
 	size_t len;
 } Languages[] = {
-	{ "c",    "[.][chly]$", CSyntax, ARRAY_LEN(CSyntax) },
+	{ "c",    "[.][chlmy]$", CSyntax, ARRAY_LEN(CSyntax) },
 	{ "diff", "[.](diff|patch)$", DiffSyntax, ARRAY_LEN(DiffSyntax) },
 	{ "make", "[.]mk$|^Makefile$", MakeSyntax, ARRAY_LEN(MakeSyntax) },
 	{ "mdoc", "[.][1-9]$", MdocSyntax, ARRAY_LEN(MdocSyntax) },
