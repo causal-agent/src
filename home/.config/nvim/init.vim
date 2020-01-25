@@ -34,3 +34,4 @@ nmap <leader>S $vi{:sort<CR>
 nmap <leader>a m':0/^#include <<CR>:nohlsearch<CR>O#include <
 nmap <leader>l :0read ~/src/etc/agpl.c<CR>''
 nmap <leader>L :0read ~/src/etc/gpl.c<CR>''
+nmap <leader>d :0delete<CR>:0read !date +'.Dd \%B \%e, \%Y'<CR>
