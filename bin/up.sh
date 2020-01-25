@@ -28,7 +28,7 @@ uploadText() {
 uploadCommand() {
 	temp
 	echo "$ $*" > "${temp}/exec.txt"
-	"$@" >> "${temp}/exec.txt"
+	"$@" >> "${temp}/exec.txt" 2>&1 || true
 	upload "${temp}/exec.txt"
 }
 
