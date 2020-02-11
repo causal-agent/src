@@ -127,8 +127,12 @@ static CURLcode fetchTitle(const char *url) {
 
 	char *dest;
 	curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &dest);
+	dest = strdup(dest);
+	if (!dest) err(EX_OSERR, "strdup");
+
 	code = curl_easy_setopt(curl, CURLOPT_URL, dest);
 	if (code) return code;
+	free(dest);
 
 	body.len = 0;
 	title = false;
