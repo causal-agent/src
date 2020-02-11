@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
 	char *buf = NULL;
 	size_t cap = 0;
 
-	regex_t urlRegex = regex("https?://[^[:space:]>\"]+", 0);
+	regex_t urlRegex = regex("https?://([^[:space:]>\"()]|[(][^)]*[)])+", 0);
 	while (0 < getline(&buf, &cap, stdin)) {
 		regmatch_t match = {0};
 		for (char *ptr = buf; *ptr; ptr += match.rm_eo) {
