@@ -33,13 +33,13 @@ These are things I've made.
 <p>
 multi-client IRC bouncer
 <p>
-<a href="https://git.causal.agency/pounce">git</a>
+<a href="https://git.causal.agency/pounce/about">git</a>
 
 <h1>litterbox</h1>
 <p>
 full-text search IRC logger
 <p>
-<a href="https://git.causal.agency/litterbox">git</a>
+<a href="https://git.causal.agency/litterbox/about">git</a>
 
 <h1>torus</h1>
 <p>
@@ -69,7 +69,7 @@ artisanal IRC client
 <p>
 <a href="ssh://chat@ascii.town">ssh chat@ascii.town</a>
 --
-<a href="https://git.causal.agency/catgirl">git</a>
+<a href="https://git.causal.agency/catgirl/about">git</a>
 <p>
 <!-- catgirl.html -->
 
@@ -77,7 +77,7 @@ artisanal IRC client
 <p>
 CARDS.DLL loader for SDL
 <p>
-<a href="https://git.causal.agency/cards">git</a>
+<a href="https://git.causal.agency/cards/about">git</a>
 
 <h1>scheme</h1>
 <p>
