@@ -29,17 +29,13 @@ or send mail to june@.
 <p>
 These are things I've made.
 
-<h1>pounce</h1>
+<h1><a href="https://git.causal.agency/pounce/about">pounce</a></h1>
 <p>
 multi-client IRC bouncer
-<p>
-<a href="https://git.causal.agency/pounce/about">git</a>
 
-<h1>litterbox</h1>
+<h1><a href="https://git.causal.agency/litterbox/about">litterbox</a></h1>
 <p>
 full-text search IRC logger
-<p>
-<a href="https://git.causal.agency/litterbox/about">git</a>
 
 <h1>catgirl</h1>
 <p>
@@ -73,11 +69,9 @@ collaborative ASCII art project
 <p>
 <!-- play.html -->
 
-<h1>cards</h1>
+<h1><a href="https://git.causal.agency/cards/about">cards</a></h1>
 <p>
 CARDS.DLL loader for SDL
-<p>
-<a href="https://git.causal.agency/cards/about">git</a>
 
 <h1>scheme</h1>
 <p>
@@ -88,11 +82,9 @@ earthy terminal colours
 <a href="bin/scheme.html">src</a>
 <!-- scheme.html -->
 
-<h1>bin</h1>
+<h1><a href="bin/">bin</a></h1>
 <p>
 little utilities
-<p>
-<a href="bin/">src</a>
 
 <h1>text</h1>
 <p>
