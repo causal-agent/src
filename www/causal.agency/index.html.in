@@ -41,6 +41,16 @@ full-text search IRC logger
 <p>
 <a href="https://git.causal.agency/litterbox/about">git</a>
 
+<h1>catgirl</h1>
+<p>
+artisanal IRC client
+<p>
+<a href="ssh://chat@ascii.town">ssh chat@ascii.town</a>
+--
+<a href="https://git.causal.agency/catgirl/about">git</a>
+<p>
+<!-- catgirl.html -->
+
 <h1>torus</h1>
 <p>
 collaborative ASCII art project
@@ -62,16 +72,6 @@ collaborative ASCII art project
 <a href="https://git.causal.agency/play">git</a>
 <p>
 <!-- play.html -->
-
-<h1>catgirl</h1>
-<p>
-artisanal IRC client
-<p>
-<a href="ssh://chat@ascii.town">ssh chat@ascii.town</a>
---
-<a href="https://git.causal.agency/catgirl/about">git</a>
-<p>
-<!-- catgirl.html -->
 
 <h1>cards</h1>
 <p>
