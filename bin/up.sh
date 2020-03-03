@@ -58,17 +58,16 @@ uploadTerminal() {
 	upload "${temp}/term.html"
 }
 
-args=$(setopt 'chst' "$@")
-eval set -- "$args"
-for opt; do
+while getopts 'chst' opt; do
 	case "$opt" in
-		(-c) shift; fn=uploadCommand;;
-		(-h) shift; fn=uploadHi;;
-		(-s) shift; fn=uploadScreen;;
-		(-t) shift; fn=uploadTerminal;;
-		(--) shift; break;;
+		(c) fn=uploadCommand;;
+		(h) fn=uploadHi;;
+		(s) fn=uploadScreen;;
+		(t) fn=uploadTerminal;;
+		(?) exit 1;;
 	esac
 done
+shift $(($OPTIND - 1))
 [ $# -eq 0 ] && : ${fn:=uploadText}
 : ${fn:=upload}
 
