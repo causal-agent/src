@@ -33,7 +33,6 @@ BINS += pngo
 BINS += psf2png
 BINS += ptee
 BINS += scheme
-BINS += setopt
 BINS += shotty
 BINS += title
 BINS += ttpre
