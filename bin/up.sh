@@ -67,7 +67,7 @@ while getopts 'chst' opt; do
 		(?) exit 1;;
 	esac
 done
-shift $(($OPTIND - 1))
+shift $((OPTIND - 1))
 [ $# -eq 0 ] && : ${fn:=uploadText}
 : ${fn:=upload}
 
