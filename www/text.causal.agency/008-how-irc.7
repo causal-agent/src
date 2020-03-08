@@ -1,0 +1,193 @@
+.Dd March  8, 2020
+.Dt HOW-IRC 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm How I Relay Chat
+.Nd in code
+.
+.Sh DESCRIPTION
+I've been writing a lot of IRC software lately
+.Pq Sx SEE ALSO ,
+and developed some nice code patterns
+that I've been reusing.
+Here they are.
+.
+.Ss Parsing
+I use fixed size buffers almost everywhere,
+so it's necessary to know IRC's size limits.
+A traditional IRC message is a maximum of 512 bytes,
+but the IRCv3 message-tags spec adds
+(unreasonably, in my opinion)
+8191 bytes for tags.
+IRC messages also have a maximum of 15 command parameters.
+.Bd -literal -offset indent
+enum { MessageCap = 8191 + 512 };
+enum { ParamCap = 15 };
+.Ed
+.
+.Pp
+If I'm using tags,
+I'll use X macros
+to declare the set I care about.
+X macros are a way of maintaining parallel arrays,
+or in this case an enum and an array.
+.Bd -literal -offset indent
+#define ENUM_TAG \e
+	X("msgid", TagMsgid) \e
+	X("time", TagTime)
+
+enum Tag {
+#define X(name, id) id,
+	ENUM_TAG
+#undef X
+	TagCap,
+};
+
+static const char *TagNames[TagCap] = {
+#define X(name, id) [id] = name,
+	ENUM_TAG
+#undef X
+};
+.Ed
+.
+.Pp
+The TagNames array is used by the parsing function
+to assign tag values into the message structure,
+which looks like this:
+.Bd -literal -offset indent
+struct Message {
+	char *tags[TagCap];
+	char *nick;
+	char *user;
+	char *host;
+	char *cmd;
+	char *params[ParamCap];
+};
+.Ed
+.
+.Pp
+I'm a fan of using
+.Xr strsep 3
+for simple parsing.
+Although it modifies its input
+(replacing delimiters with NUL terminators),
+since the raw message is in a static buffer,
+it is ideal for so-called zero-copy parsing.
+I'm not going to include the whole parsing function here,
+but I will at least include the part that many get wrong,
+which is dealing with the colon-prefixed trailing parameter:
+.Bd -literal -offset indent
+msg.cmd = strsep(&line, " ");
+for (int i = 0; line && i < ParamCap; ++i) {
+	if (line[0] == ':') {
+		msg.params[i] = &line[1];
+		break;
+	}
+	msg.params[i] = strsep(&line, " ");
+}
+.Ed
+.
+.Ss Handling
+To handle IRC commands and replies
+I add handler functions to a big array.
+I usually have some form of helper as well
+to check the number of expected parameters.
+.Bd -literal -offset indent
+typedef void HandlerFn(struct Message *msg);
+
+static const struct Handler {
+	const char *cmd;
+	HandlerFn *fn;
+} Handlers[] = {
+	{ "001", handleReplyWelcome },
+	{ "PING", handlePing },
+	{ "PRIVMSG", handlePrivmsg },
+};
+.Ed
+.
+.Pp
+Since I keep these arrays sorted anyway,
+I started using the standard
+.Xr bsearch 3
+function,
+but a basic for loop probably works just as well.
+I do wish I could compile-time assert
+that the array really is sorted, though.
+.Bd -literal -offset indent
+static int compar(const void *cmd, const void *_handler) {
+	const struct Handler *handler = _handler;
+	return strcmp(cmd, handler->cmd);
+}
+
+void handle(struct Message msg) {
+	if (!msg.cmd) return;
+	const struct Handler *handler = bsearch(
+		msg.cmd,
+		Handlers, ARRAY_LEN(Handlers),
+		sizeof(*handler), compar
+	);
+	if (handler) handler->fn(&msg);
+}
+.Ed
+.
+.Ss Capabilities
+For IRCv3 capabilties
+I use X macros again,
+this time with another handy macro
+for declaring bit flag enums.
+.Bd -literal -offset indent
+#define BIT(x) x##Bit, x = 1 << x##Bit, x##Bit_ = x##Bit
+
+#define ENUM_CAP \e
+	X("message-tags", CapMessageTags) \e
+	X("sasl", CapSASL) \e
+	X("server-time", CapServerTime)
+
+enum Cap {
+#define X(name, id) BIT(id),
+	ENUM_CAP
+#undef X
+};
+
+static const char *CapNames[] = {
+#define X(name, id) [id##Bit] = name,
+	ENUM_CAP
+#undef X
+};
+.Ed
+.
+.Pp
+The
+.Fn BIT
+macro declares, for example,
+.Dv CapSASL
+as the bit flag and
+.Dv CapSASLBit
+as the corresponding index.
+The
+.Vt "enum Cap"
+is used as a set,
+for example checking if SASL is enabled with
+.Ql caps & CapSASL .
+.
+.Pp
+These patterns are serving my IRC software well,
+and my IRC projects are serving me well.
+It is immensely satisfying
+to be (near) constantly using software
+that I wrote myself and am happy with,
+regardless of how niche it may be.
+.
+.Sh SEE ALSO
+.Bl -item -compact
+.It
+.Lk https://git.causal.agency/pounce/about "IRC bouncer"
+.It
+.Lk https://git.causal.agency/litterbox/about "IRC logger"
+.It
+.Lk https://git.causal.agency/catgirl/about "IRC client"
+.El
+.
+.Sh AUTHORS
+.An June Bug Aq Mt june@causal.agency
