@@ -2039,6 +2039,18 @@ expandprompt(const char *fmt) {
 				break;
 
 				/*
+				 * Exit status if non-zero.
+				 */
+			case '?':
+				if (exitstatus != 0) {
+					snprintf(&ps[i], PROMPTLEN - i, "%d", exitstatus);
+					while (ps[i] != '\0')
+						i++;
+				}
+				i--;
+				break;
+
+				/*
 				 * Superuser status.
 				 *
 				 * '$' for normal users, '#' for root.
