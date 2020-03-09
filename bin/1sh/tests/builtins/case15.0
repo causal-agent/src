@@ -1,5 +1,0 @@
-# $FreeBSD: releng/12.1/bin/sh/tests/builtins/case15.0 230154 2012-01-15 20:04:05Z jilles $
-
-case x in
-`false`) exit 3 ;;
-esac

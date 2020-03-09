@@ -1,4 +1,0 @@
-# $FreeBSD: releng/12.1/bin/sh/tests/execution/pipefail3.42 345487 2019-03-24 22:10:26Z jilles $
-
-set -o pipefail
-: | (exit 42)
