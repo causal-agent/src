@@ -87,7 +87,8 @@ chkmail(int silent)
 		p = mpath;
 		if (*p == '\0')
 			break;
-		mpath = strchrnul(mpath, ':');
+		mpath = strchr(p, ':');
+		if (!mpath) mpath = strchr(p, '\0');
 		if (*mpath != '\0') {
 			*mpath++ = '\0';
 			if (p == mpath - 1)

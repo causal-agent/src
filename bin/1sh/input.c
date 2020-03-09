@@ -224,7 +224,8 @@ again:
 	p = parsefile->buf + (parsenextc - parsefile->buf);
 	end = p + parselleft;
 	*end = '\0';
-	q = strchrnul(p, '\n');
+	q = strchr(p, '\n');
+	if (!q) q = strchr(p, '\0');
 	if (q != end && *q == '\0') {
 		/* delete nul characters */
 		for (r = q; q != end; q++) {
@@ -236,7 +237,8 @@ again:
 			goto again;
 		end = p + parselleft;
 		*end = '\0';
-		q = strchrnul(p, '\n');
+		q = strchr(p, '\n');
+		if (!q) q = strchr(p, '\0');
 	}
 	if (q == end) {
 		parsenleft = parselleft;
