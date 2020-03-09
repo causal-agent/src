@@ -32,11 +32,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
+#if 0
 static char const copyright[] =
 "@(#) Copyright (c) 1991, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
+#endif
 
 #ifndef lint
 #if 0
