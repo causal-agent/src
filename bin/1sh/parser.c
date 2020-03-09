@@ -1978,7 +1978,7 @@ pgetc_linecont(void)
 static char *
 expandprompt(const char *fmt) {
 	static char ps[PROMPTLEN];
-	const char *pwd;
+	const char *pwd, *home;
 	int i, trim;
 
 	/*
@@ -2015,17 +2015,27 @@ expandprompt(const char *fmt) {
 			case 'W':
 			case 'w':
 				pwd = lookupvar("PWD");
+				home = lookupvar("HOME");
 				if (pwd == NULL || *pwd == '\0')
 					pwd = "?";
+				if (home == NULL || *home == '\0')
+					home = "?";
 				if (*fmt == 'W' &&
-				    *pwd == '/' && pwd[1] != '\0')
+				    *pwd == '/' && pwd[1] != '\0' &&
+					strcmp(pwd, home) != 0) {
 					strlcpy(&ps[i], strrchr(pwd, '/') + 1,
 					    PROMPTLEN - i);
-				else
+				} else {
+					if (strncmp(pwd, home, strlen(home)) == 0) {
+						ps[i++] = '~';
+						pwd += strlen(home);
+					}
 					strlcpy(&ps[i], pwd, PROMPTLEN - i);
+				}
 				/* Skip to end of path. */
-				while (ps[i + 1] != '\0')
+				while (ps[i] != '\0')
 					i++;
+				--i;
 				break;
 
 				/*
