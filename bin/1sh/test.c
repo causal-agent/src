@@ -33,7 +33,7 @@ __FBSDID("$FreeBSD: releng/12.1/bin/test/test.c 298232 2016-04-19 00:38:07Z arau
 
 #ifdef SHELL
 #define main testcmd
-#include "bltin/bltin.h"
+#include "bltin.h"
 #else
 #include <locale.h>
 
