@@ -32,11 +32,11 @@
 .\"	from: @(#)sh.1	8.6 (Berkeley) 5/4/95
 .\" $FreeBSD: releng/12.1/bin/sh/sh.1 345487 2019-03-24 22:10:26Z jilles $
 .\"
-.Dd February 24, 2019
-.Dt SH 1
+.Dd March  9, 2020
+.Dt 1SH 1
 .Os
 .Sh NAME
-.Nm sh
+.Nm 1sh
 .Nd command interpreter (shell)
 .Sh SYNOPSIS
 .Nm
@@ -62,7 +62,7 @@
 .Sh DESCRIPTION
 The
 .Nm
-utility is the standard command interpreter for the system.
+utility is a command interpreter.
 The current version of
 .Nm
 is close to the
@@ -314,7 +314,7 @@ The surrounding shell may kill the child
 or it may just return control to the tty and leave the child alone,
 like this:
 .Bd -literal -offset indent
-sh -T -c "trap 'exit 1' 2 ; some-blocking-program"
+1sh -T -c "trap 'exit 1' 2 ; some-blocking-program"
 .Ed
 .It Fl u Li nounset
 Write a message to standard error when attempting
@@ -2844,15 +2844,15 @@ executed, or if the
 builtin is used with a numeric argument, it
 will return the argument.
 .Sh SEE ALSO
+.Xr 1sh-kill 1 ,
+.Xr 1sh-printf 1 ,
+.Xr 1sh-test 1 ,
 .Xr builtin 1 ,
 .Xr chsh 1 ,
 .Xr echo 1 ,
 .Xr ed 1 ,
 .Xr emacs 1 ,
-.Xr kill 1 ,
-.Xr printf 1 ,
 .Xr pwd 1 ,
-.Xr test 1 ,
 .Xr vi 1 ,
 .Xr execve 2 ,
 .Xr getrlimit 2 ,
@@ -2862,20 +2862,24 @@ will return the argument.
 .Xr shells 5
 .Sh HISTORY
 A
-.Nm
+.Nm sh
 command, the Thompson shell, appeared in
 .At v1 .
 It was superseded in
 .At v7
 by the Bourne shell, which inherited the name
-.Nm .
+.Nm sh .
 .Pp
 This version of
-.Nm
+.Nm sh
 was rewritten in 1989 under the
 .Bx
 license after the Bourne shell from
 .At V.4 .
+The
+.Nm
+command is based on sources from
+.Fx 12.1 .
 .Sh AUTHORS
 This version of
 .Nm
