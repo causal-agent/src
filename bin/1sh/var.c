@@ -85,6 +85,7 @@ struct varinit {
 
 
 #ifndef NO_HISTORY
+struct var vhistfile;
 struct var vhistsize;
 struct var vterm;
 #endif
@@ -106,6 +107,8 @@ int forcelocal;
 
 static const struct varinit varinit[] = {
 #ifndef NO_HISTORY
+	{ &vhistfile,	VUNSET,				"HISTFILE=",
+	  sethistfile },
 	{ &vhistsize,	VUNSET,				"HISTSIZE=",
 	  sethistsize },
 #endif
