@@ -77,6 +77,7 @@ extern struct var vifs;
 extern struct var vmail;
 extern struct var vmpath;
 extern struct var vpath;
+extern struct var vps0;
 extern struct var vps1;
 extern struct var vps2;
 extern struct var vps4;
@@ -103,6 +104,7 @@ extern int initial_localeisutf8;
 #define mailval()	(vmail.text + 5)
 #define mpathval()	(vmpath.text + 9)
 #define pathval()	(vpath.text + 5)
+#define ps0val()	(vps0.text + 4)
 #define ps1val()	(vps1.text + 4)
 #define ps2val()	(vps2.text + 4)
 #define ps4val()	(vps4.text + 4)
