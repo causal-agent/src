@@ -95,6 +95,8 @@ struct var vpath;
 struct var vps1;
 struct var vps2;
 struct var vps4;
+struct var vrps1;
+struct var vrps2;
 static struct var voptind;
 struct var vdisvfork;
 
@@ -120,6 +122,10 @@ static const struct varinit varinit[] = {
 	{ &vps2,	0,				"PS2=> ",
 	  NULL },
 	{ &vps4,	0,				"PS4=+ ",
+	  NULL },
+	{ &vrps1,	VUNSET,				"RPS1=",
+	  NULL },
+	{ &vrps2,	VUNSET,				"RPS2=",
 	  NULL },
 #ifndef NO_HISTORY
 	{ &vterm,	VUNSET,				"TERM=",

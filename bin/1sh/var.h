@@ -80,6 +80,8 @@ extern struct var vpath;
 extern struct var vps1;
 extern struct var vps2;
 extern struct var vps4;
+extern struct var vrps1;
+extern struct var vrps2;
 extern struct var vdisvfork;
 #ifndef NO_HISTORY
 extern struct var vhistsize;
@@ -104,6 +106,8 @@ extern int initial_localeisutf8;
 #define ps1val()	(vps1.text + 4)
 #define ps2val()	(vps2.text + 4)
 #define ps4val()	(vps4.text + 4)
+#define rps1val()	(vrps1.text + 5)
+#define rps2val()	(vrps2.text + 5)
 #define optindval()	(voptind.text + 7)
 #ifndef NO_HISTORY
 #define histsizeval()	(vhistsize.text + 9)
