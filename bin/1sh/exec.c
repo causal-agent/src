@@ -725,7 +725,7 @@ typecmd_impl(int argc, char **argv, int cmd, const char *path)
 						" a tracked alias for" : "",
 					    name);
 			} else {
-				if (eaccess(argv[i], X_OK) == 0) {
+				if (faccessat(AT_FDCWD, argv[i], X_OK, AT_EACCESS) == 0) {
 					if (cmd == TYPECMD_SMALLV)
 						out1fmt("%s\n", argv[i]);
 					else

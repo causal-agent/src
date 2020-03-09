@@ -23,6 +23,7 @@ __FBSDID("$FreeBSD: releng/12.1/bin/test/test.c 298232 2016-04-19 00:38:07Z arau
 #include <ctype.h>
 #include <err.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -375,18 +376,18 @@ filstat(char *nm, enum token mode)
 
 	switch (mode) {
 	case FILRD:
-		return (eaccess(nm, R_OK) == 0);
+		return (faccessat(AT_FDCWD, nm, R_OK, AT_EACCESS) == 0);
 	case FILWR:
-		return (eaccess(nm, W_OK) == 0);
+		return (faccessat(AT_FDCWD, nm, W_OK, AT_EACCESS) == 0);
 	case FILEX:
 		/* XXX work around eaccess(2) false positives for superuser */
-		if (eaccess(nm, X_OK) != 0)
+		if (faccessat(AT_FDCWD, nm, X_OK, AT_EACCESS) != 0)
 			return 0;
 		if (S_ISDIR(s.st_mode) || geteuid() != 0)
 			return 1;
 		return (s.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) != 0;
 	case FILEXIST:
-		return (eaccess(nm, F_OK) == 0);
+		return (faccessat(AT_FDCWD, nm, F_OK, AT_EACCESS) == 0);
 	case FILREG:
 		return S_ISREG(s.st_mode);
 	case FILDIR:
