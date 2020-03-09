@@ -1,72 +1,84 @@
-#	@(#)Makefile	8.4 (Berkeley) 5/5/95
-# $FreeBSD: releng/12.1/bin/sh/Makefile 338374 2018-08-29 16:59:19Z brd $
+PREFIX = /usr/local
+MANDIR = ${PREFIX}/share/man
 
-.include <src.opts.mk>
+CFLAGS += -std=c99 -Wall -Wextra -DSHELL
+LDLIBS = -ledit
 
-CONFS=	dot.profile profile
-CONFSDIR_dot.profile=	/root
-CONFSNAME_dot.profile=	.profile
-PACKAGE=runtime
-PROG=	sh
-INSTALLFLAGS= -S
-SHSRCS=	alias.c arith_yacc.c arith_yylex.c cd.c echo.c error.c eval.c \
-	exec.c expand.c \
-	histedit.c input.c jobs.c kill.c mail.c main.c memalloc.c miscbltin.c \
-	mystring.c options.c output.c parser.c printf.c redir.c show.c \
-	test.c trap.c var.c
-GENSRCS= builtins.c nodes.c syntax.c
-GENHDRS= builtins.h nodes.h syntax.h token.h
-SRCS= ${SHSRCS} ${GENSRCS} ${GENHDRS}
+-include config.mk
 
-# MLINKS for Shell built in commands for which there are no userland
-# utilities of the same name are handled with the associated manpage,
-# builtin.1 in share/man/man1/.
+SRCS += alias.c
+SRCS += arith_yacc.c
+SRCS += arith_yylex.c
+SRCS += cd.c
+SRCS += echo.c
+SRCS += error.c
+SRCS += eval.c
+SRCS += exec.c
+SRCS += expand.c
+SRCS += histedit.c
+SRCS += input.c
+SRCS += jobs.c
+SRCS += kill.c
+SRCS += mail.c
+SRCS += main.c
+SRCS += memalloc.c
+SRCS += miscbltin.c
+SRCS += mystring.c
+SRCS += options.c
+SRCS += output.c
+SRCS += parser.c
+SRCS += printf.c
+SRCS += redir.c
+SRCS += show.c
+SRCS += test.c
+SRCS += trap.c
+SRCS += var.c
 
-LIBADD=	edit
+GENSRCS = builtins.c nodes.c syntax.c
+GENHDRS = builtins.h nodes.h syntax.h token.h
 
-CFLAGS+=-DSHELL -I. -I${.CURDIR}
-# for debug:
-# DEBUG_FLAGS+= -g -DDEBUG=2 -fno-inline
-WARNS?=	2
-WFORMAT=0
+SRCS += ${GENSRCS}
+OBJS = ${SRCS:.c=.o}
 
-.PATH:	${.CURDIR}/bltin \
-	${.CURDIR:H}/kill \
-	${.CURDIR:H}/test \
-	${SRCTOP}/usr.bin/printf
+MANS = 1sh.1 1sh-kill.1 1sh-printf.1 1sh-test.1
 
-CLEANFILES+= mknodes mksyntax
-CLEANFILES+= ${GENSRCS} ${GENHDRS}
+all: tags 1sh
 
-build-tools: mknodes mksyntax
+1sh: ${OBJS}
+	${CC} ${LDFLAGS} ${OBJS} ${LDLIBS} -o $@
 
-.ORDER: builtins.c builtins.h
-builtins.h: .NOMETA
+${OBJS}: ${GENHDRS}
+
 builtins.c builtins.h: mkbuiltins builtins.def
-	sh ${.CURDIR}/mkbuiltins ${.CURDIR}
+	sh mkbuiltins .
 
-mknodes mksyntax: ${BUILD_TOOLS_META}
-
-.ORDER: nodes.c nodes.h
-nodes.h: .NOMETA
 nodes.c nodes.h: mknodes nodetypes nodes.c.pat
-	${BTOOLSPATH:U.}/mknodes ${.CURDIR}/nodetypes ${.CURDIR}/nodes.c.pat
+	./mknodes nodetypes nodes.c.pat
 
-.ORDER: syntax.c syntax.h
-syntax.h: .NOMETA
 syntax.c syntax.h: mksyntax
-	${BTOOLSPATH:U.}/mksyntax
+	./mksyntax
 
 token.h: mktokens
-	sh ${.CURDIR}/mktokens
+	sh mktokens
 
-HAS_TESTS=
-SUBDIR.${MK_TESTS}+= tests
+tags: *.h *.c
+	ctags -w *.h *.c
 
-beforeinstallconfig:
-	rm -f ${DESTDIR}/.profile
+depend: ${SRCS} ${GENHDRS}
+	${CC} ${CFLAGS} -MM ${SRCS} > .depend
 
-afterinstallconfig:
-	${INSTALL_LINK} ${TAG_ARGS} ${DESTDIR}/root/.profile ${DESTDIR}/.profile
+-include .depend
 
-.include <bsd.prog.mk>
+clean:
+	rm -f 1sh ${OBJS} mknodes mksyntax ${GENSRCS} ${GENHDRS} tags .depend
+
+install: 1sh ${MANS}
+	install -d ${PREFIX}/bin ${MANDIR}/man1
+	install 1sh ${PREFIX}/bin
+	for man in ${MANS}; do gzip -c $$man > ${MANDIR}/man1/$$man.gz; done
+	grep -q '^${PREFIX}/bin/1sh$$' /etc/shells \
+		|| echo '${PREFIX}/bin/1sh' >> /etc/shells
+
+uninstall:
+	rm -f ${PREFIX}/bin/1sh ${MANS:%=${MANDIR}/man1/%.gz}
+	sed -i sed '\;^${PREFIX}/bin/1sh$$;d' /etc/shells
