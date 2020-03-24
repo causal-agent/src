@@ -8,7 +8,7 @@ pkgNetBSD="${pkgAny} vim"
 pkgLinux="${pkgAny} bc ctags gdb mksh neovim openssh"
 
 pkgsrcTag='20171103'
-neovimTag='v0.4.2'
+neovimTag='v0.4.3'
 
 Darwin() {
 	xcode-select --install || true
