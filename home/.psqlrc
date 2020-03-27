@@ -1,9 +1,0 @@
-\set QUIET
-\set ON_ERROR_ROLLBACK interactive
-\timing on
-\setenv PAGER more
-\pset expanded auto
-\pset null ¤
-\pset linestyle unicode
-\pset border 1
-\unset QUIET
