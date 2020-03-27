@@ -17,6 +17,6 @@ export NETHACKOPTIONS='pickup_types:$!?+/=, color, DECgraphics'
 
 type nvim >/dev/null || EDITOR=vim
 [ -e /usr/share/mk/sys.mk ] || export CFLAGS=-O
-cd
+[ -d /usr/home ] && cd
 
 export ENV=~/.shrc
