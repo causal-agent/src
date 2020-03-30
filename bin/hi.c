@@ -129,6 +129,7 @@ static const struct Syntax CSyntax[] = {
 
 // diff syntax {{{
 static const struct Syntax DiffSyntax[] = {
+	{ Keyword, .pattern = "^[^ ].*" },
 	{ Comment, .pattern = "^@@.*" },
 	{ DiffOld, .pattern = "^[-].*" },
 	{ DiffNew, .pattern = "^[+].*" },
