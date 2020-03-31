@@ -1,0 +1,7 @@
+#!/usr/bin/osascript
+
+tell application "iTunes"
+	tell current track
+		get "/me is listening to " & artist & " — " & name
+	end tell
+end tell
