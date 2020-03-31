@@ -444,11 +444,14 @@ enum IRC {
 	IRCBold = 0x02,
 	IRCColor = 0x03,
 	IRCMonospace = 0x11,
+	IRCUnderline = 0x1F,
 };
 
 static const enum IRC SGRIRC[] = {
 	[SGRBoldOn]  = IRCBold,
 	[SGRBoldOff] = IRCBold,
+	[SGRUnderlineOn]  = IRCUnderline,
+	[SGRUnderlineOff] = IRCUnderline,
 	[SGRBlack]   = IRCBlack,
 	[SGRRed]     = IRCRed,
 	[SGRGreen]   = IRCGreen,
