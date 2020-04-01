@@ -240,5 +240,32 @@ so that
 .Xr git-pull 1
 continues to work on existing clones.
 .
+.Ss Update: fast HTTPS clones
+Someone pointed out that cloning my repos
+over HTTPS was incredibly slow,
+and this is because cgit only implements the
+.Dq dumb
+HTTP git transport.
+To speed up cloning,
+I send the URLs used by the
+.Dq smart
+HTTP transport to
+.Xr git-http-backend 1
+instead:
+.Bd -literal -offset indent
+location ~ /.+/(info/refs|git-upload-pack) {
+	fastcgi_pass unix:/var/run/slowcgi.sock;
+	fastcgi_param SCRIPT_NAME /usr/local/libexec/git-core/git-http-backend;
+	fastcgi_param GIT_HTTP_EXPORT_ALL 1;
+	fastcgi_param GIT_PROJECT_ROOT /home/june/pub;
+	include fastcgi_params;
+}
+.Ed
+.
+.Pp
+I factored out the FastCGI parameters
+I'm using with cgit
+to be included here as well.
+.
 .Sh AUTHORS
 .An June Bug Aq Mt june@causal.agency
