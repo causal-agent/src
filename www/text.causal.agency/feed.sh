@@ -30,6 +30,7 @@ for entry in *.7; do
 		<id>${url}</id>
 		<published>${published}</published>
 		<updated>${updated}</updated>
+		<content type="text/plain" src="${url}"/>
 		</entry>
 	EOF
 done
