@@ -6,15 +6,15 @@ CFLAGS += -I${LIBS_PREFIX}/include
 LDFLAGS += -L${LIBS_PREFIX}/lib
 
 CFLAGS += -Wall -Wextra -Wpedantic -Wno-gnu-case-range
-LDLIBS_dtch = -lutil
-LDLIBS_glitch = -lz
-LDLIBS_hnel = -lutil
-LDLIBS_modem = -lutil
-LDLIBS_pngo = -lz
-LDLIBS_ptee = -lutil
-LDLIBS_relay = -ltls
-LDLIBS_scheme = -lm
-LDLIBS_title = -lcurl
+LDLIBS.dtch = -lutil
+LDLIBS.glitch = -lz
+LDLIBS.hnel = -lutil
+LDLIBS.modem = -lutil
+LDLIBS.pngo = -lz
+LDLIBS.ptee = -lutil
+LDLIBS.relay = -ltls
+LDLIBS.scheme = -lm
+LDLIBS.title = -lcurl
 
 -include config.mk
 
@@ -65,13 +65,13 @@ tls: meta ${BINS_TLS}
 meta: .gitignore tags
 
 .c:
-	${CC} ${CFLAGS} ${LDFLAGS} $< ${LDLIBS_$@} -o $@
+	${CC} ${CFLAGS} ${LDFLAGS} $< ${LDLIBS.$@} -o $@
 
 .o:
-	${CC} ${LDFLAGS} $< ${LDLIBS_$@} -o $@
+	${CC} ${LDFLAGS} $< ${LDLIBS.$@} -o $@
 
 hi: hi.c
-	${CC} ${CFLAGS} ${LDFLAGS} hi.c ${LDLIBS_$@} -o $@
+	${CC} ${CFLAGS} ${LDFLAGS} hi.c ${LDLIBS.$@} -o $@
 	./hi -c
 
 open pbcopy pbpaste: pbd
