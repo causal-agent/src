@@ -1,12 +1,15 @@
 PREFIX = ~/.local
 
-CFLAGS = -Dmk_wcwidth=wcwidth -Dmk_wcswidth=wcswidth
-
-OBJS = wcwidth.o
+OBJS = wcwidth.o wcswidth.o
 DYLIB = libwcwidth.dylib
 
 ${DYLIB}: ${OBJS}
 	${CC} -dynamiclib ${LDFLAGS} ${OBJS} -o $@
+
+wcwidth.o: nonspacing.h wide.h
+
+clean:
+	rm -f ${DYLIB} ${OBJS}
 
 install: ${DYLIB}
 	install -d ${PREFIX}/lib
