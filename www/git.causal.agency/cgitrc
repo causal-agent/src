@@ -1,5 +1,5 @@
 root-title=causal agency
-root-desc=git git git git got got got got
+root-desc=“then I'm sorry, no offence, but you write toy programs.”
 
 clone-url=https://$HTTP_HOST/$CGIT_REPO_URL
 snapshots=tar.gz zip
