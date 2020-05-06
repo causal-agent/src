@@ -15,7 +15,6 @@ alias gc='git commit' gca='gc --amend' gt='git tag'
 alias gp='git push' gu='git pull' gf='git fetch'
 alias rand='openssl rand -base64 33'
 alias private='eval "$(gpg -d ~/.private)"'
-bman() { ssh ${freebsd:-monday} man "$@" | sh -c "$MANPAGER"; }
 
 cd() {
 	if [ $# -eq 0 ]; then
