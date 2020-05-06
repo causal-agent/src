@@ -8,6 +8,7 @@ TXTS += 005-testing-c.txt
 TXTS += 006-some-libs.txt
 TXTS += 007-cgit-setup.txt
 TXTS += 008-how-irc.txt
+TXTS += 009-casual-update.txt
 
 all: ${TXTS}
 

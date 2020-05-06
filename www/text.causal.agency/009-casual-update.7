@@ -1,0 +1,127 @@
+.Dd May  6, 2020
+.Dt CASUAL-UPDATE 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm casual update
+.Nd software developments
+.
+.Sh DESCRIPTION
+I've been figuring out more of IMAP
+and Internet Messages in general
+while working on a new project
+so I've revisited some older ones.
+I've copied my somewhat more proper
+IMAP parsing code into them,
+so they should be more robust.
+.
+.Pp
+.Xr imbox 1
+is my tool to export messages
+in mboxrd format directly from IMAP.
+It's mostly for applying patches sent by email
+without having any kind of local mail setup.
+For that,
+it includes the
+.Xr git-fetch-email 1
+wrapper which works very similarly to
+.Xr git-send-email 1 .
+I learned by reading the source of
+.Xr git-subtree 1
+that
+.Xr git-rev-parse 1
+can be used by shell scripts
+to parse long options,
+so I added those.
+I also added the
+.Fl Fl apply
+flag to automatically pipe to
+.Xr git-am 1
+with the right flags for mboxrd.
+.
+.Pp
+.Xr notemap 1
+is a tool for mirroring text files
+to an IMAP Notes mailbox,
+which is used by FastMail's web UI
+and the macOS/iOS Notes app.
+Its original parsing code
+was particularly ad-hoc.
+Since I've now learned
+how UTF-8 headers are encoded,
+I updated it to properly encode
+the file name in the Subject line.
+.
+.Pp
+I also got distracted by
+a conversation about UNIX-domain sockets
+where I was comparing the macOS and FreeBSD
+.Xr unix 4
+pages and the Linux
+.Xr unix 7
+page.
+This lead me to make
+.Xr exman 1 ,
+a tool to locally install and read
+manual pages for Linux, POSIX,
+.Fx ,
+.Nx
+and
+.Ox .
+I've already gotten quite a bit of use out of it.
+.
+.Pp
+In yet another IRC distraction,
+I was talking about some further plans for my IRC software,
+and realized it might be time to write
+my future projects list down.
+I opened a
+.Pa .plan
+file,
+immediately wondered how anyone can write plain text,
+then switched to a
+.Pa plan.7
+file.
+There's nothing I won't use
+.Xr mdoc 7
+for.
+After a little setup,
+I can now be fingered,
+and make jokes about this silly little protocol
+from the days of old.
+.Xr finger 1 Ap s
+default output fills me with joy:
+.Bd -unfilled -offset indent
+No Mail.
+No Plan.
+.Ed
+.
+.Pp
+And speaking of IRC and plans,
+I've been meaning to tag
+.Xr catgirl 1
+version 1.0 for a while now.
+I've been using it as my main client
+and my commits to it have really slowed down.
+When I do tag it,
+I'm planning on writing another post
+about my whole
+.Dq suite
+of IRC software
+and how the parts work together.
+Watch this space.
+.
+.Sh SEE ALSO
+.Bl -item -compact
+.It
+.Lk https://git.causal.agency/imbox "imbox"
+.It
+.Lk https://git.causal.agency/notemap "notemap"
+.It
+.Lk https://git.causal.agency/exman "exman"
+.It
+.Lk https://git.causal.agency/catgirl "catgirl"
+.El
+.
+.Sh AUTHORS
+.An June Bug Aq Mt june@causal.agency
