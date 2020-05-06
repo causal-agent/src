@@ -1,0 +1,60 @@
+.Dd May  5, 2020
+.Dt PLAN 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm plan
+.Nd future projects
+.
+.Sh DESCRIPTION
+.
+.Ss bubger
+.Bl -bullet -compact
+.It
+IMAP mailbox (mailing list) archive generator
+.It
+export HTML/Atom/mboxrd fragments by UID
+.It
+assemble fragments into threads using IMAP THREAD
+.El
+.
+.Ss sbubby
+.Bl -bullet -compact
+.It
+mailing list subscription manager for FastMail
+.It
+process messages from IMAP mailbox
+.It
+add/remove addresses from CardDAV address book
+.It
+send confirmations with SMTP
+.El
+.
+.Ss feeds to IMAP
+.Bl -bullet -compact
+.It
+convert Atom/RSS feed entries into Internet Messages
+.It
+Message-Id derived from entry IDs
+.It
+append messages to a mailbox for each feed
+.It
+use
+.Ql <link rel="alternate" type="application/mbox">
+if available
+(bubger does this, convince public-inbox to?)
+.El
+.
+.Ss litterbox link indexer
+.Bl -bullet -compact
+.It
+scrape links from messages in
+.Xr litterbox 1
+.It
+index text in contentless FTS table
+.It
+simple HTML parser to extract text nodes, skipping
+.Sy <script>
+and
+.Sy <style>
+.El
