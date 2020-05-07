@@ -9,7 +9,7 @@ path /usr/games
 export PAGER=less
 export LESS=FRX
 export EDITOR=nvim
-export MANPAGER="nvim -c 'set ft=man' -"
+export MANPAGER='nvim +Man!'
 export MANSECT=2:3:1:8:6:5:7:4:9
 export CLICOLOR=1
 export GPG_TTY=$(tty)
