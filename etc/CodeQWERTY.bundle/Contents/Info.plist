@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>CFBundleIdentifier</key>
+		<string>agency.causal.keyboardlayout.code</string>
+		<key>CFBundleName</key>
+		<string>Code QWERTY</string>
+		<key>CFBundleVersion</key>
+		<string>1.0</string>
+		<key>KLInfo_Code QWERTY</key>
+		<dict>
+			<key>TISInputSourceID</key>
+			<string>agency.causal.keyboardlayout.code.qwerty</string>
+			<key>TISIntendedLanguage</key>
+			<string>en-CA</string>
+		</dict>
+	</dict>
+</plist>

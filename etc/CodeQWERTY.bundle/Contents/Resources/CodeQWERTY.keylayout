@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="UTF-8"?>
-<!DOCTYPE keyboard SYSTEM "file://localhost/System/Library/DTDs/KeyboardLayout.dtd">
-<keyboard group="126" id="5069" maxout="1" name="Code QWERTY">
+<!DOCTYPE keyboard PUBLIC "" "file://localhost/System/Library/DTDs/KeyboardLayout.dtd">
+<keyboard group="0" id="5069" maxout="1" name="Code QWERTY">
     <layouts>
         <layout first="0" last="17" mapSet="16c" modifiers="f4"/>
         <layout first="18" last="18" mapSet="994" modifiers="f4"/>
