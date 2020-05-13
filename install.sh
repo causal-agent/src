@@ -45,7 +45,6 @@ NetBSD() {
 	fi
 	pkgin update
 	pkgin install $pkgNetBSD
-	ln -fs /usr/pkg/bin/gpg2 /usr/local/bin/gpg
 }
 
 Linux() {
