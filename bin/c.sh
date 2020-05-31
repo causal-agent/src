@@ -49,6 +49,7 @@ if [ -n "${expr:-}" ]; then
 	printf(
 		_Generic(
 			${expr},
+			char: "%c\n",
 			char *: "%s\n",
 			wchar_t *: "%ls\n",
 			signed char: "%hhd\n",
