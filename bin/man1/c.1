@@ -1,0 +1,40 @@
+.Dd May 31, 2020
+.Dt C 1
+.Os
+.
+.Sh NAME
+.Nm c
+.Nd run C
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl e Ar expr
+.Op Fl i Ar include
+.Op Ar stmts ...
+.
+.Sh DESCRIPTION
+The
+.Nm
+utility compiles and runs
+C statements wrapped in
+.Fn main
+with common includes.
+If no
+.Ar expr
+or
+.Ar stmts
+are provided,
+statements are read from standard input.
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl e Ar expr
+Print the result of the C expression
+.Ar expr
+after executing
+.Ar stmts .
+.It Fl i Ar include
+Add the include file
+.Ar include .
+.El

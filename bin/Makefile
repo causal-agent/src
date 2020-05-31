@@ -21,6 +21,7 @@ LDLIBS.title = -lcurl
 BINS += aes
 BINS += beef
 BINS += bit
+BINS += c
 BINS += dtch
 BINS += edit
 BINS += glitch
