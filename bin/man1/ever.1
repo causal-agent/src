@@ -1,4 +1,4 @@
-.Dd August 28, 2019
+.Dd June  1, 2020
 .Dt EVER 1
 .Os
 .
@@ -8,9 +8,11 @@
 .
 .Sh SYNOPSIS
 .Nm
+.Op Fl i
 .Ar
 .Ar command
 .Nm
+.Op Fl i
 .Ar
 .Fl -
 .Ar command
@@ -24,9 +26,21 @@ whenever
 .Ar file
 is modified.
 .
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl i
+Attach the
+.Ar file
+which was modified
+to the standard input of
+.Ar command .
+.El
+.
 .Sh EXAMPLES
 .Dl ever ever.c make
 .Dl ever when.y ever.c -- make when ever
+.Dl ever -i ever.1 mandoc
 .
 .Sh CAVEATS
 .Nm

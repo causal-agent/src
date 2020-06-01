@@ -18,13 +18,14 @@
 
 #include <err.h>
 #include <fcntl.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <sys/event.h>
 #include <sys/wait.h>
 #include <sysexits.h>
 #include <unistd.h>
 
-static void watch(int kq, char *path) {
+static int watch(int kq, char *path) {
 	int fd = open(path, O_CLOEXEC);
 	if (fd < 0) err(EX_NOINPUT, "%s", path);
 
@@ -40,13 +41,16 @@ static void watch(int kq, char *path) {
 	);
 	int nevents = kevent(kq, &event, 1, NULL, 0, NULL);
 	if (nevents < 0) err(EX_OSERR, "kevent");
+
+	return fd;
 }
 
-static void exec(char *const argv[]) {
+static void exec(int fd, char *const argv[]) {
 	pid_t pid = fork();
 	if (pid < 0) err(EX_OSERR, "fork");
 
 	if (!pid) {
+		dup2(fd, STDIN_FILENO);
 		execvp(*argv, argv);
 		err(EX_NOINPUT, "%s", *argv);
 	}
@@ -65,13 +69,23 @@ static void exec(char *const argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-	if (argc < 3) return EX_USAGE;
+	bool input = false;
+
+	for (int opt; 0 < (opt = getopt(argc, argv, "i"));) {
+		switch (opt) {
+			break; case 'i': input = true;
+			break; default:  return EX_USAGE;
+		}
+	}
+	argc -= optind;
+	argv += optind;
+	if (argc < 2) return EX_USAGE;
 
 	int kq = kqueue();
 	if (kq < 0) err(EX_OSERR, "kqueue");
 
 	int i;
-	for (i = 1; i < argc - 1; ++i) {
+	for (i = 0; i < argc - 1; ++i) {
 		if (argv[i][0] == '-') {
 			i++;
 			break;
@@ -79,7 +93,9 @@ int main(int argc, char *argv[]) {
 		watch(kq, argv[i]);
 	}
 
-	exec(&argv[i]);
+	if (!input) {
+		exec(STDIN_FILENO, &argv[i]);
+	}
 
 	for (;;) {
 		struct kevent event;
@@ -89,9 +105,12 @@ int main(int argc, char *argv[]) {
 		if (event.fflags & NOTE_DELETE) {
 			close(event.ident);
 			sleep(1);
-			watch(kq, (char *)event.udata);
+			event.ident = watch(kq, (char *)event.udata);
+		} else if (input) {
+			off_t off = lseek(event.ident, 0, SEEK_SET);
+			if (off < 0) err(EX_IOERR, "lseek");
 		}
 
-		exec(&argv[i]);
+		exec((input ? event.ident : STDIN_FILENO), &argv[i]);
 	}
 }
