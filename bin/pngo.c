@@ -385,14 +385,18 @@ static void readData(struct Chunk chunk) {
 	}
 
 	inflateEnd(&stream);
-	if (stream.total_out != dataSize()) {
+	if ((size_t)stream.total_out != dataSize()) {
 		errx(
-			EX_DATAERR, "%s: expected data size %zu, found %lu",
-			path, dataSize(), stream.total_out
+			EX_DATAERR, "%s: expected data size %zu, found %zu",
+			path, dataSize(), (size_t)stream.total_out
 		);
 	}
 
-	if (verbose) fprintf(stderr, "%s: deflate size %lu\n", path, stream.total_in);
+	if (verbose) {
+		fprintf(
+			stderr, "%s: deflate size %zu\n", path, (size_t)stream.total_in
+		);
+	}
 }
 
 static void writeData(void) {

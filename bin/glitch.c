@@ -238,10 +238,10 @@ static void readData(void) {
 	}
 
 	inflateEnd(&stream);
-	if (stream.total_out != dataSize()) {
+	if ((size_t)stream.total_out != dataSize()) {
 		errx(
-			EX_DATAERR, "%s: expected data size %zu, found %lu",
-			path, dataSize(), stream.total_out
+			EX_DATAERR, "%s: expected data size %zu, found %zu",
+			path, dataSize(), (size_t)stream.total_out
 		);
 	}
 }
