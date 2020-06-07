@@ -104,7 +104,7 @@ static void indent(int, FILE *);
 static int nextfield(char *);
 static void skipbl(void);
 static int readline(FILE *);
-static void error(const char *, ...) __printf0like(1, 2) __attribute__((noreturn));
+static void error(const char *, ...) __attribute__((format(printf, 1, 2))) __attribute__((noreturn));
 static char *savestr(const char *);
 
 

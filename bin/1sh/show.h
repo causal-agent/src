@@ -34,7 +34,7 @@
 
 void showtree(union node *);
 #ifdef DEBUG
-void sh_trace(const char *, ...) __printflike(1, 2);
+void sh_trace(const char *, ...) __attribute__((format(printf, 1, 2)));
 void trargs(char **);
 void trputc(int);
 void trputs(const char *);

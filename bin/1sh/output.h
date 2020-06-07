@@ -71,11 +71,11 @@ void flushout(struct output *);
 void freestdout(void);
 int outiserror(struct output *);
 void outclearerror(struct output *);
-void outfmt(struct output *, const char *, ...) __printflike(2, 3);
-void out1fmt(const char *, ...) __printflike(1, 2);
-void out2fmt_flush(const char *, ...) __printflike(1, 2);
-void fmtstr(char *, int, const char *, ...) __printflike(3, 4);
-void doformat(struct output *, const char *, va_list) __printflike(2, 0);
+void outfmt(struct output *, const char *, ...) __attribute__((format(printf, 2, 3)));
+void out1fmt(const char *, ...) __attribute__((format(printf, 1, 2)));
+void out2fmt_flush(const char *, ...) __attribute__((format(printf, 1, 2)));
+void fmtstr(char *, int, const char *, ...) __attribute__((format(printf, 3, 4)));
+void doformat(struct output *, const char *, va_list) __attribute__((format(printf, 2, 0)));
 FILE *out1fp(void);
 int xwrite(int, const char *, int);
 

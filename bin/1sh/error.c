@@ -67,7 +67,7 @@ volatile sig_atomic_t suppressint;
 volatile sig_atomic_t intpending;
 
 
-static void exverror(int, const char *, va_list) __printf0like(2, 0) __attribute__((noreturn));
+static void exverror(int, const char *, va_list) __attribute__((format(printf, 2, 0))) __attribute__((noreturn));
 
 /*
  * Called to raise an exception.  Since C doesn't include exceptions, we
