@@ -4,12 +4,12 @@ set -eu
 pkgAny='curl htop sl the_silver_searcher tree'
 pkgDarwin="${pkgAny}"
 pkgFreeBSD="${pkgAny} ddate neovim"
-pkgNetBSD="${pkgAny} vim"
 pkgLinux="${pkgAny} bc ctags gdb neovim openssh"
+pkgNetBSD="${pkgAny} vim"
+pkgOpenBSD="${pkgAny} neovim"
 
 pkgsrcTag='20171103'
 neovimTag='v0.4.3'
-
 Darwin() {
 	xcode-select --install || true
 	if [ ! -d /opt/pkg ]; then
@@ -36,6 +36,10 @@ FreeBSD() {
 	pkg install $pkgFreeBSD
 }
 
+Linux() {
+	pacman -Sy --needed $pkgLinux
+}
+
 NetBSD() {
 	if [ ! -f /usr/pkg/bin/pkgin ]; then
 		base="ftp://ftp.NetBSD.org/pub/pkgsrc/packages"
@@ -47,8 +51,8 @@ NetBSD() {
 	pkgin install $pkgNetBSD
 }
 
-Linux() {
-	pacman -Sy --needed $pkgLinux
+OpenBSD() {
+	pkg_add $pkgOpenBSD
 }
 
 $(uname)
