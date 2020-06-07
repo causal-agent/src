@@ -34,7 +34,7 @@
 #	@(#)mkbuiltins	8.2 (Berkeley) 5/4/95
 # $FreeBSD: releng/12.1/bin/sh/mkbuiltins 328934 2018-02-06 15:41:35Z arichardson $
 
-temp=`mktemp -t ka`
+temp=`mktemp`
 havehist=1
 if [ "X$1" = "X-h" ]; then
 	havehist=0
