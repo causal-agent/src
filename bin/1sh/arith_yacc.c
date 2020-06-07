@@ -33,7 +33,7 @@
  */
 
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: releng/12.1/bin/sh/arith_yacc.c 345117 2019-03-13 21:53:10Z jilles $");
+/* $FreeBSD: releng/12.1/bin/sh/arith_yacc.c 345117 2019-03-13 21:53:10Z jilles $ */
 
 #include <limits.h>
 #include <errno.h>

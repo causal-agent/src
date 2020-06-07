@@ -38,7 +38,7 @@ static char sccsid[] = "@(#)miscbltin.c	8.4 (Berkeley) 5/4/95";
 #endif
 #endif /* not lint */
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: releng/12.1/bin/sh/miscbltin.c 326025 2017-11-20 19:49:47Z pfg $");
+/* $FreeBSD: releng/12.1/bin/sh/miscbltin.c 326025 2017-11-20 19:49:47Z pfg $ */
 
 /*
  * Miscellaneous builtins.

@@ -38,7 +38,7 @@ static char sccsid[] = "@(#)trap.c	8.5 (Berkeley) 6/5/95";
 #endif
 #endif /* not lint */
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: releng/12.1/bin/sh/trap.c 326025 2017-11-20 19:49:47Z pfg $");
+/* $FreeBSD: releng/12.1/bin/sh/trap.c 326025 2017-11-20 19:49:47Z pfg $ */
 
 #include <signal.h>
 #include <unistd.h>
