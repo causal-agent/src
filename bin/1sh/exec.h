@@ -63,7 +63,7 @@ struct cmdentry {
 
 extern int exerrno;		/* last exec error */
 
-void shellexec(char **, char **, const char *, int) __dead2;
+void shellexec(char **, char **, const char *, int) __attribute__((noreturn));
 char *padvance(const char **, const char **, const char *);
 void find_command(const char *, struct cmdentry *, int, const char *);
 int find_builtin(const char *, int *);

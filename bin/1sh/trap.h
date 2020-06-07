@@ -46,5 +46,5 @@ int issigchldtrapped(void);
 void onsig(int);
 void dotrap(void);
 void setinteractive(void);
-void exitshell(int) __dead2;
-void exitshell_savedstatus(void) __dead2;
+void exitshell(int) __attribute__((noreturn));
+void exitshell_savedstatus(void) __attribute__((noreturn));

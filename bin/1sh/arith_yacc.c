@@ -86,7 +86,7 @@ static const char prec[ARITH_BINOP_MAX - ARITH_BINOP_MIN] = {
 
 int letcmd(int, char **);
 
-static __dead2 void yyerror(const char *s)
+static __attribute__((noreturn)) void yyerror(const char *s)
 {
 	error("arithmetic expression: %s: \"%s\"", s, arith_startbuf);
 	/* NOTREACHED */
