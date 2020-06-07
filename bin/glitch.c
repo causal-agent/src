@@ -15,7 +15,6 @@
  */
 
 #include <arpa/inet.h>
-#include <assert.h>
 #include <err.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -125,7 +124,7 @@ static struct PACKED {
 	uint8_t filter;
 	uint8_t interlace;
 } header;
-static_assert(13 == sizeof(header), "header size");
+_Static_assert(13 == sizeof(header), "header size");
 
 static size_t pixelBits(void) {
 	switch (header.color) {
