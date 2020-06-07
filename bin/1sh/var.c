@@ -181,7 +181,7 @@ initvar(void)
 			continue;
 		vp->next = *vpp;
 		*vpp = vp;
-		vp->text = __DECONST(char *, ip->text);
+		vp->text = (char *)(ip->text);
 		vp->flags = ip->flags | VSTRFIXED | VTEXTFIXED;
 		vp->func = ip->func;
 	}
@@ -191,7 +191,7 @@ initvar(void)
 	if (find_var("PS1", &vpp, &vps1.name_len) == NULL) {
 		vps1.next = *vpp;
 		*vpp = &vps1;
-		vps1.text = __DECONST(char *, geteuid() ? "PS1=$ " : "PS1=# ");
+		vps1.text = (char *)(geteuid() ? "PS1=$ " : "PS1=# ");
 		vps1.flags = VSTRFIXED|VTEXTFIXED;
 	}
 	fmtstr(ppid, sizeof(ppid), "%d", (int)getppid());
@@ -411,7 +411,7 @@ setvareq(char *s, int flags)
 static void
 setvareq_const(const char *s, int flags)
 {
-	setvareq(__DECONST(char *, s), flags | VTEXTFIXED);
+	setvareq((char *)(s), flags | VTEXTFIXED);
 }
 
 

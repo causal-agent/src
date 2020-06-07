@@ -525,7 +525,7 @@ bindcmd(int argc, char **argv)
 	el_get(el, EL_GETFP, 1, &old);
 	el_set(el, EL_SETFP, 1, out);
 
-	ret = el_parse(el, argc, __DECONST(const char **, argv));
+	ret = el_parse(el, argc, (const char **)(argv));
 
 	el_set(el, EL_SETFP, 1, old);
 

@@ -165,7 +165,7 @@ tryexec(char *cmd, char **argv, char **envp)
 			}
 		}
 		*argv = cmd;
-		*--argv = __DECONST(char *, _PATH_BSHELL);
+		*--argv = (char *)(_PATH_BSHELL);
 		execve(_PATH_BSHELL, argv, envp);
 	}
 	errno = e;
