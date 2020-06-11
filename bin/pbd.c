@@ -139,8 +139,10 @@ static int open1(const char *url) {
 
 int main(int argc, char *argv[]) {
 	(void)argc;
-	if (!argv[0][0] || !argv[0][1]) return EX_USAGE;
-	switch (argv[0][2]) {
+	if (strchr(argv[0], '/')) {
+		argv[0] = strrchr(argv[0], '/') + 1;
+	}
+	switch (argv[0][0] && argv[0][1] ? argv[0][2] : 0) {
 		case 'd': return pbd();
 		case 'c': return pbcopy();
 		case 'p': return pbpaste();
