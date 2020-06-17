@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+
+enwiden() {
+	exec tr ' -~' '　！-～'
+}
+[ $# -gt 0 ] && echo "$*" | enwiden || enwiden
