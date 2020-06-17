@@ -18,7 +18,6 @@ LDLIBS.title = -lcurl
 
 -include config.mk
 
-BINS += aes
 BINS += beef
 BINS += bit
 BINS += c
