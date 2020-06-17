@@ -4,7 +4,7 @@ HISTFILE=~/.history
 CDPATH=:~
 
 alias vim=$EDITOR
-alias ls='ls -p'
+alias ls='LC_COLLATE=C ls -p'
 alias ll='ls -hl'
 alias bc='bc -l'
 alias gs='git status --short --branch || ls' gd='git diff'
