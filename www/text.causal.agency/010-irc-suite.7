@@ -1,0 +1,374 @@
+.Dd June 19, 2020
+.Dt IRC-SUITE 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm IRC suite
+.Nd my own IRC software
+.
+.Sh DESCRIPTION
+Over the past months
+.Po
+eight of them, according to
+.Xr git-log 1
+.Pc
+I developed a new
+.Dq suite
+of IRC software
+that I now use full-time,
+consisting of a bouncer,
+a new logging and search solution,
+and a terminal client.
+These new programs share some characteristics:
+they are all TLS-only
+and use the libtls API from LibreSSL,
+they can all be entirely configured from the command line
+or with equivalent configuration files,
+they are all designed as
+a one process to one IRC connection mapping,
+and they all take advantage of IRCv3 features.
+.
+.Pp
+For context,
+I was previously running
+the znc IRC bouncer
+and using the Textual IRC client
+with its plain text logs.
+I also continue to use
+the Palaver IRC client for iOS.
+.
+.Ss Background
+A bouncer is a piece of server software
+that stays connected to IRC at all times
+and acts as a relay
+between your client and the IRC server.
+When the client is disconnected,
+the bouncer buffers incoming messages
+to send to the client when it reconnects.
+.
+.Pp
+Aside from this,
+bouncers have another advantage:
+client multiplexing.
+Several clients,
+for instance on different computers
+or a phone,
+should be able to connect to the same bouncer,
+and send and receive messages under the same nick.
+Unfortunately,
+znc does not handle this use-case well at all.
+Out of the box it offers two options:
+either any client connection totally clears the buffer,
+causing other clients to miss chat history;
+or the buffer is never cleared,
+causing every client connection
+to be repeatedly spammed with redundant history.
+There is also a znc wiki page
+that suggests one way to solve this issue
+is to connect znc to itself multiple times over.
+Yikes.
+.
+.Ss pounce
+My dissatisfaction with
+connecting multiple clients to znc
+directly motivated me to start working
+on a new multi-client-focused IRC bouncer.
+The result is
+.Xr pounce 1 ,
+based on a rather straightforward
+single-producer (the IRC server)
+multiple-consumer (each IRC client)
+ring buffer.
+Each client has its own
+independent position in the buffer
+so can properly be brought up to date
+whenever it connects.
+.
+.Pp
+Additionally,
+by assuming support for the IRCv3
+.Sy server-time
+extension,
+all IRC events can be accurately
+relayed to clients at any time,
+and the internals of
+.Xr pounce 1
+can be kept very simple.
+In fact,
+it completely avoids parsing most IRC messages,
+simply pushing them into the buffer
+with an associated timestamp.
+.
+.Pp
+The usernames sent by clients during registration
+are used as opaque identifiers for buffer consumers.
+This was chosen since most clients
+can be configured to send an arbitrary username,
+and those that don't often default
+to the name of the client itself,
+making it an appropriate identifier.
+.
+.Pp
+Later,
+I added a way for clients
+to be informed of their own buffer positions
+using a vendor-specific IRCv3 capability.
+This means a client
+can save the position
+of the last message it actually received,
+and request to set its position
+when it reconnects,
+ensuring no messages are lost
+to network issues
+or software crashes.
+.
+.Ss calico
+Due to the simple design of mapping
+one process to one IRC (server) connection,
+it is necessary to run several instances of
+.Xr pounce 1 .
+Initially I simply used different ports for each,
+but as I connected to more networks
+and even ran some instances for friends,
+it became less feasible.
+.
+.Pp
+The solution I came up with
+was to dispatch incoming connections
+using Server Name Indication, or SNI.
+This way,
+multiple domains pointing to the same host
+could be used with only one port
+to connect to different instances of
+.Xr pounce 1 .
+For example,
+I use a
+.Li *.irc.causal.agency
+wildcard DNS entry
+and a subdomain for each IRC network,
+all on port 6697.
+.
+.Pp
+The
+.Xr calico 1
+daemon included with pounce
+accomplishes this dispatch
+using the
+.Dv MSG_PEEK
+flag of
+.Xr recvmsg(2)
+on incoming connections.
+Since SNI is immediately sent by TLS clients
+as part of the ClientHello message in clear-text,
+it can be processed
+without doing any actual TLS.
+The connection itself is then
+sent to the corresponding
+.Xr pounce 1
+instance
+over UNIX-domain socket,
+which handles TLS as normal.
+This means that
+.Xr calico 1
+and
+.Xr pounce 1
+operate entirely independently of each other.
+.
+.Ss litterbox
+Based on the multiple-consumer ring buffer design,
+I realized it would be easy
+to implement additional functionality
+as independent purpose-built clients
+which connect to
+.Xr pounce 1
+alongside regular clients.
+This could allow dedicated OTR or DCC software
+to operate in parallel with a basic client,
+or for more passive software
+to provide notifications
+or dedicated logging.
+.
+.Pp
+For the latter,
+I wanted to do better than
+plain text log files.
+.Xr grep 1
+over files works fine,
+but search could be faster and smarter,
+and the text format is
+more lossy and less structured
+than I'd like it to be.
+Conveniently,
+SQLite provides an extension
+(actually two)
+for full-text search.
+.
+.Pp
+The litterbox project
+is my dedicated logging solution
+using SQLite FTS5.
+It consists of three tools:
+the
+.Xr litterbox 1
+daemon itself which connects to pounce
+and logs messages to SQLite,
+the
+.Xr scoop 1
+command line query tool,
+and the
+.Xr unscoop 1
+plain text import tool.
+The
+.Xr scoop 1
+tool constructs SQL queries
+and formats the results for viewing,
+with coloured nicks
+and piped to a pager
+by default.
+.
+.Pp
+The
+.Xr litterbox 1
+daemon
+can also provide a simple
+.Dq online
+.Pq over IRC
+search query interface
+to other connected clients.
+The simplest way to allow different
+.Xr pounce 1
+clients to talk to each other
+was to route private messages to self
+internally without sending them to the IRC server.
+So from any client
+I can simply message myself
+a full-text search query
+and
+.Xr litterbox 1
+responds with the results.
+.
+.Pp
+Along with routing self-messages,
+.Xr pounce 1
+also provides a vendor-specific IRCv3 capability
+for passive clients such as
+.Xr litterbox 1
+to indicate that they should not influence
+the automatic away status,
+which is normally only set
+when no clients are connected.
+.
+.Pp
+An advantage of this architecture
+of dedicated clients
+rather than bouncer modules
+is that they need not run
+on the same host.
+I run my bouncers on a VPS,
+but I'd rather not store my private logs there,
+so
+.Xr litterbox 1
+runs instead on a Raspberry Pi
+in my apartment.
+.
+.Ss catgirl
+There's not really that much to say
+about the client,
+.Xr catgirl 1 .
+Of the three projects
+it contains the most code
+but is also the least interesting,
+in my opinion.
+It just does what I want a client to do,
+and gets the details right.
+.
+.Pp
+Tab complete is ordered by most recently seen or used,
+and completing several nicks
+inserts commas between them
+as well as the colon following the final nick.
+In the input line,
+the prompt is updated
+to reflect whether the input
+will be interpreted as a command or as a message.
+Messages are automatically scanned for URLs,
+which can be opened or copied with commands
+specifying the nick or a substring of the URL.
+.
+.Pp
+Scrolling in a window creates a split view,
+keeping the latest messages visible.
+Nick colours are based instead on usernames,
+keeping them more stable across renames,
+and mentions in messages are coloured
+to make the conversation easier to follow.
+The visibility of ignored messages
+can be toggled at any time.
+Channels can be muted
+so their activity is hidden
+from the status line
+unless you are pinged.
+.
+.Pp
+.Xr catgirl 1
+is configured entirely on the command line
+or in equivalent simple configuration files.
+There's no dynamic manipulation of state
+using complex
+.Ql /
+commands like in some other clients.
+.
+.Pp
+The major caveat is that
+.Xr catgirl 1
+connects to only one network at a time.
+This keeps the configuration, the interface
+and the code much simpler.
+.Xr tmux 1 ,
+.Xr screen 1
+or a tabbed terminal emulator
+are good options to run several instances.
+.
+.Pp
+If you're interested in giving
+.Xr catgirl 1
+a quick (and necessarily limited) try,
+you can
+.Li ssh chat@ascii.town .
+.
+.Ss Future
+I think I'm done with IRC software for now.
+As mentioned above,
+there are a few more pieces
+that could fit in to this setup,
+but I don't really want or need them right now.
+One thing I definitely want to try
+at some point
+is adding a litterbox component
+to index the contents of URLs
+to make finding previously shared links easier.
+.
+.Pp
+If you try any of this software
+and have feedback,
+let me know in
+.Li #ascii.town
+on freenode
+or by email.
+And of course,
+patches are always welcome.
+.
+.Sh SEE ALSO
+.Bl -item -compact
+.It
+.Lk "https://git.causal.agency/pounce" pounce
+.It
+.Lk "https://git.causal.agency/litterbox" litterbox
+.It
+.Lk "https://git.causal.agency/catgirl" catgirl
+.It
+.Lk "https://www.sqlite.org/fts5.html" "SQLite FTS5 Extension"
+.El
+.
+.Sh AUTHORS
+.An June Bug Aq Mt june@causal.agency
