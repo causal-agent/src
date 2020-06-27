@@ -1,10 +1,10 @@
-.Dd May 20, 2020
+.Dd June 26, 2020
 .Dt PLAN 7
 .Os "Causal Agency"
 .
 .Sh NAME
 .Nm plan
-.Nd future projects
+.Nd possible future projects
 .
 .Sh DESCRIPTION
 .
@@ -69,4 +69,22 @@ man-like tool to read text versions of IETF RFCs and IDs
 vim mode like man.vim to make links work and :RFC
 .It
 .Lk https://www.rfc-editor.org/retrieve/rsync/
+.El
+.
+.Ss Password non-manager
+.Bl -bullet -compact
+.It
+password reset flow automation
+.It
+sets random password and leaves it in clipboard
+.It
+modules for each service to handle:
+.Bl -enum -compact
+.It
+submitting forgot password form
+.It
+extracting token from email
+.It
+submitting password reset form
+.El
 .El
