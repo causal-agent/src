@@ -10,24 +10,28 @@ body {
 }
 h1 {
 	font-size: inherit;
+	font-weight: inherit;
 	margin: 1em 0 0;
 }
 p { margin: 0 0 1em 4ch; }
 a { text-decoration: none; }
-/* scheme.css */
+hr { visibility: hidden; }
+/* include:scheme.css */
 </style>
 
 <p>
 Hi.
-I'm an aspiring person.
-I'm still trying to figure out how to be.
-<p>
+I'm me.
+I make things.
 You can find me in
 <a href="ircs://chat.freenode.net:6697/#ascii.town">#ascii.town</a>
 on freenode
 or send mail to june@.
+
 <p>
-These are things I've made.
+<a href="https://git.causal.agency">code</a>
+--
+<a href="https://text.causal.agency">words</a>
 
 <h1><a href="https://git.causal.agency/pounce/about">pounce</a></h1>
 <p>
@@ -37,15 +41,15 @@ multi-client IRC bouncer
 <p>
 full-text search IRC logger
 
-<h1>catgirl</h1>
+<h1><a href="https://git.causal.agency/catgirl/about">catgirl</a></h1>
 <p>
 artisanal IRC client
 <p>
-<a href="ssh://chat@ascii.town">ssh chat@ascii.town</a>
---
-<a href="https://git.causal.agency/catgirl/about">git</a>
+demo: <a href="ssh://chat@ascii.town">ssh chat@ascii.town</a>
 <p>
-<!-- catgirl.html -->
+<!-- include:catgirl.html -->
+
+<hr>
 
 <h1><a href="https://git.causal.agency/imbox/about">imbox & git-fetch-email</a></h1>
 <p>
@@ -53,49 +57,43 @@ IMAP to mbox
 
 <h1><a href="https://git.causal.agency/notemap/about">notemap</a></h1>
 <p>
-IMAP notes mirror
+mirror notes to IMAP
 
-<h1>torus</h1>
+<hr>
+
+<h1><a href="https://ascii.town/explore.html">torus</a></h1>
 <p>
-collaborative ASCII art project
+collaborative ASCII art
 <p>
 <a href="ssh://torus@ascii.town">ssh torus@ascii.town</a>
 --
-<a href="https://ascii.town/explore.html">explore</a>
---
-<a href="https://git.causal.agency/torus">git</a>
+<a href="https://git.causal.agency/torus">src</a>
 <p>
-<!-- torus.html -->
+<!-- include:torus.html -->
 
 <h1>play</h1>
 <p>
-2048 clone with scoreboard
+2048 over SSH
 <p>
 <a href="ssh://play@ascii.town">ssh play@ascii.town</a>
 --
-<a href="https://git.causal.agency/play">git</a>
+<a href="https://git.causal.agency/play">src</a>
 <p>
-<!-- play.html -->
+<!-- include:play.html -->
+
+<hr>
 
 <h1><a href="https://git.causal.agency/cards/about">cards</a></h1>
 <p>
 CARDS.DLL loader for SDL
 
-<h1>scheme</h1>
+<h1><a href="bin/scheme.html">scheme</a></h1>
 <p>
 earthy terminal colours
 <p>
 <a href="scheme.png">palette</a>
---
-<a href="bin/scheme.html">src</a>
-<!-- scheme.html -->
+<!-- include:scheme.html -->
 
 <h1><a href="bin/">bin</a></h1>
 <p>
-little utilities
-
-<h1>text</h1>
-<p>
-words about code
-<p>
-<a href="https://text.causal.agency">text.causal.agency</a>
+other little tools

@@ -12,13 +12,14 @@ INCLUDES = scheme.css torus.html play.html catgirl.html scheme.html
 index.html: index.html.in index.sed ${INCLUDES}
 	sed -f index.sed index.html.in > index.html
 
-FLAGS_torus.pty = -n -h 25
-FLAGS_scheme.pty = -n -h 10
+FLAGS.torus.pty = -n -h 25
+FLAGS.scheme.pty = -n -h 10
+FLAGS.play.pty = -h 16
 
 .SUFFIXES: .html .pty
 
 .pty.html:
-	shotty ${FLAGS_$<} $< > $@
+	shotty ${FLAGS.$<} $< > $@
 
 scheme.css: scheme.sed
 	scheme -s | sed -f scheme.sed > scheme.css
@@ -27,4 +28,4 @@ scheme.png:
 	scheme -g > scheme.png
 
 clean:
-	rm -f *.html scheme.css scheme.png
+	rm -f ${FILES} ${INCLUDES}
