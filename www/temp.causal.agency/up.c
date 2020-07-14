@@ -81,7 +81,7 @@ static enum kcgi_err handle(struct kreq *req) {
 
 	} else if (req->method == KMETHOD_POST) {
 		struct kpair *field = req->fieldmap[0];
-		if (!field) return fail(req, KHTTP_400);
+		if (!field || !field->valsz) return fail(req, KHTTP_400);
 
 		char name[256];
 		const char *ext = strrchr(field->file, '.');
