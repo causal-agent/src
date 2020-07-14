@@ -10,7 +10,7 @@ clean:
 	rm -f up
 
 install: up
-	install up ${WEBROOT}/up
+	install -m 700 up ${WEBROOT}/up
 
 uninstall:
 	rm -f ${WEBROOT}/up
