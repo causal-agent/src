@@ -1,4 +1,4 @@
-.Dd May 18, 2019
+.Dd July 18, 2020
 .Dt ORDER 1
 .Os
 .
@@ -8,7 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Ar expr ...
+.Op Ar expr ...
 .
 .Sh DESCRIPTION
 .Nm
@@ -16,6 +16,11 @@ parses C expressions
 and prints them with parentheses
 according to the precedence rules in
 .Xr operator 7 .
+If no
+.Ar expr
+are given,
+each line of standard input
+is parsed and printed.
 .
 .Sh EXAMPLES
 .Bd -literal

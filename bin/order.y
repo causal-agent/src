@@ -183,4 +183,11 @@ int main(int argc, char *argv[]) {
 		input = argv[i];
 		yyparse();
 	}
+	if (argc > 1) return EX_OK;
+	size_t cap = 0;
+	char *buf = NULL;
+	while (0 < getline(&buf, &cap, stdin)) {
+		input = buf;
+		yyparse();
+	}
 }
