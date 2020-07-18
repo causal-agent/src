@@ -15,7 +15,7 @@ alias gc='git commit' gca='gc --amend' gt='git tag'
 alias gp='git push' gu='git pull' gf='git fetch'
 alias rand='openssl rand -base64 33'
 alias private='eval "$(gpg -d ~/.private)"'
-type doas 2>/dev/null && alias sudo=doas
+type doas >/dev/null 2>&1 && alias sudo=doas
 
 cd() {
 	if [ $# -eq 0 ]; then

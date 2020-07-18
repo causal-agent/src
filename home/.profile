@@ -15,7 +15,7 @@ export CLICOLOR=1
 export GPG_TTY=$(tty)
 export NETHACKOPTIONS='pickup_types:$!?+/=, color, DECgraphics'
 
-type nvim >/dev/null || EDITOR=vim
+type nvim >/dev/null 2>&1 || EDITOR=vim
 [ -e /usr/share/mk/sys.mk ] || export CFLAGS=-O
 [ -d /usr/home ] && cd
 
