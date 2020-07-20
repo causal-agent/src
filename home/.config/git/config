@@ -8,6 +8,9 @@
 [merge]
 	conflictStyle = diff3
 
+[pull]
+	rebase = true
+
 [rebase]
 	autosquash = true
 
