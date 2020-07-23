@@ -893,6 +893,15 @@ void cgit_add_clone_urls(void (*fn)(const char *))
 		add_clone_urls(fn, ctx.cfg.clone_prefix, ctx.repo->url);
 }
 
+static int print_this_commit_option(void)
+{
+	struct object_id oid;
+	if (get_oid(ctx.qry.head, &oid))
+		return 1;
+	html_option(oid_to_hex(&oid), "this commit", ctx.qry.head);
+	return 0;
+}
+
 static int print_branch_option(const char *refname, const struct object_id *oid,
 			       int flags, void *cb_data)
 {
@@ -1000,9 +1009,12 @@ static void print_header(void)
 			html("<form method='get'>\n");
 			cgit_add_hidden_formfields(0, 1, ctx.qry.page);
 			html("<select name='h' onchange='this.form.submit();'>\n");
+			print_this_commit_option();
+			html("<optgroup label='branches'>");
 			for_each_branch_ref(print_branch_option, ctx.qry.head);
 			if (ctx.repo->enable_remote_branches)
 				for_each_remote_ref(print_branch_option, ctx.qry.head);
+			html("</optgroup>");
 			html("</select> ");
 			html("<input type='submit' value='switch'/>");
 			html("</form>");
