@@ -136,7 +136,7 @@ static CURLcode fetchTitle(const char *url) {
 
 	body.len = 0;
 	title = false;
-	curl_easy_setopt(curl, CURLOPT_NOBODY, 0L);
+	curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
 	code = curl_easy_perform(curl);
 	return code;
 }
