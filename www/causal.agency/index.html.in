@@ -37,10 +37,6 @@ or send mail to june@.
 <p>
 multi-client IRC bouncer
 
-<h1><a href="https://git.causal.agency/litterbox/about">litterbox</a></h1>
-<p>
-full-text search IRC logger
-
 <h1><a href="https://git.causal.agency/catgirl/about">catgirl</a></h1>
 <p>
 artisanal IRC client
@@ -48,6 +44,14 @@ artisanal IRC client
 demo: <a href="ssh://chat@ascii.town">ssh chat@ascii.town</a>
 <p>
 <!-- include:catgirl.html -->
+
+<h1><a href="https://git.causal.agency/litterbox/about">litterbox</a></h1>
+<p>
+full-text search IRC logger
+
+<h1><a href="https://git.causal.agency/scooper/about">scooper</a></h1>
+<p>
+web interface for litterbox
 
 <hr>
 
