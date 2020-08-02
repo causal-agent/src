@@ -363,6 +363,32 @@ or by email.
 And of course,
 patches are always welcome.
 .
+.Ss Update: scooper
+Somehow I had the motivation
+to create a web interface for litterbox:
+.Xr scooper 1 .
+It can be used either as CGI
+or as a FastCGI worker,
+and I used the excellent
+.Xr kcgi 3
+library for it.
+.
+.Pp
+The main advantage of this interface
+is that you can click on a search result
+to be brought to its context in the log viewer.
+I also added an option to
+.Xr litterbox 1
+to provide a corresponding scooper link
+in response to its query interface.
+.
+.Pp
+A small demo of scooper is hosted at
+.Aq Lk "https://causal.agency/scooper/" .
+It publicly logs the
+.Li #litterbox
+channel on freenode.
+.
 .Sh SEE ALSO
 .Bl -item -compact
 .It
@@ -373,6 +399,10 @@ patches are always welcome.
 .Lk "https://git.causal.agency/catgirl" catgirl
 .It
 .Lk "https://www.sqlite.org/fts5.html" "SQLite FTS5 Extension"
+.It
+.Lk "https://git.causal.agency/scooper" scooper
+.It
+.Lk "https://kristaps.bsd.lv/kcgi/" kcgi
 .El
 .
 .Sh AUTHORS
