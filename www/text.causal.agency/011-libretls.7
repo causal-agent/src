@@ -1,0 +1,220 @@
+.Dd August  9, 2020
+.Dt LIBRETLS 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm LibreTLS
+.Nd libtls for OpenSSL
+.
+.Sh DESCRIPTION
+This is a sort of announcement post about LibreTLS,
+my port of libtls from LibreSSL to OpenSSL.
+If you've wanted to try any of my software
+but have been unable to because of LibreSSL,
+LibreTLS is an option that will likely work for you.
+I'm including instructions
+for building it and my IRC software
+on Debian as an example,
+since manually installing libraries
+is less straightforward than it could be.
+.
+.Pp
+libtls is
+.Do
+a new TLS library,
+designed to make it easier to write foolproof applications
+.Dc .
+It was developed as part of LibreSSL,
+.Ox Ap s
+fork of OpenSSL,
+and is implemented against their version of libssl.
+It provides a nice high-level API
+for TLS sockets,
+with functions like
+.Xr tls_connect 3 ,
+.Xr tls_read 3
+and
+.Xr tls_write 3 .
+This is a vast improvement over libssl's
+confusing mess of an API!
+Its relative obscurity is a real shame
+for C programmers.
+.
+.Pp
+An obvious cause of its obscurity
+is that it is tied to LibreSSL.
+Although LibreSSL is available
+for platforms other than
+.Ox ,
+it conflicts with OpenSSL
+so is difficult to install alongside it
+and is often not packaged at all.
+Additionally,
+even if a user manually installs LibreSSL,
+libtls is likely not to work on some distros
+due to its hardcoded CA bundle file path.
+.
+.Pp
+Since libtls is implemented against libssl,
+which originates in OpenSSL,
+it should be possible to use libtls with it.
+This is what I set out to do in LibreTLS.
+I started by importing the sources
+from a LibreSSL-portable release,
+then worked on porting the portions
+that were incompatible with OpenSSL.
+.
+.Pp
+The simpler changes just involved
+replacing internal struct field accesses
+with public APIs.
+libtls accesses libssl internals
+using a hack to get the header files
+to declare private struct fields,
+and for basically no reason.
+The bigger changes involved
+reimplementing some functions
+which only exist in LibreSSL,
+but these were still quite small.
+I also imported the necessary compatibility functions
+from LibreSSL's libcrypto
+and adapated the autotools build files
+to produce only a libtls
+which depends on OpenSSL.
+.
+.Pp
+Along the way
+I decided to make one small behavioural change
+in order for LibreTLS to be more likely
+to work for everyone.
+I removed the hardcoded CA file path
+and changed the default configuration
+to use OpenSSL's default CA paths,
+which include a CA directory.
+This seems to be the preferred CA source
+on systems such as Debian,
+where the default CA file path doesn't exist.
+.
+.Pp
+I think the reason LibreSSL
+wants to avoid using a CA directory
+is so that it can fully load the CA file
+once before being sandboxed.
+However,
+using OpenSSL's default configuration,
+the CA file will still be loaded immediately
+if it exists.
+If it doesn't exist,
+sandboxed applications
+will fail when trying to
+load certificates from the directory,
+but unsandboxed applications
+will work just fine.
+Since LibreSSL's libtls
+would fail either way,
+I think the new behaviour
+is an improvement.
+.
+.Pp
+Another advantage of separating libtls from LibreSSL
+is that it is unencumbered by OpenSSL's
+awkward double-license,
+both of which are incompatible with the GPL.
+libtls is all new ISC-licensed code,
+and future versions of OpenSSL (3.0)
+will be released under the Apache 2.0 license,
+which is compatible with GPLv3.
+In the future,
+GPL software will be able to link with
+libtls and OpenSSL without additional permissions.
+.
+.Pp
+It's also worth noting that LibreSSL
+likely will not be able to import any code
+from future versions of OpenSSL,
+since Apache 2.0 is on
+.Ox Ap s
+license shitlist.
+LLVM is also slowly changing their license
+to Apache 2.0,
+so it'll be interesting to see what
+.Ox
+does.
+.
+.Ss Installing Manually
+To install LibreTLS on Debian,
+for example,
+fetch a release tarball from
+.Lk https://causal.agency/libretls/
+and install the build dependencies:
+.Bd -literal -offset indent
+sudo apt-get install build-essential libssl-dev pkgconf
+.Ed
+.
+.Pp
+.Xr pkgconf 1
+isn't a dependency of LibreTLS itself,
+but it's how my software
+configures its build
+for a dependency on libtls.
+The usual build steps
+will install the library:
+.Bd -literal -offset indent
+\&./configure
+make all
+sudo make install
+.Ed
+.
+.Pp
+The library will be installed in
+.Pa /usr/local/lib
+by default,
+and you need to make sure
+the dynamic linker
+will be able to find it there.
+On Debian,
+.Pa /usr/local/lib
+already appears in
+.Pa /etc/ld.so.conf.d/libc.conf ,
+but on other systems
+you'll probably need to add it to either
+.Pa /etc/ld.so.conf
+or a new file such as
+.Pa /etc/ld.so.conf.d/local.conf .
+Once the library is installed
+and the path is configured,
+the linker cache needs to be refreshed:
+.Bd -literal -offset indent
+sudo ldconfig
+.Ed
+.
+.Pp
+You'll probably also need to set
+.Ev PKG_CONFIG_PATH
+for the configure scripts
+of my software:
+.Bd -literal -offset indent
+PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ./configure
+.Ed
+.
+.Pp
+On
+.Fx ,
+LibreTLS and some of my IRC software
+can be installed from my own
+.Lk https://git.causal.agency/ports/ "ports tree"
+.
+.Sh SEE ALSO
+.Bl -item -compact
+.It
+.Lk https://git.causal.agency/libretls/about LibreTLS
+.It
+.Lk https://man.openbsd.org/tls_init.3 "libtls API documentation"
+.El
+.
+.Pp
+Another alternative libtls implementation,
+.Lk https://sr.ht/~mcf/libtls-bearssl/ "libtls-bearssl"
+.
+.Sh AUTHORS
+.An June Bug Aq Mt june@causal.agency
