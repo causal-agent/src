@@ -84,7 +84,7 @@ static void showTitle(const char *title) {
 static CURL *curl;
 static bool title;
 static struct {
-	char buf[8192];
+	char buf[64 * 1024];
 	size_t len;
 } body;
 
