@@ -1,0 +1,9 @@
+#!/bin/sh
+set -u
+
+for repo in ~/src/git/*; do
+	version=$(git -C "${repo}" describe --dirty 2>/dev/null)
+	if [ $? -eq 0 ]; then
+		echo "${repo##*/}-${version#v}"
+	fi
+done | sort -nr -t '-' -k 3 | column -t -s '-'
