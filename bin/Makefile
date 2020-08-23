@@ -116,7 +116,7 @@ WEBROOT = /usr/local/www/causal.agency
 html: ${HTMLS}
 	@true
 
-${HTMLS}: html.sh hi ttpre
+${HTMLS}: html.sh scheme hi ttpre
 
 .SUFFIXES: .html
 
