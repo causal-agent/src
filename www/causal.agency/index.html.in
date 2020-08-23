@@ -21,8 +21,9 @@ hr { visibility: hidden; }
 
 <p>
 Hi.
-I'm me.
-I make things.
+I make mostly IRC software in C.
+I like FreeBSD and OpenBSD
+but also the GPL.
 You can find me in
 <a href="ircs://chat.freenode.net:6697/#ascii.town">#ascii.town</a>
 on freenode
