@@ -2,8 +2,12 @@
 <title>Causal Agency</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body {
+html {
 	font-family: monospace;
+	color: var(--ansi15);
+	background-color: var(--ansi0);
+}
+body {
 	max-width: 80ch;
 	margin: 2em auto;
 	padding: 0 1ch;
@@ -13,9 +17,22 @@ h1 {
 	font-weight: inherit;
 	margin: 1em 0 0;
 }
-p { margin: 0 0 1em 4ch; }
-a { text-decoration: none; }
-hr { visibility: hidden; }
+p {
+	margin: 0 0 1em 4ch;
+}
+a {
+	color: var(--ansi12);
+	text-decoration: none;
+}
+a:visited {
+	color: var(--ansi13);
+}
+pre {
+	border: 1px dashed var(--ansi8);
+}
+hr {
+	visibility: hidden;
+}
 /* include:scheme.css */
 </style>
 

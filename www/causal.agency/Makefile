@@ -21,8 +21,8 @@ FLAGS.play.pty = -h 16
 .pty.html:
 	shotty ${FLAGS.$<} $< > $@
 
-scheme.css: scheme.sed
-	scheme -s | sed -f scheme.sed > scheme.css
+scheme.css:
+	scheme -s > scheme.css
 
 scheme.png:
 	scheme -g > scheme.png
