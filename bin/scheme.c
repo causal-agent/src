@@ -175,13 +175,17 @@ static void outputMintty(const struct HSV *hsv, uint len) {
 }
 
 static void outputCSS(const struct HSV *hsv, uint len) {
+	printf(":root {\n");
 	for (uint i = 0; i < len; ++i) {
 		struct RGB rgb = convert(hsv[i]);
+		printf("\t--ansi%u: #" FORMAT_RGB ";\n", i, rgb.r, rgb.g, rgb.b);
+	}
+	printf("}\n");
+	for (uint i = 0; i < len; ++i) {
 		printf(
-			".fg%u { color: #" FORMAT_RGB "; }\n"
-			".bg%u { background-color: #" FORMAT_RGB "; }\n",
-			i, rgb.r, rgb.g, rgb.b,
-			i, rgb.r, rgb.g, rgb.b
+			".fg%u { color: var(--ansi%u); }\n"
+			".bg%u { background-color: var(--ansi%u); }\n",
+			i, i, i, i
 		);
 	}
 }
