@@ -1,4 +1,4 @@
-.Dd June 26, 2020
+.Dd August 28, 2020
 .Dt PLAN 7
 .Os "Causal Agency"
 .
@@ -8,7 +8,7 @@
 .
 .Sh DESCRIPTION
 .
-.Ss bubger
+.Ss bubger -- mostly works
 .Bl -bullet -compact
 .It
 IMAP mailbox (mailing list) archive generator
@@ -28,6 +28,9 @@ process messages from IMAP mailbox
 add/remove addresses from CardDAV address book
 .It
 send confirmations with SMTP
+.It
+it seems I can't be bothered
+implementing all the parts of this
 .El
 .
 .Ss feeds to IMAP
@@ -57,18 +60,6 @@ simple HTML parser to extract text nodes, skipping
 .Sy <script>
 and
 .Sy <style>
-.El
-.
-.Ss RFC man-like
-.Bl -bullet -compact
-.It
-more of a wishlist item
-.It
-man-like tool to read text versions of IETF RFCs and IDs
-.It
-vim mode like man.vim to make links work and :RFC
-.It
-.Lk https://www.rfc-editor.org/retrieve/rsync/
 .El
 .
 .Ss Password non-manager
