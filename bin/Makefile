@@ -28,6 +28,7 @@ BINS += glitch
 BINS += hi
 BINS += hnel
 BINS += modem
+BINS += nudge
 BINS += order
 BINS += pbd
 BINS += pngo

@@ -1,0 +1,38 @@
+.Dd September  4, 2020
+.Dt NUDGE 1
+.Os
+.
+.Sh NAME
+.Nm nudge
+.Nd terminal vibrator
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl n Ar count
+.Op Fl s Ar shake
+.Op Fl t Ar delay
+.
+.Sh DESCRIPTION
+The
+.Nm
+utility
+nudges the terminal.
+An
+.Xr xterm 1
+compatible terminal is required.
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl n Ar count
+Set the number of times
+to nudge the terminal.
+The default is 2.
+.It Fl s Ar shake
+Set the shake intensity in pixels.
+The default is 10.
+.It Fl t Ar delay
+Set the interval between shakes
+in milliseconds.
+The default is 20.
+.El
