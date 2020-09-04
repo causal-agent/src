@@ -7,6 +7,7 @@ LDFLAGS += -L${LIBS_PREFIX}/lib
 
 CFLAGS += -Wall -Wextra -Wpedantic -Wno-gnu-case-range
 LDLIBS.dtch = -lutil
+LDLIBS.fbclock = -lz
 LDLIBS.glitch = -lz
 LDLIBS.hnel = -lutil
 LDLIBS.modem = -lutil
