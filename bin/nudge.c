@@ -15,6 +15,7 @@
  */
 
 #include <err.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sysexits.h>
@@ -25,14 +26,16 @@ static int shake = 10;
 static int delay = 20000;
 static int count = 2;
 
-static void move(int x, int y) {
-	fprintf(stderr, "\33[3;%d;%dt", x, y);
+static void move(int tty, int x, int y) {
+	dprintf(tty, "\33[3;%d;%dt", x, y);
 	usleep(delay);
 }
 
 int main(int argc, char *argv[]) {
-	for (int opt; 0 < (opt = getopt(argc, argv, "n:s:t:"));) {
+	const char *path = "/dev/tty";
+	for (int opt; 0 < (opt = getopt(argc, argv, "f:n:s:t:"));) {
 		switch (opt) {
+			break; case 'f': path = optarg;
 			break; case 'n': count = atoi(optarg);
 			break; case 's': shake = atoi(optarg);
 			break; case 't': delay = atoi(optarg) * 1000;
@@ -40,29 +43,36 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	int tty = open(path, O_RDWR);
+	if (tty < 0) err(EX_OSFILE, "%s", path);
+
 	struct termios save;
-	int error = tcgetattr(STDIN_FILENO, &save);
+	int error = tcgetattr(tty, &save);
 	if (error) err(EX_IOERR, "tcgetattr");
 
 	struct termios raw = save;
 	cfmakeraw(&raw);
-	error = tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+	error = tcsetattr(tty, TCSAFLUSH, &raw);
 	if (error) err(EX_IOERR, "tcsetattr");
 
-	int x, y;
-	fprintf(stderr, "\33[13t");
-	int n = scanf("\33[3;%d;%dt", &x, &y);
+	char buf[256];
+	dprintf(tty, "\33[13t");
+	ssize_t len = read(tty, buf, sizeof(buf) - 1);
+	buf[(len < 0 ? 0 : len)] = '\0';
 
-	error = tcsetattr(STDIN_FILENO, TCSANOW, &save);
+	int x, y;
+	int n = sscanf(buf, "\33[3;%d;%dt", &x, &y);
+
+	error = tcsetattr(tty, TCSANOW, &save);
 	if (error) err(EX_IOERR, "tcsetattr");
 	if (n < 2) return EX_CONFIG;
 
-	fprintf(stderr, "\33[5t");
+	dprintf(tty, "\33[5t");
 	for (int i = 0; i < count; ++i) {
-		move(x - shake, y);
-		move(x, y + shake);
-		move(x + shake, y);
-		move(x, y - shake);
-		move(x, y);
+		move(tty, x - shake, y);
+		move(tty, x, y + shake);
+		move(tty, x + shake, y);
+		move(tty, x, y - shake);
+		move(tty, x, y);
 	}
 }
