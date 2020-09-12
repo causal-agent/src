@@ -32,6 +32,12 @@ Darwin() {
 	[ -d /opt/local ] || installMacPorts
 	sudo /opt/local/bin/port selfupdate
 	sudo /opt/local/bin/port -N install git mandoc pkgconfig $packages
+	sudo mkdir -p /opt/local/etc/select/man
+	printf 'bin/man\nshare/man/man1/man.1\nshare/man/man1/man.1.gz\n' \
+		| sudo tee /opt/local/etc/select/man/base >/dev/null
+	printf '/usr/bin/man\n/usr/share/man/man1/man.1\n-\n' \
+		| sudo tee /opt/local/etc/select/man/system >/dev/null
+	sudo port select --set man system
 }
 
 $(uname)
