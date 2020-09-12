@@ -2,34 +2,25 @@
 set -eu
 
 pkgAny='curl htop sl the_silver_searcher tree'
-pkgDarwin="${pkgAny}"
+pkgDarwin="${pkgAny} git neovim pkg-config"
 pkgFreeBSD="${pkgAny} ddate neovim"
 pkgLinux="${pkgAny} bc ctags gdb neovim openssh"
 pkgNetBSD="${pkgAny} vim"
 pkgOpenBSD="${pkgAny} neovim"
 
-pkgsrcTag='20171103'
-neovimTag='v0.4.3'
 Darwin() {
-	xcode-select --install || true
-	if [ ! -d /opt/pkg ]; then
-		tar="bootstrap-trunk-x86_64-${pkgsrcTag}.tar.gz"
-		url="https://pkgsrc.joyent.com/packages/Darwin/bootstrap/${tar}"
-		curl -O "$url"
-		sudo tar -pxz -f "$tar" -C /
-		rm "$tar"
+	if [ ! -d /opt/local ]; then
+		dir=MacPorts-2.6.3
+		tar=${dir}.tar.bz2
+		curl -O "https://distfiles.macports.org/MacPorts/${tar}"
+		tar -x -f $tar
+		(cd $dir && ./configure)
+		make -C $dir
+		sudo make -C $dir install
+		rm -fr $tar $dir
 	fi
-	sudo pkgin update
-	sudo pkgin install $pkgDarwin
-	sudo ln -fs /opt/pkg/bin/gpg2 /usr/local/bin/gpg
-	if [ ! -f /usr/local/bin/nvim ]; then
-		tar='nvim-macos.tar.gz'
-		base='https://github.com/neovim/neovim/releases/download'
-		url="${base}/${neovimTag}/${tar}"
-		curl -L -O "$url"
-		sudo tar -x -f "$tar" -C /usr/local --strip-components 1
-		rm "$tar"
-	fi
+	sudo /opt/local/bin/port selfupdate
+	sudo /opt/local/bin/port -N install $pkgDarwin
 }
 
 FreeBSD() {
