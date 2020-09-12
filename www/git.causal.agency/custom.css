@@ -74,6 +74,7 @@ dl.Bl-diag > dt { font-weight: bold; }
 code.Nm, code.Fl, code.Cm, code.Ic, code.In, code.Fd, code.Fn,
 code.Cd { font-weight: bold; font-family: inherit; }
 
+h1.Sh { font-size: 1.5em; }
 table.Nm td:first-child { padding-right: 1ch; }
 code.Fl { white-space: nowrap; }
 span.RsT { font-style: italic; }
