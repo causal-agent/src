@@ -1,6 +1,6 @@
 _PATH=$PATH PATH=
 path() { [ -d "$1" ] && PATH="${PATH}${PATH:+:}${1}"; }
-for prefix in '' /usr/local /opt/local /usr ~/.local; do
+for prefix in '' /usr/local /usr /opt/local ~/.local; do
 	path "${prefix}/sbin"
 	path "${prefix}/bin"
 done
