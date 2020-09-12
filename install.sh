@@ -5,7 +5,6 @@ pkgAny='curl htop sl the_silver_searcher tree'
 pkgDarwin="${pkgAny} git neovim pkg-config"
 pkgFreeBSD="${pkgAny} ddate neovim"
 pkgLinux="${pkgAny} bc ctags gdb neovim openssh"
-pkgNetBSD="${pkgAny} vim"
 pkgOpenBSD="${pkgAny} neovim"
 
 Darwin() {
@@ -29,17 +28,6 @@ FreeBSD() {
 
 Linux() {
 	pacman -Sy --needed $pkgLinux
-}
-
-NetBSD() {
-	if [ ! -f /usr/pkg/bin/pkgin ]; then
-		base="ftp://ftp.NetBSD.org/pub/pkgsrc/packages"
-		export PKG_PATH="${base}/$(uname -s)/$(uname -p)/$(uname -r)/All"
-		pkg_add pkgin
-		echo "$PKG_PATH" > /usr/pkg/etc/pkgin/repositories.conf
-	fi
-	pkgin update
-	pkgin install $pkgNetBSD
 }
 
 OpenBSD() {

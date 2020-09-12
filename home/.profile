@@ -1,6 +1,6 @@
 _PATH=$PATH PATH=
 path() { [ -d "$1" ] && PATH="${PATH}${PATH:+:}${1}"; }
-for prefix in '' /usr/local /opt/local /usr/pkg /usr ~/.local; do
+for prefix in '' /usr/local /opt/local /usr ~/.local; do
 	path "${prefix}/sbin"
 	path "${prefix}/bin"
 done
@@ -15,7 +15,6 @@ export CLICOLOR=1
 export GPG_TTY=$(tty)
 export NETHACKOPTIONS='pickup_types:$!?+/=, color, DECgraphics'
 
-type nvim >/dev/null 2>&1 || EDITOR=vim
 [ -e /usr/share/mk/sys.mk ] || export CFLAGS=-O
 [ -d /usr/home ] && cd
 
