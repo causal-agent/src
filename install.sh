@@ -31,7 +31,7 @@ installMacPorts() {
 Darwin() {
 	[ -d /opt/local ] || installMacPorts
 	sudo /opt/local/bin/port selfupdate
-	sudo /opt/local/bin/port -N install git pkgconfig $packages
+	sudo /opt/local/bin/port -N install git mandoc pkgconfig $packages
 }
 
 $(uname)
