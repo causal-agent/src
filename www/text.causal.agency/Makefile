@@ -17,7 +17,7 @@ all: ${TXTS}
 .SUFFIXES: .7 .txt
 
 .7.txt:
-	mandoc $< | col -bx > $@
+	mandoc -T utf8 $< | col -bx > $@
 
 feed.atom: feed.sh ${TXTS}
 	sh feed.sh > feed.atom
