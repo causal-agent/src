@@ -20,12 +20,18 @@ type doas >/dev/null 2>&1 && alias sudo=doas
 cd() {
 	if [ $# -eq 0 ]; then
 		builtin cd
+	elif [ "${1%%:*}" != "$1" ]; then
+		ssh -o "SetEnv SSH_CD=${1#*:}" "${1%%:*}"
 	elif [ -e "$1" -a ! -d "$1" ]; then
 		builtin cd "${1%/*}" && $EDITOR "${1##*/}"
 	else
 		builtin cd "$@"
 	fi
 }
+if [ -n "${SSH_CD:-}" ]; then
+	cd "${SSH_CD}"
+	unset SSH_CD
+fi
 
 PS0=$'\n'
 PS1='\$ '
