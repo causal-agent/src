@@ -18,10 +18,13 @@ alias private='eval "$(gpg -d ~/.private)"'
 type doas >/dev/null 2>&1 && alias sudo=doas
 
 cd() {
+	local path
 	if [ $# -eq 0 ]; then
 		builtin cd
 	elif [ "${1%%:*}" != "$1" ]; then
-		SSH_CD=${1#*:} ssh -o SendEnv=SSH_CD "${1%%:*}"
+		path=${1#*:}
+		[ -n "${path}" ] || path=${PWD#${HOME}/}
+		SSH_CD=$path ssh -o SendEnv=SSH_CD "${1%%:*}"
 	elif [ -e "$1" -a ! -d "$1" ]; then
 		builtin cd "${1%/*}" && $EDITOR "${1##*/}"
 	else
