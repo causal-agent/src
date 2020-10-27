@@ -21,7 +21,7 @@ cd() {
 	if [ $# -eq 0 ]; then
 		builtin cd
 	elif [ "${1%%:*}" != "$1" ]; then
-		ssh -o "SetEnv SSH_CD=${1#*:}" "${1%%:*}"
+		SSH_CD=${1#*:} ssh -o SendEnv=SSH_CD "${1%%:*}"
 	elif [ -e "$1" -a ! -d "$1" ]; then
 		builtin cd "${1%/*}" && $EDITOR "${1##*/}"
 	else
