@@ -23,7 +23,6 @@ BINS += beef
 BINS += bit
 BINS += c
 BINS += dtch
-BINS += edit
 BINS += glitch
 BINS += hi
 BINS += hnel
