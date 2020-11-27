@@ -11,6 +11,7 @@ TXTS += 008-how-irc.txt
 TXTS += 009-casual-update.txt
 TXTS += 010-irc-suite.txt
 TXTS += 011-libretls.txt
+TXTS += 012-inability.txt
 
 all: ${TXTS}
 
