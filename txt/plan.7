@@ -1,4 +1,4 @@
-.Dd August 28, 2020
+.Dd November 26, 2020
 .Dt PLAN 7
 .Os "Causal Agency"
 .
@@ -33,49 +33,13 @@ it seems I can't be bothered
 implementing all the parts of this
 .El
 .
-.Ss feeds to IMAP
-.Bl -bullet -compact
-.It
-convert Atom/RSS feed entries into Internet Messages
-.It
-Message-Id derived from entry IDs
-.It
-append messages to a mailbox for each feed
-.It
-use
-.Ql <link rel="alternate" type="application/mbox">
-if available
-(bubger does this, convince public-inbox to?)
-.El
+.Ss getaddrinfo with SRV
+wrap
+.Xr getaddrinfo 3
+with
+.Xr res_query 3
+SRV lookup
 .
-.Ss litterbox link indexer
-.Bl -bullet -compact
-.It
-scrape links from messages in
-.Xr litterbox 1
-.It
-index text in contentless FTS table
-.It
-simple HTML parser to extract text nodes, skipping
-.Sy <script>
-and
-.Sy <style>
-.El
-.
-.Ss Password non-manager
-.Bl -bullet -compact
-.It
-password reset flow automation
-.It
-sets random password and leaves it in clipboard
-.It
-modules for each service to handle:
-.Bl -enum -compact
-.It
-submitting forgot password form
-.It
-extracting token from email
-.It
-submitting password reset form
-.El
-.El
+.Ss code reuse
+discover some method of sharing code
+that isn't awful
