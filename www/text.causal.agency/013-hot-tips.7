@@ -1,0 +1,154 @@
+.Dd December  2, 2020
+.Dt HOT-TIPS 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm hot tips
+.Nd from my files
+.
+.Sh DESCRIPTION
+This is a short list of tips
+from my configuration files and code
+that might be useful.
+.
+.Ss Shell
+.Bl -tag -width Ds
+.It CDPATH=:~
+This is useful if you sometimes type,
+for example,
+.Ql cd src/bin
+wanting to go
+.Pa ~/src/bin
+but you aren't in
+.Pa ~ .
+If the path doesn't exist
+in the current directory,
+.Ic cd
+will try it in
+.Pa ~
+as well.
+.
+.It alias ls='LC_COLLATE=C ls'
+This makes it so that
+.Xr ls 1
+lists files in ASCIIbetical order,
+which puts capitalized names like
+.Pa README
+and
+.Pa Makefile
+first.
+.
+.It git config --global commit.verbose true
+Not shell but close enough.
+This makes it so the entire diff is shown
+below the usual summary
+in the editor for a
+.Xr git-commit(1)
+message.
+Useful for doing a quick review
+of what you're committing.
+.El
+.
+.Ss (neo)vim
+.Bl -tag -width Ds
+.It set inccommand=nosplit
+This is the only
+.Xr nvim 1
+feature I really care about
+aside from the improved defaults.
+This provides a live preview of what a
+.Ic :s
+substitution command will do.
+It makes it much easier to
+write complex substitutions.
+.
+.It nmap <leader>s vip:sort<CR>
+This mapping sorts the lines of a paragraph,
+or block of text separated by blank lines.
+I use this a lot to sort
+#include directives.
+.
+.It nmap <leader>S $vi{:sort<CR>
+Similar to the last mapping,
+this one sorts lines inside braces.
+I use this to sort
+switch statement cases
+or array initializers.
+.
+.It nmap <leader>a m':0/^#include <<CR>:nohlsearch<CR>O#include <
+I use this mapping to add new
+#include directives,
+usually followed by
+.Ic <leader>s
+and
+.Ic ''
+to sort them
+and return to where I was.
+.
+.It nmap <leader>d :0delete<CR>:0read !date +'.Dd \e%B \e%e, \e%Y'<CR>
+I use this to replace the first line of
+.Xr mdoc 7
+files with the current date.
+.El
+.
+.Ss C
+.Bl -tag -width Ds
+.It #define Q(...) #__VA_ARGS__
+This is what I've started using
+to quote things like SQL statements
+or HTML fragments in C.
+Anything that happens to be valid C tokens,
+which is most code,
+can be quoted this way.
+You can embed (matched) quotes
+without having to escape them.
+Whitespace gets collapsed,
+so you can write nicely formatted multi-line SQL
+that doesn't mess up your debug logging,
+for example.
+.Bd -literal -offset indent
+const char *sql = Q(
+	INSERT OR IGNORE INTO names (nick, user, host)
+	VALUES (:nick, :user, :host);
+);
+.Ed
+.
+.It #define BIT(x) x##Bit, x = 1 << x##Bit, x##Bit_ = x##Bit
+I use this macro to declare bitflag enums.
+It takes advantage of
+auto-incrementing enum items
+so you don't need to set the values manually.
+You also get constants
+for both the bit index
+and the flag value
+for each item.
+.Bd -literal -offset indent
+enum Attr {
+	BIT(Bold),
+	BIT(Reverse),
+	BIT(Italic),
+	BIT(Underline),
+};
+.Ed
+.Pp
+For example,
+defines
+.Sy ItalicBit = 2
+and
+.Sy Italic = 1 << 2 .
+Ignore the extraneous constants.
+.
+.It typedef int FnType(const char *str, size_t len);
+You can just typedef function types!
+It annoys me more than it probably should
+that everyone writes ugly
+function pointer typedefs.
+Just stick
+.Sy typedef
+on the front of a function declaration
+and use
+.Vt FnType * .
+.El
+.
+.Sh AUTHORS
+.Mt june@causal.agency
