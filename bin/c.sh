@@ -2,7 +2,7 @@
 set -eu
 
 temp=$(mktemp -d)
-trap 'rm -r "$temp"' EXIT
+trap 'rm -r "${temp}"' EXIT
 
 exec 3>>"${temp}/run.c"
 
@@ -28,8 +28,9 @@ cat >&3 <<EOF
 #include <unistd.h>
 EOF
 
+expr=
 while getopts 'e:i:' opt; do
-	case "$opt" in
+	case "${opt}" in
 		(e) expr=$OPTARG;;
 		(i) echo "#include <${OPTARG}>" >&3;;
 		(?) exit 1;;
@@ -44,7 +45,7 @@ int main(int argc, char *argv[]) {
 	$*;
 EOF
 
-if [ -n "${expr:-}" ]; then
+if [ -n "${expr}" ]; then
 	cat >&3 <<EOF
 	printf(
 		_Generic(
@@ -72,7 +73,7 @@ if [ -n "${expr:-}" ]; then
 EOF
 fi
 
-if [ $# -eq 0 -a -z "${expr:-}" ]; then
+if [ $# -eq 0 -a -z "${expr}" ]; then
 	cat >&3
 fi
 
