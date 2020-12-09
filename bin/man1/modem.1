@@ -1,4 +1,4 @@
-.Dd July 8, 2019
+.Dd December  8, 2020
 .Dt MODEM 1
 .Os
 .
@@ -8,6 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
+.Op Fl r Ar rate
 .Ar command ...
 .
 .Sh DESCRIPTION
@@ -15,8 +16,15 @@
 runs the
 .Ar command
 in a new PTY
-with a fixed baud rate
-of 19.2 kbps.
+with a fixed baud rate.
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl r Ar rate
+Set the baud rate.
+The default is 19200.
+.El
 .
 .Sh BUGS
 Window size changes are not propagated

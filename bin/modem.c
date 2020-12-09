@@ -34,8 +34,6 @@
 typedef unsigned uint;
 typedef unsigned char byte;
 
-static const uint BaudRate = 19200;
-
 static struct termios saveTerm;
 static void restoreTerm(void) {
 	tcsetattr(STDIN_FILENO, TCSADRAIN, &saveTerm);
@@ -44,7 +42,14 @@ static void restoreTerm(void) {
 int main(int argc, char *argv[]) {
 	int error;
 
-	if (argc < 2) return EX_USAGE;
+	uint baudRate = 19200;
+	for (int opt; 0 < (opt = getopt(argc, argv, "r:"));) {
+		switch (opt) {
+			break; case 'r': baudRate = strtoul(optarg, NULL, 10);
+			break; default:  return EX_USAGE;
+		}
+	}
+	if (argc - optind < 1) return EX_USAGE;
 
 	error = tcgetattr(STDIN_FILENO, &saveTerm);
 	if (error) err(EX_IOERR, "tcgetattr");
@@ -64,8 +69,8 @@ int main(int argc, char *argv[]) {
 	if (pid < 0) err(EX_OSERR, "forkpty");
 
 	if (!pid) {
-		execvp(argv[1], &argv[1]);
-		err(EX_NOINPUT, "%s", argv[1]);
+		execvp(argv[optind], &argv[optind]);
+		err(EX_NOINPUT, "%s", argv[optind]);
 	}
 
 	byte c;
@@ -73,7 +78,7 @@ int main(int argc, char *argv[]) {
 		{ .events = POLLIN, .fd = STDIN_FILENO },
 		{ .events = POLLIN, .fd = pty },
 	};
-	while (usleep(8 * 1000000 / BaudRate), 0 < poll(fds, 2, -1)) {
+	while (usleep(8 * 1000000 / baudRate), 0 < poll(fds, 2, -1)) {
 		if (fds[0].revents) {
 			ssize_t size = read(STDIN_FILENO, &c, 1);
 			if (size < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
@@ -84,14 +89,14 @@ int main(int argc, char *argv[]) {
 		if (fds[1].revents) {
 			ssize_t size = read(pty, &c, 1);
 			if (size < 0) err(EX_IOERR, "read(%d)", pty);
+			if (!size) break;
 			size = write(STDOUT_FILENO, &c, 1);
 			if (size < 0) err(EX_IOERR, "write(%d)", STDOUT_FILENO);
 		}
-
-		int status;
-		pid_t dead = waitpid(pid, &status, WNOHANG);
-		if (dead < 0) err(EX_OSERR, "waitpid");
-		if (dead) return WIFEXITED(status) ? WEXITSTATUS(status) : EX_SOFTWARE;
 	}
-	err(EX_IOERR, "poll");
+
+	int status;
+	pid_t dead = waitpid(pid, &status, 0);
+	if (dead < 0) err(EX_OSERR, "waitpid");
+	return WIFEXITED(status) ? WEXITSTATUS(status) : EX_SOFTWARE;
 }
