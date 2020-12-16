@@ -20,6 +20,7 @@ LDLIBS.title = -lcurl
 -include config.mk
 
 BINS += beef
+BINS += bibsort
 BINS += bit
 BINS += c
 BINS += dtch
@@ -65,11 +66,17 @@ tls: meta ${BINS_TLS}
 
 meta: .gitignore tags
 
+.SUFFIXES: .pl
+
 .c:
 	${CC} ${CFLAGS} ${LDFLAGS} $< ${LDLIBS.$@} -o $@
 
 .o:
 	${CC} ${LDFLAGS} $< ${LDLIBS.$@} -o $@
+
+.pl:
+	cp -f $< $@
+	chmod a+x $@
 
 hi: hi.c
 	${CC} ${CFLAGS} ${LDFLAGS} hi.c ${LDLIBS.$@} -o $@
@@ -127,11 +134,14 @@ ${HTMLS}: html.sh scheme hi ttpre
 .h.html:
 	sh html.sh $< man3/${<:.h=.3} > $@
 
+.y.html:
+	sh html.sh $< man1/${<:.y=.1} > $@
+
 .sh.html:
 	sh html.sh $< man1/${<:.sh=.1} > $@
 
-.y.html:
-	sh html.sh $< man1/${<:.y=.1} > $@
+.pl.html:
+	sh html.sh $< man1/${<:.pl=.1} > $@
 
 index.html: Makefile README.7
 	sh html.sh Makefile README.7 \

@@ -1,0 +1,37 @@
+.Dd December 15, 2020
+.Dt BIBSORT 1
+.Os
+.
+.Sh NAME
+.Nm bibsort
+.Nd reformat bibliography
+.
+.Sh SYNOPSIS
+.Nm
+.Op Ar file
+.
+.Sh DESCRIPTION
+.Nm
+reformats on standard output
+the
+.Em STANDARDS
+section of the
+.Xr mdoc 7
+manual page
+.Ar file
+or standard input.
+Bibliographic references
+are sorted by author last names,
+and formatted in an item list
+with macro lines appearing
+in the order they are formatted by
+.Xr mandoc 1 .
+Additionally,
+.Ic \&%N
+macros referencing RFC numbers
+are rewritten to
+.Ic \&%R
+macros.
+.
+.Sh EXAMPLES
+.Dl :%!bibsort

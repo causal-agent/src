@@ -38,4 +38,4 @@ pre.hi {
 EOF
 
 [ -f "$man" ] && man -P cat "${PWD}/${man}" | ./ttpre
-./hi -f html -o anchor "$src"
+./hi -t -f html -o anchor "$src"
