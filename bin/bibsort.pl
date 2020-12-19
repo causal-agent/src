@@ -24,8 +24,8 @@ while (<>) {
 }
 
 sub byLast {
-	my ($af, $al) = split /\s/, $a, 2;
-	my ($bf, $bl) = split /\s/, $b, 2;
+	my ($af, $al) = split /\s(\S+)(,.*)?$/, $a;
+	my ($bf, $bl) = split /\s(\S+)(,.*)?$/, $b;
 	$al cmp $bl || $af cmp $bf;
 }
 
