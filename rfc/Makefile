@@ -1,7 +1,7 @@
 MODULE = ftp.rfc-editor.org::rfcs-text-only
 
 tags: rfctags.pl
-	perl rfctags.pl > $@
+	perl rfctags.pl | sort -f > $@
 
 sync:
 	rsync -z ${MODULE}/rfc-index.txt ${MODULE}/'rfc[0-9]*.txt' .
