@@ -36,7 +36,10 @@ nmap <leader>l :0read ~/src/etc/agpl.c<CR>''
 nmap <leader>L :0read ~/src/etc/gpl.c<CR>''
 nmap <leader>d :0delete<CR>:0read !date +'.Dd \%B \%e, \%Y'<CR>
 
-command! -nargs=1 RFC :silent noswapfile view ~/src/rfc/rfc<args>.txt.gz
+command! -bar -nargs=? RFC
+	\ if !empty(<q-args>) |
+	\ silent noswapfile view ~/src/rfc/rfc<args>.txt.gz |
+	\ else | RFC -index | endif
 autocmd BufRead rfc*.txt.gz
 	\ setlocal keywordprg=:RFC iskeyword=a-z,A-Z,48-57,.,-,[,] |
 	\ nmap <buffer> <silent> gO :call search('^Table of Contents', 'bcs')<CR>
