@@ -3,12 +3,12 @@ if !exists('g:rfc_path')
 endif
 
 function! s:RFC(number)
-	let number = (empty(a:number) ? '-index' : a:number)
+	let number = (empty(a:number) ? '-index' : str2nr(a:number, 10))
 	let path = expand(g:rfc_path . '/rfc' . number . '.txt.gz')
 	if filereadable(path)
 		execute 'silent' 'noswapfile' 'view' path
 	else
-		echohl ErrorMsg | echo 'No such RFC' number | echohl None
+		echohl ErrorMsg | echo 'No such RFC' a:number | echohl None
 	endif
 endfunction
 
