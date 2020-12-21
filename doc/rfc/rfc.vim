@@ -3,7 +3,11 @@ if !exists('g:rfc_path')
 endif
 
 function! s:RFC(number)
-	let number = (empty(a:number) ? '-index' : str2nr(a:number, 10))
+	if !empty(a:number)
+		let number = str2nr(matchstr(a:number, '\d\+'), 10)
+	else
+		let number = '-index'
+	endif
 	let path = expand(g:rfc_path . '/rfc' . number . '.txt.gz')
 	if filereadable(path)
 		execute 'silent' 'noswapfile' 'view' path
