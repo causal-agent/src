@@ -2,6 +2,6 @@
 set -eu
 
 export DYLD_FORCE_FLAT_NAMESPACE=1
-export DYLD_INSERT_LIBRARIES=~/.local/lib/libwcwidth.dylib
+export DYLD_INSERT_LIBRARIES=%%PREFIX%%/lib/libwcwidth.dylib
 
 exec "$@"
