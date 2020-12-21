@@ -15,6 +15,7 @@ for my $rfc (<*.txt.gz>) {
 		if (/^([\d.]+|[A-Z][.])\s+([^\t]+)?/) {
 			print $1, $rfc, $.;
 			print $2, $rfc, $. if $2;
+			print $1, $rfc, $. if $1 =~ /^([\d.]+)[.]$/;
 		}
 		# References
 		if (/^\s*(\[[\w-]+\])\s{2,}/) {
