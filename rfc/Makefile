@@ -1,13 +1,11 @@
 MODULE = ftp.rfc-editor.org::rfcs-text-only
 
-tags: rfctags.pl
+tags: rfctags.pl rfc-index.txt.gz
 	perl rfctags.pl | sort -f > $@
 
-sync:
-	rsync -z ${MODULE}/rfc-index.txt ${MODULE}/'rfc[0-9]*.txt' .
-
-compress:
+rfc-index.txt.gz:
+	rsync -ptz ${MODULE}/rfc-index.txt ${MODULE}/'rfc[1-9]*.txt' .
 	gzip -9f *.txt
 
 clean:
-	rm -f *.txt *.txt.gz tags
+	rm -f tags *.txt *.txt.gz
