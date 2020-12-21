@@ -1,5 +1,5 @@
 if !exists('g:rfc_path')
-	let g:rfc_path = '~/src/doc/rfc'
+	let g:rfc_path = expand('<sfile>:h:h:h:h') . '/rfc'
 endif
 
 function! s:RFC(number)
