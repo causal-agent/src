@@ -183,6 +183,7 @@ if test "$use_libedit" != "yes"; then
 	AC_DEFINE([SMALL], 1, [Define if you build with -DSMALL])
 else
 	export LIBS="$LIBS -ledit"
+	AC_CHECK_FUNCS(_el_fn_sh_complete)
 fi
 AC_ARG_ENABLE(lineno, AS_HELP_STRING(--disable-lineno, \
 				     [Disable LINENO support]))
