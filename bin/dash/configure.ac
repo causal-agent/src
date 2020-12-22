@@ -169,9 +169,10 @@ if test "$have_st_mtim" = "yes"; then
 		[Define if your `struct stat' has `st_mtim'])
 fi
 
-AC_ARG_WITH(libedit, AS_HELP_STRING(--with-libedit, [Compile with libedit support]))
+AC_ARG_WITH(libedit,
+	AS_HELP_STRING(--without-libedit, [Compile without libedit support]))
 use_libedit=
-if test "$with_libedit" = "yes"; then
+if test "$with_libedit" != "no"; then
 	AC_CHECK_LIB(edit, history_init, [
 		AC_CHECK_HEADER([histedit.h], [use_libedit="yes"],
 				AC_MSG_ERROR(
