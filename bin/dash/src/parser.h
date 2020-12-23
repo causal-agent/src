@@ -86,6 +86,7 @@ int isassignment(const char *p);
 union node *parsecmd(int);
 void fixredir(union node *, const char *, int);
 const char *getprompt(void *);
+const char *getrprompt(void *);
 const char *const *findkwd(const char *);
 char *endofname(const char *);
 const char *expandstr(const char *);

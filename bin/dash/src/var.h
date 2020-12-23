@@ -87,7 +87,9 @@ extern struct var varinit[];
 #define vps1 (&vpath)[1]
 #define vps2 (&vps1)[1]
 #define vps4 (&vps2)[1]
-#define voptind (&vps4)[1]
+#define vrps1 (&vps4)[1]
+#define vrps2 (&vrps1)[1]
+#define voptind (&vrps2)[1]
 #ifdef WITH_LINENO
 #define vlineno (&voptind)[1]
 #endif
@@ -122,6 +124,8 @@ extern char linenovar[];
 #define ps1val()	(vps1.text + 4)
 #define ps2val()	(vps2.text + 4)
 #define ps4val()	(vps4.text + 4)
+#define rps1val()	(vrps1.text + 5)
+#define rps2val()	(vrps2.text + 5)
 #define optindval()	(voptind.text + 7)
 #define linenoval()	(vlineno.text + 7)
 #ifndef SMALL

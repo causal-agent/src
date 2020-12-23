@@ -32,7 +32,7 @@
 .\"
 .\"	@(#)sh.1	8.6 (Berkeley) 5/4/95
 .\"
-.Dd January 19, 2003
+.Dd December 22, 2020
 .Os
 .Dt DASH 1
 .Sh NAME
@@ -2291,6 +2291,10 @@ The secondary prompt string, which defaults to
 Output before each line when execution trace (set -x) is enabled,
 defaults to
 .Dq +\  .
+.It Ev RPS1
+The primary right prompt string.
+.It Ev RPS2
+The secondary right prompt string.
 .It Ev IFS
 Input Field Separators.
 This is normally set to

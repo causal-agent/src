@@ -108,6 +108,7 @@ int quoteflag;			/* set if (part of) last token was quoted */
 
 
 static char *promptcache;
+static char *rpromptcache;
 
 
 STATIC union node *list(int);
@@ -1597,7 +1598,7 @@ STATIC void
 setprompt(int which)
 {
 	struct stackmark smark;
-	const char *prompt;
+	const char *prompt, *rprompt;
 	int show;
 
 	needprompt = 0;
@@ -1607,16 +1608,20 @@ setprompt(int which)
 	default:
 #ifdef DEBUG
 		prompt = "<internal prompt error>";
+		rprompt = prompt;
 		break;
 #endif
 	case 0:
 		prompt = nullstr;
+		rprompt = nullstr;
 		break;
 	case 1:
 		prompt = ps1val();
+		rprompt = rps1val();
 		break;
 	case 2:
 		prompt = ps2val();
+		rprompt = rps2val();
 		break;
 	}
 
@@ -1630,7 +1635,9 @@ setprompt(int which)
 		out2str(expandstr(prompt));
 	} else {
 		free(promptcache);
+		free(rpromptcache);
 		promptcache = savestr(expandstr(prompt));
+		rpromptcache = savestr(expandstr(rprompt));
 	}
 	popstackmark(&smark);
 }
@@ -1642,6 +1649,12 @@ const char *
 getprompt(void *unused)
 {
 	return promptcache;
+}
+
+const char *
+getrprompt(void *unused)
+{
+	return rpromptcache;
 }
 
 const char *const *
