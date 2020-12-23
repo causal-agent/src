@@ -34,7 +34,7 @@ HELPERS = mkinit mksyntax mknodes mksignames
 
 BUILT_SOURCES = builtins.h nodes.h syntax.h token.h token_vars.h
 CLEANFILES = \
-	$(BUILT_SOURCES) $(patsubst %.o,%.c,$(dash_LDADD)) \
+	$(BUILT_SOURCES) $(dash_LDADD:%.o=%.c) \
 	$(HELPERS) builtins.def
 
 man_MANS = dash.1
@@ -44,27 +44,27 @@ EXTRA_DIST = \
 	mknodes.c nodetypes nodes.c.pat mksyntax.c mksignames.c
 
 token.h token_vars.h: mktokens
-	$(AM_V_GEN)$(SHELL) $^
+	$(AM_V_GEN)$(SHELL) mktokens
 
 builtins.def: builtins.def.in $(top_builddir)/config.h
-	$(AM_V_CC)$(COMPILE) -E -x c -o $@ $<
+	$(AM_V_CC)$(COMPILE) -E -x c -o $@ builtins.def.in
 
 builtins.c builtins.h: mkbuiltins builtins.def
-	$(AM_V_GEN)$(SHELL) $^
+	$(AM_V_GEN)$(SHELL) mkbuiltins builtins.def
 
 init.c: mkinit $(dash_CFILES)
-	$(AM_V_GEN)./$^
+	$(AM_V_GEN)./mkinit $(dash_CFILES)
 
 nodes.c nodes.h: mknodes nodetypes nodes.c.pat
-	$(AM_V_GEN)./$^
+	$(AM_V_GEN)./mknodes nodetypes nodes.c.pat
 
 syntax.c syntax.h: mksyntax
-	$(AM_V_GEN)./$^
+	$(AM_V_GEN)./mksyntax
 
 signames.c: mksignames
-	$(AM_V_GEN)./$^
+	$(AM_V_GEN)./mksignames
 
 mksyntax: token.h
 
-$(HELPERS): %: %.c
-	$(AM_V_CC)$(COMPILE_FOR_BUILD) -o $@ $<
+$(HELPERS):
+	$(AM_V_CC)$(COMPILE_FOR_BUILD) -o $@ $@.c
