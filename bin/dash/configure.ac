@@ -175,7 +175,8 @@ if test "$with_libedit" = "yes"; then
 	AC_CHECK_LIB(edit, history_init, [
 		AC_CHECK_HEADER([histedit.h], [use_libedit="yes"],
 				AC_MSG_ERROR(
-					[Can't find required header files.]))])
+					[Can't find required header files.]))], [
+		AC_MSG_ERROR([Can't find libedit.])])
 fi
 if test "$use_libedit" != "yes"; then
 	AC_DEFINE([SMALL], 1, [Define if you build with -DSMALL])
