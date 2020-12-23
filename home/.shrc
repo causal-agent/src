@@ -1,6 +1,5 @@
 set -o noclobber -o nounset -o vi
 
-HISTFILE=~/.history
 CDPATH=:~
 
 alias vim=$EDITOR
@@ -20,15 +19,15 @@ type doas >/dev/null 2>&1 && alias sudo=doas
 cd() {
 	local path
 	if [ $# -eq 0 ]; then
-		builtin cd
+		command cd
 	elif [ "${1%%:*}" != "$1" ]; then
 		path=${1#*:}
 		[ -n "${path}" ] || path=${PWD#${HOME}/}
 		SSH_CD=$path ssh -o SendEnv=SSH_CD "${1%%:*}"
 	elif [ -e "$1" -a ! -d "$1" ]; then
-		builtin cd "${1%/*}" && $EDITOR "${1##*/}"
+		command cd "${1%/*}" && $EDITOR "${1##*/}"
 	else
-		builtin cd "$@"
+		command cd "$@"
 	fi
 }
 if [ -n "${SSH_CD:-}" ]; then
@@ -36,12 +35,15 @@ if [ -n "${SSH_CD:-}" ]; then
 	unset SSH_CD
 fi
 
-PS0=$'\n'
-PS1='\$ '
-RPS1="\? ${SSH_CLIENT:+\h:}\w"
-
-if [ "${TERM%-*}" = 'xterm' ]; then
-	tsl=$'\e]0;'
-	fsl=$'\e\\'
-	PS0="${tsl}${SSH_CLIENT:+\h:}\W${fsl}${PS0}"
-fi
+hostname=$(hostname -s)
+rprompt() {
+	local pwd
+	pwd=${PWD#${HOME}}
+	[ "${pwd}" != "${PWD}" ] && pwd="~${pwd}"
+	[ "${TERM%-*}" = 'xterm' ] \
+		&& printf '\33]0;%s\a' "${SSH_CLIENT:+${hostname}:}${pwd##*/}" >&2
+	printf '%s' "${SSH_CLIENT:+${hostname}:}${pwd}"
+}
+PS1='
+$ '
+RPS1='${?#0} $(rprompt)'
