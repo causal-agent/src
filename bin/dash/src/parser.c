@@ -1598,7 +1598,7 @@ STATIC void
 setprompt(int which)
 {
 	struct stackmark smark;
-	const char *prompt, *rprompt;
+	const char *prompt, *rprompt, *nl;
 	int show;
 
 	needprompt = 0;
@@ -1638,6 +1638,10 @@ setprompt(int which)
 		free(rpromptcache);
 		promptcache = savestr(expandstr(prompt));
 		rpromptcache = savestr(expandstr(rprompt));
+
+		nl = strrchr(promptcache, '\n');
+		if (nl)
+			outmem(promptcache, &nl[1] - promptcache, out2);
 	}
 	popstackmark(&smark);
 }
@@ -1648,7 +1652,14 @@ setprompt(int which)
 const char *
 getprompt(void *unused)
 {
-	return promptcache;
+	const char *nl;
+
+	nl = strrchr(promptcache, '\n');
+
+	if (nl)
+		return &nl[1];
+	else
+		return promptcache;
 }
 
 const char *
