@@ -107,6 +107,9 @@ struct heredoc *heredoc;
 int quoteflag;			/* set if (part of) last token was quoted */
 
 
+static char *promptcache;
+
+
 STATIC union node *list(int);
 STATIC union node *andor(void);
 STATIC union node *pipeline(void);
@@ -1541,27 +1544,6 @@ synerror(const char *msg)
 	/* NOTREACHED */
 }
 
-STATIC void
-setprompt(int which)
-{
-	struct stackmark smark;
-	int show;
-
-	needprompt = 0;
-	whichprompt = which;
-
-#ifdef SMALL
-	show = 1;
-#else
-	show = !el;
-#endif
-	if (show) {
-		pushstackmark(&smark, stackblocksize());
-		out2str(getprompt(NULL));
-		popstackmark(&smark);
-	}
-}
-
 const char *
 expandstr(const char *ps)
 {
@@ -1611,22 +1593,25 @@ out:
 	return result;
 }
 
-/*
- * called by editline -- any expansions to the prompt
- *    should be added here.
- */
-const char *
-getprompt(void *unused)
+STATIC void
+setprompt(int which)
 {
+	struct stackmark smark;
 	const char *prompt;
+	int show;
+
+	needprompt = 0;
+	whichprompt = which;
 
 	switch (whichprompt) {
 	default:
 #ifdef DEBUG
-		return "<internal prompt error>";
+		prompt = "<internal prompt error>";
+		break;
 #endif
 	case 0:
-		return nullstr;
+		prompt = nullstr;
+		break;
 	case 1:
 		prompt = ps1val();
 		break;
@@ -1635,7 +1620,28 @@ getprompt(void *unused)
 		break;
 	}
 
-	return expandstr(prompt);
+#ifdef SMALL
+	show = 1;
+#else
+	show = !el;
+#endif
+	pushstackmark(&smark, stackblocksize());
+	if (show) {
+		out2str(expandstr(prompt));
+	} else {
+		free(promptcache);
+		promptcache = savestr(expandstr(prompt));
+	}
+	popstackmark(&smark);
+}
+
+/*
+ * called by editline -- return the cached prompt expansion.
+ */
+const char *
+getprompt(void *unused)
+{
+	return promptcache;
 }
 
 const char *const *
