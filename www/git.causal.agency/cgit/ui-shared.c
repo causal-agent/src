@@ -1200,9 +1200,12 @@ void cgit_set_title_from_path(const char *path)
 	if (!path)
 		return;
 
-	for (last_slash = path + strlen(path); (slash = memrchr(path, '/', last_slash - path)) != NULL; last_slash = slash) {
+	last_slash = path + strlen(path);
+	for (slash = last_slash; slash > path; --slash) {
+		if (*slash != '/') continue;
 		strbuf_add(&sb, slash + 1, last_slash - slash - 1);
 		strbuf_addstr(&sb, " \xc2\xab ");
+		last_slash = slash;
 	}
 	strbuf_add(&sb, path, last_slash - path);
 	strbuf_addf(&sb, " - %s", ctx.page.title);
