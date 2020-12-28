@@ -1,0 +1,72 @@
+.Dd January 15, 2017
+.Dt INFLATESYNC 3
+.Os
+.
+.Sh NAME
+.Nm inflateSync
+.Nd skip invalid data
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn inflateSync "z_streamp strm"
+.
+.Sh DESCRIPTION
+Skips invalid compressed data
+until a possible full flush point
+.Po
+see
+.Xr deflate 3
+for the description of
+.Dv Z_FULL_FLUSH
+.Pc
+can be found,
+or until all available input is skipped.
+No output is provided.
+.
+.Pp
+.Fn inflateSync
+searches for a 00 00 FF FF pattern
+in the compressed data.
+All full flush points have this pattern,
+but not all occurrences of this pattern
+are full flush points.
+.
+.Sh RETURN VALUES
+.Fn inflateSync
+returns
+.Dv Z_OK
+if a possible full flush point has been found,
+.Dv Z_BUF_ERROR
+if no more input was provided,
+.Dv Z_DATA_ERROR
+if no flush point has been found,
+or
+.Dv Z_STREAM_ERROR
+if the stream structure was inconsistent.
+In the success case,
+the application may save the current value of
+.Fa total_in
+which indicates where valid compressed data was found.
+In the error case,
+the application may repeatedly call
+.Fn inflateSync ,
+providing more input each time,
+until success or the end of the input data.
+.
+.Sh SEE ALSO
+.Xr deflate 3 ,
+.Xr inflate 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

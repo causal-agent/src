@@ -1,0 +1,73 @@
+.Dd January 15, 2017
+.Dt INFLATEPRIME 3
+.Os
+.
+.Sh NAME
+.Nm inflatePrime
+.Nd insert bits in inflate stream
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn inflatePrime "z_streamp strm" "int bits" "int value"
+.
+.Sh DESCRIPTION
+This function inserts bits
+in the inflate input stream.
+The intent is that this function
+is used to start inflating
+at a bit position
+in the middle of a byte.
+The provided bits will be used
+before any bytes are used from
+.Fa next_in .
+This function should only be used with raw inflate,
+and should be used before the first
+.Xr inflate 3
+call after
+.Xr inflateInit2 3
+or
+.Xr inflateReset 3 .
+.Fa bits
+must be less than or equal to 16,
+and that many of the least significant bits of
+.Fa value
+will be inserted in the input.
+.
+.Pp
+If
+.Fa bits
+is negative,
+then the input stream bit buffer is emptied.
+Then
+.Fn inflatePrime
+can be called again
+to put bits in the buffer.
+This is used to clear out bits leftover
+after feeding inflate a block description
+prior to feeding inflate codes.
+.
+.Sh RETURN VALUES
+.Fn inflatePrime
+returns
+.Dv Z_OK
+if success,
+or
+.Dv Z_STREAM_ERROR
+if the source stream state was inconsistent.
+.
+.Sh SEE ALSO
+.Xr inflateInit2 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

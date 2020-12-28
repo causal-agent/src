@@ -1,0 +1,55 @@
+.Dd January 15, 2017
+.Dt GZGETC 3
+.Os
+.
+.Sh NAME
+.Nm gzgetc
+.Nd get character from compressed file
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn gzgetc "gzFile file"
+.
+.Sh DESCRIPTION
+Reads one byte from the compressed file.
+This is implemented as a macro for speed.
+As such,
+it does not do all of the checking
+the other functions do.
+I.e.\&
+it does not check to see if
+.Fa file
+is
+.Dv NULL ,
+nor whether the structure
+.Fa file
+points to has been clobbered or not.
+.
+.Sh RETURN VALUES
+.Fn gzgetc
+returns the byte
+or -1 in case of
+end of file
+or error.
+.
+.Sh SEE ALSO
+.Xr gzeof 3 ,
+.Xr gzerror 3 ,
+.Xr gzgets 3 ,
+.Xr gzopen 3 ,
+.Xr gzread 3 ,
+.Xr gzungetc 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

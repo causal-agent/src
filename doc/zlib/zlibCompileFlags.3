@@ -1,0 +1,163 @@
+.Dd January 15, 2017
+.Dt ZLIBCOMPILEFLAGS 3
+.Os
+.
+.Sh NAME
+.Nm zlibCompileFlags
+.Nd zlib compile-time options
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft uLong
+.Fn zlibCompileFlags void
+.
+.Sh DESCRIPTION
+Return flags indicating compile-time options.
+.
+.Ss Type sizes
+Two bits each,
+00 = 16 bits,
+01 = 32 bits,
+10 = 64 bits,
+11 = other.
+.
+.Pp
+.Bl -tag -width Ds -compact
+.It 1.0
+size of
+.Vt uInt
+.It 3.2
+size of
+.Vt uLong
+.It 5.4
+size of
+.Vt voidpf
+(pointer)
+.It 7.6
+size of
+.Vt z_off_t
+.El
+.
+.Ss Compiler, assembler, and debug options
+.Bl -tag -width Ds -compact
+.It 8
+.Dv ZLIB_DEBUG
+.It 9
+.Dv ASMV
+or
+.Dv ASMINF
+\(em
+use ASM code
+.It 10
+.Dv ZLIB_WINAPI
+\(em
+exported functions use the WINAPI calling convention
+.It 11
+0 (reserved)
+.El
+.
+.Ss One-time table building
+Smaller code,
+but not thread-safe if true.
+.
+.Pp
+.Bl -tag -width Ds -compact
+.It 12
+.Dv BUILDFIXED
+\(em
+build static block decoding tables when needed
+.It 13
+.Dv DYNAMIC_CRC_TABLE
+\(em
+build CRC calculation tables when needed
+.It 14,15
+0 (reserved)
+.El
+.
+.Ss Library content
+Indicates missing functionality.
+.
+.Pp
+.Bl -tag -width Ds -compact
+.It 16
+.Dv NO_GZCOMPRESS
+\(em
+gz* functions cannot compress
+(to avoid linking deflate code when not needed)
+.It 17
+.Dv NO_GZIP
+\(em
+.Xr deflate 3
+can't write gzip streams,
+and
+.Xr inflate 3
+can't detect and decode gzip streams
+(to avoid linking crc code)
+.It 18-19
+0 (reserved)
+.El
+.
+.Ss Operation variations
+Changes in library functionality.
+.
+.Pp
+.Bl -tag -width Ds -compact
+.It 20
+.Dv PKZIP_BUG_WORKAROUND
+\(em
+slightly more permissive
+.Xr inflate 3
+.It 21
+.Dv FASTEST
+\(em
+deflate algorithm with only one,
+lowest compression level
+.It 22,23
+0 (reserved)
+.El
+.
+.Ss sprintf variant used by gzprintf
+Zero is best.
+.
+.Pp
+.Bl -tag -width Ds -compact
+.It 24
+0 = vs*,
+1 = s*
+\(em
+1 means limited to 20 arguments after the format
+.It 25
+0 = *nprintf,
+1 = *printf
+\(em
+1 means
+.Xr gzprintf 3
+not secure!
+.It 26
+0 = returns value,
+1 = void
+\(em
+1 means inferred string length returned
+.El
+.
+.Ss Remainder
+.Bl -tag -width Ds -compact
+.It 27-31
+0 (reserved)
+.El
+.
+.Sh SEE ALSO
+.Xr zlibVersion 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

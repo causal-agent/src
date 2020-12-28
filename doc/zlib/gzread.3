@@ -1,0 +1,115 @@
+.Dd January 15, 2017
+.Dt GZREAD 3
+.Os
+.
+.Sh NAME
+.Nm gzread
+.Nd read from compressed file
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn gzread "gzFile file" "voidp buf" "unsigned len"
+.
+.Sh DESCRIPTION
+Reads the given number of uncompressed bytes
+from the compressed file.
+If the input file
+is not in gzip format,
+.Fn gzread
+copies the given number of bytes
+into the buffer directly from the file.
+.
+.Pp
+After reaching the end of a gzip stream
+in the input,
+.Fn gzread
+will continue to read,
+looking for another gzip stream.
+Any number of gzip streams
+may be concatenated in the input file,
+and will all be decompressed by
+.Fn gzread .
+If something other than a gzip stream
+is encountered after a gzip stream,
+that remaining trailing garbage is ignored
+(and no error is returned).
+.
+.Pp
+.Fn gzread
+can be used to read a gzip file
+that is being concurrently written.
+Upon reaching the end of the input,
+.Fn gzread
+will return with the available data.
+If the error code returned by
+.Xr gzerror 3
+is
+.Dv Z_OK
+or
+.Dv Z_BUF_ERROR ,
+then
+.Xr gzclearerr 3
+can be used
+to clear the end of file indicator
+in order to permit
+.Fn gzread
+to be tried again.
+.Dv Z_OK
+indicates that a gzip stream was completed
+on the last
+.Fn gzread .
+.Dv Z_BUF_ERROR
+indicates that the input file
+ended in the middle of a gzip stream.
+Note that
+.Fn gzread
+does not return -1
+in the event of an incomplete gzip stream.
+This error is deferred until
+.Xr gzclose 3 ,
+which will return
+.Dv Z_BUF_ERROR
+if the last
+.Fn gzread
+ended in the middle of a gzip stream.
+Alternatively,
+.Xr gzerror 3
+can be used before
+.Xr gzclose 3
+to detect this case.
+.
+.Sh RETURN VALUES
+.Fn gzread
+returns the number of uncompressed bytes actually read,
+less than
+.Fa len
+for end of file,
+or -1 for error.
+If
+.Fa len
+is too large to fit in an
+.Vt int ,
+then nothing is read,
+-1 is returned,
+and the error state is set to
+.Dv Z_STREAM_ERROR .
+.
+.Sh SEE ALSO
+.Xr gzeof 3 ,
+.Xr gzerror 3 ,
+.Xr gzfread 3 ,
+.Xr gzopen 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

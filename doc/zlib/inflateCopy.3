@@ -1,0 +1,59 @@
+.Dd January 15, 2017
+.Dt INFLATECOPY 3
+.Os
+.
+.Sh NAME
+.Nm inflateCopy
+.Nd copy inflate stream
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn inflateCopy "z_streamp dest" "z_streamp source"
+.
+.Sh DESCRIPTION
+Sets the destination stream
+as a complete copy of the source stream.
+.
+.Pp
+This function can be useful
+when randomly accessing a large stream.
+The first pass through the stream
+can periodically record the inflate state,
+allowing restarting inflate at those points
+when randomly accessing the stream.
+.
+.Sh RETURN VALUES
+.Fn inflateCopy
+returns
+.Dv Z_OK
+if success,
+.Dv Z_MEM_ERROR
+if there was not enough memory,
+.Dv Z_STREAM_ERROR
+if the source stream state was inconsistent
+.Po
+such as
+.Fa zalloc
+being
+.Dv Z_NULL
+.Pc .
+.Fa msg
+is left unchanged
+in both source and destination.
+.
+.Sh SEE ALSO
+.Xr inflateInit 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

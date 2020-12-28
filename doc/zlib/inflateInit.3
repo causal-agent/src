@@ -1,0 +1,101 @@
+.Dd January 15, 2017
+.Dt INFLATEINIT 3
+.Os
+.
+.Sh NAME
+.Nm inflateInit
+.Nd initialize inflate stream
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn inflateInit "z_streamp strm"
+.
+.Sh DESCRIPTION
+Initializes the internal stream state for decompression.
+The fields
+.Fa next_in ,
+.Fa avail_in ,
+.Fa zalloc ,
+.Fa zfree
+and
+.Fa opaque
+must be initialized before by the caller.
+In the current version of
+.Fn inflateInit ,
+the provided input is not read or consumed.
+The allocation of a sliding window
+will be deferred to the first call of
+.Xr inflate 3
+(if the decompression does not complete on the first call).
+If
+.Fa zalloc
+and
+.Fa zfree
+are set to
+.Dv Z_NULL ,
+.Fn inflateInit
+updates them to use default allocation functions.
+.
+.Pp
+.Fn inflateInit
+does not perform any decompression.
+Actual decompression will be done by
+.Xr inflate 3 .
+So
+.Fa next_in ,
+.Fa avail_in ,
+.Fa next_out
+and
+.Fa avail_out
+are unused and unchanged.
+The current implementation of
+.Fn inflateInit
+does not process any header information \(em
+that is deferred until
+.Xr inflate 3
+is called.
+.
+.Pp
+The
+.Vt z_streamp
+type is documented in
+.Xr deflateInit 3 .
+.
+.Sh RETURN VALUES
+.Fn inflateInit
+returns
+.Dv Z_OK
+if success,
+.Dv Z_MEM_ERROR
+if there was not enough memory,
+.Dv Z_VERSION_ERROR
+if the zlib library version
+is incompatible with the version assumed by the caller,
+or
+.Dv Z_STREAM_ERROR
+if the parameters are invalid,
+such as a null pointer to the structure.
+.Fa msg
+is set to null if there is no error message.
+.
+.Sh SEE ALSO
+.Xr inflate 3 ,
+.Xr inflateBackInit 3 ,
+.Xr inflateCopy 3 ,
+.Xr inflateEnd 3 ,
+.Xr inflateInit2 3 ,
+.Xr inflateSetDictionary 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

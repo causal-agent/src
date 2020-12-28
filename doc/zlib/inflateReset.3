@@ -1,0 +1,81 @@
+.Dd January 15, 2017
+.Dt INFLATERESET 3
+.Os
+.
+.Sh NAME
+.Nm inflateReset ,
+.Nm inflateReset2
+.Nd reset inflate stream
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn inflateReset "z_streamp strm"
+.Ft int
+.Fn inflateReset2 "z_streamp strm" "int windowBits"
+.
+.Sh DESCRIPTION
+This function is equivalent to
+.Xr inflateEnd 3
+followed by
+.Xr inflateInit 3 ,
+but does not free and reallocate
+the internal decompression state.
+The stream will keep attributes
+that may have been set by
+.Xr inflateInit2 3 .
+.
+.Pp
+.Fn inflateReset2
+is the same as
+.Fn inflateReset ,
+but it also permits changing
+the wrap and window size requests.
+The
+.Fa windowBits
+parameter is interpreted the same as it is for
+.Xr inflateInit2 3 .
+If the window size is changed,
+then the memory allocated for the window is freed,
+and the window will be reallocated by
+.Xr inflate 3
+if needed.
+.
+.Sh RETURN VALUES
+.Fn inflateReset
+and
+.Fn inflateReset2
+return
+.Dv Z_OK
+if success,
+or
+.Dv Z_STREAM_ERROR
+if the source stream state was inconsistent
+.Po
+such as
+.Fa zalloc
+or
+.Fa state
+being
+.Dv Z_NULL
+.Pc ,
+or if the
+.Fa windowBits
+parameter is invalid.
+.
+.Sh SEE ALSO
+.Xr inflateEnd 3 ,
+.Xr inflateInit 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

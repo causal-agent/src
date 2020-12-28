@@ -1,0 +1,73 @@
+.Dd January 15, 2017
+.Dt GZFLUSH 3
+.Os
+.
+.Sh NAME
+.Nm gzflush
+.Nd flush output to compressed file
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn gzflush "gzFile file" "int flush"
+.
+.Sh DESCRIPTION
+Flushes all pending output
+into the compressed file.
+The parameter
+.Fa flush
+is as in the
+.Xr deflate 3
+function.
+.Fn gzflush
+is only permitted when writing.
+.
+.Pp
+If the
+.Fa flush
+parameter is
+.Dv Z_FINISH ,
+the remaining data is written
+and the gzip stream
+is completed in the output.
+If
+.Xr gzwrite 3
+is called again,
+a new gzip stream
+will be started in the output.
+.Xr gzread 3
+is able to read
+such concatenated gzip streams.
+.
+.Pp
+.Fn gzflush
+should be called only when strictly necessary
+because it will degrade compression
+if called too often.
+.
+.Sh RETURN VALUES
+The return value
+is the zlib error number
+.Po
+see function
+.Xr gzerror 3
+.Pc .
+.
+.Sh SEE ALSO
+.Xr deflate 3 ,
+.Xr gzerror 3 ,
+.Xr gzread 3 ,
+.Xr gzwrite 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

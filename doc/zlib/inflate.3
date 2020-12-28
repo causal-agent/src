@@ -1,0 +1,398 @@
+.Dd January 15, 2017
+.Dt INFLATE 3
+.Os
+.
+.Sh NAME
+.Nm inflate
+.Nd deflate decompression
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn inflate "z_streamp strm" "int flush"
+.
+.Sh DESCRIPTION
+.Fn inflate
+decompresses as much data as possible,
+and stops when the input buffer becomes empty
+or the output buffer becomes full.
+It may introduce some output latency
+(reading input without producing any output)
+except when forced to flush.
+.
+.Pp
+The detailed semantics are as follows.
+.Fn inflate
+performs one or both of the following actions:
+.
+.Bl -dash
+.It
+Decompress more input starting at
+.Fa next_in
+and update
+.Fa next_in
+and
+.Fa avail_in
+accordingly.
+If not all input can be processed
+(because there is not enough room in the output buffer),
+then
+.Fa next_in
+and
+.Fa avail_in
+are updated accordingly,
+and processing will resume at this point
+for the next call of
+.Fn inflate .
+.
+.It
+Generate more output starting at
+.Fa next_out
+and update
+.Fa next_out
+and
+.Fa avail_out
+accordingly.
+.Fn inflate
+provides as much output as possible,
+until there is no more input data
+or no more space in the output buffer
+.Po
+see below about the
+.Fa flush
+parameter
+.Pc .
+.El
+.
+.Pp
+Before the call of
+.Fn inflate ,
+the application should ensure that
+at least one of the actions is possible,
+by providing more input
+and/or consuming more output,
+and updating the
+.Fa next_*
+and
+.Fa avail_*
+values accordingly.
+If the caller of
+.Fn inflate
+does not provide both available input
+and available output space,
+it is possible that there will be no progress made.
+The application can consume the uncompressed output
+when it wants,
+for example when the output buffer is full
+.Po
+.Fa avail_out
+== 0
+.Pc ,
+or after each call of
+.Fn inflate .
+If
+.Fn inflate
+returns
+.Dv Z_OK
+and with zero
+.Fa avail)out ,
+it must be called again after making room
+in the output buffer
+because there might be more output pending.
+.
+.Pp
+The
+.Fa flush
+parameter of
+.Fn inflate
+can be
+.Dv Z_NO_FLUSH ,
+.Dv Z_SYNC_FLUSH ,
+.Dv Z_FINISH ,
+.Dv Z_BLOCK ,
+or
+.Dv Z_TREES .
+.Dv Z_SYNC_FLUSH
+requests that
+.Fn inflate
+flush as much output as possible
+to the output buffer.
+.Dv Z_BLOCK
+requests that
+.Fn inflate
+stop if and when it gets to the next deflate block boundary.
+When decoding the zlib or gzip format,
+this will cause
+.Fn inflate
+to return immediately after the header
+and before the first block.
+When doing a raw inflate,
+.Fn inflate
+will go ahead and process the first block,
+and will return when it gets to the end of that block,
+or when it runs out of data.
+.
+.Pp
+The
+.Dv Z_BLOCK
+option assists in appending to
+or combining deflate streams.
+To assist in this,
+on return
+.Fn inflate
+always sets
+.Fa strm->data_type
+to the number of unused bits
+in the last byte taken from
+.Fa strm->next_in ,
+plus 64 if
+.Fn inflate
+is currently decoding the last block in the deflate stream,
+plus 128 if
+.Fn inflate
+returned immediately after decoding an end-of-block code
+or decoding the complete header up to
+just before the first byte of the deflate stream.
+The end-of-block will not be indicated
+until all of the uncompressed data
+from that block has been written to
+.Fa strm->next_out .
+The number of unused bits may in general be greater than seven,
+except when bit 7 of
+.Fa data_type
+is set,
+in which case the number of unused bits
+will be less than eight.
+.Fa data_type
+is set as noted here every time
+.Fn inflate
+returns for all flush options,
+and so can be used to determine
+the amount of currently consumed input in bits.
+.
+.Pp
+The
+.Dv Z_TREES
+option behaves as
+.Dv Z_BLOCK
+does,
+but it also returns
+when the end of each deflate block header is reached,
+before any actual data in that block is decoded.
+This allows the caller to determine
+the length of the deflate block header
+for later use in random access
+within a deflate block.
+256 is added to the value of
+.Fa strm->data_type
+when
+.Fn inflate
+returns immediately after reaching
+the end of the deflate block header.
+.
+.Pp
+.Fn inflate
+should normally be called until it returns
+.Dv Z_STREAM_END
+or an error.
+However if all decompression is to be performed
+in a single step
+.Po
+a single call of
+.Fn inflate
+.Pc ,
+the parameter
+.Fa flush
+should be set to
+.Dv Z_FINISH .
+In this case all pending input is processed
+and all pending output is flushed;
+.Fa avail_out
+must be large enough to hold all of
+the uncompressed data for the operation to complete.
+(The size of the uncompressed data
+may have been saved by the compressor for this purpose.)
+The use of
+.Dv Z_FINISH
+is not required to perform inflation in one step.
+However it may be used to inform
+.Fn inflate
+that a faster approach can be used for the single
+.Fn inflate
+call.
+.Dv Z_FINISH also informs
+.Fn inflate
+to not maintain a sliding window
+if the stream completes,
+which reduces
+.Fn inflate Ap s
+memory footprint.
+If the stream does not complete,
+either because not all of the stream is provided
+or not enough output space is provided,
+then a sliding window will be allocated and
+.Fn inflate
+can be called again to continue the operation as if
+.Dv Z_NO_FLUSH
+had been used.
+.
+.Pp
+In this implementation,
+.Fn inflate
+always flushes as much output as possible
+to the output buffer,
+and always uses the faster approach
+on the first call.
+So the effects of the
+.Fa flush
+parameter in this implementation
+are on the return value of
+.Fn inflate
+as noted below,
+when
+.Fn inflate
+returns early when
+.Dv Z_BLOCK
+or
+.Dv Z_TREES
+is used,
+and when
+.Fn inflate
+avoids the allocation of memory
+for a sliding window when
+.Dv Z_FINISH
+is used.
+.
+.Pp
+If a preset dictionary is needed after this call
+.Po
+see
+.Xr inflateSetDictionary 3
+.Pc ,
+.Fn inflate
+sets
+.Fa strm->adler
+to the Adler-32 checksum of the dictionary
+chosen by the compressor
+and returns
+.Dv Z_NEED_DICT ;
+otherwise it sets
+.Fa strm->adler
+to the Adler-32 checksum
+of all output produced so far
+.Po
+that is,
+.Fa total_out
+bytes
+.Pc
+and returns
+.Dv Z_OK ,
+.Dv Z_STREAM_END
+or an error code
+as described in
+.Sx RETURN VALUES .
+At the end of the stream,
+.Fn inflate
+checks that its computed Adler-32 checksum
+is equal to that saved by the compressor
+and returns
+.Dv Z_STREAM_END
+only if the checksum is correct.
+.
+.Pp
+.Fn inflate
+can decompress and check
+either zlib-wrapped or gzip-wrapped
+deflate data.
+The header type is detected automatically,
+if requested when initializing with
+.Xr inflateInit2 3 .
+Any information contained in the gzip header
+is not retained unless
+.Xr inflateGetHeader 3
+is used.
+When processing gzip-wrapped deflate data,
+.Fa strm->adler32
+is set to the CRC-32
+of the output produced so far.
+The CRC-32 is checked against the gzip trailer,
+as is the uncompressed length,
+modulo 2^32.
+.
+.Sh RETURN VALUES
+.Fn inflate
+returns
+.Dv Z_OK
+if some progress has been made
+(more input processed or more output produced),
+.Dv Z_STREAM_END
+if the end of the compressed data has been reached
+and all uncompressed output has been produced,
+.Dv Z_NEED_DICT
+if a preset dictionary is needed at this point,
+.Dv Z_DATA_ERROR
+if the input data was corrupted
+.Po
+input stream not conforming to the zlib format
+or incorrect check value,
+in which case
+.Fa strm->msg
+points to a string with a more specific error
+.Pc ,
+.Dv Z_STREAM_ERROR
+if the stream structure was inconsistent
+.Po
+for example
+.Fa next_in
+or
+.Fa next_out
+was
+.Dv Z_NULL ,
+or the state was inadvertently written over
+by the application
+.Pc ,
+.Dv Z_MEM_ERROR
+if there was not enough memory,
+.Dv Z_BUF_ERROR
+if no progress was possible
+or if there was not enough room
+in the output buffer when
+.Dv Z_FINISH
+is used.
+Note that
+.Dv Z_BUF_ERROR
+is not fatal,
+and
+.Fn inflate
+can be called again with more input
+and more output space
+to continue decompressing.
+If
+.Dv Z_DATA_ERROR
+is returned,
+the application may then call
+.Xr inflateSync 3
+to look for a good compression block
+if a partial recovery of the data
+is to be attempted.
+.
+.Sh SEE ALSO
+.Xr deflate 3 ,
+.Xr inflateBack 3 ,
+.Xr inflateEnd 3 ,
+.Xr inflateInit 3 ,
+.Xr inflateMark 3 ,
+.Xr inflateSync 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

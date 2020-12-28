@@ -1,0 +1,84 @@
+.Dd January 15, 2017
+.Dt INFLATEBACKINIT 3
+.Os
+.
+.Sh NAME
+.Nm inflateBackInit
+.Nd initialize inflateBack stream
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fo inflateBackInit
+.Fa "z_streamp strm"
+.Fa "int windowBits"
+.Fa "unsigned char FAR *window"
+.Fc
+.
+.Sh DESCRIPTION
+Initialize the internal stream state
+for decompression using
+.Xr inflateBack 3
+calls.
+The fields
+.Fa zalloc ,
+.Fa zfree
+and
+.Fa opaque
+in
+.Fa strm
+must be initialized before the call.
+If
+.Fa zalloc
+and
+.Fa zfree
+are
+.Dv Z_NULL ,
+then the default
+library-derived memory allocation routines are used.
+.Fa windowBits
+is the base two logarithm of the window size,
+in the range 8..15.
+.Fa window
+is a caller supplied buffer of that size.
+Except for special applications
+where it is assured that deflate
+was used with small window sizes,
+.Fa windowBits
+must be 15
+and a 32K byte
+.Fa window
+must be supplied
+to be able to decompress general deflate streams.
+.
+.Sh RETURN VALUES
+.Fn inflateBackInit
+will return
+.Dv Z_OK
+on success,
+.Dv Z_STREAM_ERROR
+if any of the parameters are invalid,
+.Dv Z_MEM_ERROR
+if the internal state could not be allocated,
+or
+.Dv Z_VERSION_ERROR
+if the version of the library
+does not match the version of the header file.
+.
+.Sh SEE ALSO
+.Xr inflateBack 3 ,
+.Xr inflateBackEnd 3 ,
+.Xr inflateInit 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

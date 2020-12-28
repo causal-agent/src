@@ -1,0 +1,181 @@
+.Dd January 15, 2017
+.Dt INFLATEINIT2 3
+.Os
+.
+.Sh NAME
+.Nm inflateInit2
+.Nd inflate compression options
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn inflateInit2 "z_streamp strm" "int windowBits"
+.
+.Sh DESCRIPTION
+This is another version of
+.Xr inflateInit 3
+with an extra parameter.
+The fields
+.Fa next_in ,
+.Fa avail_in ,
+.Fa zalloc ,
+.Fa zfree
+and
+.Fa opaque
+must be initialized before by the caller.
+.
+.Pp
+The
+.Fa windowBits
+parameter is the base two logarithm
+of the maximum window size
+(the size of the history buffer).
+It should be in the range 8..15
+for this version of the library.
+The default value is 15 if
+.Xr inflateInit 3
+is used instead.
+.Fa windowBits
+must be greater than or equal to the
+.Fa windowBits
+value provided to
+.Xr deflateInit2 3
+while compressing,
+or it must be equal to 15 if
+.Xr deflateInit2 3
+was not used.
+If a compressed stream with a larger window size
+is given as input,
+.Xr inflate 3
+will return with the error code
+.Dv Z_DATA_ERROR
+instead of trying to allocate a larger window.
+.
+.Pp
+.Fa windowBits
+can also be zero
+to request that
+.Xr inflate 3
+use the window size
+in the zlib header
+of the compressed stream.
+.
+.Pp
+.Fa windowBits
+can also be -8..-15
+for raw inflate.
+In this case,
+.Fa -windowBits
+determines the window size.
+.Xr inflate 3
+will then process raw deflate data,
+not looking for a zlib or gzip header,
+not generating a check value,
+and not looking for any check values
+for comparison at the end of the stream.
+This is for use with other formats
+that use the deflate compressed data format
+such as zip.
+Those formats provide their own check values.
+If a custom format is developed
+using the raw deflate format for compressed data,
+it is recommended that a check value
+such as an Adler-32 or a CRC-32
+be applied to the uncompressed data
+as is done in the zlib, gzip and zip formats.
+For most applications,
+the zlib format should be used as is.
+Note that comments above on the use in
+.Xr deflateInit2 3
+applies to the magnitude of
+.Fa windowBits .
+.
+.Pp
+.Fa windowBits
+can also be greater than 15
+for optional gzip decoding.
+Add 32 to
+.Fa windowBits
+to enable zlib and gzip decoding
+with automatic header detection,
+or add 16 to decode only the gzip format
+.Po
+the zlib format will return a
+.Dv Z_DATA_ERROR
+.Pc .
+If a gzip stream is being decoded,
+.Fa strm->adler
+is a CRC-32 instead of an Adler-32.
+Unlike the
+.Xr gunzip 1
+utility and
+.Xr gzread 3 ,
+.Xr inflate 3
+will not automatically decode
+concatenated gzip streams.
+.Xr inflate 3
+will return
+.Dv Z_STREAM_END
+at the end of the gzip stream.
+The state would need to be reset
+to continue decoding a subsequent gzip stream.
+.
+.Pp
+.Fn inflateInit2
+does not perform any decompression
+apart from possibly reading the zlib header if present:
+actual decompression will be done by
+.Xr inflate 3 .
+.Po
+So
+.Fa next_in
+and
+.Fa avail_in
+may be modified,
+but
+.Fa next_out
+and
+.Fa avail_out
+are unused and unchanged.
+.Pc \&
+The current implementation of
+.Fn inflateInit2
+does not process any header information \(em
+that is deferred until
+.Xr inflate 3
+is called.
+.
+.Sh RETURN VALUES
+.Fn inflateInit2
+returns
+.Dv Z_OK
+if success,
+.Dv Z_MEM_ERROR
+if there was not enough memory,
+.Dv Z_VERSION_ERROR
+if the zlib library version
+is incompatible with the version assumed by the caller,
+or
+.Dv Z_STREAM_ERROR
+if the parameters are invalid,
+such as a null pointer to the structure.
+.Fa msg
+is set to null if there is no error message.
+.
+.Sh SEE ALSO
+.Xr deflateInit2 3 ,
+.Xr inflateInit 3 ,
+.Xr inflatePrime 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

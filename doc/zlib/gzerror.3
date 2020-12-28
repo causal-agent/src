@@ -1,0 +1,75 @@
+.Dd January 15, 2017
+.Dt GZERROR 3
+.Os
+.
+.Sh NAME
+.Nm gzerror ,
+.Nm gzclearerr
+.Nd check and reset compressed file error
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft const char *
+.Fn gzerror "gzFile file" "int *errnum"
+.Ft void
+.Fn gzclearerr "gzFile file"
+.
+.Sh DESCRIPTION
+.Fn gzerror
+returns the error message for the last error
+which occured on the given compressed file.
+.Fa errnum
+is set to the zlib error number.
+If an error occurred in the file system
+and not in the compression library,
+.Fa errnum
+is set to
+.Dv Z_ERRNO
+and the application may consult
+.Va errno
+to get the exact error code.
+.
+.Pp
+The application must not modify the returned string.
+Future calls to this function
+may invalidate the previously returned string.
+If
+.Fa file
+is closed,
+then the string previously returned by
+.Fn gzerror
+will no longer be available.
+.
+.Pp
+.Fn gzerror
+should be used to distinguish errors from end-of-file
+for those functions that do not distinguish those cases
+in their return values.
+.
+.Pp
+.Fn gzclearerr
+clears the error and end-of-file for
+.Fa file .
+This is analogous to the
+.Xr clearerr 3
+function in stdio.
+This is useful for continuing to read a gzip file
+that is being written concurrently.
+.
+.Sh SEE ALSO
+.Xr gzeof 3 ,
+.Xr gzread 3 ,
+.Xr gzwrite 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

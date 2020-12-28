@@ -1,0 +1,43 @@
+.Dd January 15, 2017
+.Dt GZPUTC 3
+.Os
+.
+.Sh NAME
+.Nm gzputc
+.Nd write character to compressed file
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn gzputc "gzFile file" "int c"
+.
+.Sh DESCRIPTION
+Writes
+.Fa c ,
+converted to an
+.Vt unsigned char ,
+into the compressed file.
+.
+.Sh RETURN VALUES
+.Fn gzputc
+returns the value that was written,
+or -1 in case of error.
+.
+.Sh SEE ALSO
+.Xr gzerror 3 ,
+.Xr gzopen 3 ,
+.Xr gzputs 3 ,
+.Xr gzwrite 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

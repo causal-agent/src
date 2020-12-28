@@ -1,0 +1,57 @@
+.Dd January 15, 2017
+.Dt DEFLATERESET 3
+.Os
+.
+.Sh NAME
+.Nm deflateReset
+.Nd reset deflate stream
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn deflateReset "z_streamp strm"
+.
+.Sh DESCRIPTION
+This function is equivalent to
+.Xr deflateEnd 3
+followed by
+.Xr deflateInit 3 ,
+but does not free and reallocate
+the internal compression state.
+The stream will leave the compression level
+and any other attributes
+that may have been set unchanged.
+.
+.Sh RETURN VALUES
+.Fn deflateReset
+returns
+.Dv Z_OK
+if success,
+or
+.Dv Z_STREAM_ERROR
+if the source stream state was inconsistent
+.Po
+such as
+.Fa zalloc
+or
+.Fa state
+being
+.Dv Z_NULL
+.Pc .
+.
+.Sh SEE ALSO
+.Xr deflateEnd 3 ,
+.Xr deflateInit 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

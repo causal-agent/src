@@ -1,0 +1,65 @@
+.Dd January 15, 2017
+.Dt ADLER32 3
+.Os
+.
+.Sh NAME
+.Nm adler32 ,
+.Nm adler32_z
+.Nd update Adler-32 checksum
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft uLong
+.Fn adler32 "uLong adler" "const Bytef *buf" "uInt len"
+.Ft uLong
+.Fn adler32_z "uLong adler" "const Bytef *buf" "z_size_t len"
+.
+.Sh DESCRIPTION
+Update a running Adler-32 checksum with the bytes
+.Fa "buf[0..len-1]"
+and return the updated checksum.
+If
+.Fa buf
+is
+.Dv Z_NULL ,
+this function returns
+the required initial value for the checksum.
+.
+.Pp
+An Adler-32 checksum is almost as reliable as a CRC-32
+but can be computed much faster.
+.
+.Pp
+.Fn adler32_z
+is the same as
+.Fn adler32 ,
+but with a
+.Vt size_t
+length.
+.
+.Sh EXAMPLES
+.Bd -literal -offset indent
+uLong adler = adler32(0L, Z_NULL, 0);
+
+while (read_buffer(buffer, length) != EOF) {
+	adler = adler32(adler, buffer, length);
+}
+if (adler != original_adler) error();
+.Ed
+.
+.Sh SEE ALSO
+.Xr adler32_combine 3 ,
+.Xr crc32 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

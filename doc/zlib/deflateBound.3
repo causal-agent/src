@@ -1,0 +1,71 @@
+.Dd January 15, 2017
+.Dt DEFLATEBOUND 3
+.Os
+.
+.Sh NAME
+.Nm deflateBound
+.Nd compressed size upper bound
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft uLong
+.Fn deflateBound "z_streamp strm" "uLong sourceLen"
+.
+.Sh DESCRIPTION
+.Fn deflateBound
+returns an upper bound
+on the compressed size
+after deflation of
+.Fa sourceLen
+bytes.
+It must be called after
+.Xr deflateInit 3
+or
+.Xr deflateInit2 3 ,
+and after
+.Xr deflateSetHeader 3 ,
+if used.
+This would be used
+to allocate an output buffer
+for deflation in a single pass,
+and so would be called before
+.Xr deflate 3 .
+If that first
+.Fn deflate
+call is provided the
+.Fa sourceLen
+input bytes,
+an output buffer allocated
+to the size returned by
+.Fn deflateBound ,
+and the flush value
+.Dv Z_FINISH ,
+then
+.Fn deflate
+is guaranteed to return
+.Dv Z_STREAM_END .
+Note that it is possible
+for the compressed size
+to be larger than the value returned by
+.Fn deflateBound
+if flush options other than
+.Dv Z_FINISH
+or
+.Dv Z_NO_FLUSH
+are used.
+.
+.Sh SEE ALSO
+.Xr compressBound 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

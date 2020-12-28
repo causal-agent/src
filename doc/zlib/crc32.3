@@ -1,0 +1,66 @@
+.Dd January 15, 2017
+.Dt CRC32 3
+.Os
+.
+.Sh NAME
+.Nm crc32 ,
+.Nm crc32_z
+.Nd update CRC-32 checksum
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft uLong
+.Fn crc32 "uLong crc" "const Bytef *buf" "uInt len"
+.Ft uLong
+.Fn crc32_z "uLong crc" "const Bytef *buf" "z_size_t len"
+.
+.Sh DESCRIPTION
+Update a running CRC-32 with the bytes
+.Fa "buf[0..len-1]"
+and return the updated CRC-32.
+If
+.Fa buf
+is
+.Dv Z_NULL ,
+this function returns
+the required initial value for the CRC.
+Pre- and post-conditioning
+(one's complement)
+is performed within this function
+so it shouldn't be done
+by the application.
+.
+.Pp
+.Fn crc32_z
+is the same as
+.Fn crc32 ,
+but with a
+.Vt size_t
+length.
+.
+.Sh EXAMPLES
+.Bd -literal -offset indent
+uLong crc = crc32(0L, Z_NULL, 0);
+
+while (read_buffer(buffer, length) != EOF) {
+	crc = crc32(crc, buffer, length);
+}
+if (crc != original_crc) error();
+.Ed
+.
+.Sh SEE ALSO
+.Xr adler32 3 ,
+.Xr crc32_combine 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

@@ -1,0 +1,63 @@
+.Dd January 15, 2017
+.Dt ADLER32_COMBINE 3
+.Os
+.
+.Sh NAME
+.Nm adler32_combine
+.Nd combine Adler-32 checksums
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft uLong
+.Fn adler32_combine "uLong adler1" "uLong adler2" "z_off_t len2"
+.
+.Sh DESCRIPTION
+Combine two Adler-32 checksums into one.
+For two sequences of bytes,
+.Va seq1
+and
+.Va seq2
+with lengths
+.Va len1
+and
+.Va len2 ,
+Adler-32 checksums were calculated for each,
+.Va adler1
+and
+.Va adler2 .
+.Fn adler32_combine
+returns the Adler-32 checksum of
+.Va seq1
+and
+.Va seq2
+concatenated,
+requiring only
+.Fa adler1 ,
+.Fa adler2 ,
+and
+.Fa len2 .
+Note that the
+.Vt z_off_t
+type
+.Pq like Vt off_t
+is a signed integer.
+If
+.Fa len2
+is negative,
+the result has no meaning or utility.
+.
+.Sh SEE ALSO
+.Xr adler32 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

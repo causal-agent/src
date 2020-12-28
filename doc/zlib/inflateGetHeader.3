@@ -1,0 +1,170 @@
+.Dd January 15, 2017
+.Dt INFLATEGETHEADER 3
+.Os
+.
+.Sh NAME
+.Nm inflateGetHeader
+.Nd get gzip header
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.Ft int
+.Fn inflateGetHeader "z_streamp strm" "gz_headerp head"
+.
+.Sh DESCRIPTION
+.Fn inflateGetHeader
+requests that gzip header information
+be stored in the provided
+.Vt gz_header
+structure.
+.Fn inflateGetHeader
+may be called after
+.Xr inflateInit2 3
+or
+.Xr inflateReset 3 ,
+and before the first call of
+.Xr inflate 3 .
+As
+.Xr inflate 3
+processes the gzip stream,
+.Fa head->done
+is zero until the header is completed,
+at which time
+.Fa head->done
+is set to one.
+If a zlib stream is being decoded,
+then
+.Fa head->done
+is set to -1 to indicate that
+there will be no gzip header information forthcoming.
+Note that
+.Dv Z_BLOCK
+or
+.Dv Z_TREES
+can be used to force
+.Xr inflate 3
+to return immediately after
+header processing is complete
+and before any actual data is decompressed.
+.
+.Pp
+The
+.Fa text ,
+.Fa time ,
+.Fa xflags ,
+and
+.Fa os
+fields are filled in with the gzip header contents.
+.Fa hcrc
+is set to true if there is a header CRC.
+.Po
+The header CRC was valid if
+.Fa done
+is set to one.
+.Pc \&
+If
+.Fa extra
+is not
+.Dv Z_NULL ,
+then
+.Fa extra_max
+contains the maximum number of bytes to write to
+.Fa extra .
+Once
+.Fa done
+is true,
+.Fa extra_len
+contains the actual extra field length,
+and
+.Fa extra
+contains the extra field,
+or that field truncated if
+.Fa extra_max
+is less than
+.Fa extra_len .
+If
+.Fa name
+is not
+.Dv Z_NULL ,
+then up to
+.Fa name_max
+characters are written there,
+terminated with a zero
+unless the length is greater than
+.Fa name_max .
+If
+.Fa comment
+is not
+.Dv Z_NULL ,
+then up to
+.Fa comm_max
+characters are written there,
+terminated with a zero
+unless the length is greater than
+.Fa comm_max .
+When any of
+.Fa extra ,
+.Fa name ,
+or
+.Fa comment
+are not
+.Dv Z_NULL
+and the respective field
+is not present in the header,
+then that field is set to
+.Dv Z_NULL
+to signal its absence.
+This allows the use of
+.Xr deflateSetHeader 3
+with the returned structure
+to duplicate the header.
+However if those fields are set to allocated memory,
+then the application will need to
+save those pointers elsewhere
+so that they can be eventually feed.
+.
+.Pp
+If
+.Fn inflateGetHeader
+is not used,
+then the header information is simply discarded.
+The header is always checked for validity,
+including the header CRC if present.
+.Xr inflateReset 3
+will reset the process to discard the header information.
+The application would need to call
+.Fn inflateGetHeader
+again to retrieve the header from the next gzip stream.
+.
+.Pp
+The
+.Vt gz_headerp
+type is documented in
+.Xr deflateSetHeader 3 .
+.
+.Sh RETURN VALUES
+.Fn inflateGetHeader
+returns
+.Dv Z_OK
+if success,
+or
+.Dv Z_STREAM_ERROR
+if the source stream state was inconsistent.
+.
+.Sh SEE ALSO
+.Xr gzip 1 ,
+.Xr deflateSetHeader 3 ,
+.Xr inflateInit2 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu

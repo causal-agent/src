@@ -1,0 +1,180 @@
+.Dd January 15, 2017
+.Dt DEFLATESETHEADER 3
+.Os
+.
+.Sh NAME
+.Nm deflateSetHeader
+.Nd set gzip header
+.
+.Sh LIBRARY
+.Lb libz
+.
+.Sh SYNOPSIS
+.In zlib.h
+.
+.Bd -literal
+typedef struct gz_header_s {
+	int     text;
+	uLong   time;
+	int     xflags;
+	int     os;
+	Bytef   *extra;
+	uInt    extra_len;
+	uInt    extra_max;
+	Bytef   *name;
+	uInt    name_max;
+	Bytef   *comment;
+	uInt    comm_max;
+	int     hcrc;
+	int     done;
+} gz_header;
+.Ed
+.
+.Pp
+.Vt typedef gz_header FAR *gz_headerp;
+.
+.Ft int
+.Fn deflateSetHeader "z_streamp strm" "gz_headerp head"
+.
+.Sh DESCRIPTION
+.Fn deflateSetHeader
+provides gzip header information
+for when a gzip stream
+is requested by
+.Xr deflateInit2 3 .
+.Fn deflateSetHeader
+may be called after
+.Xr deflateInit2 3
+or
+.Xr deflateReset 3
+and before the first call of
+.Xr deflate 3 .
+The
+text,
+time,
+OS,
+extra field,
+name,
+and comment
+information in the provided
+.Vt gz_header
+structure
+are written to the gzip header
+.Po
+.Fa xflag
+is ignored \(em
+the extra flags are set
+according to the compression level
+.Pc .
+The caller must assure that,
+if not
+.Dv Z_NULL ,
+.Fa name
+and
+.Fa comment
+are terminated with a zero byte,
+and that if
+.Fa extra
+is not
+.Dv Z_NULL ,
+that
+.Fa extra_len
+bytes are available there.
+If
+.Fa hcrc
+is true,
+a gzip header CRC is included.
+Note that the current versions
+of the command-line version of
+.Xr gzip 1
+(up through version 1.3.x)
+do not support header CRCs,
+and will report that it is a
+"multi-part gzip file"
+and give up.
+.
+.Pp
+If
+.Fn deflateSetHeader
+is not used,
+the default gzip header has
+text false,
+the time set to zero,
+and OS set to 255,
+with no extra, name, or comment fields.
+The gzip header is returned
+to the default state by
+.Xr deflateReset 3 .
+.
+.Pp
+The fields of
+.Vt gz_header
+are as follows:
+.
+.Bl -tag -width "extra_len"
+.It Fa text
+true if compressed data believed to be text
+.It Fa time
+modification time
+.It Fa xflags
+extra flags
+(not used when writing a gzip file)
+.It Fa os
+operating system
+.It Fa extra
+pointer to extra field or
+.Dv Z_NULL
+if none
+.It Fa extra_len
+extra field length
+.Po
+valid if
+.Fa extra
+!=
+.Dv Z_NULL
+.Pc
+.It Fa extra_max
+space at extra
+(only when reading header)
+.It Fa name
+pointer to zero-terminated file name or
+.Dv Z_NULL
+.It Fa name_max
+space at
+.Fa name
+(only when reading header)
+.It Fa comment
+pointer to zero-terminated comment or
+.Dv Z_NULL
+.It Fa comm_max
+space at comment
+(only when reading header)
+.It Fa hcrc
+true if there was or will be a header CRC
+.It Fa done
+true when done reading gzip header
+(not used when writing a gzip file)
+.El
+.
+.Sh RETURN VALUES
+.Fn deflateSetHeader
+returns
+.Dv Z_OK
+if success,
+or
+.Dv Z_STREAM_ERROR
+if the source stream state was inconsistent.
+.
+.Sh SEE ALSO
+.Xr gzip 1 ,
+.Xr deflateInit2 3
+.
+.Sh HISTORY
+This manual page was converted from
+.In zlib.h
+to mdoc format by
+.An June McEnroe Aq Mt june@causal.agency .
+.
+.Sh AUTHORS
+.An Jean-loup Gailly Aq Mt jloup@gzip.org
+.An Mark Adler Aq Mt madler@alumni.caltech.edu
