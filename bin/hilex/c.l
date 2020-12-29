@@ -27,8 +27,14 @@
 width "*"|[0-9]+
 
 %%
+	static int pop = INITIAL;
 
 [[:space:]]+ { return Normal; }
+
+^"%" {
+	BEGIN(pop = MacroLine);
+	return Macro;
+}
 
 ([-+*/%&|^=!<>]|"<<"|">>")"="? |
 [=~.?:]|"++"|"--"|"&&"|"||"|"->" |
@@ -51,45 +57,22 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 
 [_[:alpha:]][_[:alnum:]]* { return Identifier; }
 
-^"#" {
-	BEGIN(MacroLine);
-	return Macro;
-}
-^"#"[[:blank:]]*"include" {
-	BEGIN(MacroInclude);
-	return Macro;
-}
-<MacroLine,MacroInclude>{
-	"\n" {
-		BEGIN(0);
-		return Macro;
-	}
-	"\\\n" { return Macro; }
-	[^\\\n<"]+|. { return Macro; }
-}
-<MacroInclude>{
-	"<"[^>]+">" |
-	"\""[^"]+"\"" {
-		return String;
-	}
-}
-
-"//"([^\n]|"\\\n")* |
-"/*"([^*]|"*"[^/])*"*"+"/" {
+<INITIAL,MacroLine>"//"([^\n]|"\\\n")* |
+<INITIAL,MacroLine>"/*"([^*]|"*"[^/])*"*"+"/" {
 	return Comment;
 }
 
-[LUu]?"'" {
+<INITIAL,MacroLine>[LUu]?"'" {
 	BEGIN(CharLiteral);
 	return String;
 }
-([LU]|u8?)?"\"" {
+<INITIAL,MacroLine,MacroInclude>([LU]|u8?)?"\"" {
 	BEGIN(StringLiteral);
 	return String;
 }
 
 <CharLiteral,StringLiteral>{
-	"\\"['""?\\abfnrtv] |
+	"\\"[''""?\\abfnrtv] |
 	"\\"([0-7]{1,3}) |
 	"\\x"([[:xdigit:]]{2}) |
 	"\\u"([[:xdigit:]]{4}) |
@@ -106,17 +89,38 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 
 <CharLiteral>{
 	"'" {
-		BEGIN(0);
+		BEGIN(pop);
 		return String;
 	}
-	[^\\']+|. { return String; }
+	[^\\'']+|. { return String; }
 }
 <StringLiteral>{
 	"\"" {
-		BEGIN(0);
+		BEGIN(pop);
 		return String;
 	}
-	[^%\\"]+|. { return String; }
+	[^%\\""]+|. { return String; }
+}
+
+^"#" {
+	BEGIN(pop = MacroLine);
+	return Macro;
+}
+^"#"[[:blank:]]*"include" {
+	BEGIN(pop = MacroInclude);
+	return Macro;
+}
+<MacroInclude>"<"[^>]+">" {
+	BEGIN(pop = MacroLine);
+	return String;
+}
+<MacroLine,MacroInclude>{
+	"\n" {
+		BEGIN(pop = INITIAL);
+		return Macro;
+	}
+	"\\\n" { return Macro; }
+	[^\\\n/<>''""]+|. { return Macro; }
 }
 
 . { return Normal; }
