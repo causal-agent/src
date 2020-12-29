@@ -169,6 +169,7 @@ sethistsize(const char *hs)
 		   (histsize = atoi(hs)) < 0)
 			histsize = 100;
 		history(hist, &he, H_SETSIZE, histsize);
+		history(hist, &he, H_SETUNIQUE, 1);
 	}
 }
 
