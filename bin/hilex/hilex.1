@@ -65,6 +65,60 @@ input lexer if one cannot be inferred.
 .It Cm ansi
 Output ANSI terminal control sequences.
 .
+.It Cm html
+Output HTML
+.Sy <span>
+elements
+within a
+.Sy <pre>
+element.
+The options are as follows:
+.Bl -tag -width "title=..."
+.It Cm anchor
+Output tags as anchor links.
+.
+.It Cm css Ns = Ns Ar url
+With
+.Cm document ,
+output a
+.Sy <link>
+element for the external stylesheet
+.Ar url .
+If unset,
+output default styles in a
+.Sy <style>
+element.
+.
+.It Cm document
+Output an HTML document containing the
+.Sy <pre>
+element.
+.
+.It Cm inline
+Output inline
+.Sy style
+attributes rather than classes.
+.
+.It Cm tab Ns = Ns Ar n
+With
+.Cm document
+or
+.Cm inline ,
+set the
+.Sy tab-size
+property to
+.Ar n .
+.
+.It Cm title Ns = Ns Ar ...
+With
+.Cm document ,
+set the
+.Sy <title>
+element text.
+The default title is the same as
+.Ar name .
+.El
+.
 .It Cm irc
 Output IRC formatting codes.
 The options are as follows:

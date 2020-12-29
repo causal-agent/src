@@ -63,6 +63,7 @@ static const struct {
 } Formatters[] = {
 	{ &FormatANSI, "ansi" },
 	{ &FormatDebug, "debug" },
+	{ &FormatHTML, "html" },
 	{ &FormatIRC, "irc" },
 };
 
@@ -135,6 +136,7 @@ int main(int argc, char *argv[]) {
 			name = path;
 		}
 	}
+	if (!opts[Title]) opts[Title] = name;
 	if (!lexer) lexer = matchLexer(name);
 	if (!lexer && text) lexer = &LexText;
 	if (!lexer) errx(EX_USAGE, "cannot infer lexer for %s", name);

@@ -51,7 +51,13 @@ extern const struct Lexer LexMdoc;
 extern const struct Lexer LexText;
 
 #define ENUM_OPTION \
-	X(Monospace, "monospace")
+	X(Anchor, "anchor") \
+	X(CSS, "css") \
+	X(Document, "document") \
+	X(Inline, "inline") \
+	X(Monospace, "monospace") \
+	X(Tab, "tab") \
+	X(Title, "title")
 
 enum Option {
 #define X(option, key) option,
@@ -70,4 +76,5 @@ struct Formatter {
 
 extern const struct Formatter FormatANSI;
 extern const struct Formatter FormatDebug;
+extern const struct Formatter FormatHTML;
 extern const struct Formatter FormatIRC;
