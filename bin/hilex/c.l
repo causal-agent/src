@@ -22,6 +22,7 @@
 %}
 
 %s MacroLine MacroInclude MacroDefine
+%s TypeDecl
 %x CharLiteral StringLiteral
 
 ident [_[:alpha:]][_[:alnum:]]*
@@ -76,6 +77,19 @@ sizeof|(_A|alignof) {
 [0-9]*("."[0-9]*)?([eE][+-]?[0-9]+)?[flFL]? |
 "0x"[[:xdigit:]]*("."[[:xdigit:]]*)?([pP][+-]?[0-9]+)[flFL]? {
 	return Number;
+}
+
+enum|struct|typedef|union {
+	BEGIN(TypeDecl);
+	return Keyword;
+}
+<TypeDecl>{ident}/[[:space:]]*("{"|"(") {
+	BEGIN(pop);
+	return IdentifierTag;
+}
+<TypeDecl>. {
+	BEGIN(pop);
+	REJECT;
 }
 
 auto|break|case|const|continue|default|do|else|enum|extern|for|goto|if|inline |
