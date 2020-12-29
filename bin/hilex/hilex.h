@@ -25,6 +25,7 @@
 	X(Number) \
 	X(Keyword) \
 	X(Identifier) \
+	X(Tag) \
 	X(Macro) \
 	X(Comment) \
 	X(String) \

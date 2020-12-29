@@ -20,8 +20,9 @@
 
 #include "hilex.h"
 
-static const char *Color[ClassCap] = {
+static const char *SGR[ClassCap] = {
 	[Keyword] = "37",
+	[Tag] = "4",
 	[Macro] = "32",
 	[Comment] = "34",
 	[String] = "36",
@@ -30,15 +31,15 @@ static const char *Color[ClassCap] = {
 
 static void format(const char *opts[], enum Class class, const char *text) {
 	(void)opts;
-	if (!Color[class]) {
+	if (!SGR[class]) {
 		printf("%s", text);
 		return;
 	}
 	// Set color on each line for piping to less -R:
 	for (const char *nl; (nl = strchr(text, '\n')); text = &nl[1]) {
-		printf("\33[%sm%.*s\33[m\n", Color[class], (int)(nl - text), text);
+		printf("\33[%sm%.*s\33[m\n", SGR[class], (int)(nl - text), text);
 	}
-	if (*text) printf("\33[%sm%s\33[m", Color[class], text);
+	if (*text) printf("\33[%sm%s\33[m", SGR[class], text);
 }
 
 const struct Formatter FormatANSI = { .format = format };

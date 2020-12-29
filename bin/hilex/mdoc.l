@@ -21,7 +21,7 @@
 #include "hilex.h"
 %}
 
-%s MacroLine
+%s MacroLine Heading
 
 %%
 
@@ -38,6 +38,11 @@
 		return Normal;
 	}
 
+	S[hs] {
+		BEGIN(Heading);
+		return Keyword;
+	}
+
 	%[ABCDIJNOPQRTUV]|A[cdnopqrt]|B[cdfkloqtx]|Br[coq]|Bsx|C[dm]|D[1bcdloqtvx] |
 	E[cdfklmnorsvx]|F[acdlnortx]|Hf|I[cnt]|L[bikp]|M[st]|N[dmosx]|O[copstx] |
 	P[acfopq]|Q[cloq]|R[esv]|S[chmoqstxy]|T[an]|U[dx]|V[at]|X[cor] {
@@ -45,6 +50,15 @@
 	}
 
 	"\""([^""]|"\\\"")*"\"" { return String; }
+}
+
+<Heading>{
+	"\n" {
+		BEGIN(0);
+		return Normal;
+	}
+
+	[^[:space:]].* { return Tag; }
 }
 
 "\\"(.|"("..|"["[^]]*"]") { return String; }
