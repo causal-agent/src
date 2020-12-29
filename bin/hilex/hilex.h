@@ -50,6 +50,16 @@ extern const struct Lexer LexC;
 extern const struct Lexer LexMdoc;
 extern const struct Lexer LexText;
 
+#define ENUM_OPTION \
+	X(Monospace, "monospace")
+
+enum Option {
+#define X(option, key) option,
+	ENUM_OPTION
+#undef X
+	OptionCap,
+};
+
 typedef void Header(const char *opts[]);
 typedef void Format(const char *opts[], enum Class class, const char *text);
 struct Formatter {
@@ -60,3 +70,4 @@ struct Formatter {
 
 extern const struct Formatter FormatANSI;
 extern const struct Formatter FormatDebug;
+extern const struct Formatter FormatIRC;

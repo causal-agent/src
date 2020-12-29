@@ -14,32 +14,46 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "hilex.h"
 
-static const char *SGR[ClassCap] = {
-	[Keyword] = "37",
-	[Tag] = "4",
-	[Macro] = "32",
-	[Comment] = "34",
-	[String] = "36",
-	[StringFormat] = "36;1;96",
+static const char *IRC[ClassCap] = {
+	[Keyword] = "\00315",
+	[Macro] = "\00303",
+	[Comment] = "\00302",
+	[String] = "\00310",
+	[StringFormat] = "\00311",
 };
 
-static void ansiFormat(const char *opts[], enum Class class, const char *text) {
-	(void)opts;
-	if (!SGR[class]) {
-		printf("%s", text);
-		return;
-	}
-	// Set color on each line for piping to less -R:
-	for (const char *nl; (nl = strchr(text, '\n')); text = &nl[1]) {
-		printf("\33[%sm%.*s\33[m\n", SGR[class], (int)(nl - text), text);
-	}
-	if (*text) printf("\33[%sm%s\33[m", SGR[class], text);
+static void ircHeader(const char *opts[]) {
+	if (opts[Monospace]) printf("\21");
 }
 
-const struct Formatter FormatANSI = { .format = ansiFormat };
+static const char *stop(const char *text) {
+	return (*text == ',' || isdigit(*text) ? "\2\2" : "");
+}
+
+static void ircFormat(const char *opts[], enum Class class, const char *text) {
+	for (const char *nl; (nl = strchr(text, '\n')); text = &nl[1]) {
+		if (IRC[class]) printf("%s%s", IRC[class], stop(text));
+		printf("%.*s\n", (int)(nl - text), text);
+		if (opts[Monospace]) printf("\21");
+	}
+	if (*text) {
+		if (IRC[class]) {
+			printf("%s%s%s\17", IRC[class], stop(text), text);
+			if (opts[Monospace]) printf("\21");
+		} else {
+			printf("%s", text);
+		}
+	}
+}
+
+const struct Formatter FormatIRC = {
+	.header = ircHeader,
+	.format = ircFormat,
+};

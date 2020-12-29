@@ -63,6 +63,7 @@ static const struct {
 } Formatters[] = {
 	{ &FormatANSI, "ansi" },
 	{ &FormatDebug, "debug" },
+	{ &FormatIRC, "irc" },
 };
 
 static const struct Formatter *parseFormatter(const char *name) {
@@ -87,18 +88,35 @@ debugFormat(const char *opts[], enum Class class, const char *text) {
 
 const struct Formatter FormatDebug = { .format = debugFormat };
 
+static char *const OptionKeys[OptionCap + 1] = {
+#define X(option, key) [option] = key,
+	ENUM_OPTION
+#undef X
+	NULL,
+};
+
 int main(int argc, char *argv[]) {
 	bool text = false;
 	const char *name = NULL;
 	const struct Lexer *lexer = NULL;
 	const struct Formatter *formatter = &FormatANSI;
+	const char *opts[OptionCap] = {0};
 
-	for (int opt; 0 < (opt = getopt(argc, argv, "f:l:n:t"));) {
+	for (int opt; 0 < (opt = getopt(argc, argv, "f:l:n:o:t"));) {
 		switch (opt) {
 			break; case 'f': formatter = parseFormatter(optarg);
 			break; case 'l': lexer = parseLexer(optarg);
 			break; case 'n': name = optarg;
+			break; case 'o': {
+				while (*optarg) {
+					char *val;
+					int key = getsubopt(&optarg, OptionKeys, &val);
+					if (key < 0) errx(EX_USAGE, "no such option %s", val);
+					opts[key] = (val ? val : "");
+				}
+			}
 			break; case 't': text = true;
+			break; default:  return EX_USAGE;
 		}
 	}
 
@@ -122,10 +140,10 @@ int main(int argc, char *argv[]) {
 	if (!lexer) errx(EX_USAGE, "cannot infer lexer for %s", name);
 
 	*lexer->in = file;
-	if (formatter->header) formatter->header(NULL);
+	if (formatter->header) formatter->header(opts);
 	for (enum Class class; None != (class = lexer->lex());) {
 		assert(class < ClassCap);
-		formatter->format(NULL, class, *lexer->text);
+		formatter->format(opts, class, *lexer->text);
 	}
-	if (formatter->footer) formatter->footer(NULL);
+	if (formatter->footer) formatter->footer(opts);
 }
