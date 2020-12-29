@@ -106,7 +106,7 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 	BEGIN(pop = MacroLine);
 	return Macro;
 }
-^"#"[[:blank:]]*"include" {
+^"#"[[:blank:]]*("include"|"import") {
 	BEGIN(pop = MacroInclude);
 	return Macro;
 }
