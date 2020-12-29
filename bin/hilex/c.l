@@ -21,19 +21,34 @@
 #include "hilex.h"
 %}
 
-%x MacroLine MacroInclude
+%s MacroLine MacroInclude
 %x CharLiteral StringLiteral
 
+ident [_[:alpha:]][_[:alnum:]]*
 width "*"|[0-9]+
 
 %%
 	static int pop = INITIAL;
 
-[[:space:]]+ { return Normal; }
+[[:blank:]]+ { return Normal; }
 
-^"%" {
+^"#"[[:blank:]]*("include"|"import") {
+	BEGIN(pop = MacroInclude);
+	return Macro;
+}
+^[#%][[:blank:]]*{ident} {
 	BEGIN(pop = MacroLine);
 	return Macro;
+}
+
+<MacroInclude>"<"[^>]+">" { return String; }
+
+<MacroLine,MacroInclude>{
+	"\n" {
+		BEGIN(pop = INITIAL);
+		return Normal;
+	}
+	"\\\n" { return Macro; }
 }
 
 ([-+*/%&|^=!<>]|"<<"|">>")"="? |
@@ -55,18 +70,19 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 	return Keyword;
 }
 
-[_[:alpha:]][_[:alnum:]]* { return Identifier; }
+<MacroLine,MacroInclude>{ident} { return Macro; }
+{ident} { return Identifier; }
 
-<INITIAL,MacroLine>"//"([^\n]|"\\\n")* |
-<INITIAL,MacroLine>"/*"([^*]|"*"[^/])*"*"+"/" {
+"//"([^\n]|"\\\n")* |
+"/*"([^*]|"*"[^/])*"*"+"/" {
 	return Comment;
 }
 
-<INITIAL,MacroLine>[LUu]?"'" {
+[LUu]?"'" {
 	BEGIN(CharLiteral);
 	return String;
 }
-<INITIAL,MacroLine,MacroInclude>([LU]|u8?)?"\"" {
+([LU]|u8?)?"\"" {
 	BEGIN(StringLiteral);
 	return String;
 }
@@ -102,28 +118,9 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 	[^%\\""]+|. { return String; }
 }
 
-^"#" {
-	BEGIN(pop = MacroLine);
-	return Macro;
-}
-^"#"[[:blank:]]*("include"|"import") {
-	BEGIN(pop = MacroInclude);
-	return Macro;
-}
-<MacroInclude>"<"[^>]+">" {
-	BEGIN(pop = MacroLine);
-	return String;
-}
-<MacroLine,MacroInclude>{
-	"\n" {
-		BEGIN(pop = INITIAL);
-		return Macro;
-	}
-	"\\\n" { return Macro; }
-	[^\\\n/<>''""]+|. { return Macro; }
-}
+<MacroLine,MacroInclude>. { return Macro; }
 
-. { return Normal; }
+.|\n { return Normal; }
 
 %{
 	(void)yyunput;
