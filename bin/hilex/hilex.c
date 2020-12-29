@@ -32,6 +32,7 @@ static const struct {
 	const char *pattern;
 } Lexers[] = {
 	{ &LexC, "c", "[.][chlmy]$" },
+	{ &LexMdoc, "mdoc", "[.][1-9]$" },
 	{ &LexText, "text", "[.]txt$" },
 };
 
@@ -123,6 +124,7 @@ int main(int argc, char *argv[]) {
 	*lexer->in = file;
 	if (formatter->header) formatter->header(NULL);
 	for (enum Class class; None != (class = lexer->lex());) {
+		assert(class < ClassCap);
 		formatter->format(NULL, class, *lexer->text);
 	}
 	if (formatter->footer) formatter->footer(NULL);

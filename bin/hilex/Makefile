@@ -3,6 +3,7 @@ CFLAGS += -std=c11 -Wall -Wextra -Wpedantic
 OBJS += ansi.o
 OBJS += c.o
 OBJS += hilex.o
+OBJS += mdoc.o
 OBJS += text.o
 
 hilex: ${OBJS}

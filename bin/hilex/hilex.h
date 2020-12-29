@@ -46,6 +46,7 @@ struct Lexer {
 };
 
 extern const struct Lexer LexC;
+extern const struct Lexer LexMdoc;
 extern const struct Lexer LexText;
 
 typedef void Header(const char *opts[]);
