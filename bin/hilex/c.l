@@ -42,7 +42,8 @@ width "*"|[0-9]+
 	BEGIN(pop = MacroDefine);
 	return Macro;
 }
-^[#%][[:blank:]]*{ident} {
+^[#%][[:blank:]]*{ident} |
+^"%"[%{}] {
 	BEGIN(pop = MacroLine);
 	return Macro;
 }
