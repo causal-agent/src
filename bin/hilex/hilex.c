@@ -82,9 +82,13 @@ static const char *ClassName[] = {
 
 static void
 debugFormat(const char *opts[], enum Class class, const char *text) {
-	printf("%s(\33[3m", ClassName[class]);
-	FormatANSI.format(opts, class, text);
-	printf("\33[m)");
+	if (class != Normal) {
+		printf("%s(", ClassName[class]);
+		FormatANSI.format(opts, class, text);
+		printf(")");
+	} else {
+		printf("%s", text);
+	}
 }
 
 const struct Formatter FormatDebug = { .format = debugFormat };

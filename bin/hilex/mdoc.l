@@ -25,6 +25,8 @@
 
 %%
 
+[[:blank:]]+ { return Normal; }
+
 ^"." {
 	BEGIN(MacroLine);
 	return Keyword;
@@ -32,7 +34,7 @@
 
 ^".\\\"".* { return Comment; }
 
-<MacroLine>{
+<MacroLine,Heading>{
 	"\n" {
 		BEGIN(0);
 		return Normal;
@@ -52,18 +54,13 @@
 	"\""([^""]|"\\\"")*"\"" { return String; }
 }
 
-<Heading>{
-	"\n" {
-		BEGIN(0);
-		return Normal;
-	}
-
-	[^[:space:]].* { return IdentifierTag; }
-}
+<Heading>[^[:space:]].* { return IdentifierTag; }
 
 "\\"(.|"("..|"["[^]]*"]") { return String; }
 
-[[:blank:]]+|[^.\n""\\[:space:]]+|.|\n { return Normal; }
+[^.\\""[:space:]]+ { return Normal; }
+
+.|\n { return Normal; }
 
 %{
 	(void)yyunput;
