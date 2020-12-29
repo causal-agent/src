@@ -30,6 +30,7 @@ width "*"|[0-9]+
 
 %%
 	static int pop = INITIAL;
+	static int braces = 0;
 
 [[:blank:]]+ { return Normal; }
 
@@ -102,6 +103,11 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 <MacroLine>{ident} { return Macro; }
 {ident} { return Identifier; }
 
+{ident}/("["[^]]*"]")*[[:space:]]*"=" |
+{ident}/"("[^)]*")"[[:space:]]*"{" {
+	return (!braces ? IdentifierTag : Identifier);
+}
+
 "//"([^\n]|"\\\n")* |
 "/*"([^*]|"*"[^/])*"*"+"/" {
 	return Comment;
@@ -145,6 +151,15 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 		return String;
 	}
 	[^%\\""]+|. { return String; }
+}
+
+"{" {
+	braces++;
+	REJECT;
+}
+"}" {
+	braces--;
+	REJECT;
 }
 
 <MacroLine,MacroInclude,MacroDefine>. { return Macro; }
