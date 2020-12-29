@@ -58,7 +58,7 @@
 		return Normal;
 	}
 
-	[^[:space:]].* { return Tag; }
+	[^[:space:]].* { return IdentifierTag; }
 }
 
 "\\"(.|"("..|"["[^]]*"]") { return String; }

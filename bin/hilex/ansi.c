@@ -21,12 +21,12 @@
 #include "hilex.h"
 
 static const char *SGR[ClassCap] = {
-	[Keyword] = "37",
-	[Tag] = "4",
-	[Macro] = "32",
-	[Comment] = "34",
-	[String] = "36",
-	[StringFormat] = "36;1;96",
+	[Keyword]       = "37",
+	[IdentifierTag] = "4",
+	[Macro]         = "32",
+	[Comment]       = "34",
+	[String]        = "36",
+	[StringFormat]  = "36;1;96",
 };
 
 static void ansiFormat(const char *opts[], enum Class class, const char *text) {

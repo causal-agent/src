@@ -40,12 +40,12 @@ static const char *Class[ClassCap] = {
 };
 
 static const char *Style[ClassCap] = {
-	[Keyword]      = "color: dimgray;",
-	[Tag]          = "color: inherit;",
-	[Macro]        = "color: green;",
-	[Comment]      = "color: navy;",
-	[String]       = "color: teal;",
-	[StringFormat] = "color: teal; font-weight: bold;",
+	[Keyword]       = "color: dimgray;",
+	[IdentifierTag] = "color: inherit;",
+	[Macro]         = "color: green;",
+	[Comment]       = "color: navy;",
+	[String]        = "color: teal;",
+	[StringFormat]  = "color: teal; font-weight: bold;",
 };
 
 static void styleTabSize(const char *tab) {
@@ -81,7 +81,7 @@ static void htmlHeader(const char *opts[]) {
 		if (opts[Anchor]) {
 			printf(
 				".hilex.%s:target { color: goldenrod; outline: none; }\n",
-				Class[Tag]
+				Class[IdentifierTag]
 			);
 		}
 		printf("</style>\n");
@@ -104,9 +104,9 @@ static void htmlFooter(const char *opts[]) {
 
 static void htmlAnchor(const char *opts[], const char *text) {
 	if (opts[Inline]) {
-		printf("<a style=\"%s\" id=\"", Style[Tag]);
+		printf("<a style=\"%s\" id=\"", Style[IdentifierTag]);
 	} else {
-		printf("<a class=\"hilex %s\" id=\"", Class[Tag]);
+		printf("<a class=\"hilex %s\" id=\"", Class[IdentifierTag]);
 	}
 	htmlEscape(text);
 	printf("\" href=\"#");
@@ -117,7 +117,7 @@ static void htmlAnchor(const char *opts[], const char *text) {
 }
 
 static void htmlFormat(const char *opts[], enum Class class, const char *text) {
-	if (opts[Anchor] && class == Tag) {
+	if (opts[Anchor] && class == IdentifierTag) {
 		htmlAnchor(opts, text);
 	} else if (class == Normal) {
 		htmlEscape(text);
