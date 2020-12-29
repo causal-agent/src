@@ -21,7 +21,7 @@
 #include "hilex.h"
 %}
 
-%s MacroLine MacroInclude
+%s MacroLine MacroInclude MacroDefine
 %x CharLiteral StringLiteral
 
 ident [_[:alpha:]][_[:alnum:]]*
@@ -36,6 +36,10 @@ width "*"|[0-9]+
 	BEGIN(pop = MacroInclude);
 	return Macro;
 }
+^"#"[[:blank:]]*"define" {
+	BEGIN(pop = MacroDefine);
+	return Macro;
+}
 ^[#%][[:blank:]]*{ident} {
 	BEGIN(pop = MacroLine);
 	return Macro;
@@ -43,7 +47,18 @@ width "*"|[0-9]+
 
 <MacroInclude>"<"[^>]+">" { return String; }
 
-<MacroLine,MacroInclude>{
+<MacroDefine>{
+	{ident}/"(" {
+		BEGIN(pop = MacroLine);
+		return IdentifierTag;
+	}
+	{ident} {
+		BEGIN(pop = MacroLine);
+		return Macro;
+	}
+}
+
+<MacroLine,MacroInclude,MacroDefine>{
 	"\n" {
 		BEGIN(pop = INITIAL);
 		return Normal;
@@ -70,7 +85,7 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 	return Keyword;
 }
 
-<MacroLine,MacroInclude>{ident} { return Macro; }
+<MacroLine>{ident} { return Macro; }
 {ident} { return Identifier; }
 
 "//"([^\n]|"\\\n")* |
@@ -118,7 +133,7 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 	[^%\\""]+|. { return String; }
 }
 
-<MacroLine,MacroInclude>. { return Macro; }
+<MacroLine,MacroInclude,MacroDefine>. { return Macro; }
 
 .|\n { return Normal; }
 
