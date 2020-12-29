@@ -30,43 +30,13 @@ width "*"|[0-9]+
 
 %%
 	static int pop = INITIAL;
-	static int braces = 0;
+	static int depth = 0;
 
 [[:blank:]]+ { return Normal; }
 
-^"#"[[:blank:]]*("include"|"import") {
-	BEGIN(pop = MacroInclude);
-	return Macro;
-}
-^"#"[[:blank:]]*"define" {
-	BEGIN(pop = MacroDefine);
-	return Macro;
-}
-^[#%][[:blank:]]*{ident} |
-^"%"[%{}] {
+^"%"[%{}]? {
 	BEGIN(pop = MacroLine);
 	return Macro;
-}
-
-<MacroInclude>"<"[^>]+">" { return String; }
-
-<MacroDefine>{
-	{ident}/"(" {
-		BEGIN(pop = MacroLine);
-		return IdentifierTag;
-	}
-	{ident} {
-		BEGIN(pop = MacroLine);
-		return Macro;
-	}
-}
-
-<MacroLine,MacroInclude,MacroDefine>{
-	"\n" {
-		BEGIN(pop = INITIAL);
-		return Normal;
-	}
-	"\\\n" { return Macro; }
 }
 
 ([-+*/%&|^=!<>]|"<<"|">>")"="? |
@@ -101,12 +71,45 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 	return Keyword;
 }
 
-<MacroLine>{ident} { return Macro; }
+^"#"[[:blank:]]*(include|import) {
+	BEGIN(pop = MacroInclude);
+	return Macro;
+}
+^"#"[[:blank:]]*define {
+	BEGIN(pop = MacroDefine);
+	return Macro;
+}
+^"#"[[:blank:]]*{ident} {
+	BEGIN(pop = MacroLine);
+	return Macro;
+}
+
+<MacroInclude>"<"[^>]+">" {
+	return String;
+}
+<MacroDefine>{ident}/"(" {
+	BEGIN(pop = MacroLine);
+	return IdentifierTag;
+}
+<MacroDefine>{ident} {
+	BEGIN(pop = MacroLine);
+	return Macro;
+}
+
+<MacroLine,MacroInclude,MacroDefine>{
+	"\n" {
+		BEGIN(pop = INITIAL);
+		return Normal;
+	}
+	"\\\n" { return Macro; }
+	{ident} { return Macro; }
+}
+
 {ident} { return Identifier; }
 
 {ident}/("["[^]]*"]")*[[:space:]]*"=" |
 {ident}/"("[^)]*")"[[:space:]]*"{" {
-	return (!braces ? IdentifierTag : Identifier);
+	return (!depth ? IdentifierTag : Identifier);
 }
 
 "//"([^\n]|"\\\n")* |
@@ -154,16 +157,12 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 	[^%\\""]+|. { return String; }
 }
 
-"{" {
-	braces++;
-	REJECT;
-}
-"}" {
-	braces--;
-	REJECT;
-}
+"{" { depth++; REJECT; }
+"}" { depth--; REJECT; }
 
-<MacroLine,MacroInclude,MacroDefine>. { return Macro; }
+<MacroLine,MacroInclude,MacroDefine>. {
+	return Macro;
+}
 
 .|\n { return Normal; }
 
