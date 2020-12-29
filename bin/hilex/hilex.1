@@ -72,10 +72,25 @@ elements
 within a
 .Sy <pre>
 element.
+Each element has the classes
+.Sy hilex
+and one of the following:
+.Sy Operator ,
+.Sy Number ,
+.Sy Keyword ,
+.Sy Identifier ,
+.Sy IdentifierTag ,
+.Sy Macro ,
+.Sy Comment ,
+.Sy String ,
+.Sy StringEscape ,
+.Sy StringFormat .
+.
+.Pp
 The options are as follows:
 .Bl -tag -width "title=..."
 .It Cm anchor
-Output tags as anchor links.
+Output identifier tags as anchor links.
 .
 .It Cm css Ns = Ns Ar url
 With
