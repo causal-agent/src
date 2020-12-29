@@ -70,17 +70,17 @@ static void htmlHeader(const char *opts[]) {
 	} else if (!opts[Inline]) {
 		printf("<style>\n");
 		if (opts[Tab]) {
-			printf("pre.hi { ");
+			printf("pre.hilex { ");
 			styleTabSize(opts[Tab]);
 			printf(" }\n");
 		}
 		for (enum Class class = 0; class < ClassCap; ++class) {
 			if (!Style[class]) continue;
-			printf(".hi.%s { %s }\n", Class[class], Style[class]);
+			printf(".hilex.%s { %s }\n", Class[class], Style[class]);
 		}
 		if (opts[Anchor]) {
 			printf(
-				".hi.%s:target { color: goldenrod; outline: none; }\n",
+				".hilex.%s:target { color: goldenrod; outline: none; }\n",
 				Class[Tag]
 			);
 		}
@@ -89,11 +89,11 @@ static void htmlHeader(const char *opts[]) {
 
 body:
 	if (opts[Inline] && opts[Tab]) {
-		printf("<pre class=\"hi\" style=\"");
+		printf("<pre class=\"hilex\" style=\"");
 		styleTabSize(opts[Tab]);
 		printf("\">");
 	} else {
-		printf("<pre class=\"hi\">");
+		printf("<pre class=\"hilex\">");
 	}
 }
 
@@ -106,7 +106,7 @@ static void htmlAnchor(const char *opts[], const char *text) {
 	if (opts[Inline]) {
 		printf("<a style=\"%s\" id=\"", Style[Tag]);
 	} else {
-		printf("<a class=\"hi %s\" id=\"", Class[Tag]);
+		printf("<a class=\"hilex %s\" id=\"", Class[Tag]);
 	}
 	htmlEscape(text);
 	printf("\" href=\"#");
@@ -125,7 +125,7 @@ static void htmlFormat(const char *opts[], enum Class class, const char *text) {
 		if (opts[Inline]) {
 			printf("<span style=\"%s\">", Style[class] ? Style[class] : "");
 		} else {
-			printf("<span class=\"hi %s\">", Class[class]);
+			printf("<span class=\"hilex %s\">", Class[class]);
 		}
 		htmlEscape(text);
 		printf("</span>");
