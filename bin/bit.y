@@ -35,6 +35,7 @@ static uint64_t vars[128];
 
 %}
 
+%left '$'
 %right '='
 %left '|'
 %left '^'
@@ -75,6 +76,7 @@ expr:
 	| expr '^' expr { $$ = $1 ^ $3; }
 	| expr '|' expr { $$ = $1 | $3; }
 	| Var '=' expr { $$ = vars[$1] = $3; }
+	| expr '$' { $$ = $1; }
 	;
 
 %%
