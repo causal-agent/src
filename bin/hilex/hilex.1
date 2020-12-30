@@ -1,4 +1,4 @@
-.Dd December 28, 2020
+.Dd December 29, 2020
 .Dt HILEX 1
 .Os
 .
@@ -84,7 +84,8 @@ and one of the following:
 .Sy Comment ,
 .Sy String ,
 .Sy StringEscape ,
-.Sy StringFormat .
+.Sy StringFormat ,
+.Sy Interpolation .
 .
 .Pp
 The options are as follows:
@@ -151,21 +152,30 @@ with minimal support for
 .Xr lex 1 ,
 .Xr yacc 1
 and Objective-C input.
-Automatically inferred for
+Inferred for
 .Pa *.[chlmy]
+files.
+.
+.It Cm make
+The portable subset of
+.Xr make 1 .
+Inferred for
+.Pa *.mk
+and
+.Pa Makefile
 files.
 .
 .It Cm mdoc
 The
 .Xr mdoc 7
 language.
-Automatically inferred for
+Inferred for
 .Pa *.[1-9]
 files.
 .
 .It Cm text
 Plain text.
-Automatically inferred for
+Inferred for
 .Pa *.txt
 files.
 .El

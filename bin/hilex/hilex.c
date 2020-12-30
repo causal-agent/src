@@ -32,6 +32,7 @@ static const struct {
 	const char *pattern;
 } Lexers[] = {
 	{ &LexC, "c", "[.][chlmy]$" },
+	{ &LexMake, "make", "[.]mk$|^Makefile$" },
 	{ &LexMdoc, "mdoc", "[.][1-9]$" },
 	{ &LexText, "text", "[.]txt$" },
 };

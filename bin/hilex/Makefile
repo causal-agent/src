@@ -5,6 +5,7 @@ OBJS += c.o
 OBJS += hilex.o
 OBJS += html.o
 OBJS += irc.o
+OBJS += make.o
 OBJS += mdoc.o
 OBJS += text.o
 

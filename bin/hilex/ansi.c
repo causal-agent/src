@@ -27,6 +27,7 @@ static const char *SGR[ClassCap] = {
 	[Comment]       = "34",
 	[String]        = "36",
 	[StringFormat]  = "36;1;96",
+	[Interpolation] = "33",
 };
 
 static void ansiFormat(const char *opts[], enum Class class, const char *text) {

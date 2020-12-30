@@ -30,7 +30,8 @@
 	X(Comment) \
 	X(String) \
 	X(StringEscape) \
-	X(StringFormat)
+	X(StringFormat) \
+	X(Interpolation)
 
 enum Class {
 #define X(class) class,
@@ -47,6 +48,7 @@ struct Lexer {
 };
 
 extern const struct Lexer LexC;
+extern const struct Lexer LexMake;
 extern const struct Lexer LexMdoc;
 extern const struct Lexer LexText;
 

@@ -46,6 +46,7 @@ static const char *Style[ClassCap] = {
 	[Comment]       = "color: navy;",
 	[String]        = "color: teal;",
 	[StringFormat]  = "color: teal; font-weight: bold;",
+	[Interpolation] = "color: olive;",
 };
 
 static void styleTabSize(const char *tab) {

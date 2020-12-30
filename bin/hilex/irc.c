@@ -22,11 +22,12 @@
 #include "hilex.h"
 
 static const char *IRC[ClassCap] = {
-	[Keyword]      = "\00315",
-	[Macro]        = "\0033",
-	[Comment]      = "\0032",
-	[String]       = "\00310",
-	[StringFormat] = "\00311",
+	[Keyword]       = "\00315",
+	[Macro]         = "\0033",
+	[Comment]       = "\0032",
+	[String]        = "\00310",
+	[StringFormat]  = "\00311",
+	[Interpolation] = "\0037",
 };
 
 static void ircHeader(const char *opts[]) {
