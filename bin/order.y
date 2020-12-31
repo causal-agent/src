@@ -82,6 +82,7 @@ expr:
 	| Dec expr { $$ = fmt("(--%s)", $2); }
 	| expr Inc { $$ = fmt("(%s++)", $1); }
 	| expr Dec { $$ = fmt("(%s--)", $1); }
+	| '+' expr %prec '!' { $$ = fmt("(+%s)", $2); }
 	| '-' expr %prec '!' { $$ = fmt("(-%s)", $2); }
 	| '*' expr %prec '!' { $$ = fmt("(*%s)", $2); }
 	| '&' expr %prec '!' { $$ = fmt("(&%s)", $2); }
