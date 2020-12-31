@@ -159,6 +159,14 @@ static int yylex(void) {
 	}
 }
 
+static const char *Codes[128] = {
+	"NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL",
+	"BS",  "HT",  "NL",  "VT",  "NP",  "CR",  "SO",  "SI",
+	"DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB",
+	"CAN", "EM",  "SUB", "ESC", "FS",  "GS",  "RS",  "US",
+	[127] = "DEL",
+};
+
 static void print(uint64_t val) {
 	int bits = val > UINT32_MAX ? 64
 		: val > UINT16_MAX ? 32
@@ -172,8 +180,9 @@ static void print(uint64_t val) {
 		}
 		printf(" %#"PRIo64" 0b%s", val, bin);
 	}
-	if (val < 128 && isprint(val)) {
-		printf(" '%c'", (char)val);
+	if (val < 128) {
+		if (isprint(val)) printf(" '%c'", (char)val);
+		if (Codes[val]) printf(" %s", Codes[val]);
 	}
 	if (val) {
 		if (!(val & MASK(40))) {
