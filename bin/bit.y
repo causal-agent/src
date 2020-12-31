@@ -26,10 +26,11 @@
 
 #define MASK(b) ((1ULL << (b)) - 1)
 
+#define YYSTYPE uint64_t
+
 static void yyerror(const char *str);
 static int yylex(void);
-
-#define YYSTYPE uint64_t
+static void print(uint64_t val);
 
 static uint64_t vars[128];
 
@@ -51,7 +52,10 @@ static uint64_t vars[128];
 %%
 
 stmt:
-	expr { vars['_'] = $1; }
+	| stmt expr '\n' { print(vars['_'] = $2); printf("\n"); }
+	| stmt expr ',' { print(vars['_'] = $2); }
+	| stmt '\n'
+	| stmt ','
 	;
 
 expr:
@@ -87,25 +91,21 @@ static void yyerror(const char *str) {
 	warnx("%s", str);
 }
 
-#define T(a, b) ((int)(a) << 8 | (int)(b))
-
-static const char *input;
-
 static int lexInt(uint64_t base) {
-	for (yylval = 0; input[0]; ++input) {
-		uint64_t digit;
-		if (input[0] == '_') {
+	yylval = 0;
+	for (char ch; EOF != (ch = getchar());) {
+		uint64_t digit = base;
+		if (ch == '_') {
 			continue;
-		} else if (input[0] >= '0' && input[0] <= '9') {
-			digit = input[0] - '0';
-		} else if (input[0] >= 'A' && input[0] <= 'F') {
-			digit = 0xA + input[0] - 'A';
-		} else if (input[0] >= 'a' && input[0] <= 'f') {
-			digit = 0xA + input[0] - 'a';
-		} else {
+		} else if (isdigit(ch)) {
+			digit = ch - '0';
+		} else if (isxdigit(ch)) {
+			digit = 0xA + toupper(ch) - 'A';
+		}
+		if (digit >= base) {
+			ungetc(ch, stdin);
 			return Int;
 		}
-		if (digit >= base) return Int;
 		yylval *= base;
 		yylval += digit;
 	}
@@ -113,86 +113,82 @@ static int lexInt(uint64_t base) {
 }
 
 static int yylex(void) {
-	while (isspace(input[0])) input++;
-	if (!input[0]) return EOF;
-
-	if (input[0] == '\'' && input[1] && input[2] == '\'') {
-		yylval = input[1];
-		input += 3;
+	char ch;
+	while (isblank(ch = getchar()));
+	if (ch == '\'') {
+		yylval = 0;
+		while (EOF != (ch = getchar()) && ch != '\'') {
+			yylval <<= 8;
+			yylval |= ch;
+		}
 		return Int;
-	}
-
-	if (input[0] == '0') {
-		if (input[1] == 'b') {
-			input += 2;
+	} else if (ch == '0') {
+		ch = getchar();
+		if (ch == 'b') {
 			return lexInt(2);
-		} else if (input[1] == 'x') {
-			input += 2;
+		} else if (ch == 'x') {
 			return lexInt(16);
 		} else {
-			input += 1;
+			ungetc(ch, stdin);
 			return lexInt(8);
 		}
-	} else if (isdigit(input[0])) {
+	} else if (isdigit(ch)) {
+		ungetc(ch, stdin);
 		return lexInt(10);
-	}
-	
-	if (input[0] == '_' || islower(input[0])) {
-		yylval = *input++;
+	} else if (ch == '_' || islower(ch)) {
+		yylval = ch;
 		return Var;
-	}
-
-	switch (T(input[0], input[1])) {
-		case T('<', '<'): input += 2; return Shl;
-		case T('>', '>'): input += 2; return Shr;
-		case T('-', '>'): input += 2; return Sar;
-		default: return *input++;
+	} else if (ch == '<') {
+		char ne = getchar();
+		if (ne == '<') {
+			return Shl;
+		} else {
+			ungetc(ne, stdin);
+			return ch;
+		}
+	} else if (ch == '-' || ch == '>') {
+		char ne = getchar();
+		if (ne == '>') {
+			return (ch == '-' ? Sar : Shr);
+		} else {
+			ungetc(ne, stdin);
+			return ch;
+		}
+	} else {
+		return ch;
 	}
 }
 
-int main(void) {
-	char *line = NULL;
-	size_t cap = 0;
-	while (0 < getline(&line, &cap, stdin)) {
-		if (line[0] == '\n') continue;
-
-		input = line;
-		int error = yyparse();
-		if (error) continue;
-
-		uint64_t result = vars['_'];
-
-		int bits = result > UINT32_MAX ? 64
-			: result > UINT16_MAX ? 32
-			: result > UINT8_MAX ? 16
-			: 8;
-
-		printf("0x%0*"PRIX64" %"PRId64"", bits >> 2, result, (int64_t)result);
-
-		if (bits == 8) {
-			char bin[9] = {0};
-			for (int i = 0; i < 8; ++i) {
-				bin[i] = '0' + (result >> (7 - i) & 1);
-			}
-			printf(" %#"PRIo64" 0b%s", result, bin);
+static void print(uint64_t val) {
+	int bits = val > UINT32_MAX ? 64
+		: val > UINT16_MAX ? 32
+		: val > UINT8_MAX ? 16
+		: 8;
+	printf("0x%0*"PRIX64" %"PRId64"", bits >> 2, val, (int64_t)val);
+	if (bits == 8) {
+		char bin[9] = {0};
+		for (int i = 0; i < 8; ++i) {
+			bin[i] = '0' + (val >> (7 - i) & 1);
 		}
-
-		if (result < 128 && isprint(result)) {
-			printf(" '%c'", (char)result);
-		}
-
-		if (result) {
-			if (!(result & MASK(40))) {
-				printf(" %"PRIu64"T", result >> 40);
-			} else if (!(result & MASK(30))) {
-				printf(" %"PRIu64"G", result >> 30);
-			} else if (!(result & MASK(20))) {
-				printf(" %"PRIu64"M", result >> 20);
-			} else if (!(result & MASK(10))) {
-				printf(" %"PRIu64"K", result >> 10);
-			}
-		}
-
-		printf("\n\n");
+		printf(" %#"PRIo64" 0b%s", val, bin);
 	}
+	if (val < 128 && isprint(val)) {
+		printf(" '%c'", (char)val);
+	}
+	if (val) {
+		if (!(val & MASK(40))) {
+			printf(" %"PRIu64"T", val >> 40);
+		} else if (!(val & MASK(30))) {
+			printf(" %"PRIu64"G", val >> 30);
+		} else if (!(val & MASK(20))) {
+			printf(" %"PRIu64"M", val >> 20);
+		} else if (!(val & MASK(10))) {
+			printf(" %"PRIu64"K", val >> 10);
+		}
+	}
+	printf("\n");
+}
+
+int main(void) {
+	while (yyparse());
 }
