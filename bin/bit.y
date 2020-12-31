@@ -174,7 +174,7 @@ int main(void) {
 			for (int i = 0; i < 8; ++i) {
 				bin[i] = '0' + (result >> (7 - i) & 1);
 			}
-			printf(" 0b%s", bin);
+			printf(" %#"PRIo64" 0b%s", result, bin);
 		}
 
 		if (result < 128 && isprint(result)) {
