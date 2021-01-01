@@ -28,13 +28,15 @@
 
 #define YYSTYPE uint64_t
 
-static void yyerror(const char *str);
 static int yylex(void);
+static void yyerror(const char *str);
 static void print(uint64_t val);
 
 static uint64_t vars[128];
 
 %}
+
+%token Int Var
 
 %left '$'
 %right '='
@@ -47,15 +49,12 @@ static uint64_t vars[128];
 %right '~'
 %left 'K' 'M' 'G' 'T'
 
-%token Int Var
-
 %%
 
 stmt:
 	| stmt expr '\n' { print(vars['_'] = $2); printf("\n"); }
 	| stmt expr ',' { print(vars['_'] = $2); }
 	| stmt '\n'
-	| stmt ','
 	;
 
 expr:
@@ -86,10 +85,6 @@ expr:
 	;
 
 %%
-
-static void yyerror(const char *str) {
-	warnx("%s", str);
-}
 
 static int lexInt(uint64_t base) {
 	yylval = 0;
@@ -157,6 +152,10 @@ static int yylex(void) {
 	} else {
 		return ch;
 	}
+}
+
+static void yyerror(const char *str) {
+	warnx("%s", str);
 }
 
 static const char *Codes[128] = {
