@@ -24,12 +24,6 @@
 #include <string.h>
 #include <sysexits.h>
 
-int vasprintf(char **ret, const char *format, va_list ap);
-
-static void yyerror(const char *str) {
-	errx(EX_DATAERR, "%s", str);
-}
-
 #define YYSTYPE char *
 
 static char *fmt(const char *format, ...) {
@@ -43,8 +37,11 @@ static char *fmt(const char *format, ...) {
 }
 
 static int yylex(void);
+static void yyerror(const char *str);
 
 %}
+
+%token Ident
 
 %left ','
 %right '=' MulAss DivAss ModAss AddAss SubAss ShlAss ShrAss AndAss XorAss OrAss
@@ -62,8 +59,6 @@ static int yylex(void);
 %right '!' '~' Inc Dec Sizeof
 %left '(' ')' '[' ']' Arr '.'
 
-%token Var
-
 %%
 
 start:
@@ -71,11 +66,11 @@ start:
 	;
 
 expr:
-	Var
+	Ident
 	| '(' expr ')' { $$ = $2; }
 	| expr '[' expr ']' { $$ = fmt("(%s[%s])", $1, $3); }
-	| expr Arr Var { $$ = fmt("(%s->%s)", $1, $3); }
-	| expr '.' Var { $$ = fmt("(%s.%s)", $1, $3); }
+	| expr Arr Ident { $$ = fmt("(%s->%s)", $1, $3); }
+	| expr '.' Ident { $$ = fmt("(%s.%s)", $1, $3); }
 	| '!' expr { $$ = fmt("(!%s)", $2); }
 	| '~' expr { $$ = fmt("(~%s)", $2); }
 	| Inc expr { $$ = fmt("(++%s)", $2); }
@@ -128,67 +123,73 @@ ass:
 
 #define T(a, b) ((int)(a) << 8 | (int)(b))
 
-static const char *input;
+static FILE *in;
 
 static int yylex(void) {
-	while (isspace(input[0])) input++;
-	if (!input[0]) return EOF;
+	char ch;
+	while (isspace(ch = getc(in)));
 
-	int len;
-	for (len = 0; isalnum(input[len]) || input[len] == '_'; ++len);
-	if (len) {
-		if (!strncmp(input, "sizeof", len)) {
-			input += len;
-			return Sizeof;
+	if (isalnum(ch)) {
+		char ident[64] = { ch, '\0' };
+		for (size_t i = 1; i < sizeof(ident) - 1; ++i) {
+			ch = getc(in);
+			if (!isalnum(ch) && ch != '_') break;
+			ident[i] = ch;
 		}
-		yylval = fmt("%.*s", len, input);
-		input += len;
-		return Var;
+		ungetc(ch, in);
+		if (!strcmp(ident, "sizeof")) return Sizeof;
+		yylval = fmt("%s", ident);
+		return Ident;
 	}
 
-	int tok;
-	switch (T(input[0], input[1])) {
-		break; case T('-', '>'): tok = Arr;
-		break; case T('+', '+'): tok = Inc;
-		break; case T('-', '-'): tok = Dec;
-		break; case T('<', '<'): tok = Shl;
-		break; case T('>', '>'): tok = Shr;
-		break; case T('<', '='): tok = Le;
-		break; case T('>', '='): tok = Ge;
-		break; case T('=', '='): tok = Eq;
-		break; case T('!', '='): tok = Ne;
-		break; case T('&', '&'): tok = And;
-		break; case T('|', '|'): tok = Or;
-		break; case T('*', '='): tok = MulAss;
-		break; case T('/', '='): tok = DivAss;
-		break; case T('%', '='): tok = ModAss;
-		break; case T('+', '='): tok = AddAss;
-		break; case T('-', '='): tok = SubAss;
-		break; case T('&', '='): tok = AndAss;
-		break; case T('^', '='): tok = XorAss;
-		break; case T('|', '='): tok = OrAss;
-		break; default: return *input++;
+	char ne = getc(in);
+	switch (T(ch, ne)) {
+		case T('-', '>'): return Arr;
+		case T('+', '+'): return Inc;
+		case T('-', '-'): return Dec;
+		case T('<', '='): return Le;
+		case T('>', '='): return Ge;
+		case T('=', '='): return Eq;
+		case T('!', '='): return Ne;
+		case T('&', '&'): return And;
+		case T('|', '|'): return Or;
+		case T('*', '='): return MulAss;
+		case T('/', '='): return DivAss;
+		case T('%', '='): return ModAss;
+		case T('+', '='): return AddAss;
+		case T('-', '='): return SubAss;
+		case T('&', '='): return AndAss;
+		case T('^', '='): return XorAss;
+		case T('|', '='): return OrAss;
+		case T('<', '<'): {
+			if ('=' == (ne = getc(in))) return ShlAss;
+			ungetc(ne, in);
+			return Shl;
+		}
+		case T('>', '>'): {
+			if ('=' == (ne = getc(in))) return ShrAss;
+			ungetc(ne, in);
+			return Shr;
+		}
+		default: {
+			ungetc(ne, in);
+			return ch;
+		}
 	}
-	input += 2;
+}
 
-	switch (T(tok, input[0])) {
-		case T(Shl, '='): input++; return ShlAss;
-		case T(Shr, '='): input++; return ShrAss;
-	}
-
-	return tok;
+static void yyerror(const char *str) {
+	errx(EX_DATAERR, "%s", str);
 }
 
 int main(int argc, char *argv[]) {
 	for (int i = 1; i < argc; ++i) {
-		input = argv[i];
+		in = fmemopen(argv[i], strlen(argv[i]), "r");
+		if (!in) err(EX_OSERR, "fmemopen");
 		yyparse();
+		fclose(in);
 	}
 	if (argc > 1) return EX_OK;
-	size_t cap = 0;
-	char *buf = NULL;
-	while (0 < getline(&buf, &cap, stdin)) {
-		input = buf;
-		yyparse();
-	}
+	in = stdin;
+	yyparse();
 }
