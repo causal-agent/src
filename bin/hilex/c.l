@@ -55,7 +55,7 @@ enum|struct|typedef|union {
 	BEGIN(TypeDecl);
 	return Keyword;
 }
-<TypeDecl>{ident}/[[:space:]]*("{"|"(") {
+<TypeDecl>{ident}/[[:space:]]*"{" {
 	BEGIN(pop);
 	return IdentifierTag;
 }
@@ -109,6 +109,9 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 
 {ident}/("["[^]]*"]")*[[:space:]]*"=" |
 {ident}/"("[^)]*")"[[:space:]]*"{" {
+	return (!depth ? IdentifierTag : Identifier);
+}
+<TypeDecl>{ident}/"("[^)]*");" {
 	return (!depth ? IdentifierTag : Identifier);
 }
 
