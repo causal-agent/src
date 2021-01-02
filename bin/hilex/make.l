@@ -25,14 +25,15 @@
 %x Interp Shell
 
 ident [._[:alnum:]]+
-target [-/._[:alnum:]]+
-assign [!+:?]?=
+assign [+?:!]?=
+target [-._/?*\[\][:alnum:]]+
+operator [:!]|::
 
 %%
 	static int pop = INITIAL;
 	static int depth = 0;
 
-^"\t" {
+^"\t"+ {
 	BEGIN(pop = Shell);
 	return Normal;
 }
@@ -41,12 +42,15 @@ assign [!+:?]?=
 		BEGIN(pop = INITIAL);
 		return Normal;
 	}
-	[^\n$]+|. { return Normal; }
+	"\\\n" { return Normal; }
+	[^\\\n$]+|. { return Normal; }
 }
 
-[[:blank:]] { return Normal; }
+[[:blank:]]+ { return Normal; }
 
-"."(PHONY|PRECIOUS|SUFFIXES)/":"? {
+{operator} { return Operator; }
+
+"."(PHONY|PRECIOUS|SUFFIXES)/{operator}? {
 	return Keyword;
 }
 
@@ -63,16 +67,19 @@ assign [!+:?]?=
 		BEGIN(pop = INITIAL);
 		return Normal;
 	}
-	[^$[:space:]]+ { return String; }
-}
-
-{target}([[:blank:]]+{target})*/":" {
-	return IdentifierTag;
+	"\\\n" { return String; }
+	[^\\$[:space:]]+|. { return String; }
 }
 
 ^"-"?include { return Macro; }
 
-"#".* { return Comment; }
+{target}([[:blank:]]+{target})*/{operator} {
+	return IdentifierTag;
+}
+
+{target} { return Identifier; }
+
+"#"([^\\\n]|"\\"[^\n]|"\\\n")* { return Comment; }
 
 <*>{
 	"$"("{"|"(") {
