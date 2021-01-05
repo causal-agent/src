@@ -1,5 +1,5 @@
 root-title=causal agency
-root-desc=“then I'm sorry, no offence, but you write toy programs.”
+root-desc=“I think some people from the Gentoo project are behind this.”
 
 clone-url=https://$HTTP_HOST/$CGIT_REPO_URL
 snapshots=tar.gz zip
