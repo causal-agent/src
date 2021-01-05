@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+cat <<EOF
+${1}°F = $(dc -e "1k ${1} 32-1.8/p")°C
+${1}°C = $(dc -e "1k ${1} 1.8*32+p")°F
+EOF
