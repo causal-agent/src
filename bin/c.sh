@@ -29,10 +29,12 @@ cat >&3 <<EOF
 EOF
 
 expr=
-while getopts 'e:i:' opt; do
+type=
+while getopts 'e:i:t' opt; do
 	case "${opt}" in
 		(e) expr=$OPTARG;;
 		(i) echo "#include <${OPTARG}>" >&3;;
+		(t) type=1;;
 		(?) exit 1;;
 	esac
 done
@@ -44,6 +46,34 @@ int main(int argc, char *argv[]) {
 	(void)argv;
 	$*;
 EOF
+
+if [ -n "${type}" ]; then
+	cat >&3 <<EOF
+	printf(
+		_Generic(
+			${expr},
+			char: "(char) ",
+			char *: "(char *) ",
+			const char *: "(const char *) ",
+			wchar_t *: "(wchar_t *) ",
+			const wchar_t *: "(const wchar_t *) ",
+			signed char: "(signed char) ",
+			short: "(short) ",
+			int: "(int) ",
+			long: "(long) ",
+			long long: "(long long) ",
+			unsigned char: "(unsigned char) ",
+			unsigned short: "(unsigned short) ",
+			unsigned int: "(unsigned int) ",
+			unsigned long: "(unsigned long) ",
+			unsigned long long: "(unsigned long long) ",
+			float: "(float) ",
+			double: "(double) ",
+			default: "(void *) "
+		)
+	);
+EOF
+fi
 
 if [ -n "${expr}" ]; then
 	cat >&3 <<EOF
@@ -65,6 +95,7 @@ if [ -n "${expr}" ]; then
 			unsigned int: "%u\n",
 			unsigned long: "%lu\n",
 			unsigned long long: "%llu\n",
+			float: "%g\n",
 			double: "%g\n",
 			default: "%p\n"
 		),

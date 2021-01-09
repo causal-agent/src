@@ -1,4 +1,4 @@
-.Dd May 31, 2020
+.Dd January  9, 2021
 .Dt C 1
 .Os
 .
@@ -8,6 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
+.Op Fl t
 .Op Fl e Ar expr
 .Op Fl i Ar include
 .Op Ar stmts ...
@@ -37,4 +38,8 @@ after executing
 .It Fl i Ar include
 Add the include file
 .Ar include .
+.It Fl t
+With
+.Fl e ,
+print the type of the expression.
 .El
