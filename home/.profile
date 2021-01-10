@@ -8,6 +8,7 @@ path /usr/games
 
 export PAGER=less
 export LESS=FRXx4
+export EXINIT='set ai ic sm sw=4 ts=4'
 export EDITOR=nvim
 export MANPAGER='nvim +Man!'
 export MANSECT=2:3:1:8:6:5:7:4:9
