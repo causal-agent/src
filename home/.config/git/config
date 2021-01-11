@@ -5,6 +5,9 @@
 [commit]
 	verbose = true
 
+[diff]
+	colorMoved = default
+
 [merge]
 	conflictStyle = diff3
 
