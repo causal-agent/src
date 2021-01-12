@@ -3,12 +3,15 @@ set -eu
 
 readonly GitURL='https://git.causal.agency/src/tree/bin'
 
-src=$1
-man=${2:-}
+man=$1
+shift
+
+title=${man##*/}
+title=${title%.[1-9]}
 
 cat <<EOF
 <!DOCTYPE html>
-<title>${src}</title>
+<title>${title}</title>
 <style>
 $(./scheme -s)
 
@@ -59,8 +62,13 @@ EOF
 opts='fragment'
 [ "${man}" = "README.7" ] && opts="${opts},man=%N.html"
 mandoc -T html -O "${opts}" "${man}"
-cat <<EOF
-<p>
-<a href="${GitURL}/${src}">${src} in git</a>
-EOF
-./htagml -p -f htmltags "${src}"
+
+while [ $# -gt 0 ]; do
+	src=$1
+	shift
+	cat <<-EOF
+	<p>
+	<a href="${GitURL}/${src}">${src} in git</a>
+	EOF
+	./htagml -p -f htmltags "${src}"
+done

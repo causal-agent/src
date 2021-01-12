@@ -134,22 +134,22 @@ htmltags: *.[chly]
 .SUFFIXES: .html
 
 .c.html:
-	sh html.sh $< man1/${<:.c=.1} > $@
+	sh html.sh man1/${<:.c=.1} $< > $@
 
 .h.html:
-	sh html.sh $< man3/${<:.h=.3} > $@
+	sh html.sh man3/${<:.h=.3} $< > $@
 
 .y.html:
-	sh html.sh $< man1/${<:.y=.1} > $@
+	sh html.sh man1/${<:.y=.1} $< > $@
 
 .sh.html:
-	sh html.sh $< man1/${<:.sh=.1} > $@
+	sh html.sh man1/${<:.sh=.1} $< > $@
 
 .pl.html:
-	sh html.sh $< man1/${<:.pl=.1} > $@
+	sh html.sh man1/${<:.pl=.1} $< > $@
 
-index.html: Makefile README.7
-	sh html.sh Makefile README.7 > $@
+index.html: README.7 Makefile html.sh
+	sh html.sh README.7 Makefile html.sh > $@
 
 install-html: ${HTMLS}
 	install -d ${WEBROOT}/bin
