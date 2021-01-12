@@ -1,0 +1,135 @@
+.Dd January 11, 2021
+.Dt USING-VI 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm Using vi
+.Nd simpler tools
+.
+.Sh DESCRIPTION
+Happy new year
+and hello from
+.Xr vi 1 !
+I'm in the mood to post something
+but not in the mood for
+.Dq social
+media.
+This one will probably be short.
+.
+.Pp
+Yesterday I was trying to work on sandboxing
+.Xr catgirl 1
+(that's the IRC client I work on)
+with
+.Xr pledge 2
+and
+.Xr unveil 2
+on
+.Ox ,
+as suggested by the maintainer of its port.
+I've done similar things before,
+but only on server software
+rather than user software.
+.
+.Pp
+Anyway I was in
+.Xr ssh 1
+to my
+.Ox
+VM
+.Po
+sadly I don't currently have any hardware to run
+.Ox
+on
+.Pc
+using my usual editor,
+which is
+.Xr nvim 1 .
+I'm honestly not very thrilled
+with what neovim is doing lately,
+but the cleaned up defaults
+make my configuration files happier.
+.
+.Pp
+The real problem with
+.Xr nvim 1 ,
+though,
+is that it's laggy as hell on
+.Ox .
+There is significant delay
+on every single keystroke,
+as if I'm typing remotely to a server
+on the other side of the world,
+but this is on a local VM!
+.
+.Pp
+So I did the only reasonable thing:
+I typed
+.Sy :qa
+followed by
+.Sy vi .
+The difference was astonishing.
+Typing and editing suddenly felt
+.Em physical
+again.
+(I put that in italics even though I know it won't render.)
+Not only was it a vast improvement over
+.Xr nvim 1
+in
+.Xr ssh 1
+in a VM,
+it was a marked improvement over
+.Xr nvim 1
+running locally and natively.
+.
+.Pp
+Now obviously
+.Xr vi 1
+doesn't have all the bells and whistles
+of newer editors,
+but of course the core editing model
+that makes
+.Xr vim 1
+and
+.Xr nvim 1
+so good is there,
+and in purer form,
+I think.
+The
+.Xr vi 1
+manual page
+is feasible to just sit down and read,
+and learn everything there is to know about the editor.
+I set up a basic configuration
+and got coding.
+.Bd -literal -offset indent
+export EXINIT='set ai ic sm sw=4 ts=4'
+.Ed
+.
+.Pp
+After I finished my
+.Xr pledge 2
+and
+.Xr unveil 2
+patch,
+I was so pleased with
+.Xr vi 1
+that I kept on using it
+yesterday and today
+for other work,
+and obviously to write this post.
+Despite the lack of editor amenities,
+its responsiveness and simplicity
+are enough to make using it
+.Em comfortable
+and perhaps
+.Em cosy .
+I'm not sure I'll ever use
+.Xr vi 1
+full-time,
+but for now I am much less likely
+to launch
+.Xr nvim 1 .
+.
+.Sh AUTHORS
+.An june Aq Mt june@causal.agency

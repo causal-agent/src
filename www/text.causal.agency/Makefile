@@ -13,6 +13,7 @@ TXTS += 010-irc-suite.txt
 TXTS += 011-libretls.txt
 TXTS += 012-inability.txt
 TXTS += 013-hot-tips.txt
+TXTS += 014-using-vi.txt
 
 all: ${TXTS}
 
