@@ -27,6 +27,7 @@ BINS += dtch
 BINS += glitch
 BINS += hi
 BINS += hnel
+BINS += htagml
 BINS += modem
 BINS += nudge
 BINS += order

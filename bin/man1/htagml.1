@@ -1,0 +1,47 @@
+.Dd January 12, 2021
+.Dt HTAGML 1
+.Os
+.
+.Sh NAME
+.Nm htagml
+.Nd format tagged file as HTML
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl p
+.Op Fl f Ar tags_file
+.Ar name
+.
+.Sh DESCRIPTION
+The
+.Nm
+utility formats a file tagged with
+.Xr ctags 1
+as HTML.
+Tags are output as fragment hyperlinks
+with the class
+.Qq tag .
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl f Ar tags_file
+Read the tag descriptions from a file called
+.Ar tags_file .
+The default behavior is
+to read them from a file called
+.Pa tags .
+.It Fl p
+Wrap the output in a
+.Sy pre
+tag.
+.El
+.
+.Sh FILES
+.Bl -tag -width Ds
+.It Pa tags
+default input tags file
+.El
+.
+.Sh SEE ALSO
+.Xr ctags 1
