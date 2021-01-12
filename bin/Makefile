@@ -93,10 +93,10 @@ psf2png.o scheme.o: png.h
 scheme.h: scheme
 	./scheme -c > scheme.h
 
-tags: *.h *.c
-	ctags -w *.h *.c
+tags: *.[chly]
+	ctags -tw *.[chly]
 
-IGNORE = *.o *.html ${BINS_ALL} ${LINKS} scheme.h tags
+IGNORE = *.o *.html ${BINS_ALL} ${LINKS} scheme.h tags htmltags
 
 .gitignore: Makefile
 	echo config.mk '${IGNORE}' | tr ' ' '\n' | sort > .gitignore
@@ -125,7 +125,11 @@ WEBROOT = /usr/local/www/causal.agency
 html: ${HTMLS}
 	@true
 
-${HTMLS}: html.sh scheme hi ttpre
+${HTMLS}: html.sh scheme ttpre htagml htmltags
+
+htmltags: *.[chly]
+	rm -f $@
+	for f in *.[chly]; do ctags -atw -f $@ $$f; done
 
 .SUFFIXES: .html
 
@@ -145,9 +149,7 @@ ${HTMLS}: html.sh scheme hi ttpre
 	sh html.sh $< man1/${<:.pl=.1} > $@
 
 index.html: Makefile README.7
-	sh html.sh Makefile README.7 \
-		| sed -E 's,([a-z0-9-]+)[(][1-9][)],<a href="\1.html">&</a>,' \
-		> index.html
+	sh html.sh Makefile README.7 > $@
 
 install-html: ${HTMLS}
 	install -d ${WEBROOT}/bin
