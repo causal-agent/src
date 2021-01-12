@@ -1,25 +1,11 @@
 WEBROOT = /usr/local/www/causal.agency
 
-FILES = index.html scheme.png
+FILES = index.html style.css scheme.css scheme.png
 
 all: ${FILES}
 
-install: ${FILES}
-	install -C -m 644 ${FILES} ${WEBROOT}
-
-INCLUDES = scheme.css torus.html play.html catgirl.html scheme.html
-
-index.html: index.html.in index.sed ${INCLUDES}
-	sed -f index.sed index.html.in > index.html
-
-FLAGS.torus.pty = -n -h 25
-FLAGS.scheme.pty = -n -h 10
-FLAGS.play.pty = -h 16
-
-.SUFFIXES: .html .pty
-
-.pty.html:
-	shotty ${FLAGS.$<} $< > $@
+index.html: index.7
+	mandoc -T html -O style=style.css index.7 > index.html
 
 scheme.css:
 	scheme -s > scheme.css
@@ -27,5 +13,8 @@ scheme.css:
 scheme.png:
 	scheme -g > scheme.png
 
+install: ${FILES}
+	install -C -m 644 ${FILES} ${WEBROOT}
+
 clean:
-	rm -f ${FILES} ${INCLUDES}
+	rm -f index.html scheme.css scheme.png
