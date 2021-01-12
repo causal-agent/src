@@ -34,7 +34,7 @@ to read them from a file called
 .It Fl p
 Wrap the output in a
 .Sy pre
-tag.
+element.
 .El
 .
 .Sh FILES
@@ -42,6 +42,11 @@ tag.
 .It Pa tags
 default input tags file
 .El
+.
+.Sh EXAMPLES
+.Bd -literal -offset indent
+ctags htagml.c && htagml htagml.c
+.Ed
 .
 .Sh SEE ALSO
 .Xr ctags 1
