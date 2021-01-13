@@ -25,7 +25,6 @@
 	X(Number) \
 	X(Keyword) \
 	X(Identifier) \
-	X(IdentifierTag) \
 	X(Macro) \
 	X(Comment) \
 	X(String) \
@@ -53,11 +52,10 @@ extern const struct Lexer LexMdoc;
 extern const struct Lexer LexText;
 
 #define ENUM_OPTION \
-	X(Anchor, "anchor") \
-	X(CSS, "css") \
 	X(Document, "document") \
 	X(Inline, "inline") \
 	X(Monospace, "monospace") \
+	X(Style, "style") \
 	X(Tab, "tab") \
 	X(Title, "title")
 

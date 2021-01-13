@@ -39,9 +39,8 @@ static const char *Class[ClassCap] = {
 #undef X
 };
 
-static const char *Style[ClassCap] = {
+static const char *Styles[ClassCap] = {
 	[Keyword]       = "color: dimgray;",
-	[IdentifierTag] = "color: inherit;",
 	[Macro]         = "color: green;",
 	[Comment]       = "color: navy;",
 	[String]        = "color: teal;",
@@ -64,9 +63,9 @@ static void htmlHeader(const char *opts[]) {
 	if (opts[Title]) htmlEscape(opts[Title]);
 	printf("</title>\n");
 
-	if (opts[CSS]) {
+	if (opts[Style]) {
 		printf("<link rel=\"stylesheet\" href=\"");
-		htmlEscape(opts[CSS]);
+		htmlEscape(opts[Style]);
 		printf("\">\n");
 	} else if (!opts[Inline]) {
 		printf("<style>\n");
@@ -76,14 +75,8 @@ static void htmlHeader(const char *opts[]) {
 			printf(" }\n");
 		}
 		for (enum Class class = 0; class < ClassCap; ++class) {
-			if (!Style[class]) continue;
-			printf(".hilex.%s { %s }\n", Class[class], Style[class]);
-		}
-		if (opts[Anchor]) {
-			printf(
-				".hilex.%s:target { color: goldenrod; outline: none; }\n",
-				Class[IdentifierTag]
-			);
+			if (!Styles[class]) continue;
+			printf(".hilex.%s { %s }\n", Class[class], Styles[class]);
 		}
 		printf("</style>\n");
 	}
@@ -103,33 +96,17 @@ static void htmlFooter(const char *opts[]) {
 	if (opts[Document]) printf("\n");
 }
 
-static void htmlAnchor(const char *opts[], const char *text) {
-	if (opts[Inline]) {
-		printf("<a style=\"%s\" id=\"", Style[IdentifierTag]);
-	} else {
-		printf("<a class=\"hilex %s\" id=\"", Class[IdentifierTag]);
-	}
-	htmlEscape(text);
-	printf("\" href=\"#");
-	htmlEscape(text);
-	printf("\">");
-	htmlEscape(text);
-	printf("</a>");
-}
-
 static void htmlFormat(const char *opts[], enum Class class, const char *text) {
-	if (opts[Anchor] && class == IdentifierTag) {
-		htmlAnchor(opts, text);
-	} else if (class == Normal) {
-		htmlEscape(text);
-	} else {
+	if (class != Normal) {
 		if (opts[Inline]) {
-			printf("<span style=\"%s\">", Style[class] ? Style[class] : "");
+			printf("<span style=\"%s\">", Styles[class] ? Styles[class] : "");
 		} else {
 			printf("<span class=\"hilex %s\">", Class[class]);
 		}
 		htmlEscape(text);
 		printf("</span>");
+	} else {
+		htmlEscape(text);
 	}
 }
 

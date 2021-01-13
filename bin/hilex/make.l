@@ -73,10 +73,6 @@ operator [:!]|::
 
 ^"-"?include { return Macro; }
 
-{target}([[:blank:]]+{target})*/{operator} {
-	return IdentifierTag;
-}
-
 {target} { return Identifier; }
 
 "#"([^\\\n]|"\\"[^\n]|"\\\n")* { return Comment; }

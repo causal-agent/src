@@ -22,7 +22,6 @@
 
 static const char *SGR[ClassCap] = {
 	[Keyword]       = "37",
-	[IdentifierTag] = "4",
 	[Macro]         = "32",
 	[Comment]       = "34",
 	[String]        = "36",

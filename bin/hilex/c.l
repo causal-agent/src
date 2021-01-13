@@ -21,8 +21,7 @@
 #include "hilex.h"
 %}
 
-%s MacroLine MacroInclude MacroDefine
-%s TypeDecl
+%s MacroLine MacroInclude
 %x CharLiteral StringLiteral
 
 ident [_[:alpha:]][_[:alnum:]]*
@@ -30,7 +29,6 @@ width "*"|[0-9]+
 
 %%
 	static int pop = INITIAL;
-	static int depth = 0;
 
 [[:blank:]]+ { return Normal; }
 
@@ -51,19 +49,6 @@ sizeof|(_A|alignof) {
 	return Number;
 }
 
-enum|struct|typedef|union {
-	BEGIN(TypeDecl);
-	return Keyword;
-}
-<TypeDecl>{ident}/[[:space:]]*"{" {
-	BEGIN(pop);
-	return IdentifierTag;
-}
-<TypeDecl>. {
-	BEGIN(pop);
-	REJECT;
-}
-
 auto|break|case|const|continue|default|do|else|enum|extern|for|goto|if|inline |
 register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 (_A|a)lignas|_Atomic|_Generic|(_N|n)oreturn|(_S|s)tatic_assert |
@@ -75,28 +60,14 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 	BEGIN(pop = MacroInclude);
 	return Macro;
 }
-^"#"[[:blank:]]*define {
-	BEGIN(pop = MacroDefine);
-	return Macro;
-}
 ^"#"[[:blank:]]*{ident} {
 	BEGIN(pop = MacroLine);
 	return Macro;
 }
-
 <MacroInclude>"<"[^>]+">" {
 	return String;
 }
-<MacroDefine>{ident}/"(" {
-	BEGIN(pop = MacroLine);
-	return IdentifierTag;
-}
-<MacroDefine>{ident} {
-	BEGIN(pop = MacroLine);
-	return Macro;
-}
-
-<MacroLine,MacroInclude,MacroDefine>{
+<MacroLine,MacroInclude>{
 	"\n" {
 		BEGIN(pop = INITIAL);
 		return Normal;
@@ -106,14 +77,6 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 }
 
 {ident} { return Identifier; }
-
-{ident}/("["[^]]*"]")*[[:space:]]*"=" |
-{ident}/"("[^)]*")"[[:space:]]*"{" {
-	return (!depth ? IdentifierTag : Identifier);
-}
-<TypeDecl>{ident}/"("[^)]*");" {
-	return (!depth ? IdentifierTag : Identifier);
-}
 
 "//"([^\n]|"\\\n")* |
 "/*"([^*]|"*"[^/])*"*"+"/" {
@@ -160,10 +123,7 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 	[^%\\""]+|. { return String; }
 }
 
-"{" { depth++; REJECT; }
-"}" { depth--; REJECT; }
-
-<MacroLine,MacroInclude,MacroDefine>. {
+<MacroLine,MacroInclude>. {
 	return Macro;
 }
 

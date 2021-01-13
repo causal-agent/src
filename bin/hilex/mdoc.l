@@ -21,7 +21,7 @@
 #include "hilex.h"
 %}
 
-%s MacroLine Heading
+%s MacroLine
 
 %%
 
@@ -34,15 +34,10 @@
 
 ^".\\\"".* { return Comment; }
 
-<MacroLine,Heading>{
+<MacroLine>{
 	"\n" {
 		BEGIN(0);
 		return Normal;
-	}
-
-	S[hs] {
-		BEGIN(Heading);
-		return Keyword;
 	}
 
 	%[ABCDIJNOPQRTUV]|A[cdnopqrt]|B[cdfkloqtx]|Br[coq]|Bsx|C[dm]|D[1bcdloqtvx] |
@@ -53,8 +48,6 @@
 
 	"\""([^""]|"\\\"")*"\"" { return String; }
 }
-
-<Heading>[^[:space:]].* { return IdentifierTag; }
 
 "\\"(.|"("..|"["[^]]*"]") { return String; }
 
