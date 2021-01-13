@@ -43,6 +43,11 @@ body {
 	margin: 1em auto;
 	padding: 0 1ch;
 }
+ul.index { padding: 0; }
+ul.index li {
+	display: inline;
+	list-style-type: none;
+}
 a { color: var(--ansi4); }
 a:visited { color: var(--ansi5); }
 a.permalink, a.tag {
@@ -70,5 +75,6 @@ while [ $# -gt 0 ]; do
 	<p>
 	<a href="${GitURL}/${src}">${src} in git</a>
 	EOF
+	./htagml -x -f htmltags "${src}"
 	./htagml -p -f htmltags "${src}"
 done
