@@ -61,7 +61,9 @@ default input tags file
 .Sh EXAMPLES
 .Bd -literal -offset indent
 ctags htagml.c && htagml htagml.c
+hilex -f html htagml.c | htagml -i htagml.c
 .Ed
 .
 .Sh SEE ALSO
-.Xr ctags 1
+.Xr ctags 1 ,
+.Xr hilex 1
