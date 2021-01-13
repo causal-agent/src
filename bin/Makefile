@@ -105,7 +105,7 @@ scheme.h: scheme
 	./scheme -c > scheme.h
 
 tags: *.[chly]
-	ctags -tw *.[chly]
+	ctags -w *.[chly]
 
 IGNORE = *.o *.html ${BINS_ALL} ${LINKS} scheme.h tags htmltags
 
@@ -140,7 +140,7 @@ ${HTMLS}: html.sh scheme hilex htagml htmltags
 
 htmltags: *.[chly]
 	rm -f $@
-	for f in *.[chly]; do ctags -atw -f $@ $$f; done
+	for f in *.[chly]; do ctags -aw -f $@ $$f; done
 
 .SUFFIXES: .html
 
