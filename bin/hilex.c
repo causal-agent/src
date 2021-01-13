@@ -35,6 +35,14 @@ static const char *Class[] = {
 #undef X
 };
 
+static FILE *yyin;
+static char *yytext;
+static int yylex(void) {
+	static size_t cap = 0;
+	return (getline(&yytext, &cap, yyin) < 0 ? None : Normal);
+}
+static const struct Lexer LexText = { yylex, &yyin, &yytext };
+
 static const struct {
 	const struct Lexer *lexer;
 	const char *name;
