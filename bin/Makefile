@@ -26,6 +26,7 @@ BINS += c
 BINS += dtch
 BINS += glitch
 BINS += hi
+BINS += hilex
 BINS += hnel
 BINS += htagml
 BINS += modem
@@ -82,6 +83,17 @@ meta: .gitignore tags
 hi: hi.c
 	${CC} ${CFLAGS} ${LDFLAGS} hi.c ${LDLIBS.$@} -o $@
 	./hi -c
+
+OBJS.hilex += c11.o
+OBJS.hilex += hilex.o
+OBJS.hilex += make.o
+OBJS.hilex += mdoc.o
+OBJS.hilex += text.o
+
+hilex: ${OBJS.hilex}
+	${CC} ${LDFLAGS} ${OBJS.$@} ${LDLIBS.$@} -o $@
+
+${OBJS.hilex}: hilex.h
 
 open pbcopy pbpaste: pbd
 	ln -f pbd $@
