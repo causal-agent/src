@@ -13,7 +13,7 @@ cat <<EOF
 <!DOCTYPE html>
 <title>${title}</title>
 <style>
-$(./scheme -s)
+$(./scheme -st)
 
 table.head, table.foot { width: 100%; }
 td.head-rtitle, td.foot-os { text-align: right; }
@@ -33,8 +33,8 @@ table.foot { margin-top: 1em; }
 html {
 	line-height: 1.25em;
 	font-family: monospace;
-	background-color: var(--ansi0);
-	color: var(--ansi7);
+	background-color: var(--ansi16);
+	color: var(--ansi17);
 	-moz-tab-size: 4;
 	tab-size: 4;
 }
@@ -51,16 +51,23 @@ ul.index li {
 a { color: var(--ansi4); }
 a:visited { color: var(--ansi5); }
 a.permalink, a.tag {
-	color: var(--ansi6);
+	color: var(--ansi3);
 	text-decoration: none;
 }
 a.permalink code:target,
 h1.Sh:target a.permalink,
 h2.Ss:target a.permalink,
 a.tag:target {
-	color: var(--ansi3);
+	color: var(--ansi11);
 	outline: none;
 }
+
+.hilex.Keyword { color: var(--ansi7); }
+.hilex.Macro { color: var(--ansi2); }
+.hilex.Comment { color: var(--ansi4); }
+.hilex.String { color: var(--ansi6); }
+.hilex.StringFormat { color: var(--ansi14); }
+.hilex.Interpolation { color: var(--ansi1); }
 </style>
 EOF
 
@@ -76,5 +83,5 @@ while [ $# -gt 0 ]; do
 	<a href="${GitURL}/${src}">${src} in git</a>
 	EOF
 	./htagml -x -f htmltags "${src}"
-	./htagml -p -f htmltags "${src}"
+	./hilex -t -f html "${src}" | ./htagml -ip -f htmltags "${src}"
 done

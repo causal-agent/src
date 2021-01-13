@@ -137,7 +137,7 @@ WEBROOT = /usr/local/www/causal.agency
 html: ${HTMLS}
 	@true
 
-${HTMLS}: html.sh scheme ttpre htagml htmltags
+${HTMLS}: html.sh scheme hilex htagml htmltags
 
 htmltags: *.[chly]
 	rm -f $@
