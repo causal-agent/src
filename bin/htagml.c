@@ -24,23 +24,6 @@
 #include <sysexits.h>
 #include <unistd.h>
 
-struct Tag {
-	char *tag;
-	regex_t regex;
-};
-
-struct Match {
-	struct Tag *tag;
-	regmatch_t match;
-};
-
-static int compar(const void *_a, const void *_b) {
-	const struct Match *a = _a;
-	const struct Match *b = _b;
-	return (a->match.rm_so > b->match.rm_so)
-		- (a->match.rm_so < b->match.rm_so);
-}
-
 static char *nomagic(const char *pattern) {
 	char *buf = malloc(2 * strlen(pattern) + 1);
 	if (!buf) err(EX_OSERR, "malloc");
@@ -83,7 +66,11 @@ int main(int argc, char *argv[]) {
 
 	size_t len = 0;
 	size_t cap = 256;
-	struct Tag *tags = malloc(cap * sizeof(*tags));
+	struct Tag {
+		char *tag;
+		int num;
+		regex_t regex;
+	} *tags = malloc(cap * sizeof(*tags));
 	if (!tags) err(EX_OSERR, "malloc");
 
 	char *buf = NULL;
@@ -92,14 +79,8 @@ int main(int argc, char *argv[]) {
 		char *line = buf;
 		char *tag = strsep(&line, "\t");
 		char *file = strsep(&line, "\t");
-		char *search = strsep(&line, "\n");
-		if (!tag || !file || !search) errx(EX_DATAERR, "malformed tags file");
-		if (search[0] != '/' || search[strlen(search)-1] != '/') {
-			warnx("tag %s definition is not a forward search: %s", tag, search);
-			continue;
-		}
-		search++;
-		search[strlen(search)-1] = '\0';
+		char *def = strsep(&line, "\n");
+		if (!tag || !file || !def) errx(EX_DATAERR, "malformed tags file");
 
 		if (strcmp(file, name)) continue;
 		if (len == cap) {
@@ -108,76 +89,71 @@ int main(int argc, char *argv[]) {
 		}
 		tags[len].tag = strdup(tag);
 		if (!tags[len].tag) err(EX_OSERR, "strdup");
-		char *pattern = nomagic(search);
-		int error = regcomp(&tags[len].regex, pattern, REG_NEWLINE);
-		if (error) errx(EX_DATAERR, "invalid regex: %s", pattern);
-		free(pattern);
+
+		tags[len].num = 0;
+		if (def[0] == '/' || def[0] == '?') {
+			def++;
+			def[strlen(def)-1] = '\0';
+			char *search = nomagic(def);
+			int error = regcomp(
+				&tags[len].regex, search, REG_NEWLINE | REG_NOSUB
+			);
+			free(search);
+			if (error) {
+				warnx("invalid regex for tag %s: %s", tag, def);
+				continue;
+			}
+		} else {
+			tags[len].num = strtol(def, &def, 10);
+			if (*def) {
+				warnx("invalid line number for tag %s: %s", tag, def);
+				continue;
+			}
+		}
 		len++;
 	}
-	free(buf);
 	fclose(file);
 
 	file = fopen(name, "r");
 	if (!file) err(EX_NOINPUT, "%s", name);
 
-	struct stat stat;
-	int error = fstat(fileno(file), &stat);
-	if (error) err(EX_IOERR, "%s", name);
-	buf = malloc(stat.st_size + 1);
-	if (!buf) err(EX_OSERR, "malloc");
-
-	size_t size = fread(buf, 1, stat.st_size, file);
-	if (size < (size_t)stat.st_size && ferror(file)) err(EX_IOERR, "%s", name);
-	buf[size] = '\0';
-	fclose(file);
-
-	struct Match *matches = calloc(len, sizeof(*matches));
-	if (!matches) err(EX_OSERR, "calloc");
-	for (size_t i = 0; i < len; ++i) {
-		matches[i].tag = &tags[i];
-		regexec(&tags[i].regex, buf, 1, &matches[i].match, 0);
-	}
-	qsort(matches, len, sizeof(*matches), compar);
-
-	char *main;
-	const char *base = strrchr(name, '/');
-	int n = asprintf(&main, "M%s", (base ? &base[1] : name));
-	if (n < 0) err(EX_OSERR, "asprintf");
-	if (strrchr(main, '.')) *strrchr(main, '.') = '\0';
-
-	regoff_t pos = 0;
+	int num = 0;
 	if (pre) printf("<pre>");
-	for (size_t i = 0; i < len; ++i) {
-		if (matches[i].match.rm_so == matches[i].match.rm_eo) {
-			warnx("no match for tag %s", matches[i].tag->tag);
-			continue;
+	while (0 < getline(&buf, &bufCap, file) && ++num) {
+		struct Tag *tag = NULL;
+		for (size_t i = 0; i < len; ++i) {
+			if (tags[i].num) {
+				if (num != tags[i].num) continue;
+			} else {
+				if (regexec(&tags[i].regex, buf, 0, NULL, 0)) continue;
+			}
+			tag = &tags[i];
+			break;
 		}
-		if (matches[i].match.rm_so <= pos) {
-			warnx("overlapping match for tag %s", matches[i].tag->tag);
-			continue;
-		}
-
-		pos += escape(&buf[pos], matches[i].match.rm_so - pos);
-		const char *text = matches[i].tag->tag;
-		if (!strcmp(text, main)) text = "main";
-		if (!strcmp(text, "yyparse") || !strcmp(text, "yylex")) text = "%%";
-		char *tag = strstr(&buf[pos], text);
-		if (!tag || tag >= &buf[matches[i].match.rm_eo]) {
-			warnx("tag %s does not occur in match", matches[i].tag->tag);
+		if (!tag) {
+			escape(buf, strlen(buf));
 			continue;
 		}
 
-		pos += escape(&buf[pos], tag - &buf[pos]);
+		char *text = tag->tag;
+		char *match = strstr(buf, text);
+		if (!match && tag->tag[0] == 'M') {
+			text = "main";
+			match = strstr(buf, text);
+		}
+		if (match) escape(buf, match - buf);
 		printf("<a class=\"tag\" id=\"");
-		escape(matches[i].tag->tag, strlen(matches[i].tag->tag));
+		escape(tag->tag, strlen(tag->tag));
 		printf("\" href=\"#");
-		escape(matches[i].tag->tag, strlen(matches[i].tag->tag));
+		escape(tag->tag, strlen(tag->tag));
 		printf("\">");
-		pos += escape(&buf[pos], strlen(text));
+		if (match) {
+			match += escape(match, strlen(text));
+		} else {
+			escape(buf, strlen(buf));
+		}
 		printf("</a>");
-
-		pos += escape(&buf[pos], matches[i].match.rm_eo - pos);
+		if (match) escape(match, strlen(match));
 	}
-	escape(&buf[pos], strlen(&buf[pos]));
 	if (pre) printf("</pre>");
 }
