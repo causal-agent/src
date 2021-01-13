@@ -45,7 +45,11 @@ static char *nomagic(const char *pattern) {
 	return buf;
 }
 
-static size_t escape(const char *ptr, size_t len) {
+static size_t escape(bool esc, const char *ptr, size_t len) {
+	if (!esc) {
+		fwrite(ptr, len, 1, stdout);
+		return len;
+	}
 	for (size_t i = 0; i < len; ++i) {
 		switch (ptr[i]) {
 			break; case '&': printf("&amp;");
@@ -59,11 +63,13 @@ static size_t escape(const char *ptr, size_t len) {
 
 int main(int argc, char *argv[]) {
 	bool pre = false;
+	bool pipe = false;
 	bool index = false;
 	const char *tagsFile = "tags";
-	for (int opt; 0 < (opt = getopt(argc, argv, "f:px"));) {
+	for (int opt; 0 < (opt = getopt(argc, argv, "f:ipx"));) {
 		switch (opt) {
 			break; case 'f': tagsFile = optarg;
+			break; case 'i': pipe = true;
 			break; case 'p': pre = true;
 			break; case 'x': index = true;
 			break; default:  return EX_USAGE;
@@ -139,8 +145,14 @@ int main(int argc, char *argv[]) {
 			break;
 		}
 		if (index) continue;
+		if (pipe) {
+			ssize_t len = getline(&buf, &bufCap, stdin);
+			if (len < 0) {
+				errx(EX_DATAERR, "missing line %d on standard input", num);
+			}
+		}
 		if (!tag) {
-			escape(buf, strlen(buf));
+			escape(!pipe, buf, strlen(buf));
 			continue;
 		}
 
@@ -150,19 +162,19 @@ int main(int argc, char *argv[]) {
 			text = "main";
 			match = strstr(buf, text);
 		}
-		if (match) escape(buf, match - buf);
+		if (match) escape(!pipe, buf, match - buf);
 		printf("<a class=\"tag\" id=\"");
-		escape(tag->tag, strlen(tag->tag));
+		escape(true, tag->tag, strlen(tag->tag));
 		printf("\" href=\"#");
-		escape(tag->tag, strlen(tag->tag));
+		escape(true, tag->tag, strlen(tag->tag));
 		printf("\">");
 		if (match) {
-			match += escape(match, strlen(text));
+			match += escape(!pipe, match, strlen(text));
 		} else {
-			escape(buf, strlen(buf));
+			escape(!pipe, buf, strlen(buf));
 		}
 		printf("</a>");
-		if (match) escape(match, strlen(match));
+		if (match) escape(!pipe, match, strlen(match));
 	}
 	if (pre) printf("</pre>");
 
@@ -172,9 +184,9 @@ int main(int argc, char *argv[]) {
 	for (size_t i = 0; i < len; ++i) {
 		if (!tags[i].num) continue;
 		printf("<li><a class=\"tag\" href=\"#");
-		escape(tags[i].tag, strlen(tags[i].tag));
+		escape(true, tags[i].tag, strlen(tags[i].tag));
 		printf("\">");
-		escape(tags[i].tag, strlen(tags[i].tag));
+		escape(true, tags[i].tag, strlen(tags[i].tag));
 		printf("</a></li>\n");
 	}
 	printf("</ul>\n");

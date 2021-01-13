@@ -8,7 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl px
+.Op Fl ipx
 .Op Fl f Ar tagsfile
 .Ar file
 .
@@ -31,6 +31,13 @@ Read the tag descriptions from a file called
 The default behavior is
 to read them from a file called
 .Pa tags .
+.It Fl i
+Assume
+.Ar file
+has been pre-formatted
+on standard input,
+such as by a syntax highlighter.
+Only tag hyperlinks are added.
 .It Fl p
 Wrap the output in a
 .Sy pre
