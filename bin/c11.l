@@ -76,7 +76,7 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 	{ident} { return Macro; }
 }
 
-{ident} { return Identifier; }
+{ident} { return Ident; }
 
 "//"([^\n]|"\\\n")* |
 "/*"([^*]|"*"[^/])*"*"+"/" {
@@ -106,13 +106,13 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 	"\\x"([[:xdigit:]]{2}) |
 	"\\u"([[:xdigit:]]{4}) |
 	"\\U"([[:xdigit:]]{8}) {
-		return StringEscape;
+		return Escape;
 	}
 }
 <StringLiteral>{
 	"%%" |
 	"%"[ #+-0]*{width}?("."{width})?([Lhjltz]|hh|ll)?[AEFGXacdefginopsux] {
-		return StringFormat;
+		return Format;
 	}
 }
 

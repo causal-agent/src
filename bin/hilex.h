@@ -22,13 +22,13 @@
 	X(Operator) \
 	X(Number) \
 	X(Keyword) \
-	X(Identifier) \
+	X(Ident) \
 	X(Macro) \
 	X(Comment) \
 	X(String) \
-	X(StringEscape) \
-	X(StringFormat) \
-	X(Interpolation)
+	X(Escape) \
+	X(Format) \
+	X(Subst)
 
 enum Class {
 #define X(class) class,

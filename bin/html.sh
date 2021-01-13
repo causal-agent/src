@@ -62,12 +62,12 @@ a.tag:target {
 	outline: none;
 }
 
-.hilex.Keyword { color: var(--ansi7); }
-.hilex.Macro { color: var(--ansi2); }
-.hilex.Comment { color: var(--ansi4); }
-.hilex.String { color: var(--ansi6); }
-.hilex.StringFormat { color: var(--ansi14); }
-.hilex.Interpolation { color: var(--ansi1); }
+pre .Ke { color: var(--ansi7); }
+pre .Ma { color: var(--ansi2); }
+pre .Co { color: var(--ansi4); }
+pre .St { color: var(--ansi6); }
+pre .Fo { color: var(--ansi14); }
+pre .Su { color: var(--ansi1); }
 </style>
 EOF
 

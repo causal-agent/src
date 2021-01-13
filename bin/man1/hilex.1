@@ -1,4 +1,4 @@
-.Dd January 12, 2021
+.Dd January 13, 2021
 .Dt HILEX 1
 .Os
 .
@@ -68,21 +68,31 @@ Output ANSI terminal control sequences.
 .It Cm html
 Output HTML
 .Sy span
-elements.
-Each element has the classes
-.Sy hilex
-and one of the following:
-.Sy Operator ,
-.Sy Number ,
-.Sy Keyword ,
-.Sy Identifier ,
-.Sy Macro ,
-.Sy Comment ,
-.Sy String ,
-.Sy StringEscape ,
-.Sy StringFormat ,
-.Sy Interpolation .
-.
+elements
+with the following classes:
+.Pp
+.Bl -hang -width "\&Op" -compact
+.It Sy \&Op
+operators
+.It Sy \&Nu
+numbers
+.It Sy \&Ke
+keywords
+.It Sy \&Id
+identifiers
+.It Sy \&Ma
+macros
+.It Sy \&Co
+comments
+.It Sy \&St
+strings
+.It Sy \&Es
+character escapes
+.It Sy \&Fo
+format strings
+.It Sy \&Su
+variable substitutions
+.El
 .Pp
 The options are as follows:
 .Bl -tag -width "title=..."

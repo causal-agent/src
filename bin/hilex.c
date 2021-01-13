@@ -92,15 +92,15 @@ enum Option {
 };
 
 typedef void Header(const char *opts[]);
-typedef void Format(const char *opts[], enum Class class, const char *text);
+typedef void Output(const char *opts[], enum Class class, const char *text);
 
 static const char *SGR[ClassCap] = {
-	[Keyword]       = "37",
-	[Macro]         = "32",
-	[Comment]       = "34",
-	[String]        = "36",
-	[StringFormat]  = "36;1;96",
-	[Interpolation] = "33",
+	[Keyword] = "37",
+	[Macro]   = "32",
+	[Comment] = "34",
+	[String]  = "36",
+	[Format]  = "36;1;96",
+	[Subst]   = "33",
 };
 
 static void ansiFormat(const char *opts[], enum Class class, const char *text) {
@@ -128,12 +128,12 @@ debugFormat(const char *opts[], enum Class class, const char *text) {
 }
 
 static const char *IRC[ClassCap] = {
-	[Keyword]       = "\00315",
-	[Macro]         = "\0033",
-	[Comment]       = "\0032",
-	[String]        = "\00310",
-	[StringFormat]  = "\00311",
-	[Interpolation] = "\0037",
+	[Keyword] = "\00315",
+	[Macro]   = "\0033",
+	[Comment] = "\0032",
+	[String]  = "\00310",
+	[Format]  = "\00311",
+	[Subst]   = "\0037",
 };
 
 static void ircHeader(const char *opts[]) {
@@ -174,12 +174,12 @@ static void htmlEscape(const char *text) {
 }
 
 static const char *Styles[ClassCap] = {
-	[Keyword]       = "color: dimgray;",
-	[Macro]         = "color: green;",
-	[Comment]       = "color: navy;",
-	[String]        = "color: teal;",
-	[StringFormat]  = "color: teal; font-weight: bold;",
-	[Interpolation] = "color: olive;",
+	[Keyword] = "color: dimgray;",
+	[Macro]   = "color: green;",
+	[Comment] = "color: navy;",
+	[String]  = "color: teal;",
+	[Format]  = "color: teal; font-weight: bold;",
+	[Subst]   = "color: olive;",
 };
 
 static void styleTabSize(const char *tab) {
@@ -210,7 +210,7 @@ static void htmlHeader(const char *opts[]) {
 		}
 		for (enum Class class = 0; class < ClassCap; ++class) {
 			if (!Styles[class]) continue;
-			printf(".hilex.%s { %s }\n", Class[class], Styles[class]);
+			printf("pre.hilex .%.2s { %s }\n", Class[class], Styles[class]);
 		}
 		printf("</style>\n");
 	}
@@ -235,7 +235,7 @@ static void htmlFormat(const char *opts[], enum Class class, const char *text) {
 		if (opts[Inline]) {
 			printf("<span style=\"%s\">", Styles[class] ? Styles[class] : "");
 		} else {
-			printf("<span class=\"hilex %s\">", Class[class]);
+			printf("<span class=\"%.2s\">", Class[class]);
 		}
 		htmlEscape(text);
 		printf("</span>");
@@ -247,7 +247,7 @@ static void htmlFormat(const char *opts[], enum Class class, const char *text) {
 static const struct Formatter {
 	const char *name;
 	Header *header;
-	Format *format;
+	Output *format;
 	Header *footer;
 } Formatters[] = {
 	{ "ansi", NULL, ansiFormat, NULL },

@@ -22,7 +22,7 @@
 %}
 
 %s Assign
-%x Interp Shell
+%x Variable Shell
 
 ident [._[:alnum:]]+
 assign [+?:!]?=
@@ -55,7 +55,7 @@ operator [:!]|::
 }
 
 ^{ident}/[[:blank:]]*{assign} {
-	return Identifier;
+	return Ident;
 }
 
 {assign} {
@@ -73,24 +73,24 @@ operator [:!]|::
 
 ^"-"?include { return Macro; }
 
-{target} { return Identifier; }
+{target} { return Ident; }
 
 "#"([^\\\n]|"\\"[^\n]|"\\\n")* { return Comment; }
 
 <*>{
 	"$"("{"|"(") {
 		depth++;
-		BEGIN(Interp);
-		return Interpolation;
+		BEGIN(Variable);
+		return Subst;
 	}
-	"$". { return Interpolation; }
+	"$". { return Subst; }
 }
-<Interp>{
+<Variable>{
 	"}"|")" {
 		if (!--depth) BEGIN(pop);
-		return Interpolation;
+		return Subst;
 	}
-	[^${}()]+ { return Interpolation; }
+	[^${}()]+ { return Subst; }
 }
 
 .|\n { return Normal; }
