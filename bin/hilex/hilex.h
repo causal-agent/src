@@ -16,8 +16,6 @@
 
 #include <stdio.h>
 
-#define ARRAY_LEN(a) (sizeof(a) / sizeof(a[0]))
-
 #define ENUM_CLASS \
 	X(None) \
 	X(Normal) \
@@ -50,31 +48,3 @@ extern const struct Lexer LexC;
 extern const struct Lexer LexMake;
 extern const struct Lexer LexMdoc;
 extern const struct Lexer LexText;
-
-#define ENUM_OPTION \
-	X(Document, "document") \
-	X(Inline, "inline") \
-	X(Monospace, "monospace") \
-	X(Style, "style") \
-	X(Tab, "tab") \
-	X(Title, "title")
-
-enum Option {
-#define X(option, key) option,
-	ENUM_OPTION
-#undef X
-	OptionCap,
-};
-
-typedef void Header(const char *opts[]);
-typedef void Format(const char *opts[], enum Class class, const char *text);
-struct Formatter {
-	Header *header;
-	Format *format;
-	Header *footer;
-};
-
-extern const struct Formatter FormatANSI;
-extern const struct Formatter FormatDebug;
-extern const struct Formatter FormatHTML;
-extern const struct Formatter FormatIRC;

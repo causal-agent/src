@@ -15,6 +15,7 @@
  */
 
 #include <assert.h>
+#include <ctype.h>
 #include <err.h>
 #include <regex.h>
 #include <stdbool.h>
@@ -25,6 +26,14 @@
 #include <unistd.h>
 
 #include "hilex.h"
+
+#define ARRAY_LEN(a) (sizeof(a) / sizeof(a[0]))
+
+static const char *Class[] = {
+#define X(class) [class] = #class,
+	ENUM_CLASS
+#undef X
+};
 
 static const struct {
 	const struct Lexer *lexer;
@@ -58,41 +67,192 @@ static const struct Lexer *matchLexer(const char *name) {
 	return NULL;
 }
 
-static const struct {
-	const struct Formatter *formatter;
-	const char *name;
-} Formatters[] = {
-	{ &FormatANSI, "ansi" },
-	{ &FormatDebug, "debug" },
-	{ &FormatHTML, "html" },
-	{ &FormatIRC, "irc" },
-};
+#define ENUM_OPTION \
+	X(Document, "document") \
+	X(Inline, "inline") \
+	X(Monospace, "monospace") \
+	X(Style, "style") \
+	X(Tab, "tab") \
+	X(Title, "title")
 
-static const struct Formatter *parseFormatter(const char *name) {
-	for (size_t i = 0; i < ARRAY_LEN(Formatters); ++i) {
-		if (!strcmp(name, Formatters[i].name)) return Formatters[i].formatter;
-	}
-	errx(EX_USAGE, "unknown formatter %s", name);
-}
-
-static const char *ClassName[] = {
-#define X(class) [class] = #class,
-	ENUM_CLASS
+enum Option {
+#define X(option, key) option,
+	ENUM_OPTION
 #undef X
+	OptionCap,
 };
+
+typedef void Header(const char *opts[]);
+typedef void Format(const char *opts[], enum Class class, const char *text);
+
+static const char *SGR[ClassCap] = {
+	[Keyword]       = "37",
+	[Macro]         = "32",
+	[Comment]       = "34",
+	[String]        = "36",
+	[StringFormat]  = "36;1;96",
+	[Interpolation] = "33",
+};
+
+static void ansiFormat(const char *opts[], enum Class class, const char *text) {
+	(void)opts;
+	if (!SGR[class]) {
+		printf("%s", text);
+		return;
+	}
+	// Set color on each line for piping to less -R:
+	for (const char *nl; (nl = strchr(text, '\n')); text = &nl[1]) {
+		printf("\33[%sm%.*s\33[m\n", SGR[class], (int)(nl - text), text);
+	}
+	if (*text) printf("\33[%sm%s\33[m", SGR[class], text);
+}
 
 static void
 debugFormat(const char *opts[], enum Class class, const char *text) {
 	if (class != Normal) {
-		printf("%s(", ClassName[class]);
-		FormatANSI.format(opts, class, text);
+		printf("%s(", Class[class]);
+		ansiFormat(opts, class, text);
 		printf(")");
 	} else {
 		printf("%s", text);
 	}
 }
 
-const struct Formatter FormatDebug = { .format = debugFormat };
+static const char *IRC[ClassCap] = {
+	[Keyword]       = "\00315",
+	[Macro]         = "\0033",
+	[Comment]       = "\0032",
+	[String]        = "\00310",
+	[StringFormat]  = "\00311",
+	[Interpolation] = "\0037",
+};
+
+static void ircHeader(const char *opts[]) {
+	if (opts[Monospace]) printf("\21");
+}
+
+static const char *stop(const char *text) {
+	return (*text == ',' || isdigit(*text) ? "\2\2" : "");
+}
+
+static void ircFormat(const char *opts[], enum Class class, const char *text) {
+	for (const char *nl; (nl = strchr(text, '\n')); text = &nl[1]) {
+		if (IRC[class]) printf("%s%s", IRC[class], stop(text));
+		printf("%.*s\n", (int)(nl - text), text);
+		if (opts[Monospace]) printf("\21");
+	}
+	if (*text) {
+		if (IRC[class]) {
+			printf("%s%s%s\17", IRC[class], stop(text), text);
+			if (opts[Monospace]) printf("\21");
+		} else {
+			printf("%s", text);
+		}
+	}
+}
+
+static void htmlEscape(const char *text) {
+	while (*text) {
+		switch (*text) {
+			break; case '"': text++; printf("&quot;");
+			break; case '&': text++; printf("&amp;");
+			break; case '<': text++; printf("&lt;");
+		}
+		size_t len = strcspn(text, "\"&<");
+		if (len) fwrite(text, len, 1, stdout);
+		text += len;
+	}
+}
+
+static const char *Styles[ClassCap] = {
+	[Keyword]       = "color: dimgray;",
+	[Macro]         = "color: green;",
+	[Comment]       = "color: navy;",
+	[String]        = "color: teal;",
+	[StringFormat]  = "color: teal; font-weight: bold;",
+	[Interpolation] = "color: olive;",
+};
+
+static void styleTabSize(const char *tab) {
+	printf("-moz-tab-size: ");
+	htmlEscape(tab);
+	printf("; tab-size: ");
+	htmlEscape(tab);
+	printf(";");
+}
+
+static void htmlHeader(const char *opts[]) {
+	if (!opts[Document]) goto body;
+
+	printf("<!DOCTYPE html>\n<title>");
+	if (opts[Title]) htmlEscape(opts[Title]);
+	printf("</title>\n");
+
+	if (opts[Style]) {
+		printf("<link rel=\"stylesheet\" href=\"");
+		htmlEscape(opts[Style]);
+		printf("\">\n");
+	} else if (!opts[Inline]) {
+		printf("<style>\n");
+		if (opts[Tab]) {
+			printf("pre.hilex { ");
+			styleTabSize(opts[Tab]);
+			printf(" }\n");
+		}
+		for (enum Class class = 0; class < ClassCap; ++class) {
+			if (!Styles[class]) continue;
+			printf(".hilex.%s { %s }\n", Class[class], Styles[class]);
+		}
+		printf("</style>\n");
+	}
+
+body:
+	if (opts[Inline] && opts[Tab]) {
+		printf("<pre class=\"hilex\" style=\"");
+		styleTabSize(opts[Tab]);
+		printf("\">");
+	} else {
+		printf("<pre class=\"hilex\">");
+	}
+}
+
+static void htmlFooter(const char *opts[]) {
+	printf("</pre>");
+	if (opts[Document]) printf("\n");
+}
+
+static void htmlFormat(const char *opts[], enum Class class, const char *text) {
+	if (class != Normal) {
+		if (opts[Inline]) {
+			printf("<span style=\"%s\">", Styles[class] ? Styles[class] : "");
+		} else {
+			printf("<span class=\"hilex %s\">", Class[class]);
+		}
+		htmlEscape(text);
+		printf("</span>");
+	} else {
+		htmlEscape(text);
+	}
+}
+
+static const struct Formatter {
+	const char *name;
+	Header *header;
+	Format *format;
+	Header *footer;
+} Formatters[] = {
+	{ "ansi", NULL, ansiFormat, NULL },
+	{ "debug", NULL, debugFormat, NULL },
+	{ "html", htmlHeader, htmlFormat, htmlFooter },
+	{ "irc", ircHeader, ircFormat, NULL },
+};
+
+static const struct Formatter *parseFormatter(const char *name) {
+	for (size_t i = 0; i < ARRAY_LEN(Formatters); ++i) {
+		if (!strcmp(name, Formatters[i].name)) return &Formatters[i];
+	}
+	errx(EX_USAGE, "unknown formatter %s", name);
+}
 
 static char *const OptionKeys[OptionCap + 1] = {
 #define X(option, key) [option] = key,
@@ -105,7 +265,7 @@ int main(int argc, char *argv[]) {
 	bool text = false;
 	const char *name = NULL;
 	const struct Lexer *lexer = NULL;
-	const struct Formatter *formatter = &FormatANSI;
+	const struct Formatter *formatter = &Formatters[0];
 	const char *opts[OptionCap] = {0};
 
 	for (int opt; 0 < (opt = getopt(argc, argv, "f:l:n:o:t"));) {
