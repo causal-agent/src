@@ -128,6 +128,7 @@ int main(int argc, char *argv[]) {
 				if (regexec(&tags[i].regex, buf, 0, NULL, 0)) continue;
 			}
 			tag = &tags[i];
+			tag->num = num;
 			break;
 		}
 		if (!tag) {
