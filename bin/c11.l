@@ -83,9 +83,17 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 	return Comment;
 }
 
+[LUu]?"'"/[^\\] {
+	BEGIN(CharLiteral);
+	yymore();
+}
 [LUu]?"'" {
 	BEGIN(CharLiteral);
 	return String;
+}
+([LU]|u8?)?"\""/[^\\%] {
+	BEGIN(StringLiteral);
+	yymore();
 }
 ([LU]|u8?)?"\"" {
 	BEGIN(StringLiteral);
@@ -109,14 +117,14 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 }
 
 <CharLiteral>{
-	"'" {
+	[^\\'']*"'" {
 		BEGIN(pop);
 		return String;
 	}
 	[^\\'']+|. { return String; }
 }
 <StringLiteral>{
-	"\"" {
+	[^%\\""]*"\"" {
 		BEGIN(pop);
 		return String;
 	}
