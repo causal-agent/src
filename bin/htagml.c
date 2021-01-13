@@ -61,6 +61,17 @@ static size_t escape(bool esc, const char *ptr, size_t len) {
 	return len;
 }
 
+static char *hstrstr(char *haystack, char *needle) {
+	while (haystack) {
+		char *elem = strchr(haystack, '<');
+		char *match = strstr(haystack, needle);
+		if (!match) return NULL;
+		if (!elem || match < elem) return match;
+		haystack = strchr(elem, '>');
+	}
+	return NULL;
+}
+
 int main(int argc, char *argv[]) {
 	bool pre = false;
 	bool pipe = false;
@@ -157,10 +168,10 @@ int main(int argc, char *argv[]) {
 		}
 
 		char *text = tag->tag;
-		char *match = strstr(buf, text);
+		char *match = (pipe ? hstrstr(buf, text) : strstr(buf, text));
 		if (!match && tag->tag[0] == 'M') {
 			text = "main";
-			match = strstr(buf, text);
+			match = (pipe ? hstrstr(buf, text) : strstr(buf, text));
 		}
 		if (match) escape(!pipe, buf, match - buf);
 		printf("<a class=\"tag\" id=\"");
