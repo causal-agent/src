@@ -78,6 +78,11 @@ operator [:!]|::
 "#"([^\\\n]|"\\"[^\n]|"\\\n")* { return Comment; }
 
 <*>{
+	"$"("{"|"(")/[^$] {
+		depth++;
+		BEGIN(Variable);
+		yymore();
+	}
 	"$"("{"|"(") {
 		depth++;
 		BEGIN(Variable);
@@ -86,7 +91,7 @@ operator [:!]|::
 	"$". { return Subst; }
 }
 <Variable>{
-	"}"|")" {
+	[^${}()]*"}"|")" {
 		if (!--depth) BEGIN(pop);
 		return Subst;
 	}
