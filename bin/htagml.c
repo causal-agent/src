@@ -20,9 +20,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <sysexits.h>
 #include <unistd.h>
+
+struct Tag {
+	char *tag;
+	int num;
+	regex_t regex;
+};
+
+static int compar(const void *a, const void *b) {
+	return ((const struct Tag *)a)->num - ((const struct Tag *)b)->num;
+}
 
 static char *nomagic(const char *pattern) {
 	char *buf = malloc(2 * strlen(pattern) + 1);
@@ -50,11 +59,13 @@ static size_t escape(const char *ptr, size_t len) {
 
 int main(int argc, char *argv[]) {
 	bool pre = false;
+	bool index = false;
 	const char *tagsFile = "tags";
-	for (int opt; 0 < (opt = getopt(argc, argv, "f:p"));) {
+	for (int opt; 0 < (opt = getopt(argc, argv, "f:px"));) {
 		switch (opt) {
 			break; case 'f': tagsFile = optarg;
 			break; case 'p': pre = true;
+			break; case 'x': index = true;
 			break; default:  return EX_USAGE;
 		}
 	}
@@ -66,11 +77,7 @@ int main(int argc, char *argv[]) {
 
 	size_t len = 0;
 	size_t cap = 256;
-	struct Tag {
-		char *tag;
-		int num;
-		regex_t regex;
-	} *tags = malloc(cap * sizeof(*tags));
+	struct Tag *tags = malloc(cap * sizeof(*tags));
 	if (!tags) err(EX_OSERR, "malloc");
 
 	char *buf = NULL;
@@ -131,6 +138,7 @@ int main(int argc, char *argv[]) {
 			tag->num = num;
 			break;
 		}
+		if (index) continue;
 		if (!tag) {
 			escape(buf, strlen(buf));
 			continue;
@@ -157,4 +165,17 @@ int main(int argc, char *argv[]) {
 		if (match) escape(match, strlen(match));
 	}
 	if (pre) printf("</pre>");
+
+	if (!index) return EX_OK;
+	qsort(tags, len, sizeof(*tags), compar);
+	printf("<ul class=\"index\">\n");
+	for (size_t i = 0; i < len; ++i) {
+		if (!tags[i].num) continue;
+		printf("<li><a class=\"tag\" href=\"#");
+		escape(tags[i].tag, strlen(tags[i].tag));
+		printf("\">");
+		escape(tags[i].tag, strlen(tags[i].tag));
+		printf("</a></li>\n");
+	}
+	printf("</ul>\n");
 }

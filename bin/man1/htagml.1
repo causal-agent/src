@@ -8,9 +8,9 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl p
-.Op Fl f Ar tags_file
-.Ar name
+.Op Fl px
+.Op Fl f Ar tagsfile
+.Ar file
 .
 .Sh DESCRIPTION
 The
@@ -25,9 +25,9 @@ with the class
 .Pp
 The arguments are as follows:
 .Bl -tag -width Ds
-.It Fl f Ar tags_file
+.It Fl f Ar tagsfile
 Read the tag descriptions from a file called
-.Ar tags_file .
+.Ar tagsfile .
 The default behavior is
 to read them from a file called
 .Pa tags .
@@ -35,6 +35,14 @@ to read them from a file called
 Wrap the output in a
 .Sy pre
 element.
+.It Fl x
+Instead produce an index of tags
+ordered by their occurrence in
+.Ar file .
+The index is formatted as a
+.Sy ul
+element with the class
+.Qq index .
 .El
 .
 .Sh FILES
