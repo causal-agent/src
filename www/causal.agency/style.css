@@ -17,7 +17,7 @@ table { border-collapse: collapse; }
 table.Nm code.Nm { padding-right: 1ch; }
 table.foot { margin-top: 1em; }
 
-html { background-color: var(--ansi0); color: var(--ansi7); }
+html { background-color: var(--ansi16); color: var(--ansi17); }
 a { color: var(--ansi4); }
 a:visited { color: var(--ansi5); }
-h1 a { color: inherit; text-decoration: none; }
+a.permalink { color: var(--ansi3); text-decoration: none; }

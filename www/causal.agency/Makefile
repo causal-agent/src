@@ -8,7 +8,7 @@ index.html: index.7
 	mandoc -T html -O style=style.css index.7 > index.html
 
 scheme.css:
-	scheme -s > scheme.css
+	scheme -st > scheme.css
 
 scheme.png:
 	scheme -g > scheme.png
