@@ -90,12 +90,13 @@ int main(int argc, char *argv[]) {
 	size_t bufCap = 0;
 	while (0 < getline(&buf, &bufCap, file)) {
 		char *line = buf;
-		char *tag = strsep(&line, "\t ");
-		char *file = strsep(&line, "\t ");
+		char *tag = strsep(&line, "\t");
+		char *file = strsep(&line, "\t");
 		char *search = strsep(&line, "\n");
 		if (!tag || !file || !search) errx(EX_DATAERR, "malformed tags file");
 		if (search[0] != '/' || search[strlen(search)-1] != '/') {
-			errx(EX_DATAERR, "search is not forward regex: %s", search);
+			warnx("tag %s definition is not a forward search: %s", tag, search);
+			continue;
 		}
 		search++;
 		search[strlen(search)-1] = '\0';
