@@ -3,16 +3,16 @@ WWW = /usr/local/www/cgit
 LIBEXEC = /usr/local/libexec
 
 BIN = ../../bin
-BINS = about-filter source-filter hi
+BINS = about-filter source-filter hilex htagml
 
 install: cgitrc custom.css ${BINS}
 	install -m 644 cgitrc ${ETC}
 	install -m 644 custom.css ${WWW}
 	install ${BINS} ${LIBEXEC}
 
-hi: ${BIN}/hi.c
+hilex htagml::
 	${MAKE} -C ${BIN} $@
-	cp ${BIN}/$@ $@
+	ln -f ${BIN}/$@ $@
 
 clean:
 	rm -f ${BINS}

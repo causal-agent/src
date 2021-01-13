@@ -49,20 +49,19 @@ div#cgit div#summary {
 	max-width: 80ch;
 }
 
-/* from hi(1) */
-div#cgit .hi.Keyword { color: dimgray; }
-div#cgit .hi.Macro { color: green; }
-div#cgit .hi.Tag { color: inherit; text-decoration: underline; }
-div#cgit .hi.String { color: teal; }
-div#cgit .hi.Format { color: teal; font-weight: bold; }
-div#cgit .hi.Interp { color: olive; }
-div#cgit .hi.Comment { color: navy; }
-div#cgit .hi.Todo { color: navy; font-weight: bold; }
-div#cgit .hi.DiffOld { color: red; }
-div#cgit .hi.DiffNew { color: green; }
-div#cgit .hi.Tag:target { color: goldenrod; outline: none; }
+/* for hilex(1) */
+div#cgit pre .Ke { color: dimgray; }
+div#cgit pre .Ma { color: green; }
+div#cgit pre .Co { color: navy; }
+div#cgit pre .St { color: teal; }
+div#cgit pre .Fo { color: teal; font-weight: bold; }
+div#cgit pre .Su { color: olive; }
 
-/* from mandoc(1) */
+/* for htagml(1) */
+div#cgit pre a.tag { color: inherit; text-decoration: underline; }
+div#cgit pre a.tag:target { color: goldenrod; outline: none; }
+
+/* for mandoc(1) */
 table.head, table.foot { width: 100%; }
 td.head-rtitle, td.foot-os { text-align: right; }
 td.head-vol { text-align: center; }

@@ -10,6 +10,6 @@ case "$1" in
 		exec /usr/bin/mandoc -T html -O $options,toc
 		;;
 	(*)
-		exec /usr/local/libexec/hi -l text -f html
+		exec /usr/local/libexec/hilex -l text -f html -o pre
 		;;
 esac
