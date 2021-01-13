@@ -32,10 +32,10 @@ uploadCommand() {
 	upload "${temp}/exec.txt"
 }
 
-uploadHi() {
+uploadHilex() {
 	temp
-	hi -f html -o document,anchor,tab=4 "$@" > "${temp}/hi.html"
-	upload "${temp}/hi.html"
+	hilex -f html -o document,tab=4 "$@" > "${temp}/hilex.html"
+	upload "${temp}/hilex.html"
 }
 
 uploadScreen() {
@@ -61,7 +61,7 @@ uploadTerminal() {
 while getopts 'chst' opt; do
 	case "$opt" in
 		(c) fn=uploadCommand;;
-		(h) fn=uploadHi;;
+		(h) fn=uploadHilex;;
 		(s) fn=uploadScreen;;
 		(t) fn=uploadTerminal;;
 		(?) exit 1;;
