@@ -69,6 +69,7 @@ if [ -n "${type}" ]; then
 			unsigned long long: "(unsigned long long) ",
 			float: "(float) ",
 			double: "(double) ",
+			long double: "(long double) ",
 			default: "(void *) "
 		)
 	);
@@ -97,6 +98,7 @@ if [ -n "${expr}" ]; then
 			unsigned long long: "%llu\n",
 			float: "%g\n",
 			double: "%g\n",
+			long double: "%Lg\n",
 			default: "%p\n"
 		),
 		${expr}
