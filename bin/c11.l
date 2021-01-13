@@ -111,6 +111,7 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 }
 <StringLiteral>{
 	"%%" |
+	"%"[EO]?[ABCDFGHIMRSTUVWXYZabcdeghjmnprtuwxyz] |
 	"%"[ #+-0]*{width}?("."{width})?([Lhjltz]|hh|ll)?[AEFGXacdefginopsux] {
 		return Format;
 	}
