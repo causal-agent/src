@@ -67,11 +67,8 @@ Output ANSI terminal control sequences.
 .
 .It Cm html
 Output HTML
-.Sy <span>
-elements
-within a
-.Sy <pre>
-element.
+.Sy span
+elements.
 Each element has the classes
 .Sy hilex
 and one of the following:
@@ -89,43 +86,42 @@ and one of the following:
 .Pp
 The options are as follows:
 .Bl -tag -width "title=..."
+.It Cm document
+Output an HTML document containing a
+.Sy pre
+element.
+.It Cm inline
+Output inline style attributes
+rather than classes.
+.It Cm pre
+Wrap the output in a
+.Sy pre
+element with the class
+.Sy hilex .
 .It Cm style Ns = Ns Ar url
 With
 .Cm document ,
-output a
-.Sy <link>
-element for the external stylesheet
+use the external stylesheet
 .Ar url .
 If unset,
-output default styles in a
-.Sy <style>
-element.
-.
-.It Cm document
-Output an HTML document containing the
-.Sy <pre>
-element.
-.
-.It Cm inline
-Output inline
+default styles are included in a
 .Sy style
-attributes rather than classes.
-.
+element.
 .It Cm tab Ns = Ns Ar n
 With
-.Cm document
+.Cm document ,
+.Cm inline
 or
-.Cm inline ,
+.Cm pre ,
 set the
 .Sy tab-size
 property to
 .Ar n .
-.
 .It Cm title Ns = Ns Ar ...
 With
 .Cm document ,
 set the
-.Sy <title>
+.Sy title
 element text.
 The default title is the same as
 .Ar name .

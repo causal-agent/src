@@ -71,6 +71,7 @@ static const struct Lexer *matchLexer(const char *name) {
 	X(Document, "document") \
 	X(Inline, "inline") \
 	X(Monospace, "monospace") \
+	X(Pre, "pre") \
 	X(Style, "style") \
 	X(Tab, "tab") \
 	X(Title, "title")
@@ -207,17 +208,17 @@ static void htmlHeader(const char *opts[]) {
 	}
 
 body:
-	if (opts[Inline] && opts[Tab]) {
+	if ((opts[Document] || opts[Pre]) && opts[Inline] && opts[Tab]) {
 		printf("<pre class=\"hilex\" style=\"");
 		styleTabSize(opts[Tab]);
 		printf("\">");
-	} else {
+	} else if (opts[Document] || opts[Pre]) {
 		printf("<pre class=\"hilex\">");
 	}
 }
 
 static void htmlFooter(const char *opts[]) {
-	printf("</pre>");
+	if (opts[Document] || opts[Pre]) printf("</pre>");
 	if (opts[Document]) printf("\n");
 }
 
