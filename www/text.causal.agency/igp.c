@@ -70,6 +70,7 @@ int main(int argc, char *argv[]) {
 	error = cap_enter()
 		|| cap_rights_limit(STDIN_FILENO, cap_rights_init(&cap, CAP_READ))
 		|| cap_rights_limit(STDOUT_FILENO, cap_rights_init(&cap, CAP_WRITE))
+		|| cap_rights_limit(STDERR_FILENO, &cap)
 		|| cap_rights_limit(
 			root, cap_rights_init(&cap, CAP_PREAD, CAP_FSTATAT, CAP_FSTATFS)
 		);
