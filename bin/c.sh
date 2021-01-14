@@ -23,6 +23,7 @@ cat >&3 <<EOF
 #include <wchar.h>
 #include <wctype.h>
 
+#include <dirent.h>
 #include <fcntl.h>
 #include <strings.h>
 #include <unistd.h>
