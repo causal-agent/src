@@ -1,4 +1,7 @@
-WEBROOT = /usr/local/www/text.causal.agency
+WEBROOT ?= /usr/local/www/text.causal.agency
+LIBEXEC ?= /usr/local/libexec
+
+CFLAGS += -Wall -Wextra
 
 TXTS += 001-make.txt
 TXTS += 002-writing-mdoc.txt
@@ -26,7 +29,11 @@ feed.atom: feed.sh ${TXTS}
 	sh feed.sh > feed.atom
 
 clean:
-	rm -f ${TXTS} feed.atom
+	rm -f ${TXTS} feed.atom igp
 
 install: ${TXTS} feed.atom
 	install -p -m 644 ${TXTS} feed.atom ${WEBROOT}
+
+install-igp: igp
+	install igp ${LIBEXEC}
+	install -p -m 644 igp.c ${WEBROOT}
