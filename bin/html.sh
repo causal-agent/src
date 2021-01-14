@@ -5,15 +5,16 @@ readonly GitURL='https://git.causal.agency/src/tree/bin'
 
 man=$1
 shift
-
 title=${man##*/}
 title=${title%.[1-9]}
 
 cat <<EOF
 <!DOCTYPE html>
+<meta charset="UTF-8">
 <title>${title}</title>
 <style>
-$(./scheme -st)
+html { line-height: 1.25em; font-family: monospace; }
+body { max-width: 80ch; margin: 1em auto; padding: 0 1ch; }
 
 table.head, table.foot { width: 100%; }
 td.head-rtitle, td.foot-os { text-align: right; }
@@ -30,38 +31,17 @@ table { border-collapse: collapse; }
 table.Nm code.Nm { padding-right: 1ch; }
 table.foot { margin-top: 1em; }
 
-html {
-	line-height: 1.25em;
-	font-family: monospace;
-	background-color: var(--ansi16);
-	color: var(--ansi17);
-	-moz-tab-size: 4;
-	tab-size: 4;
-}
-body {
-	max-width: 80ch;
-	margin: 1em auto;
-	padding: 0 1ch;
-}
 ul.index { padding: 0; }
-ul.index li {
-	display: inline;
-	list-style-type: none;
-}
+ul.index li { display: inline; list-style-type: none; }
+pre { -moz-tab-size: 4; tab-size: 4; }
+
+$(./scheme -st)
+html { background-color: var(--ansi16); color: var(--ansi17); }
 a { color: var(--ansi4); }
 a:visited { color: var(--ansi5); }
-a.permalink, a.tag {
-	color: var(--ansi3);
-	text-decoration: none;
-}
-a.permalink code:target,
-h1.Sh:target a.permalink,
-h2.Ss:target a.permalink,
-a.tag:target {
-	color: var(--ansi11);
-	outline: none;
-}
-
+a.permalink, a.tag { color: var(--ansi3); text-decoration: none; }
+a.permalink > code:target, *:target > a.permalink,
+a.tag:target { color: var(--ansi11); }
 pre .Ke { color: var(--ansi7); }
 pre .Ma { color: var(--ansi2); }
 pre .Co { color: var(--ansi4); }
@@ -71,13 +51,11 @@ pre .Su { color: var(--ansi1); }
 </style>
 EOF
 
-opts='fragment'
-[ "${man}" = "README.7" ] && opts="${opts},man=%N.html"
-mandoc -T html -O "${opts}" "${man}"
+opts=fragment
+[ "${man}" = "README.7" ] && opts=${opts},man=%N.html
+mandoc -T html -O ${opts} "${man}"
 
-while [ $# -gt 0 ]; do
-	src=$1
-	shift
+for src; do
 	cat <<-EOF
 	<p>
 	<a href="${GitURL}/${src}">${src} in git</a>
