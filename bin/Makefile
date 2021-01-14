@@ -25,7 +25,6 @@ BINS += bit
 BINS += c
 BINS += dtch
 BINS += glitch
-BINS += hi
 BINS += hilex
 BINS += hnel
 BINS += htagml
@@ -79,10 +78,6 @@ meta: .gitignore tags
 .pl:
 	cp -f $< $@
 	chmod a+x $@
-
-hi: hi.c
-	${CC} ${CFLAGS} ${LDFLAGS} hi.c ${LDLIBS.$@} -o $@
-	./hi -c
 
 OBJS.hilex += c11.o
 OBJS.hilex += hilex.o
