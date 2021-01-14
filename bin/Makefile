@@ -38,7 +38,6 @@ BINS += ptee
 BINS += scheme
 BINS += shotty
 BINS += title
-BINS += ttpre
 BINS += up
 BINS += when
 BINS += xx
