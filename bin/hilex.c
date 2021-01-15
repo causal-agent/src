@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <sysexits.h>
 #include <unistd.h>
 
@@ -93,6 +94,43 @@ enum Option {
 
 typedef void Header(const char *opts[]);
 typedef void Output(const char *opts[], enum Class class, const char *text);
+
+static bool tty;
+static void ansiHeader(const char *opts[]) {
+	(void)opts;
+	if (!(tty = isatty(STDOUT_FILENO))) return;
+	const char *shell = getenv("SHELL");
+	const char *pager = getenv("PAGER");
+	if (!shell) shell = "/bin/sh";
+	if (!pager) pager = "less";
+	setenv("LESS", "FRX", 0);
+
+	int rw[2];
+	int error = pipe(rw);
+	if (error) err(EX_OSERR, "pipe");
+
+	pid_t pid = fork();
+	if (pid < 0) err(EX_OSERR, "fork");
+	if (!pid) {
+		dup2(rw[0], STDIN_FILENO);
+		close(rw[0]);
+		close(rw[1]);
+		execl(shell, shell, "-c", pager, NULL);
+		err(EX_CONFIG, "%s", shell);
+	}
+	dup2(rw[1], STDOUT_FILENO);
+	close(rw[0]);
+	close(rw[1]);
+	setlinebuf(stdout);
+}
+
+static void ansiFooter(const char *opts[]) {
+	(void)opts;
+	if (!tty) return;
+	int status;
+	fclose(stdout);
+	wait(&status);
+}
 
 static const char *SGR[ClassCap] = {
 	[Keyword] = "37",
@@ -250,7 +288,7 @@ static const struct Formatter {
 	Output *format;
 	Header *footer;
 } Formatters[] = {
-	{ "ansi", NULL, ansiFormat, NULL },
+	{ "ansi", ansiHeader, ansiFormat, ansiFooter },
 	{ "debug", NULL, debugFormat, NULL },
 	{ "html", htmlHeader, htmlFormat, htmlFooter },
 	{ "irc", ircHeader, ircFormat, NULL },

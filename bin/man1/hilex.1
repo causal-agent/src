@@ -1,4 +1,4 @@
-.Dd January 13, 2021
+.Dd January 15, 2021
 .Dt HILEX 1
 .Os
 .
@@ -64,6 +64,12 @@ input lexer if one cannot be inferred.
 .Bl -tag -width Ds
 .It Cm ansi
 Output ANSI terminal control sequences.
+If standard output is a terminal,
+output is piped to
+.Ev PAGER
+with
+.Ev LESS=FRX
+if it is not already set.
 .
 .It Cm html
 Output HTML
@@ -180,4 +186,13 @@ Plain text.
 Inferred for
 .Pa *.txt
 files.
+.El
+.
+.Sh ENVIRONMENT
+.Bl -tag -width "PAGER"
+.It Ev PAGER
+The command to pipe ANSI output to
+if standard output is a terminal.
+The default is
+.Ev PAGER=less .
 .El
