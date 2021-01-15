@@ -23,16 +23,6 @@
 #include <sysexits.h>
 #include <unistd.h>
 
-struct Tag {
-	char *tag;
-	int num;
-	regex_t regex;
-};
-
-static int compar(const void *a, const void *b) {
-	return ((const struct Tag *)a)->num - ((const struct Tag *)b)->num;
-}
-
 static char *nomagic(const char *pattern) {
 	char *buf = malloc(2 * strlen(pattern) + 1);
 	if (!buf) err(EX_OSERR, "malloc");
@@ -94,7 +84,11 @@ int main(int argc, char *argv[]) {
 
 	size_t len = 0;
 	size_t cap = 256;
-	struct Tag *tags = malloc(cap * sizeof(*tags));
+	struct Tag {
+		char *tag;
+		int num;
+		regex_t regex;
+	} *tags = malloc(cap * sizeof(*tags));
 	if (!tags) err(EX_OSERR, "malloc");
 
 	char *buf = NULL;
@@ -142,7 +136,7 @@ int main(int argc, char *argv[]) {
 	if (!file) err(EX_NOINPUT, "%s", name);
 
 	int num = 0;
-	if (pre) printf("<pre>");
+	printf(pre ? "<pre>" : index ? "<ul class=\"index\">\n" : "");
 	while (0 < getline(&buf, &bufCap, file) && ++num) {
 		struct Tag *tag = NULL;
 		for (size_t i = 0; i < len; ++i) {
@@ -155,7 +149,15 @@ int main(int argc, char *argv[]) {
 			tag->num = num;
 			break;
 		}
-		if (index) continue;
+		if (index) {
+			if (!tag) continue;
+			printf("<li><a class=\"tag\" href=\"#");
+			escape(true, tag->tag, strlen(tag->tag));
+			printf("\">");
+			escape(true, tag->tag, strlen(tag->tag));
+			printf("</a></li>\n");
+			continue;
+		}
 		if (pipe) {
 			ssize_t len = getline(&buf, &bufCap, stdin);
 			if (len < 0) {
@@ -187,18 +189,5 @@ int main(int argc, char *argv[]) {
 		printf("</a>");
 		if (match) escape(!pipe, match, strlen(match));
 	}
-	if (pre) printf("</pre>");
-
-	if (!index) return EX_OK;
-	qsort(tags, len, sizeof(*tags), compar);
-	printf("<ul class=\"index\">\n");
-	for (size_t i = 0; i < len; ++i) {
-		if (!tags[i].num) continue;
-		printf("<li><a class=\"tag\" href=\"#");
-		escape(true, tags[i].tag, strlen(tags[i].tag));
-		printf("\">");
-		escape(true, tags[i].tag, strlen(tags[i].tag));
-		printf("</a></li>\n");
-	}
-	printf("</ul>\n");
+	printf(pre ? "</pre>" : index ? "</ul>\n" : "");
 }
