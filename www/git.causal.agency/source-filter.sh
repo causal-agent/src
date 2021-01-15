@@ -7,12 +7,12 @@ htagml=/usr/local/libexec/htagml
 
 case "$1" in
 	(*.[chlmy])
-		src=$(mktemp -t source-filter)
-		tag=$(mktemp -t source-filter)
-		trap 'rm -f "${src}" "${tag}"' EXIT
-		cat >"${src}"
-		$ctags -w -f "${tag}" "${src}"
-		$hilex -n "$1" -f html "${src}" | $htagml -i -f "${tag}" "${src}"
+		tmp=$(mktemp -d -t source-filter)
+		trap 'rm -fr "${tmp}"' EXIT
+		cd "${tmp}"
+		cat >"$1"
+		$ctags -w "$1"
+		$hilex -f html "$1" | $htagml -i "$1"
 		;;
 	(*)
 		exec $hilex -t -n "$1" -f html
