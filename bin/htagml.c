@@ -51,7 +51,7 @@ static size_t escape(bool esc, const char *ptr, size_t len) {
 	return len;
 }
 
-static char *hstrstr(char *haystack, char *needle) {
+static char *hstrstr(const char *haystack, const char *needle) {
 	while (haystack) {
 		char *elem = strchr(haystack, '<');
 		char *match = strstr(haystack, needle);
@@ -169,25 +169,25 @@ int main(int argc, char *argv[]) {
 			continue;
 		}
 
-		char *text = tag->tag;
-		char *match = (pipe ? hstrstr(buf, text) : strstr(buf, text));
+		size_t mlen = strlen(tag->tag);
+		char *match = (pipe ? hstrstr : strstr)(buf, tag->tag);
 		if (!match && tag->tag[0] == 'M') {
-			text = "main";
-			match = (pipe ? hstrstr(buf, text) : strstr(buf, text));
+			mlen = 4;
+			match = (pipe ? hstrstr : strstr)(buf, "main");
 		}
-		if (match) escape(!pipe, buf, match - buf);
+		if (!match) {
+			mlen = strlen(buf) - 1;
+			match = buf;
+		}
+		escape(!pipe, buf, match - buf);
 		printf("<a class=\"tag\" id=\"");
 		escape(true, tag->tag, strlen(tag->tag));
 		printf("\" href=\"#");
 		escape(true, tag->tag, strlen(tag->tag));
 		printf("\">");
-		if (match) {
-			match += escape(!pipe, match, strlen(text));
-		} else {
-			escape(!pipe, buf, strlen(buf));
-		}
+		match += escape(!pipe, match, mlen);
 		printf("</a>");
-		if (match) escape(!pipe, match, strlen(match));
+		escape(!pipe, match, strlen(match));
 	}
 	printf(pre ? "</pre>" : index ? "</ul>\n" : "");
 }
