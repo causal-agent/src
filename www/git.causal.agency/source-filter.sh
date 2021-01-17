@@ -11,6 +11,7 @@ case "$1" in
 		trap 'rm -fr "${tmp}"' EXIT
 		cd "${tmp}"
 		cat >"$1"
+		touch tags
 		$ctags -w "$1"
 		$hilex -f html "$1" | $htagml -i "$1"
 		;;
