@@ -533,26 +533,20 @@ div#cgit table.diff {
 	width: 100%;
 }
 
-div#cgit table.diff td {
-	font-family: monospace;
-	white-space: pre;
-}
-
-div#cgit table.diff td div.head {
+div#cgit table.diff td span.head {
 	font-weight: bold;
-	margin-top: 1em;
 	color: black;
 }
 
-div#cgit table.diff td div.hunk {
+div#cgit table.diff td span.hunk {
 	color: #009;
 }
 
-div#cgit table.diff td div.add {
+div#cgit table.diff td span.add {
 	color: green;
 }
 
-div#cgit table.diff td div.del {
+div#cgit table.diff td span.del {
 	color: red;
 }
 
