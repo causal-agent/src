@@ -1,0 +1,155 @@
+.Dd January 17, 2021
+.Dt REUSING-TAGS 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm reusing tags
+.Nd beyond ctags
+.
+.Sh DESCRIPTION
+I've tried to start writing this post a couple times now
+and I keep getting bogged down in explanations,
+so I'm just going to tell you
+about some cool things I did
+and hope they make sense.
+.
+.Pp
+When I wrote my first syntax highlighter,
+I decided that function definitions
+should have anchor links,
+because line number anchor links
+are entirely useless
+if you expect the file to change at all.
+Since the syntax highlighter
+was somewhat deliberately just a big pile of regex,
+I hacked in more regex to try
+to identify function and type definitions.
+It wasn't elegant and it didn't always work well.
+It did work though,
+and I found the links very useful.
+.
+.Pp
+Recently I was thinking about
+the lexer generator
+.Xr lex 1
+and decided to
+rewrite the syntax highlighter
+using it.
+Really syntax highlighting
+is no different than lexical analysis.
+I ran into a problem though,
+trying to preserve my anchor link function,
+because really that should involve
+some amount of parsing.
+Trying to port my regex hacks to
+.Xr lex 1
+made the lexers way more complicated
+and less reliable,
+so I gave up on it for a while.
+.
+.Pp
+And then,
+probably in the shower,
+I realized I was approaching it
+completely from the wrong direction.
+There's already a tool that does what I want,
+and I already use it:
+.Xr ctags 1 .
+All I need to do is use its output
+to insert anchor links
+into my syntax highlighter output.
+In an afternoon I wrote
+.Xr htagml 1 ,
+which loads tag definitions for its input file,
+then scans through the input for where they match.
+It can either HTML-escape
+the input as it goes,
+or use already formatted HTML
+being piped into it from a syntax highlighter.
+.
+.Pp
+The result is three simple tools
+working together to accomplish
+what a more complex tool
+couldn't reliably achieve.
+I'm very pleased with it,
+and I've updated my site and cgit
+to use the new
+.Xr lex 1 Ns -based
+highlighter,
+.Xr ctags 1
+and
+.Xr htagml 1 .
+I'm currently missing a lexer for
+.Xr sh 1 ,
+but I plan to write it eventually.
+I also want to write a tool
+to generate tags for
+.Xr make 1 ,
+.Xr mdoc 7
+and perhaps
+.Xr sh 1 .
+The cool thing about generating more kinds of tags
+is that they'll not only improve
+the HTML output,
+they'll also be usable in my editor.
+.
+.Pp
+Speaking of generating different kinds of tags,
+I also wrote some scripts not too long ago
+for reading IETF RFCs offline.
+The plain text files are available to
+.Xr rsync 1 ,
+but they're hard to navigate on their own.
+By scanning the files for headings
+and generating tags,
+it allows jumping to sections using
+.Ic :ta
+or
+.Ic ^]
+in
+.Xr vi 1 .
+For
+.Xr nvim 1
+I also added an
+.Ic :RFC
+command to open an RFC by number
+and set up
+.Ic ^]
+to work optimally for them.
+.
+.Pp
+I'm still using
+.Xr vi 1
+for most of my editing,
+by the way.
+And of course
+.Xr ctags 1
+was made to work with it!
+Simple old tools
+are really doing it for me lately.
+.
+.Sh SEE ALSO
+.Bl -item -compact
+.It
+.Lk https://causal.agency/bin/htagml.html htagml
+.It
+.Lk https://causal.agency/bin/hilex.html hilex
+.It
+.Lk https://git.causal.agency/src/tree/doc/rfc rfctags
+.El
+.
+.Sh AUTHORS
+.An june Aq Mt june@causal.agency
+.
+.Sh ADDENDUM
+.Xr catgirl 1 ,
+.Xr pounce 1 ,
+.Xr litterbox 1
+and
+.Xr scooper 1
+all have new releases,
+if you're using any of them.
+Also, this space is now
+available over gopher,
+if that's your sort of thing.
