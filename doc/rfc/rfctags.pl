@@ -1,14 +1,11 @@
+#!/usr/bin/env perl
 use strict;
 use warnings;
 use open ':encoding(ISO-8859-1)';
 
-use IO::Uncompress::Gunzip qw($GunzipError);
-
 ($,, $\) = ("\t", "\n");
-print '!_TAG_FILE_SORTED', 2, $0; # Promise to pipe this through sort -f
-for my $rfc (<*.txt.gz>) {
-	my $handle = new IO::Uncompress::Gunzip $rfc
-		or die "${rfc}: ${GunzipError}";
+for my $rfc (@ARGV) {
+	open my $handle, '<', $rfc or die "${rfc}: $!";
 	while (<$handle>) {
 		chomp;
 		# Section headings

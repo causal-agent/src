@@ -1,5 +1,5 @@
 if !exists('g:rfc_path')
-	let g:rfc_path = expand('<sfile>:h:h:h:h') . '/rfc'
+	let g:rfc_path = fnamemodify(exepath('rfc'), ':h:h') . '/share/rfc'
 endif
 
 function! s:RFC(number)
@@ -8,7 +8,7 @@ function! s:RFC(number)
 	else
 		let number = '-index'
 	endif
-	let path = expand(g:rfc_path . '/rfc' . number . '.txt.gz')
+	let path = expand(g:rfc_path . '/rfc' . number . '.txt')
 	if filereadable(path)
 		execute 'silent' 'noswapfile' 'view' path
 	else
@@ -26,5 +26,5 @@ endfunction
 command! -bar -nargs=? RFC call s:RFC(<q-args>)
 augroup RFC
 	autocmd!
-	autocmd BufRead rfc*.txt.gz call s:BufRead()
+	autocmd BufRead rfc*.txt call s:BufRead()
 augroup END
