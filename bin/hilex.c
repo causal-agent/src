@@ -47,12 +47,13 @@ static const struct Lexer LexText = { yylex, &yyin, &yytext };
 static const struct {
 	const struct Lexer *lexer;
 	const char *name;
-	const char *pattern;
+	const char *namePatt;
+	const char *linePatt;
 } Lexers[] = {
-	{ &LexC, "c", "[.][chlmy]$" },
-	{ &LexMake, "make", "[.]mk$|^Makefile$" },
-	{ &LexMdoc, "mdoc", "[.][1-9]$" },
-	{ &LexText, "text", "[.]txt$" },
+	{ &LexC, "c", "[.][chlmy]$", NULL },
+	{ &LexMake, "make", "[.]mk$|^Makefile$", NULL },
+	{ &LexMdoc, "mdoc", "[.][1-9]$", "^[.]Dd" },
+	{ &LexText, "text", "[.]txt$", NULL },
 };
 
 static const struct Lexer *parseLexer(const char *name) {
@@ -62,17 +63,42 @@ static const struct Lexer *parseLexer(const char *name) {
 	errx(EX_USAGE, "unknown lexer %s", name);
 }
 
-static const struct Lexer *matchLexer(const char *name) {
+static void ungets(const char *str, FILE *file) {
+	size_t len = strlen(str);
+	for (size_t i = len-1; i < len; --i) {
+		int ch = ungetc(str[i], file);
+		if (ch == EOF) errx(EX_IOERR, "cannot push back string");
+	}
+}
+
+static const struct Lexer *matchLexer(const char *name, FILE *file) {
+	char buf[256];
 	regex_t regex;
 	for (size_t i = 0; i < ARRAY_LEN(Lexers); ++i) {
 		int error = regcomp(
-			&regex, Lexers[i].pattern, REG_EXTENDED | REG_NOSUB
+			&regex, Lexers[i].namePatt, REG_EXTENDED | REG_NOSUB
 		);
 		assert(!error);
 		error = regexec(&regex, name, 0, NULL, 0);
 		regfree(&regex);
 		if (!error) return Lexers[i].lexer;
 	}
+	char *line = fgets(buf, sizeof(buf), file);
+	if (!line) return NULL;
+	for (size_t i = 0; i < ARRAY_LEN(Lexers); ++i) {
+		if (!Lexers[i].linePatt) continue;
+		int error = regcomp(
+			&regex, Lexers[i].linePatt, REG_EXTENDED | REG_NOSUB
+		);
+		assert(!error);
+		error = regexec(&regex, line, 0, NULL, 0);
+		regfree(&regex);
+		if (!error) {
+			ungets(line, file);
+			return Lexers[i].lexer;
+		}
+	}
+	ungets(line, file);
 	return NULL;
 }
 
@@ -349,7 +375,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	if (!opts[Title]) opts[Title] = name;
-	if (!lexer) lexer = matchLexer(name);
+	if (!lexer) lexer = matchLexer(name, file);
 	if (!lexer && text) lexer = &LexText;
 	if (!lexer) errx(EX_USAGE, "cannot infer lexer for %s", name);
 

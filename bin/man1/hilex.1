@@ -1,4 +1,4 @@
-.Dd January 15, 2021
+.Dd January 18, 2021
 .Dt HILEX 1
 .Os
 .
@@ -40,7 +40,8 @@ Set the input lexer.
 See
 .Sx Input Lexers .
 The default input lexer is inferred from
-.Ar name .
+.Ar name
+or the first line of input.
 .
 .It Fl n Ar name
 Set the name used to infer the input lexer.
@@ -179,7 +180,9 @@ The
 language.
 Inferred for
 .Pa *.[1-9]
-files.
+files
+and files starting with
+.Dq .Dd .
 .
 .It Cm text
 Plain text.
