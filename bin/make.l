@@ -67,7 +67,7 @@ operator [:!]|::
 		BEGIN(pop = INITIAL);
 		return Normal;
 	}
-	"\\\n" { return String; }
+	"\\\n""\t"? { return String; }
 	[^\\$[:space:]]+|. { return String; }
 }
 
