@@ -29,6 +29,7 @@ BINS += hilex
 BINS += hnel
 BINS += htagml
 BINS += modem
+BINS += mtags
 BINS += nudge
 BINS += order
 BINS += pbd
@@ -132,9 +133,10 @@ html: ${HTMLS}
 
 ${HTMLS}: html.sh scheme hilex htagml htmltags
 
-htmltags: *.[chly]
+htmltags: *.[chly] mtags Makefile
 	rm -f $@
 	for f in *.[chly]; do ctags -aw -f $@ $$f; done
+	./mtags -a -f $@ Makefile
 
 .SUFFIXES: .html
 

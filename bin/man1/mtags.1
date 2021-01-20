@@ -1,0 +1,68 @@
+.Dd January 19, 2021
+.Dt MTAGS 1
+.Os
+.
+.Sh NAME
+.Nm mtags
+.Nd miscellaneous tags
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl a
+.Op Fl f Ar tagsfile
+.Ar
+.
+.Sh DESCRIPTION
+The
+.Nm
+utility
+makes a
+.Pa tags
+file for
+.Xr ex 1
+from the specified
+.Xr make 1
+and
+.Xr mdoc 7
+sources.
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl a
+Append to
+.Pa tags
+file.
+.It Fl f Ar tagsfile
+Place the tag descriptions
+in a file called
+.Ar tagsfile .
+The default behaviour is
+to place them in a file called
+.Pa tags .
+.El
+.
+.Pp
+Files whose names are
+.Pa Makefile
+or end in
+.Pa .mk
+are assumed to be
+.Xr make 1
+files.
+Files whose names end in
+.Pa .[1-9]
+are assumed to be
+.Xr mdoc 7
+files.
+.
+.Sh FILES
+.Bl -tag -width Ds
+.It Pa tags
+default output tags file
+.El
+.
+.Sh SEE ALSO
+.Xr ctags 1 ,
+.Xr ex 1 ,
+.Xr vi 1
