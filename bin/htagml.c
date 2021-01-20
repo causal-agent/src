@@ -182,6 +182,9 @@ int main(int argc, char *argv[]) {
 
 		size_t mlen = strlen(tag->tag);
 		char *match = (pipe ? hstrstr : strstr)(buf, tag->tag);
+		while (match > buf && isalnum(match[-1])) {
+			match = (pipe ? hstrstr : strstr)(&match[mlen], tag->tag);
+		}
 		if (!match && tag->tag[0] == 'M') {
 			mlen = 4;
 			match = (pipe ? hstrstr : strstr)(buf, "main");
