@@ -7,7 +7,7 @@ hilex=/usr/local/libexec/hilex
 htagml=/usr/local/libexec/htagml
 
 case "$1" in
-	(*.[chlmy]|Makefile|*.mk|*.[1-9])
+	(*.[chlmy]|Makefile|*.mk|*.[1-9]|.profile|.shrc|*.sh)
 		tmp=$(mktemp -d -t source-filter)
 		trap 'rm -fr "${tmp}"' EXIT
 		cd "${tmp}"
