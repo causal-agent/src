@@ -29,8 +29,8 @@ test_expect_success 'root commit contains diffstat' '
 '
 
 test_expect_success 'root commit contains diff' '
-	grep ">diff --git a/file-1 b/file-1<" tmp &&
-	grep "<div class=.add.>+1</div>" tmp
+	grep ">diff --git a/file-1 b/file-1" tmp &&
+	grep "<span class=.add.>+1</span>" tmp
 '
 
 test_done
