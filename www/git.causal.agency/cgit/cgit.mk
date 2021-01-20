@@ -27,32 +27,6 @@ ifdef NO_C99_FORMAT
 	CFLAGS += -DNO_C99_FORMAT
 endif
 
-ifdef NO_LUA
-	LUA_MESSAGE := linking without specified Lua support
-	CGIT_CFLAGS += -DNO_LUA
-else
-ifeq ($(LUA_PKGCONFIG),)
-	LUA_PKGCONFIG := $(shell for pc in luajit lua lua5.2 lua5.1; do \
-			$(PKG_CONFIG) --exists $$pc 2>/dev/null && echo $$pc && break; \
-			done)
-	LUA_MODE := autodetected
-else
-	LUA_MODE := specified
-endif
-ifneq ($(LUA_PKGCONFIG),)
-	LUA_MESSAGE := linking with $(LUA_MODE) $(LUA_PKGCONFIG)
-	LUA_LIBS := $(shell $(PKG_CONFIG) --libs $(LUA_PKGCONFIG) 2>/dev/null)
-	LUA_CFLAGS := $(shell $(PKG_CONFIG) --cflags $(LUA_PKGCONFIG) 2>/dev/null)
-	CGIT_LIBS += $(LUA_LIBS)
-	CGIT_CFLAGS += $(LUA_CFLAGS)
-else
-	LUA_MESSAGE := linking without autodetected Lua support
-	NO_LUA := YesPlease
-	CGIT_CFLAGS += -DNO_LUA
-endif
-
-endif
-
 # Add -ldl to linker flags on systems that commonly use GNU libc.
 ifneq (,$(filter $(uname_S),Linux GNU GNU/kFreeBSD))
 	CGIT_LIBS += -ldl
@@ -130,7 +104,6 @@ $(CGIT_OBJS): %.o: %.c GIT-CFLAGS $(CGIT_PREFIX)CGIT-CFLAGS $(missing_dep_dirs)
 	$(QUIET_CC)$(CC) -o $*.o -c $(dep_args) $(ALL_CFLAGS) $(EXTRA_CPPFLAGS) $(CGIT_CFLAGS) $<
 
 $(CGIT_PREFIX)cgit: $(CGIT_OBJS) GIT-LDFLAGS $(GITLIBS)
-	@echo 1>&1 "    * $(LUA_MESSAGE)"
 	$(QUIET_LINK)$(CC) $(ALL_CFLAGS) -o $@ $(ALL_LDFLAGS) $(filter %.o,$^) $(LIBS) $(CGIT_LIBS)
 
 CGIT_SP_OBJS := $(patsubst %.o,%.sp,$(CGIT_OBJS))

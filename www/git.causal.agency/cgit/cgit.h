@@ -385,7 +385,6 @@ extern void cgit_fprintf_filter(struct cgit_filter *filter, FILE *f, const char 
 extern void cgit_exec_filter_init(struct cgit_exec_filter *filter, char *cmd, char **argv);
 extern struct cgit_filter *cgit_new_filter(const char *cmd, filter_type filtertype);
 extern void cgit_cleanup_filters(void);
-extern void cgit_init_filters(void);
 
 extern void cgit_prepare_repo_env(struct cgit_repo * repo);
 

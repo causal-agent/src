@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# Please prefer the email-gravatar.lua using lua: as a prefix over this script. This
-# script is very slow, in comparison.
-#
 # This script may be used with the email-filter or repo.email-filter settings in cgitrc.
 #
 # The following environment variables can be used to retrieve the configuration

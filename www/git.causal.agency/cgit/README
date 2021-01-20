@@ -32,18 +32,6 @@ This will install `cgit.cgi` and `cgit.css` into `/var/www/htdocs/cgit`. You
 can configure this location (and a few other things) by providing a `cgit.conf`
 file (see the Makefile for details).
 
-If you'd like to compile without Lua support, you may use:
-
-    $ make NO_LUA=1
-
-And if you'd like to specify a Lua implementation, you may use:
-
-    $ make LUA_PKGCONFIG=lua5.1
-
-If this is not specified, the Lua implementation will be auto-detected,
-preferring LuaJIT if many are present. Acceptable values are generally "lua",
-"luajit", "lua5.1", and "lua5.2".
-
 
 Dependencies
 ------------
@@ -51,7 +39,6 @@ Dependencies
 * libzip
 * libcrypto (OpenSSL)
 * libssl (OpenSSL)
-* optional: luajit or lua, most reliably used when pkg-config is available
 
 Apache configuration
 --------------------

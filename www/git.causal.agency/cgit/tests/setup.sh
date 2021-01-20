@@ -60,12 +60,6 @@ fi
 
 FILTER_DIRECTORY=$(cd ../filters && pwd)
 
-if cgit --version | grep -F -q "[+] Lua scripting"; then
-	export CGIT_HAS_LUA=1
-else
-	export CGIT_HAS_LUA=0
-fi
-
 mkrepo() {
 	name=$1
 	count=$2
@@ -140,19 +134,6 @@ repo.email-filter=exec:$FILTER_DIRECTORY/dump.sh
 repo.source-filter=exec:$FILTER_DIRECTORY/dump.sh
 repo.readme=master:a+b
 EOF
-
-	if [ $CGIT_HAS_LUA -eq 1 ]; then
-		cat >>cgitrc <<EOF
-repo.url=filter-lua
-repo.path=$PWD/repos/filter/.git
-repo.desc=filtered repo
-repo.about-filter=lua:$FILTER_DIRECTORY/dump.lua
-repo.commit-filter=lua:$FILTER_DIRECTORY/dump.lua
-repo.email-filter=lua:$FILTER_DIRECTORY/dump.lua
-repo.source-filter=lua:$FILTER_DIRECTORY/dump.lua
-repo.readme=master:a+b
-EOF
-	fi
 }
 
 cgit_query()
