@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
 		|| regcomp(&makeFile, "(^|/)Makefile|[.]mk$", REG_EXTENDED | REG_NOSUB)
 		|| regcomp(
 			&makeLine,
-			"^([.][^$A-Z][^$[:space:]]*|[^.$][^$[:space:]]*):",
+			"^([.][^:$A-Z][^:$[:space:]]*|[^.:$][^:$[:space:]]*):",
 			REG_EXTENDED
 		)
 		|| regcomp(&mdocFile, "[.][1-9]$", REG_EXTENDED | REG_NOSUB)
