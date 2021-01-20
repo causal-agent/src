@@ -21,7 +21,7 @@
 #include "hilex.h"
 %}
 
-%s Assign
+%s Assign Preproc
 %x Variable Shell
 
 ident [._[:alnum:]]+
@@ -54,6 +54,30 @@ operator [:!]|::
 	return Keyword;
 }
 
+{target}/{operator} { return Ident; }
+
+^"."{ident} |
+^"-"?include {
+	BEGIN(pop = Preproc);
+	return Macro;
+}
+<Preproc>{
+	"\n" {
+		BEGIN(pop = INITIAL);
+		return Normal;
+	}
+	"\\\n""\t"? { return Normal; }
+
+	"\""[^""]*"\"" |
+	"<"[^>]*">" {
+		return String;
+	}
+
+	[!<>=]"="?|"||"|"&&" { return Operator; }
+	[0-9]+|"0x"[[:xdigit:]]+ { return Number; }
+	defined|make|empty|exists|target|commands|in { return Keyword; }
+}
+
 ^{ident}/[[:blank:]]*{assign} {
 	return Ident;
 }
@@ -67,11 +91,9 @@ operator [:!]|::
 		BEGIN(pop = INITIAL);
 		return Normal;
 	}
-	"\\\n""\t"? { return String; }
+	"\\\n""\t"? { return Escape; }
 	[^\\$[:space:]]+|. { return String; }
 }
-
-^"-"?include { return Macro; }
 
 {target} { return Ident; }
 

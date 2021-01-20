@@ -51,7 +51,7 @@ static const struct {
 	const char *linePatt;
 } Lexers[] = {
 	{ &LexC, "c", "[.][chlmy]$", NULL },
-	{ &LexMake, "make", "[.]mk$|^Makefile$", NULL },
+	{ &LexMake, "make", "[.](mk|am)$|^Makefile$", NULL },
 	{ &LexMdoc, "mdoc", "[.][1-9]$", "^[.]Dd" },
 	{ &LexText, "text", "[.]txt$", NULL },
 };
