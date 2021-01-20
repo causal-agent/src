@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <ctype.h>
 #include <err.h>
 #include <regex.h>
 #include <stdbool.h>
@@ -49,6 +50,16 @@ static size_t escape(bool esc, const char *ptr, size_t len) {
 		}
 	}
 	return len;
+}
+
+static void id(const char *tag) {
+	for (const char *ch = tag; *ch; ++ch) {
+		if (isalnum(*ch) || strchr("-._", *ch)) {
+			putchar(*ch);
+		} else {
+			putchar('_');
+		}
+	}
 }
 
 static char *hstrstr(const char *haystack, const char *needle) {
@@ -152,7 +163,7 @@ int main(int argc, char *argv[]) {
 		if (index) {
 			if (!tag) continue;
 			printf("<li><a class=\"tag\" href=\"#");
-			escape(true, tag->tag, strlen(tag->tag));
+			id(tag->tag);
 			printf("\">");
 			escape(true, tag->tag, strlen(tag->tag));
 			printf("</a></li>\n");
@@ -181,9 +192,9 @@ int main(int argc, char *argv[]) {
 		}
 		escape(!pipe, buf, match - buf);
 		printf("<a class=\"tag\" id=\"");
-		escape(true, tag->tag, strlen(tag->tag));
+		id(tag->tag);
 		printf("\" href=\"#");
-		escape(true, tag->tag, strlen(tag->tag));
+		id(tag->tag);
 		printf("\">");
 		match += escape(!pipe, match, mlen);
 		printf("</a>");
