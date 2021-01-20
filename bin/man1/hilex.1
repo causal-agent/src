@@ -65,7 +65,8 @@ input lexer if one cannot be inferred.
 .Bl -tag -width Ds
 .It Cm ansi
 Output ANSI terminal control sequences.
-If standard output is a terminal,
+If standard output is a terminal
+and standard input is not being read,
 output is piped to
 .Ev PAGER
 with

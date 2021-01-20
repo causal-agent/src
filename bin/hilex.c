@@ -121,10 +121,10 @@ enum Option {
 typedef void Header(const char *opts[]);
 typedef void Output(const char *opts[], enum Class class, const char *text);
 
-static bool tty;
+static bool pager;
 static void ansiHeader(const char *opts[]) {
 	(void)opts;
-	if (!(tty = isatty(STDOUT_FILENO))) return;
+	if (!pager) return;
 	const char *shell = getenv("SHELL");
 	const char *pager = getenv("PAGER");
 	if (!shell) shell = "/bin/sh";
@@ -152,7 +152,7 @@ static void ansiHeader(const char *opts[]) {
 
 static void ansiFooter(const char *opts[]) {
 	(void)opts;
-	if (!tty) return;
+	if (!pager) return;
 	int status;
 	fclose(stdout);
 	wait(&status);
@@ -365,6 +365,7 @@ int main(int argc, char *argv[]) {
 		path = argv[optind];
 		file = fopen(path, "r");
 		if (!file) err(EX_NOINPUT, "%s", path);
+		pager = isatty(STDOUT_FILENO);
 	}
 
 	if (!name) {
