@@ -24,6 +24,15 @@
 #include <sysexits.h>
 #include <unistd.h>
 
+static void escape(FILE *file, const char *str, size_t len) {
+	for (size_t i = 0; i < len; ++i) {
+		if (str[i] == '\\' || str[i] == '/') {
+			putc('\\', file);
+		}
+		putc(str[i], file);
+	}
+}
+
 int main(int argc, char *argv[]) {
 	bool append = false;
 	const char *path = "tags";
@@ -70,17 +79,14 @@ int main(int argc, char *argv[]) {
 		while (0 < getline(&buf, &cap, file)) {
 			regmatch_t match[2];
 			if (regexec(regex, buf, 2, match, 0)) continue;
-			int n = fprintf(
-				tags, "%.*s\t%s\t/^%.*s/\n",
+			fprintf(
+				tags, "%.*s\t%s\t/^",
 				(int)(match[1].rm_eo - match[1].rm_so), &buf[match[1].rm_so],
-				argv[i],
-				(int)(match[0].rm_eo - match[0].rm_so), &buf[match[0].rm_so]
+				argv[i]
 			);
-			if (n < 0) err(EX_IOERR, "%s", path);
+			escape(tags, buf, match[0].rm_eo);
+			fprintf(tags, "/\n");
 		}
 		fclose(file);
 	}
-
-	error = fclose(tags);
-	if (error) err(EX_IOERR, "%s", path);
 }
