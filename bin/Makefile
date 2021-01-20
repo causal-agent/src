@@ -83,6 +83,7 @@ OBJS.hilex += c11.o
 OBJS.hilex += hilex.o
 OBJS.hilex += make.o
 OBJS.hilex += mdoc.o
+OBJS.hilex += sh.o
 
 hilex: ${OBJS.hilex}
 	${CC} ${LDFLAGS} ${OBJS.$@} ${LDLIBS.$@} -o $@

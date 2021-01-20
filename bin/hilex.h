@@ -47,3 +47,4 @@ struct Lexer {
 extern const struct Lexer LexC;
 extern const struct Lexer LexMake;
 extern const struct Lexer LexMdoc;
+extern const struct Lexer LexSh;

@@ -1,4 +1,4 @@
-.Dd January 18, 2021
+.Dd January 20, 2021
 .Dt HILEX 1
 .Os
 .
@@ -167,9 +167,8 @@ Inferred for
 files.
 .
 .It Cm make
-The BSD
-.Xr make 1
-language.
+BSD
+.Xr make 1 .
 Inferred for
 .Pa Makefile ,
 .Pa *.mk
@@ -186,6 +185,21 @@ Inferred for
 files
 and files starting with
 .Dq .Dd .
+.
+.It Cm sh
+POSIX
+.Xr sh 1 .
+Since lexical analysis of
+the shell command language
+is effectively impossible,
+this is best-effort only.
+Inferred for
+.Pa *.sh ,
+.Pa .profile ,
+.Pa .shrc
+files
+and files starting with
+.Dq #!/bin/sh .
 .
 .It Cm text
 Plain text.
