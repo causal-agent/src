@@ -1,4 +1,4 @@
-.Dd January 19, 2021
+.Dd January 20, 2021
 .Dt MTAGS 1
 .Os
 .
@@ -21,9 +21,9 @@ makes a
 file for
 .Xr ex 1
 from the specified
-.Xr make 1
-and
+.Xr make 1 ,
 .Xr mdoc 7
+.Xr sh 1
 sources.
 .
 .Pp
@@ -54,6 +54,14 @@ Files whose names end in
 .Pa .[1-9]
 are assumed to be
 .Xr mdoc 7
+files.
+Files whose names are
+.Pa .profile ,
+.Pa .shrc
+or end in
+.Pa .sh
+are assumed to be
+.Xr sh 1
 files.
 .
 .Sh FILES

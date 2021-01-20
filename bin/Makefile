@@ -134,10 +134,10 @@ html: ${HTMLS}
 
 ${HTMLS}: html.sh scheme hilex htagml htmltags
 
-htmltags: *.[chly] mtags Makefile
+htmltags: *.[chly] mtags Makefile *.sh
 	rm -f $@
 	for f in *.[chly]; do ctags -aw -f $@ $$f; done
-	./mtags -a -f $@ Makefile
+	./mtags -a -f $@ Makefile *.sh
 
 .SUFFIXES: .html
 

@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
 
 	regex_t makeFile, makeLine;
 	regex_t mdocFile, mdocLine;
+	regex_t shFile, shLine;
 	int error = 0
 		|| regcomp(&makeFile, "(^|/)Makefile|[.]mk$", REG_EXTENDED | REG_NOSUB)
 		|| regcomp(
@@ -57,7 +58,11 @@ int main(int argc, char *argv[]) {
 			REG_EXTENDED
 		)
 		|| regcomp(&mdocFile, "[.][1-9]$", REG_EXTENDED | REG_NOSUB)
-		|| regcomp(&mdocLine, "^[.]S[hs] ([^\t\n]+)", REG_EXTENDED);
+		|| regcomp(&mdocLine, "^[.]S[hs] ([^\t\n]+)", REG_EXTENDED)
+		|| regcomp(
+			&shFile, "(^|/)[.](profile|shrc)|[.]sh$", REG_EXTENDED | REG_NOSUB
+		)
+		|| regcomp(&shLine, "^([_[:alnum:]]+)[[:blank:]]*[(][)]", REG_EXTENDED);
 	assert(!error);
 
 	size_t cap = 0;
@@ -68,6 +73,8 @@ int main(int argc, char *argv[]) {
 			regex = &makeLine;
 		} else if (!regexec(&mdocFile, argv[i], 0, NULL, 0)) {
 			regex = &mdocLine;
+		} else if (!regexec(&shFile, argv[i], 0, NULL, 0)) {
+			regex = &shLine;
 		} else {
 			warnx("skipping unknown file type %s", argv[i]);
 			continue;
