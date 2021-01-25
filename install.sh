@@ -12,7 +12,7 @@ OpenBSD() {
 }
 
 Linux() {
-	sudo pacman -Sy --needed bc ctags gdb openbssh $packages
+	sudo pacman -Sy --needed bc ctags gdb openssh vi $packages
 }
 
 installMacPorts() {
@@ -31,7 +31,7 @@ installMacPorts() {
 Darwin() {
 	[ -d /opt/local ] || installMacPorts
 	sudo /opt/local/bin/port selfupdate
-	sudo /opt/local/bin/port -N install git mandoc pkgconfig $packages
+	sudo /opt/local/bin/port -N install git mandoc nvi pkgconfig $packages
 	sudo mkdir -p /opt/local/etc/select/man
 	printf 'bin/man\nshare/man/man1/man.1\nshare/man/man1/man.1.gz\n' \
 		| sudo tee /opt/local/etc/select/man/base >/dev/null
