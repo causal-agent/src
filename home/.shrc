@@ -2,7 +2,7 @@ set -o noclobber -o nounset -o vi
 
 CDPATH=:~
 
-alias vim=$EDITOR
+alias vi=$EDITOR vim=$EDITOR
 alias ls='LC_COLLATE=C ls -p'
 alias ll='ls -hl'
 alias bc='bc -l'
@@ -14,7 +14,7 @@ alias gc='git commit' gca='gc --amend' gt='git tag'
 alias gp='git push' gu='git pull' gf='git fetch' gr='git rebase'
 alias rand='openssl rand -base64 33'
 alias private='eval "$(gpg -d ~/.private)"'
-type doas >/dev/null 2>&1 && alias sudo=doas
+type doas >/dev/null && alias sudo=doas
 
 cd() {
 	local path
