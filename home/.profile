@@ -8,7 +8,7 @@ path /usr/games
 
 export EDITOR=vi
 type nvi >/dev/null && EDITOR=nvi
-export EXINIT='set ai ic sm sw=4 ts=4 | map gg 1G'
+export EXINIT='set ai ic sm sw=4 ts=4 para=BlBdPpIt sect=ShSs | map gg 1G'
 export PAGER=less
 export LESS=FRXix4
 export CLICOLOR=1
