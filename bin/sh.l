@@ -81,6 +81,10 @@ reserved [!{}]|else|do|elif|for|done|fi|then|until|while|if|case|esac
 	return Subst;
 }
 
+"\n" {
+	BEGIN(push(First));
+	return Normal;
+}
 [&();|]|"&&"|";;"|"||" {
 	BEGIN(push(First));
 	return Operator;
@@ -89,7 +93,6 @@ reserved [!{}]|else|do|elif|for|done|fi|then|until|while|if|case|esac
 	return Operator;
 }
 
-^{reserved} { return Keyword; }
 <First>{
 	[[:blank:]]+ { return Normal; }
 	{reserved} {
