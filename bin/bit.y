@@ -88,7 +88,7 @@ expr:
 
 static int lexInt(uint64_t base) {
 	yylval = 0;
-	for (char ch; EOF != (ch = getchar());) {
+	for (int ch; EOF != (ch = getchar());) {
 		uint64_t digit = base;
 		if (ch == '_') {
 			continue;
@@ -108,7 +108,7 @@ static int lexInt(uint64_t base) {
 }
 
 static int yylex(void) {
-	char ch;
+	int ch;
 	while (isblank(ch = getchar()));
 	if (ch == '\'') {
 		yylval = 0;
