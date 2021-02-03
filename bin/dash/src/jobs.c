@@ -1205,12 +1205,12 @@ stoppedjobs(void)
 	int retval;
 
 	retval = 0;
-	if (job_warning)
+	if (job_warning > 1)
 		goto out;
 	jp = curjob;
 	if (jp && jp->state == JOBSTOPPED) {
 		out2str("You have stopped jobs.\n");
-		job_warning = 2;
+		job_warning++;
 		retval++;
 	}
 
