@@ -1,5 +1,6 @@
 root-title=causal agency
 root-desc=“I think some people from the Gentoo project are behind this.”
+logo=
 
 clone-url=https://$HTTP_HOST/$CGIT_REPO_URL
 snapshots=tar.gz zip

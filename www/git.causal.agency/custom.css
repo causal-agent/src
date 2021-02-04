@@ -14,9 +14,6 @@ div#cgit {
 	tab-size: 4;
 }
 
-div#cgit table#header td.logo {
-	display: none;
-}
 div#cgit table#header td.sub {
 	border-top: none;
 }
