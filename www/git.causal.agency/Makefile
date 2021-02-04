@@ -3,7 +3,7 @@ WWW = /usr/local/www/cgit
 LIBEXEC = /usr/local/libexec
 
 BIN = ../../bin
-BINS = about-filter source-filter hilex htagml mtags
+BINS = about-filter source-filter owner-filter hilex htagml mtags
 
 all: ${BINS}
 

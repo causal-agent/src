@@ -17,6 +17,9 @@ div#cgit {
 div#cgit table#header td.sub {
 	border-top: none;
 }
+div#cgit table#header td.sub.right {
+	padding-right: 1em;
+}
 div#cgit table.tabs {
 	border-bottom: none;
 }

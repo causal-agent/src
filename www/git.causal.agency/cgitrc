@@ -17,6 +17,7 @@ css=/custom.css
 email-filter=/usr/local/libexec/cgit-email
 about-filter=/usr/local/libexec/about-filter
 source-filter=/usr/local/libexec/source-filter
+owner-filter=/usr/local/libexec/owner-filter
 
 readme=:README.7
 readme=:README
