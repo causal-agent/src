@@ -1,4 +1,7 @@
 Xft.dpi: 144
+*background: rgb:14/13/0E
+*foreground: rgb:B7/A9/80
+*borderColor: rgb:99/8D/6B
 
 XTerm*utf8: true
 XTerm*metaSendsEscape: true
@@ -6,6 +9,7 @@ XTerm*alternateScroll: true
 XTerm*bellIsUrgent: true
 
 XTerm*faceName: Luxi Mono:size=12:antialias=true:hinting=false
+XTerm*internalBorder: 6
 XTerm*colorBDMode: true
 XTerm*scrollBar: false
 XTerm*pointerMode: 2
@@ -26,7 +30,5 @@ XTerm*color12: rgb:4C/7B/7F
 XTerm*color13: rgb:99/5B/6B
 XTerm*color14: rgb:6B/99/6B
 XTerm*color15: rgb:CC/BC/8E
-XTerm*background: rgb:14/13/0E
-XTerm*foreground: rgb:B7/A9/80
 XTerm*colorBD: rgb:CC/BC/8E
 XTerm*cursorColor: rgb:7A/71/55
