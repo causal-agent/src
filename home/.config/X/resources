@@ -3,6 +3,7 @@ Xft.dpi: 144
 XTerm*utf8: true
 XTerm*metaSendsEscape: true
 XTerm*alternateScroll: true
+XTerm*bellIsUrgent: true
 
 XTerm*faceName: Luxi Mono:size=12:antialias=true:hinting=false
 XTerm*colorBDMode: true
