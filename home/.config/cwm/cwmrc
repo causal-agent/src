@@ -1,3 +1,63 @@
+sticky yes
+snapdist 10
+moveamount 10
+
+unbind-key all
 bind-key 4-n terminal
-bind-key 4-space menu-exec
+bind-key 4-Delete lock
+bind-key 4-h window-hide
+bind-key 4-Down window-lower
+bind-key 4-Up window-raise
+bind-key 4-slash menu-window
+bind-key 4-Tab group-cycle
+bind-key 4S-Tab group-rcycle
+bind-key 4-grave window-cycle-ingroup
+bind-key 4S-grave window-rcycle-ingroup
 bind-key 4-w window-close
+bind-key 4-exclam group-only-1
+bind-key 4-at group-only-2
+bind-key 4-numbersign group-only-3
+bind-key 4-dollar group-only-4
+bind-key 4-percent group-only-5
+bind-key 4-asciicircum group-only-6
+bind-key 4-ampersand group-only-7
+bind-key 4-asterisk group-only-8
+bind-key 4-parenleft group-only-9
+bind-key 4S-exclam window-movetogroup-1
+bind-key 4S-at window-movetogroup-2
+bind-key 4S-numbersign window-movetogroup-3
+bind-key 4S-dollar window-movetogroup-4
+bind-key 4S-percent window-movetogroup-5
+bind-key 4S-asciicircum window-movetogroup-6
+bind-key 4S-ampersand window-movetogroup-7
+bind-key 4S-asterisk window-movetogroup-8
+bind-key 4S-parenleft window-movetogroup-9
+bind-key 4-f window-fullscreen
+bind-key 4-m window-maximize
+bind-key 4-equal window-vmaximize
+bind-key 4S-equal window-hmaximize
+bind-key 4-h window-move-left
+bind-key 4-j window-move-down
+bind-key 4-k window-move-up
+bind-key 4-l window-move-right
+bind-key 4S-h window-move-left-big
+bind-key 4S-j window-move-down-big
+bind-key 4S-k window-move-up-big
+bind-key 4S-l window-move-right-big
+bind-key C4-h window-resize-left
+bind-key C4-j window-resize-down
+bind-key C4-k window-resize-up
+bind-key C4-l window-resize-right
+bind-key C4S-h window-resize-left-big
+bind-key C4S-j window-resize-down-big
+bind-key C4S-k window-resize-up-big
+bind-key C4S-l window-resize-right-big
+bind-key 4-space menu-exec
+bind-key 4S-r restart
+bind-key 4S-q quit
+
+unbind-mouse all
+bind-mouse 4-1 window-move
+bind-mouse 4S-1 window-resize
+
+fontname "Luxi Mono:size=11:antialias=true:hinting=false"
