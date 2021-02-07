@@ -60,4 +60,4 @@ unbind-mouse all
 bind-mouse 4-1 window-move
 bind-mouse 4S-1 window-resize
 
-fontname "Luxi Mono:size=11:antialias=true:hinting=false"
+fontname "Luxi Mono:size=12:antialias=true:hinting=false"

@@ -4,7 +4,7 @@ XTerm*utf8: true
 XTerm*metaSendsEscape: true
 XTerm*alternateScroll: true
 
-XTerm*faceName: Luxi Mono:size=11:antialias=true:hinting=false
+XTerm*faceName: Luxi Mono:size=12:antialias=true:hinting=false
 XTerm*colorBDMode: true
 XTerm*scrollBar: false
 XTerm*pointerMode: 2
