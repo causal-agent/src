@@ -1,0 +1,3 @@
+bind-key 4-n terminal
+bind-key 4-space menu-exec
+bind-key 4-w window-close

@@ -1,0 +1,24 @@
+Xft.dpi: 144
+XTerm*faceName: Luxi Mono:size=11:antialias=true:hinting=false
+
+XTerm*color0: rgb:16/15/10
+XTerm*color1: rgb:A3/28/10
+XTerm*color2: rgb:72/7A/18
+XTerm*color3: rgb:A3/77/20
+XTerm*color4: rgb:3D/62/66
+XTerm*color5: rgb:7A/49/55
+XTerm*color6: rgb:55/7A/55
+XTerm*color7: rgb:99/8D/6B
+XTerm*color8: rgb:4C/46/35
+XTerm*color9: rgb:CC/32/14
+XTerm*color10: rgb:8E/99/1E
+XTerm*color11: rgb:CC/95/28
+XTerm*color12: rgb:4C/7B/7F
+XTerm*color13: rgb:99/5B/6B
+XTerm*color14: rgb:6B/99/6B
+XTerm*color15: rgb:CC/BC/8E
+XTerm*background: rgb:14/13/0E
+XTerm*foreground: rgb:B7/A9/80
+XTerm*colorBD: rgb:CC/BC/8E
+XTerm*highlightColor: rgb:A3/41/10
+XTerm*cursorColor: rgb:7A/71/55
