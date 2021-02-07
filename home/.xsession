@@ -1,5 +1,5 @@
 . ~/.profile
-xset r rate 175
+xset r rate 175 m 4
 xmodmap ~/.config/X/modmap
 xrdb -load ~/.config/X/resources
 xsetroot -bitmap /usr/X11R6/include/X11/bitmaps/xsnow \
