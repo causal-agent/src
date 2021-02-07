@@ -56,6 +56,9 @@ bind-key 4-space menu-exec
 bind-key 4S-r restart
 bind-key 4S-q quit
 
+bind-key F1 "xbacklight -steps 1 -10"
+bind-key F2 "xbacklight -steps 1 +10"
+
 unbind-mouse all
 bind-mouse 4-1 window-move
 bind-mouse 4S-1 window-resize
