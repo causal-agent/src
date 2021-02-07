@@ -156,6 +156,27 @@ static void outputEnum(const struct HSV *hsv, uint len) {
 	printf("};\n");
 }
 
+#define FORMAT_X "rgb:%02hhX/%02hhX/%02hhX"
+
+static const char *Resources[SchemeLen] = {
+	[Background] = "background",
+	[Foreground] = "foreground",
+	[Bold] = "colorBD",
+	[Selection] = "highlightColor",
+	[Cursor] = "cursorColor",
+};
+
+static void outputXTerm(const struct HSV *hsv, uint len) {
+	for (uint i = 0; i < len; ++i) {
+		struct RGB rgb = convert(hsv[i]);
+		if (Resources[i]) {
+			printf("XTerm*%s: " FORMAT_X "\n", Resources[i], rgb.r, rgb.g, rgb.b);
+		} else {
+			printf("XTerm*color%u: " FORMAT_X "\n", i, rgb.r, rgb.g, rgb.b);
+		}
+	}
+}
+
 static const char *Mintty[SchemeLen] = {
 	"Black", "Red", "Green", "Yellow",
 	"Blue", "Magenta", "Cyan", "White",
@@ -230,8 +251,9 @@ int main(int argc, char *argv[]) {
 	uint len = 16;
 
 	int opt;
-	while (0 < (opt = getopt(argc, argv, "acghilmp:stx"))) {
+	while (0 < (opt = getopt(argc, argv, "Xacghilmp:stx"))) {
 		switch (opt) {
+			break; case 'X': output = outputXTerm;
 			break; case 'a': len = 16;
 			break; case 'c': output = outputEnum;
 			break; case 'g': output = outputPNG;

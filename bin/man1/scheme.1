@@ -1,4 +1,4 @@
-.Dd July 6, 2019
+.Dd February  6, 2021
 .Dt SCHEME 1
 .Os
 .
@@ -8,7 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl acghilmstx
+.Op Fl Xacghilmstx
 .Op Fl p Ar n
 .
 .Sh DESCRIPTION
@@ -19,6 +19,9 @@ and outputs it in a number of formats.
 .Pp
 The arguments are as follows:
 .Bl -tag -width Ds
+.It Fl X
+Output Xresources for
+.Xr xterm 1 .
 .It Fl a
 Generate the 16 ANSI colors.
 This is the default.
