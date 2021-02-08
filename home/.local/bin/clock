@@ -2,7 +2,9 @@
 set -eu
 
 tput civis
+sleep=$(( 60 - $(date +'%S') ))
 while :; do
 	printf '%3s%% %s' "$(apm -l)" "$(date +'%a %H:%M')"
-	sleep 10
+	sleep $sleep
+	sleep=60
 done
