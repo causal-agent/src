@@ -11,6 +11,10 @@ XTerm*metaSendsEscape: true
 XTerm*alternateScroll: true
 XTerm*bellIsUrgent: true
 
+XTerm*VT100*translations: #override \n\
+	Super <Key>C: copy-selection(CLIPBOARD) \n\
+	Super <Key>V: insert-selection(CLIPBOARD)
+
 XTerm*faceName: Luxi Mono:size=12:antialias=true:hinting=false
 XTerm*internalBorder: 6
 XTerm*colorBDMode: true
