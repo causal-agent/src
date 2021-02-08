@@ -58,8 +58,8 @@ bind-key 4-space menu-exec
 bind-key 4S-r restart
 bind-key 4S-q quit
 
-bind-key F1 "xbacklight -steps 1 -10"
-bind-key F2 "xbacklight -steps 1 +10"
+bind-key F1 "xbacklight -steps 1 -5"
+bind-key F2 "xbacklight -steps 1 +5"
 
 unbind-mouse all
 bind-mouse 4-1 window-move
