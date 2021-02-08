@@ -2,6 +2,9 @@ sticky yes
 snapdist 10
 moveamount 10
 
+ignore clock
+autogroup 0 clock,XTerm
+
 unbind-key all
 bind-key 4-n terminal
 bind-key 4-Delete lock

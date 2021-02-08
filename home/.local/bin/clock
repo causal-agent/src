@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+tput civis
+while :; do
+	printf '%3s%% %s' "$(apm -l)" "$(date +'%a %H:%M')"
+	sleep 10
+done
