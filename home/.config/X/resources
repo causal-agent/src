@@ -2,9 +2,9 @@ Xft.dpi: 144
 Xcursor.size: 64
 Xcursor.theme: dmz-aa
 
-*background: rgb:14/13/0E
-*foreground: rgb:B7/A9/80
-*borderColor: rgb:99/8D/6B
+*Background: rgb:14/13/0E
+*Foreground: rgb:B7/A9/80
+*BorderColor: rgb:99/8D/6B
 
 XTerm*utf8: true
 XTerm*metaSendsEscape: true
