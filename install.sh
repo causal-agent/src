@@ -1,6 +1,14 @@
 #!/bin/sh
 set -eu
 
+X=
+while getopts 'X' opt; do
+	case "$opt" in
+		(X) X=1;;
+		(?) exit 1;;
+	esac
+done
+
 packages='curl htop neovim sl the_silver_searcher tree'
 
 FreeBSD() {
@@ -9,6 +17,7 @@ FreeBSD() {
 
 OpenBSD() {
 	doas pkg_add $packages
+	test $X && doas pkg_add imv scrot xcursor-dmz
 }
 
 Linux() {
