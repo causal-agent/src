@@ -9,6 +9,7 @@ Xcursor.theme: dmz-aa
 XTerm*utf8: true
 XTerm*metaSendsEscape: true
 XTerm*alternateScroll: true
+XTerm*allowMouseOps: false
 XTerm*bellIsUrgent: true
 
 XTerm*VT100*translations: #override \n\
