@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+if [ -n "${SSH_CLIENT:-}" ]; then
+	exec pbd -o "$@"
+fi
+
+case "$1" in
+	(*.gif|*.jpeg|*.jpg|*.png)
+		curl -LSs "$1" | imv -
+		;;
+	(*.txt)
+		exec xterm -hold -e sh -c 'curl -LSs "$1" | $PAGER' - "$1"
+		;;
+	(*)
+		printf '%s' "$1" | pbcopy
+		;;
+esac

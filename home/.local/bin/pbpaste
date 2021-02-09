@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+if [ -n "${SSH_CLIENT:-}" ]; then
+	exec pbd -p
+elif [ -n "${DISPLAY:-}" ]; then
+	exec xsel -bo
+else
+	echo "${0}: don't know what to do" >&2
+	exit 1
+fi
