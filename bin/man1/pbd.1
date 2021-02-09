@@ -1,20 +1,13 @@
-.Dd September 7, 2018
+.Dd February  9, 2021
 .Dt PBD 1
 .Os
 .
 .Sh NAME
-.Nm pbd ,
-.Nm pbcopy ,
-.Nm pbpaste ,
-.Nm open
+.Nm pbd
 .Nd macOS pasteboard daemon
 .
 .Sh SYNOPSIS
-.Nm
-.Nm pbcopy
-.Nm pbpaste
-.Nm open
-.Ar
+.Nm Op Fl s | c | p | o Ar url
 .
 .Sh DESCRIPTION
 .Nm
@@ -30,12 +23,7 @@ sent over TCP port 7062.
 .Pp
 The socket can be forwarded through
 .Xr ssh 1
-and the stub implementations of
-.Nm pbcopy ,
-.Nm pbpaste
-and
-.Nm open
-can be used remotely
+and the flags can be used remotely
 to access the local pasteboard
 and open URLs.
 .
@@ -44,11 +32,30 @@ Forwarding can be configured with:
 .Pp
 .Dl RemoteForward 7062 127.0.0.1:7062
 .
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl c
+Behave as
+.Xr pbcopy 1 .
+.It Fl o Ar url
+Behave as
+.Xr open 1 .
+.It Fl p
+Behave as
+.Xr pbpaste 1 .
+.It Fl s
+Run the server.
+This is the default.
+.El
+.Pp
+ACAB.
+.
 .Sh EXAMPLES
 .Bd -literal -offset indent
 pbd &
 ssh -R 7062:127.0.0.1:7062 tux.local
-pbpaste
+pbd -p
 .Ed
 .
 .Sh SEE ALSO

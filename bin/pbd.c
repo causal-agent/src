@@ -138,15 +138,14 @@ static int open1(const char *url) {
 }
 
 int main(int argc, char *argv[]) {
-	(void)argc;
-	if (strchr(argv[0], '/')) {
-		argv[0] = strrchr(argv[0], '/') + 1;
+	for (int opt; 0 < (opt = getopt(argc, argv, "co:ps"));) {
+		switch (opt) {
+			case 'c': return pbcopy();
+			case 'o': return open1(optarg);
+			case 'p': return pbpaste();
+			case 's': return pbd();
+			default:  return EX_USAGE;
+		}
 	}
-	switch (argv[0][0] && argv[0][1] ? argv[0][2] : 0) {
-		case 'd': return pbd();
-		case 'c': return pbcopy();
-		case 'p': return pbpaste();
-		case 'e': return open1(argv[1]);
-		default:  return EX_USAGE;
-	}
+	return pbd();
 }

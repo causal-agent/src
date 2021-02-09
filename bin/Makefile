@@ -43,10 +43,6 @@ BINS += up
 BINS += when
 BINS += xx
 
-LINKS += open
-LINKS += pbcopy
-LINKS += pbpaste
-
 BINS_BSD += ever
 BINS_LINUX += bri
 BINS_LINUX += fbatt
@@ -57,7 +53,7 @@ BINS_TLS += relay
 BINS_ALL = ${BINS} ${BINS_BSD} ${BINS_LINUX} ${BINS_TLS}
 MANS_ALL = ${BINS_ALL:%=man1/%.1}
 
-any: meta ${BINS} ${LINKS}
+any: meta ${BINS}
 
 bsd: meta ${BINS_BSD}
 
@@ -90,9 +86,6 @@ hilex: ${OBJS.hilex}
 
 ${OBJS.hilex}: hilex.h
 
-open pbcopy pbpaste: pbd
-	ln -f pbd $@
-
 fbatt.o fbclock.o: scheme.h
 
 psf2png.o scheme.o: png.h
@@ -103,7 +96,7 @@ scheme.h: scheme
 tags: *.[chly]
 	ctags -w *.[chly]
 
-IGNORE = *.o *.html ${BINS_ALL} ${LINKS} scheme.h tags htmltags
+IGNORE = *.o *.html ${BINS_ALL} scheme.h tags htmltags
 
 .gitignore: Makefile
 	echo config.mk '${IGNORE}' | tr ' ' '\n' | sort > .gitignore
@@ -119,12 +112,10 @@ link:
 	install -d ${PREFIX}/bin ${MANDIR}/man1
 	ln -fs ${BINS_ALL:%=${PWD}/%} ${PREFIX}/bin
 	ln -fs ${MANS_ALL:%=${PWD}/%} ${MANDIR}/man1
-	ln -fs ${LINKS:%=${PWD}/%} ${PREFIX}/bin
 
 unlink:
 	rm -f ${BINS_ALL:%=${PREFIX}/bin/%}
 	rm -f ${MANS_ALL:%=${MANDIR}/%}
-	rm -f ${LINKS:%=${PREFIX}/bin/%}
 
 HTMLS = index.html ${BINS_ALL:=.html} png.html
 WEBROOT = /usr/local/www/causal.agency
