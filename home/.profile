@@ -4,7 +4,8 @@ for prefix in '' /usr/local /opt/local /usr ~/.local; do
 	path "${prefix}/sbin"
 	path "${prefix}/bin"
 done
-path /usr/X11R6/bin /usr/games
+path /usr/X11R6/bin
+path /usr/games
 
 export EDITOR=vi
 type nvi >/dev/null && EDITOR=nvi
