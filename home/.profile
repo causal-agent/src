@@ -6,6 +6,7 @@ for prefix in '' /usr/local /opt/local /usr ~/.local; do
 done
 path /usr/X11R6/bin
 path /usr/games
+export MANPATH=:~/.local/share/man
 
 export EDITOR=vi
 type nvi >/dev/null && EDITOR=nvi
