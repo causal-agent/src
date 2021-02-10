@@ -1,4 +1,7 @@
 Xft.dpi: 144
+Xft.antialias: true
+Xft.hinting: false
+
 Xcursor.size: 64
 Xcursor.theme: dmz-aa
 
@@ -16,7 +19,7 @@ XTerm*VT100*translations: #override \n\
 	Super <Key>C: copy-selection(CLIPBOARD) \n\
 	Super <Key>V: insert-selection(CLIPBOARD)
 
-XTerm*faceName: Luxi Mono:size=12:antialias=true:hinting=false
+XTerm*faceName: Luxi Mono:size=12
 XTerm*internalBorder: 6
 XTerm*colorBDMode: true
 XTerm*scrollBar: false
