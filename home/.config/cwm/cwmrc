@@ -60,6 +60,9 @@ bind-key 4S-q quit
 
 bind-key F1 "xbacklight -steps 1 -5"
 bind-key F2 "xbacklight -steps 1 +5"
+bind-key F10 "sndioctl output.mute=!"
+bind-key F11 "sndioctl output.level=-0.05"
+bind-key F12 "sndioctl output.level=+0.05"
 
 unbind-mouse all
 bind-mouse 4-1 window-move
