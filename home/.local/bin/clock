@@ -7,7 +7,9 @@ while :; do
 	if [ $(apm -a) -eq 1 ]; then
 		printf '%3s%%' "$(apm -l)"
 	else
+		test $(apm -b) -eq 2 && tput setaf 1 bold
 		printf '%3.3sm' "$(apm -m)"
+		tput sgr0
 	fi
 	printf ' %s\r' "$(date +'%a %H:%M')"
 	sleep $sleep
