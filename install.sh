@@ -17,7 +17,9 @@ FreeBSD() {
 
 OpenBSD() {
 	doas pkg_add $packages
-	test $X && doas pkg_add imv scrot w3m-- xcursor-dmz xsel
+	if test $X; then
+		doas pkg_add imv scrot sct w3m-- xcursor-dmz xsel
+	fi
 }
 
 Linux() {
