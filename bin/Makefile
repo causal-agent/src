@@ -51,6 +51,11 @@ BINS_LINUX += psfed
 BINS_TLS += relay
 
 BINS_ALL = ${BINS} ${BINS_BSD} ${BINS_LINUX} ${BINS_TLS}
+
+MANS = ${BINS:%=man1/%.1}
+MANS_BSD = ${BINS_BSD:%=man1/%.1}
+MANS_LINUX = ${BINS_LINUX:%=man1/%.1}
+MANS_TLS = ${BINS_TLS:%=man1/%.1}
 MANS_ALL = ${BINS_ALL:%=man1/%.1}
 
 any: meta ${BINS}
@@ -114,6 +119,30 @@ link:
 	ln -fs ${MANS_ALL:%=${PWD}/%} ${MANDIR}/man1
 
 unlink:
+	rm -f ${BINS_ALL:%=${PREFIX}/bin/%}
+	rm -f ${MANS_ALL:%=${MANDIR}/%}
+
+install: ${BINS} ${MANS}
+	install -d ${PREFIX}/bin ${MANDIR}/man1
+	install ${BINS} ${PREFIX}/bin
+	install -m 644 ${MANS} ${MANDIR}/man1
+
+install-bsd: ${BINS_BSD} ${MANS_BSD}
+	install -d ${PREFIX}/bin ${MANDIR}/man1
+	install ${BINS_BSD} ${PREFIX}/bin
+	install -m 644 ${MANS_BSD} ${MANDIR}/man1
+
+install-linux: ${BINS_LINUX} ${MANS_BSD}
+	install -d ${PREFIX}/bin ${MANDIR}/man1
+	install ${BINS_LINUX} ${PREFIX}/bin
+	install -m 644 ${MANS_LINUX} ${MANDIR}/man1
+
+install-tls: ${BINS_TLS} ${MANS_BSD}
+	install -d ${PREFIX}/bin ${MANDIR}/man1
+	install ${BINS_TLS} ${PREFIX}/bin
+	install -m 644 ${MANS_TLS} ${MANDIR}/man1
+
+uninstall:
 	rm -f ${BINS_ALL:%=${PREFIX}/bin/%}
 	rm -f ${MANS_ALL:%=${MANDIR}/%}
 
