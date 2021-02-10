@@ -9,6 +9,9 @@ case "$1" in
 	(*.gif|*.jpeg|*.jpg|*.png)
 		curl -LSs "$1" | imv -
 		;;
+	(https://youtu.be/*|https://www.youtube.com/watch*|https://twitch.tv/*)
+		exec mpv "$1" >/dev/null 2>/dev/null
+		;;
 	(*)
 		exec xterm -e w3m "$1"
 		;;
