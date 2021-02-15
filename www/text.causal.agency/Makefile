@@ -18,6 +18,7 @@ TXTS += 012-inability.txt
 TXTS += 013-hot-tips.txt
 TXTS += 014-using-vi.txt
 TXTS += 015-reusing-tags.txt
+TXTS += 016-using-openbsd.txt
 
 all: ${TXTS}
 

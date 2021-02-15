@@ -1,0 +1,499 @@
+.Dd February 14, 2021
+.Dt USING-OPENBSD 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm Using OpenBSD
+.Nd for real
+.
+.Sh DESCRIPTION
+Hello from
+.Ox !
+After wishing one too many times
+that I had a real BSD
+on a physical machine,
+I finally got around to
+just installing one on my
+mid-2014 MacBook Pro.
+I hadn't done it sooner
+because I didn't realize
+how easy it would be.
+It helped that I already had a
+.Dq Boot Camp
+partition with a disused Windows 8 install
+that I could replace.
+.
+.Pp
+I roughly followed an old jcs gist
+along with the
+.Ox
+Disk Setup guide.
+I'm once again happy
+that I bought a printer\(em
+they're very useful for instructions
+to install an operating system
+on your only usable computer.
+I set up encrypted softraid
+and the operating system
+installed smoothly.
+.
+.Pp
+Next I had to install rEFInd,
+since the default Mac boot manager
+is really not keen on booting much.
+Installing it requires using the
+macOS recovery partition these days.
+But there was a problem
+with my new boot menu:
+I was promised a picture of Puffy,
+and instead I just got some abstract coloured circles!
+Turns out a bunch of OS icons
+got removed from rEFInd at some point,
+and I had to rescue Puffy
+from the git history.
+.
+.Pp
+So I could happily boot
+.Ox
+by selecting Puffy,
+but I had no networking.
+I thought the wifi chip might be supported by
+.Xr bwfm 4 ,
+but I got unlucky and it's a BCM4360,
+which everything hates.
+Based on the jcs gist,
+I checked the list of hardware
+supported by the
+.Xr urtwn 4
+driver for a wifi dongle to order.
+Just having a clear list
+in the driver manual is wonderful.
+I went with the Edimax EW-7811Un v2,
+which I could get for around $20.
+It's nice and tiny,
+though it has a piercing blue LED
+(destroy all blue LEDs)
+which I had to cover with electrical tape.
+.
+.Pp
+I had to do one other thing
+before I could get it all working, though.
+When I had checked the
+.Xr urtwn 4
+hardware list,
+I had been looking at
+.Ox Ns -current ,
+but I had installed
+.Ox 6.8 ,
+and support for the v2 hardware
+I had bought was added after that release.
+So I downloaded a snapshot
+.Pa bsd.rd
+along with the
+.Xr urtwn 4
+firmware file
+to a USB drive
+and upgraded the system.
+.
+.Pp
+Connecting to wifi with
+.Xr ifconfig 8
+is a breeze, by the way,
+and then you just write the same thing to a
+.Xr hostname.if 5
+file to make it automatic.
+I wanted to use
+.Ox
+for exactly this reason:
+simple, consistent, cohesive, well-documented tools.
+.
+.Pp
+Finally, I got to configuring.
+The console is configured with
+.Xr wsconsctl 8 ,
+and similarly you can put the commands in
+.Xr wsconsctl.conf 5
+to have them run at boot.
+I added
+.Li display.brightness=50%
+to tone down the brightness,
+which is initially 100%,
+and
+.Li keyboard.backlight=0%
+to turn off those annoying lights.
+.Xr wsconsctl.conf 5
+is also where you can set
+trackpad settings if you're not using
+.Xr synaptics 4 .
+I ended up using:
+.Bd -literal -offset indent
+mouse1.tp.tapping=1
+mouse1.tp.scaling=0.2
+mouse1.reverse_scrolling=1
+.Ed
+.Pp
+This enables tapping with several fingers
+to simulate different mouse buttons,
+makes the cursor move at a reasonable speed
+and scrolling move in the right direction.
+I also set up my usual modified QWERTY layout.
+.
+.Pp
+For
+.Xr X 7
+I had enabled
+.Xr xenodm 1 ,
+which seems quite nice.
+It automatically prompts you to add your
+.Xr ssh 1
+keys to
+.Xr ssh-agent 1
+when you log in.
+One of the reasons I had not wanted
+to set up another graphical system
+is that I thought
+I would have to make too many choices,
+and that I would have to choose least bad options
+rather than actually good options,
+but
+.Ox
+already includes reasonable choices.
+I wanted to use
+.Xr cwm 1 ,
+so I started a basic
+.Pa .xsession
+file:
+.Bd -literal -offset indent
+\&. ~/.profile
+export LC_CTYPE=en_US.UTF-8
+xset r rate 175 m 5/4 0
+xmodmap ~/.config/X/modmap
+xrdb -load ~/.config/X/resources
+exec cwm -c ~/.config/cwm/cwmrc
+.Ed
+.
+.Pp
+The
+.Xr xset 1
+command sets keyboard repeat rate
+and mouse acceleration.
+I spent some time going through
+.Xr cwm 1 Ap s
+functions and writing up bindings
+that would get me something close enough
+to what I'm used to in macOS.
+Most importantly,
+putting everything on the 4 modifier (command key).
+.
+.Pp
+I also added key bindings on F1 and F2
+to adjust the brightness with
+.Xr xbacklight 1 ,
+and on F10, F11 and F12
+to adjust volume with
+.Xr sndioctl 1 .
+I'm not sure why the F keys
+just send regular F1, F2, etc.\&
+regardless of the Fn key.
+I don't use F keys for anything else though,
+so I'm not too concerned.
+Once again,
+.Xr sndioctl 1
+is such an easy straightforward tool:
+.Bd -literal -offset indent
+bind-key F10 "sndioctl output.mute=!"
+bind-key F11 "sndioctl output.level=-0.05"
+bind-key F12 "sndioctl output.level=+0.05"
+.Ed
+.
+.Pp
+For aesthetic configuration,
+I added a new output to my
+.Xr scheme 1
+colour scheme tool for
+.Xr X 7 Ns -style
+RGB and
+.Xr xterm 1
+resources.
+Normally I use the
+.Em Go Mono
+font,
+but since
+.Ox
+already includes
+.Em Luxi Mono ,
+which
+.Em Go Mono
+is based on,
+I used that.
+The most important configuration
+to make anything readable on a high-DPI display is:
+.Bd -literal -offset indent
+Xft.dpi: 144
+Xft.antialias: true
+Xft.hinting: false
+.Ed
+.
+.Pp
+I'm annoyed that I haven't found
+where these resources are actually documented.
+I would hope they'd be in
+.Xr Xft 3
+or something,
+but they're not.
+Anyway,
+turning off hinting
+seems absolutely necessary
+to prevent text from looking like garbage.
+.
+.Pp
+It seems that to get a reasonably sized cursor
+I need to install
+.Sy xcursor-dmz .
+I'd prefer if there wasn't this one
+extra package that I needed
+for a reasonable setup.
+Tangentially,
+I've never understood why
+the black versions of dmz cursors
+are called
+.Dq aa
+when it seems like that
+would stand for antialiasing
+or something.
+.Bd -literal -offset indent
+Xcursor.size: 64
+Xcursor.theme: dmz-aa
+.Ed
+.
+.Pp
+For a desktop background,
+I found a cute bitmap (little picture)
+of snowflakes already in the system
+and used colours from my usual scheme:
+.Bd -literal -offset indent
+xsetroot -bitmap /usr/X11R6/include/X11/bitmaps/xsnow \e
+	-bg rgb:14/13/0E -fg rgb:7A/49/55
+.Ed
+.
+.Pp
+Since I'd rather not install anything
+I don't have to,
+I went with the default
+.Xr xterm 1 .
+It seems more than adequate, honestly.
+I read through its RESOURCES
+section to configure it how I like.
+The important settings are
+.Sy XTerm*utf8
+and
+.Sy XTerm*metaSendsEscape .
+Since I'm used to copying and pasting on macOS,
+I added equivalent
+.Dq translations :
+.Bd -literal -offset indent
+XTerm*VT100*translations: #override \en\e
+	Super <Key>C: copy-selection(CLIPBOARD) \en\e
+	Super <Key>V: insert-selection(CLIPBOARD)
+.Ed
+.
+.Pp
+The next thing I needed
+was a clock and battery indicator.
+I actually had my battery die on me
+while I was doing all this,
+which reminded me.
+.Xr xclock 1
+would be perfect,
+but then I'd need something else
+for battery.
+There are a couple basic battery indicators
+for X in ports,
+but they're terribly ugly.
+I wanted something as simple as
+.Xr xclock 1 ,
+but that I could add some other text to.
+Then I realized I could just use
+.Xr xterm 1
+for that.
+To my
+.Pa xsession
+I added:
+.Bd -literal -offset indent
+xterm -name clock -geometry 14x1-0+0 -sl 0 -e clock &
+.Ed
+.Pp
+This places a little terminal
+in the top-right corner of the screen
+with no scrollback lines,
+running a script called
+.Pa clock .
+To have
+.Xr cwm 1
+treat it like a
+.Dq panel
+and show it on every desktop,
+I added this to my
+.Pa cwmrc :
+.Bd -literal -offset indent
+ignore clock
+autogroup 0 clock,XTerm
+.Ed
+.Pp
+The
+.Pa clock
+script simply uses
+.Xr date 1
+and
+.Xr apm 8
+to print the time and battery charge
+every minute:
+.Bd -literal -offset indent
+tput civis
+sleep=$(( 60 - $(date +'%S' | sed 's/^0//') ))
+while :; do
+	if [ $(apm -a) -eq 1 ]; then
+		printf '%3s%%' "$(apm -l)"
+	else
+		test $(apm -b) -eq 2 && tput setaf 1 bold
+		printf '%3.3sm' "$(apm -m)"
+		tput sgr0
+	fi
+	printf ' %s\r' "$(date +'%a %H:%M')"
+	sleep $sleep
+	sleep=60
+done
+.Ed
+.Pp
+The initial setting of
+.Va sleep
+is to align the updates
+with the minute ticking over.
+I made the battery output
+a bit fancier by showing
+percentage while charging,
+minutes left while discharging,
+and highlighting in red
+when the battery is
+.Dq critical .
+.
+.Pp
+Now is a good time to mention adding
+.Ql apmd_flags=-A
+to
+.Pa /etc/rc.conf.local
+to enable
+.Dq automatic performance adjustment ,
+or not running your battery flat
+as fast as possible mode.
+It seems like I can get up to 3 hours
+of battery life depending on the screen brightness,
+but this is quite an old battery by now.
+.
+.Pp
+The other thing I needed
+was something to tone down
+that awful, evil blue light from the screen.
+I asked around and someone told me about
+.Xr sct 1 ,
+originally written by tedu.
+The package also includes a little
+.Xr sctd 1
+script that you can add to your
+.Pa .xsession
+to have it automatically adjust
+the colour temperature throughout the day.
+My eyes are no longer being assaulted.
+.
+.Pp
+While I was doing all this,
+I of course needed to talk about it on IRC,
+and it was very nice to be able to
+install my own IRC client with:
+.Bd -literal -offset indent
+doas pkg_add catgirl
+.Ed
+.Pp
+I don't plan to do
+general Web Browsing on
+.Ox ,
+and there is definitely
+no good choice for browser,
+so I just installed
+.Xr imv 1 ,
+.Xr mpv 1 ,
+.Xr youtube-dl 1
+and
+.Xr w3m 1 .
+I wrote a script
+to open images by piping
+.Xr curl 1
+into
+.Xr imv 1 ,
+videos with
+.Xr mpv 1 ,
+and everything else with
+.Xr w3m 1
+in a new
+.Xr xterm 1 .
+Annoyingly,
+.Xr mpv 1
+seems incapable of exiting
+without segfaulting.
+That's quality.
+.
+.Pp
+One thing I am still missing
+is automatic brightness adjustment
+based on ambient light
+like macOS can do.
+I can read the sensor with
+.Xr sysctl 8
+.Cm hw.sensors.asmc0.illuminance0 ,
+which is measured in lux.
+I tried doing something with it in a script,
+but it seems tricky to map its value
+to brightness adjustments
+and to play nice with manual brightness changes,
+so I'll just keep doing it manually for now.
+.
+.Pp
+And that's my current
+.Ox
+setup after a week of using it.
+I'm quite enjoying it,
+and still being pleasantly surprised
+by the quality-of-life from
+.Ox
+tools and documentation.
+For a small example,
+I can jump to sections
+or flag definitions in
+.Xr man 1
+using
+.Ic :t .
+Systems without basic usability like that
+should be ashamed.
+.
+.Pp
+I would post a screenshot,
+but this is
+.Li text.causal.agency
+;)
+.
+.Sh SEE ALSO
+.Lk https://gist.github.com/jcs/5573685
+.Pp
+My full configurations are in
+.Aq Lk https://git.causal.agency/src .
+.
+.Sh AUTHORS
+.An june Aq Mt june@causal.agency
+.
+.Sh BUGS
+There's a red LED
+inside the headphone jack
+that is always on
+and I have no idea how to turn off.
+If anyone knows
+please send me an email.
