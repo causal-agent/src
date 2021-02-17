@@ -25,7 +25,7 @@ discogs() {
 		sed -n 's/^To proceed, follow the instructions here: \(.*\)/\1/p'
 	)
 	echo 'Fetching token...'
-	token=$(curl -ISs "${url}" | sed -n 's/.*[?]token=\([^&]*\).*/\1/p')
+	token=$(curl -ISs --url "${url}" | sed -n 's/.*[?]token=\([^&]*\).*/\1/p')
 	password=$(generate)
 	echo 'Setting password...'
 	curl -Ss -X POST \
