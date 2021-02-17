@@ -38,6 +38,7 @@ BINS += psf2png
 BINS += ptee
 BINS += scheme
 BINS += shotty
+BINS += sup
 BINS += title
 BINS += up
 BINS += when

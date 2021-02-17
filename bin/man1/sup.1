@@ -1,0 +1,39 @@
+.Dd February 16, 2021
+.Dt SUP 1
+.Os
+.
+.Sh NAME
+.Nm sup
+.Nd single-use password
+.
+.Sh SYNOPSIS
+.Nm
+.Ar service
+.Op Ar email
+.
+.Sh DESCRIPTION
+The
+.Nm
+utility
+sets a random single-use password
+for a service using the
+.Dq forgot password
+or
+.Dq password reset
+flow.
+The password is copied to the clipboard
+and the service login page is opened.
+The
+.Nm
+utility requires
+.Xr curl 1 ,
+.Xr git-fetch-email 1 ,
+.Xr openssl 1 ,
+.Xr pbcopy 1
+and
+.Xr open 1 .
+.
+.Pp
+The following services are supported:
+.Cm discogs ,
+.Cm lobsters .
