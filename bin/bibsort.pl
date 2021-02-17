@@ -32,10 +32,12 @@ sub byLast {
 foreach $ref (@refs) {
 	@{$ref->{A}} = sort byLast @{$ref->{A}};
 	@{$ref->{Q}} = sort @{$ref->{Q}} if $ref->{Q};
-	next unless $ref->{N};
-	if ($ref->{N}[0] =~ /RFC/) {
+	if ($ref->{N} && $ref->{N}[0] =~ /RFC/) {
 		$ref->{R} = $ref->{N};
 		delete $ref->{N};
+	}
+	if ($ref->{R} && $ref->{R}[0] =~ /RFC (\d+)/ && !$ref->{U}) {
+		$ref->{U} = ["https://tools.ietf.org/html/rfc${1}"];
 	}
 }
 
