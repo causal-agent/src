@@ -76,4 +76,10 @@ lobsters() {
 	open "${lobstersBase}/login"
 }
 
+tildenews() {
+	lobstersBase='https://tilde.news'
+	lobstersFrom='nobody@tilde.news'
+	lobsters
+}
+
 $service
