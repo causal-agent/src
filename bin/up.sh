@@ -62,14 +62,6 @@ uploadTerminal() {
 	upload "${temp}/term.html"
 }
 
-copy() {
-	if type xsel >/dev/null; then
-		xsel -bi
-	else
-		pbcopy
-	fi
-}
-
 while getopts 'chst' opt; do
 	case "$opt" in
 		(c) fn=uploadCommand;;
@@ -84,5 +76,5 @@ shift $((OPTIND - 1))
 : ${fn:=upload}
 
 url=$($fn "$@")
-printf '%s' "$url" | copy || true
+printf '%s' "$url" | pbcopy || true
 echo "$url"
