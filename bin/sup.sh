@@ -11,6 +11,45 @@ copy() {
 	printf '%s' "$1" | pbcopy
 }
 
+bugzilla() {
+	echo 'Fetching CSRF token...'
+	csrf=$(
+		curl -Ss "${bugzillaBase}/" |
+		sed -n '
+			/name="token"/N
+			s/.*name="token"[[:space:]]*value="\([^"]*\)".*/\1/p
+		' | head -n 1
+	)
+	echo 'Submitting form...'
+	curl -Ss -X POST \
+		-F "loginname=${email}" -F "token=${csrf}" -F 'a=reqpw' \
+		"${bugzillaBase}/token.cgi" \
+		>/dev/null
+	echo 'Waiting for email...'
+	token=$(
+		git fetch-email -i -M Trash \
+			-F "${bugzillaFrom}" -T "${email}" \
+			-S 'Bugzilla Change Password Request' |
+		sed -n 's/.*t=3D\([^&]*\).*/\1/p' |
+		head -n 1
+	)
+	password=$(generate)
+	echo 'Setting password...'
+	curl -Ss -X POST \
+		-F "t=${token}" -F 'a=chgpw' \
+		-F "password=${password}" -F "matchpassword=${password}" \
+		"${bugzillaBase}/token.cgi" \
+		>/dev/null
+	copy "${password}"
+	open "${bugzillaBase}/"
+}
+
+freebsdbugzilla() {
+	bugzillaBase='https://bugs.freebsd.org/bugzilla'
+	bugzillaFrom='bugzilla-noreply@freebsd.org'
+	bugzilla
+}
+
 discogs() {
 	echo 'Submitting form...'
 	curl -Ss -X POST \
