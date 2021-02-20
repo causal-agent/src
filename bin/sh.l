@@ -19,6 +19,7 @@
 
 %{
 #include <assert.h>
+#include <stdbool.h>
 #include <string.h>
 #include "hilex.h"
 
@@ -35,7 +36,6 @@ static int pop(void) {
 }
 %}
 
-%s First
 %s Param Command Arith Backtick
 %x DQuote HereDocDel HereDoc HereDocLit
 
@@ -44,13 +44,14 @@ param [^:=?+%#{}-]+
 reserved [!{}]|else|do|elif|for|done|fi|then|until|while|if|case|esac
 
 %%
+	static bool first;
 	static char *delimiter;
 
 [[:blank:]]+ { return Normal; }
 
 "\\". { return Escape; }
 
-<INITIAL,First,DQuote,HereDoc,Param,Command,Arith>{
+<INITIAL,DQuote,HereDoc,Param,Command,Arith>{
 	"$"[*@#?$!0-9-] |
 	"$"[_[:alpha:][_[:alnum:]]* |
 	"${"[#]?{param}"}" {
@@ -82,27 +83,23 @@ reserved [!{}]|else|do|elif|for|done|fi|then|until|while|if|case|esac
 }
 
 "\n" {
-	BEGIN(push(First));
+	first = true;
 	return Normal;
 }
 [&();|]|"&&"|";;"|"||" {
-	BEGIN(push(First));
+	first = true;
 	return Operator;
 }
 [0-9]?([<>]"&"?|">|"|">>"|"<>") {
 	return Operator;
 }
 
-<First>{
-	[[:blank:]]+ { return Normal; }
-	{reserved} {
-		BEGIN(pop());
+{reserved} {
+	if (first) {
+		first = false;
 		return Keyword;
 	}
-	{word} {
-		BEGIN(pop());
-		return Normal;
-	}
+	return Normal;
 }
 
 {word}/[[:blank:]]*"()" { return Ident; }
@@ -162,9 +159,12 @@ reserved [!{}]|else|do|elif|for|done|fi|then|until|while|if|case|esac
 	[^\\$`""]+|. { return String; }
 }
 
-<INITIAL,First,Command,Backtick,Arith>"#".* { return Comment; }
+<INITIAL,Command,Backtick,Arith>"#".* { return Comment; }
 
-{word} { return Normal; }
+{word} {
+	first = false;
+	return Normal;
+}
 
 .|\n { return Normal; }
 
