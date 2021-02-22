@@ -1,0 +1,86 @@
+.Dd February 22, 2021
+.Dt OPERATING-SYSTEMS 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm Operating systems
+.Nd criteria
+.
+.Sh DESCRIPTION
+Sometimes in conversation
+I use the term
+.Dq real operating system
+which people,
+perhaps rightfully,
+take as inflammatory.
+But I have actually thought about
+what I mean when I say
+.Dq real operating system
+and come up with
+this list of criteria.
+.
+.Pp
+An operating system should be...
+.Bl -bullet
+.It
+Consistent and cohesive:
+all parts of the system should have similar
+usage, configuration, documentation and so on.
+Parts of the system should naturally work together,
+because they were designed to do so.
+.
+.It
+Documented:
+the system should include its own documentation.
+A user should not have to
+search some external wiki
+to learn how the system works.
+It should be obvious
+where to find documentation
+on a particular topic.
+.
+.It
+Programmable:
+the system should provide
+a way to program the computer.
+A computer which cannot be programmed
+is not a computer at all.
+Usually this takes the form
+of a C compiler
+and the tools that go with it.
+In earlier times,
+it might have been
+a BASIC interpreter.
+.
+.It
+Examinable and modifiable:
+the full source tree
+for the system should be included,
+or easily obtainable
+through official means.
+A user should have no trouble
+finding the corresponding source
+for a part of the system.
+Together with the previous point,
+the source tree should be
+compiled by the included toolchain,
+allowing local modification.
+.El
+.
+.Pp
+Some things that may be parts
+of real operating systems,
+but are not themselves operating systems:
+a kernel,
+a package manager,
+a collection of packages.
+.
+.Pp
+I will leave it as an
+.Dq exercise for the reader
+to guess which operating systems
+meet these criteria
+and which don't.
+.
+.Sh AUTHORS
+.An june Aq Mt june@causal.agency

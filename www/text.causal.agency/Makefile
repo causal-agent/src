@@ -20,6 +20,7 @@ TXTS += 014-using-vi.txt
 TXTS += 015-reusing-tags.txt
 TXTS += 016-using-openbsd.txt
 TXTS += 017-unpasswords.txt
+TXTS += 018-operating-systems.txt
 
 all: ${TXTS}
 
