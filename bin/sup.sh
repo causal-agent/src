@@ -77,6 +77,28 @@ discogs() {
 	open 'https://discogs.com/login'
 }
 
+liberapay() {
+	echo 'Fetching CSRF token...'
+	csrf=$(
+		curl -Ss 'https://liberapay.com/sign-in' |
+		sed -n 's/.*name="csrf_token".*value="\([^"]*\)".*/\1/p'
+	)
+	echo 'Submitting form...'
+	curl -Ss -X POST \
+		-b "csrf_token=${csrf}" -F "csrf_token=${csrf}" \
+		-F "log-in.id=${email}" \
+		'https://liberapay.com/sign-in' \
+		>/dev/null
+	echo 'Waiting for email...'
+	url=$(
+		git fetch-email -i -M Trash \
+			-F 'support@liberapay.com' -T "${email}" \
+			-S 'Log in to Liberapay' |
+		grep -m 1 '^https://liberapay\.com/'
+	)
+	open "${url}"
+}
+
 lobsters() {
 	: ${lobstersBase:=https://lobste.rs}
 	: ${lobstersFrom:=nobody@lobste.rs}
