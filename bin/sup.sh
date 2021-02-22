@@ -11,6 +11,29 @@ copy() {
 	printf '%s' "$1" | pbcopy
 }
 
+asciinema() {
+	echo 'Fetching CSRF token...'
+	jar=$(mktemp -t sup)
+	trap 'rm "${jar}"' EXIT
+	csrf=$(
+		curl -Ss -c "${jar}" 'https://asciinema.org/login/new' |
+		sed -n 's/.*name="_csrf_token".*value="\([^"]*\)".*/\1/p'
+	)
+	echo 'Submitting form...'
+	curl -Ss -X POST -b "${jar}" \
+		-F "_csrf_token=${csrf}" -F "login[email]=${email}" \
+		'https://asciinema.org/login' \
+		>/dev/null
+	echo 'Waiting for email...'
+	url=$(
+		git fetch-email -i -M Trash \
+			-F 'hello@asciinema.org' -T "${email}" \
+			-S 'Login to asciinema.org' |
+		grep -m 1 '^https://asciinema\.org/session/new'
+	)
+	open "${url}"
+}
+
 bugzilla() {
 	echo 'Fetching CSRF token...'
 	csrf=$(
