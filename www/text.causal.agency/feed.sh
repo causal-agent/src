@@ -23,8 +23,8 @@ encode() {
 	' "$@"
 }
 
-for entry in *.7; do
-	txt="${entry%.7}.txt"
+for txt in *.txt; do
+	entry="${txt%.txt}.7"
 	date=$(grep '^[.]Dd' "$entry" | cut -c 5-)
 	title=$(grep '^[.]Nm' "$entry" | cut -c 5- | encode)
 	summary=$(grep '^[.]Nd' "$entry" | cut -c 5- | encode)
