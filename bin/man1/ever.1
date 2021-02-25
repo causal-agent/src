@@ -1,4 +1,4 @@
-.Dd June  1, 2020
+.Dd February 24, 2021
 .Dt EVER 1
 .Os
 .
@@ -8,7 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl i
+.Op Fl iq
 .Ar
 .Ar command
 .Nm
@@ -35,6 +35,8 @@ Attach the
 which was modified
 to the standard input of
 .Ar command .
+.It Fl q
+Suppress exit status output.
 .El
 .
 .Sh EXAMPLES

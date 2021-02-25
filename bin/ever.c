@@ -45,6 +45,7 @@ static int watch(int kq, char *path) {
 	return fd;
 }
 
+static bool quiet;
 static void exec(int fd, char *const argv[]) {
 	pid_t pid = fork();
 	if (pid < 0) err(EX_OSERR, "fork");
@@ -59,6 +60,7 @@ static void exec(int fd, char *const argv[]) {
 	pid = wait(&status);
 	if (pid < 0) err(EX_OSERR, "wait");
 
+	if (quiet) return;
 	if (WIFEXITED(status)) {
 		warnx("exit %d\n", WEXITSTATUS(status));
 	} else if (WIFSIGNALED(status)) {
@@ -71,9 +73,10 @@ static void exec(int fd, char *const argv[]) {
 int main(int argc, char *argv[]) {
 	bool input = false;
 
-	for (int opt; 0 < (opt = getopt(argc, argv, "i"));) {
+	for (int opt; 0 < (opt = getopt(argc, argv, "iq"));) {
 		switch (opt) {
 			break; case 'i': input = true;
+			break; case 'q': quiet = true;
 			break; default:  return EX_USAGE;
 		}
 	}
