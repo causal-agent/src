@@ -1,4 +1,4 @@
-.Dd November 26, 2020
+.Dd February 24, 2021
 .Dt PLAN 7
 .Os "Causal Agency"
 .
@@ -17,29 +17,3 @@ export HTML/Atom/mboxrd fragments by UID
 .It
 assemble fragments into threads using IMAP THREAD
 .El
-.
-.Ss sbubby
-.Bl -bullet -compact
-.It
-mailing list subscription manager for FastMail
-.It
-process messages from IMAP mailbox
-.It
-add/remove addresses from CardDAV address book
-.It
-send confirmations with SMTP
-.It
-it seems I can't be bothered
-implementing all the parts of this
-.El
-.
-.Ss getaddrinfo with SRV
-wrap
-.Xr getaddrinfo 3
-with
-.Xr res_query 3
-SRV lookup
-.
-.Ss code reuse
-discover some method of sharing code
-that isn't awful
