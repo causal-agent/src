@@ -35,6 +35,9 @@ if [ -n "${SSH_CD:-}" ]; then
 	unset SSH_CD
 fi
 
+export LESS_TERMCAP_us=$(tput sitm)
+export LESS_TERMCAP_ue=$(tput ritm)
+
 hostname=$(hostname -s)
 rprompt() {
 	local pwd
