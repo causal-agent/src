@@ -2,7 +2,7 @@
 set -eu
 
 rfc=%%PREFIX%%/share/rfc/"rfc${1:--index}.txt"
-tags=$(mktemp -t rfc)
+tags=$(mktemp -t rfc.XXXXXXXXXX)
 trap 'rm "${tags}"' EXIT
 %%PREFIX%%/bin/rfctags "${rfc}" >"${tags}"
 ${PAGER:-less} -T "${tags}" "${rfc}"
