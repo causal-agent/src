@@ -38,7 +38,8 @@ bind-key 4-f window-fullscreen
 bind-key 4-m window-maximize
 bind-key 4-equal window-vmaximize
 bind-key 4S-equal window-hmaximize
-bind-key 4S-l window-move-right
+bind-key 4-underscore window-vtile
+bind-key 4S-underscore window-htile
 bind-key 4-h window-move-left-big
 bind-key 4-j window-move-down-big
 bind-key 4-k window-move-up-big
@@ -46,6 +47,7 @@ bind-key 4-l window-move-right-big
 bind-key 4S-h window-move-left
 bind-key 4S-j window-move-down
 bind-key 4S-k window-move-up
+bind-key 4S-l window-move-right
 bind-key 4M-h window-resize-left
 bind-key 4M-j window-resize-down
 bind-key 4M-k window-resize-up
