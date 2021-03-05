@@ -21,6 +21,7 @@ TXTS += 015-reusing-tags.txt
 TXTS += 016-using-openbsd.txt
 TXTS += 017-unpasswords.txt
 TXTS += 018-operating-systems.txt
+TXTS += 019-mailing-list.txt
 
 all: ${TXTS}
 

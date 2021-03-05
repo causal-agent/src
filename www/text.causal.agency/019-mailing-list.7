@@ -1,0 +1,287 @@
+.Dd March  4, 2021
+.Dt MAILING-LIST 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm Mailing List
+.Nd a small-scale approach
+.
+.Sh DESCRIPTION
+When I initially published
+some software I expected
+other people to use,
+I just asked that patches
+be mailed directly to me,
+but I figured that
+if more people were interested,
+it would be better
+to have a mailing list.
+Unfortunately
+email software,
+mailing list options in particular,
+are quite daunting.
+I wanted a light-weight option
+that would require me to host
+as little software as possible.
+.
+.Pp
+My regular email is hosted by Fastmail,
+and I poked around its settings
+to see what I could do.
+It turns out Fastmail lets you
+configure address aliases to
+.Dq also send to all contacts in
+a contacts group.
+That's a mailing list!
+I created a group called
+.Dq List
+and an alias called
+.Mt list@causal.agency
+configured to deliver to that group.
+So it's really just an alias
+for my regular address
+that happens to also
+deliver to another group of people.
+.
+.Pp
+It's easier to just configure
+and manage one mailing list,
+so what I do is ask patches and feedback
+to be sent to
+.Mt list+catgirl@causal.agency ,
+for example.
+Fastmail treats any
+.Ar +suffix
+the same as the base address,
+but the full address can be used
+by subscribers to filter mail by topic
+if they wish.
+.
+.Pp
+To subscribe someone to the list,
+I add their contact to the group.
+For a long time I was planning
+to write some software
+to manage these subscriptions.
+It should be possible
+to process subscription requests from IMAP
+and manipulate the contact group with CardDAV.
+When I went to start implementing this,
+however,
+I found CardDAV (and WebDAV in general)
+completely inscrutable.
+It's the kind of protocol
+that is split across like 20
+different RFCs
+and you can't understand anything
+by just reading
+the one you actually care about.
+So I've given up on that
+and will keep manually subscribing people
+on request.
+.
+.Pp
+The only thing missing, then,
+is a way for people to read
+mail sent to the list
+while they aren't subscribed.
+All the existing
+mailing list archive software
+I know of
+expects to have the mail locally,
+but I'd rather keep all my mail in IMAP.
+First,
+in order to make sure
+I keep a complete archive
+of the mailing list in IMAP,
+I added a small amount
+of Sieve code
+to my Fastmail filters configuration:
+.Bd -literal -offset indent
+if address :matches ["To", "Cc"] "list*@causal.agency" {
+	fileinto :copy :flags "\e\eSeen" "INBOX.List";
+}
+.Ed
+.
+.Pp
+Sieve is a small standard language
+specifically for filtering mail.
+This bit of code matches
+anything sent to the list
+and adds a copy of it
+(the original is going into my inbox)
+to the
+.Dq List
+folder
+and marks the copy as read.
+.
+.Pp
+With a pristine IMAP mailbox
+to export from,
+I wrote a new archive generator.
+It's called
+.Xr bubger 1
+kirg (have it in a way).
+My goal was to render directly from IMAP
+and produce only static files as output,
+making it not only easy to serve,
+but also to run in one place
+and copy the files elsewhere.
+That's important to me
+because it has access to my email,
+so I'd rather run it
+on my local network and
+.Xr rsync 1
+its output into The Cloud.
+The static files are in
+HTML, Atom and mboxrd formats.
+.
+.Pp
+The architecture of
+.Xr bubger 1
+is that for each piece of mail,
+identified by its UID in the mailbox,
+HTML and Atom fragments
+are exported along with the mboxrd.
+Those fragments are then stitched together
+using the IMAP SORT and THREAD extensions
+to make full pages and feeds
+for each thread.
+The fragments act as a cache
+for subsequent runs.
+.
+.Pp
+I admit I did some
+pretty questionable things
+to achieve this.
+Namely,
+I wrote a small string templating engine in C.
+I use it to produce the HTML
+and XML for Atom,
+as well as to generate URLs
+and paths.
+I'm really happy with how it works, actually.
+This is also where
+I really started using
+one of my favourite C hacks:
+.Bd -literal -offset indent
+#define Q(...) #__VA_ARGS__
+.Ed
+.
+.Pp
+I quote all my HTML/XML templates
+with this and it's lovely.
+.
+.Pp
+I've been working on
+.Xr bubger 1
+on and off for almost a year now,
+and it's been interesting.
+I learned a lot about how email
+works from having to deal with
+all the ways a message can be.
+Thankfully a lot of that dealing
+is done by the IMAP server.
+.
+.Pp
+As for running it,
+I initially just ran it with
+.Xr cron 8 ,
+and that's still a good way to go.
+To hook it up to
+.Xr rsync 1 ,
+pipe it like so:
+.Bd -literal -offset indent
+bubger -C list [...] | rsync -a --files-from=- list remote:list
+.Ed
+.
+.Pp
+Later,
+I got a little annoyed
+with having to wait
+for the next run
+if I wanted to link
+to some mail I just received.
+I added an option
+to use IMAP IDLE
+to wait for new mail continuously
+and I started running it
+under my process supervisor,
+.Xr catsitd 8 .
+.
+.Pp
+The setup is a little more complex
+to feed the list of updated files to
+.Xr rsync 1 .
+I added the
+.Xr catsit-watch 1
+utility to run a command
+when a file changes,
+and in my
+.Xr catsit.conf 5
+I have the following:
+.Bd -literal -offset indent
+bubger	~/.local/libexec/bubger
+rsync	catsit-watch -i -f ~/list/UIDNEXT ~/.local/libexec/rsync
+.Ed
+.
+.Pp
+The
+.Pa ~/.local/libexec/bubger
+script runs
+.Xr bubger 1 ,
+writing the list of updated paths to
+.Pa ~/list/FILES ,
+truncating it before each update:
+.Bd -literal -offset indent
+exec bubger -it -C ~/list [...] >~/list/FILES
+.Ed
+.
+.Pp
+And the
+.Pa ~/.local/libexec/rsync
+script gets run each time a
+.Xr bubger 1
+update completes
+.Po
+.Pa UIDNEXT
+is always the last file written
+.Pc
+and copies the listed files
+to the remote host:
+.Bd -literal -offset indent
+exec rsync -a --files-from=$HOME/list/FILES ~/list remote:list
+.Ed
+.
+.Pp
+I haven't tagged any
+.Xr bubger 1
+releases yet
+because it hasn't gotten
+a huge amount of testing,
+and I'm not sure anyone but me
+would even want to use it.
+But I'm happy
+with how it's working right now,
+so I might tag 1.0 soon
+just for fun.
+.
+.Sh SEE ALSO
+.Bl -item -compact
+.It
+.Lk https://causal.agency/list/
+.It
+.Lk https://git.causal.agency/bubger/about
+.It
+.Lk https://git.causal.agency/catsit/about
+.El
+.
+.Sh AUTHORS
+.An june Aq Mt june@causal.agency
+.
+.Sh BUGS
+Almost every time
+I try to type
+.Dq mailing list
+I instead type
+.Dq mailist list .
