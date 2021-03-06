@@ -27,14 +27,6 @@ install: ${BINS} rfc.1
 	ln -fs rfc.1 ${MANDIR}/man1/rfctags.1
 	rsync -ptz ${RFCS} ${PREFIX}/share/rfc
 
-install-nvim: install rfc.vim
-	install -d ${PREFIX}/share/nvim/site/plugin
-	install -m 644 rfc.vim ${PREFIX}/share/nvim/site/plugin
-	(cd ${PREFIX}/share/rfc \
-		&& printf '!_TAG_FILE_SORTED\t2\ttags\n' \
-		&& ${PREFIX}/bin/rfctags *.txt) | sort -f > ${PREFIX}/share/rfc/tags
-
 uninstall:
 	rm -f ${BINS:%=${PREFIX}/bin/%} ${BINS:%=${MANDIR}/man1/%.1}
-	rm -f ${PREFIX}/share/nvim/site/plugin/rfc.vim
 	rm -fr ${PREFIX}/share/rfc
