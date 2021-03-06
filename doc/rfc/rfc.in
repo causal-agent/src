@@ -1,8 +1,19 @@
 #!/bin/sh
 set -eu
 
+mktemp='mktemp -t rfc'
+[ "$(uname)" = 'OpenBSD' ] && mktemp="${mktemp}.XXXXXXXXXX"
+
 rfc=%%PREFIX%%/share/rfc/"rfc${1:--index}.txt"
-tags=$(mktemp -t rfc.XXXXXXXXXX)
+tags=$($mktemp)
 trap 'rm "${tags}"' EXIT
+
+if test -f "${rfc}.gz"; then
+	txt=$($mktemp)
+	trap 'rm "${txt}" "${tags}"' EXIT
+	gunzip -c "${rfc}.gz" >"${txt}"
+	rfc=$txt
+fi
+
 %%PREFIX%%/bin/rfctags "${rfc}" >"${tags}"
 ${PAGER:-less} -T "${tags}" "${rfc}"
