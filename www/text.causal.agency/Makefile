@@ -22,6 +22,7 @@ TXTS += 016-using-openbsd.txt
 TXTS += 017-unpasswords.txt
 TXTS += 018-operating-systems.txt
 TXTS += 019-mailing-list.txt
+TXTS += 020-c-style.txt
 
 all: ${TXTS}
 

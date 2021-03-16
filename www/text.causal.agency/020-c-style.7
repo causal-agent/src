@@ -1,0 +1,162 @@
+.Dd March 16, 2021
+.Dt C-STYLE 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm C Style
+.Nd a rough description
+.
+.Sh DESCRIPTION
+This is a rough description
+of the style in which I write C,
+since it's uncommon
+but some people seem to like it.
+I don't have any hard rules,
+it just needs to look right.
+.
+.Ss Superficialities
+I use tabs
+and they're set to 4 characters wide
+in my editor.
+I keep my lines shorter than 80 columns,
+which I enforce by
+not resizing my terminal's width.
+I use block indentation only,
+meaning I write long function calls
+like this:
+.Bd -literal -offset indent
+fprintf(
+    imap.w, "%s UID THREAD %s UTF-8 %s\er\en",
+    Atoms[thread], algo, search
+);
+.Ed
+.Pp
+I either write single-line ifs
+or always use braces.
+I put parentheses
+around ternary expressions.
+I use camelCase
+for functions and variables,
+and PascalCase for types and constants.
+When an acronym appears
+in an identifier,
+it's in either all lower case
+or all upper case.
+The despicable SCREAMING_SNAKE_CASE
+is reserved for macros.
+Anything that can be sorted
+should be sorted.
+Trailing commas wherever possible.
+I don't set globals or statics to zero
+since that is already the default.
+I don't compare against zero or NULL
+unnecessarily.
+.
+.Ss \&No side-effects in control flow
+I never write a function call
+with side-effects
+inside the condition of an if statement.
+I find this makes following the
+.Dq happy path
+through functions
+much easier.
+I write things like this:
+.Bd -literal -offset indent
+pidFile = open(pidPath, O_WRONLY | O_CREAT | O_CLOEXEC, 0600);
+if (pidFile < 0) err(EX_CANTCREAT, "%s", pidPath);
+
+error = flock(pidFile, LOCK_EX | LOCK_NB);
+if (error && errno != EWOULDBLOCK) err(EX_IOERR, "%s", pidPath);
+if (error) errx(EX_CANTCREAT, "%s: file is locked", pidPath);
+.Ed
+.Pp
+I do write side-effects
+inside for and while statement heads,
+since that's generally expected.
+For some reason
+I like to write the constant first
+if I'm comparing the result of an assignment
+with a side-effect.
+.Bd -literal -offset indent
+for (ssize_t len; 0 <= (len = getline(&buf, &cap, file)); ++line)
+.Ed
+.
+.Ss Paragraphs
+I leave blank lines
+between logical chunks of
+.Dq things happening .
+This is usually between side-effects
+with their related error handling,
+or between groups of closely related side-effects.
+I try to keep variable declarations
+glued to the top of the bit of code
+they're used in.
+.
+.Ss Leading break
+I've mentioned this previously.
+I write my switch statement breaks
+before each case label.
+Doing this aligns nicely,
+and being in the habit
+means I always avoid
+accidental fallthrough.
+.Bd -literal -offset indent
+switch (opt) {
+    break; case 'a': append = 1;
+    break; case 'd': delay = strtol(optarg, NULL, 10);
+    break; case 'f': watch(kq, optarg);
+    break; case 'i': init = 1;
+    break; default: return EX_USAGE;
+}
+.Ed
+.
+.Ss Function type definitions
+Function types are always typedef'd,
+and it's the function type itself
+that is defined,
+not a function pointer type!
+I put the typedef above any functions
+that are supposed to be of that type
+so it's clear what the pattern is.
+.Bd -literal -offset indent
+typedef void Action(struct Service *service);
+Action *fn = NULL;
+.Ed
+.
+.Ss Constants
+I prefer enums over #defines
+for integer constants,
+and static const strings over #defines
+unless I want to do concatenation.
+.Bd -literal -offset indent
+enum { Cap = 1024 };
+.Ed
+.
+.Ss Organization
+I usually use only one header file
+in each project.
+The dependency is easy to declare
+and the complete rebuild
+when the header changes
+isn't a problem for small projects.
+Unless it's a single-file program,
+I name the file which contains main
+something generic,
+since the name of the project
+isn't relevant to its function.
+I name functions like
+.Ar nounVerb ,
+and all the functions for a 
+.Ar noun
+are defined in
+.Pa noun.c .
+Not really to do with C,
+but I always put a FILES section
+in my README pages
+to briefly describe
+the layout of the code
+for anyone looking to
+read or make changes to it.
+.
+.Sh AUTHORS
+.An june Aq Mt june@causal.agency
