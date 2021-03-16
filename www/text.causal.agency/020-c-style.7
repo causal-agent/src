@@ -31,6 +31,12 @@ fprintf(
 );
 .Ed
 .Pp
+Anything that can be sorted
+should be sorted,
+with trailing commas where possible.
+This and block indentation
+make for simpler diffs.
+.Pp
 I either write single-line ifs
 or always use braces.
 I put parentheses
@@ -44,9 +50,6 @@ it's in either all lower case
 or all upper case.
 The despicable SCREAMING_SNAKE_CASE
 is reserved for macros.
-Anything that can be sorted
-should be sorted.
-Trailing commas wherever possible.
 I don't set globals or statics to zero
 since that is already the default.
 I don't compare against zero or NULL
@@ -131,6 +134,13 @@ unless I want to do concatenation.
 .Bd -literal -offset indent
 enum { Cap = 1024 };
 .Ed
+.Pp
+I avoid the preprocessor
+wherever possible,
+with the notable exception of X macros,
+which I've talked about previously.
+Doing things in the actual language
+makes for easier debugging.
 .
 .Ss Organization
 I usually use only one header file
