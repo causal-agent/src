@@ -97,11 +97,15 @@ static void timer(int sig) {
 int main(int argc, char *argv[]) {
 	const char *host = NULL;
 	const char *port = "6697";
+	const char *cert = NULL;
 	const char *nick = "typer";
 	const char *user = "typer";
+	bool passive = false;
 
-	for (int opt; 0 < (opt = getopt(argc, argv, "n:p:u:v"));) {
+	for (int opt; 0 < (opt = getopt(argc, argv, "Pc:n:p:u:v"));) {
 		switch (opt) {
+			break; case 'P': passive = true;
+			break; case 'c': cert = optarg;
 			break; case 'n': nick = optarg;
 			break; case 'p': port = optarg;
 			break; case 'u': user = optarg;
@@ -119,6 +123,11 @@ int main(int argc, char *argv[]) {
 	struct tls_config *config = tls_config_new();
 	if (!config) errx(EX_SOFTWARE, "tls_config_new");
 
+	if (cert) {
+		int error = tls_config_set_keypair_file(config, cert, cert);
+		if (error) errx(EX_CONFIG, "%s: %s", cert, tls_config_error(config));
+	}
+
 	int error = tls_configure(client, config);
 	if (error) errx(EX_SOFTWARE, "tls_configure: %s", tls_error(client));
 	tls_config_free(config);
@@ -126,9 +135,13 @@ int main(int argc, char *argv[]) {
 	error = tls_connect(client, host, port);
 	if (error) errx(EX_UNAVAILABLE, "tls_connect: %s", tls_error(client));
 
-	format("CAP REQ message-tags\r\n");
-	format("NICK %s\r\n", nick);
-	format("USER %s 0 * :typer\r\n", user);
+	format(
+		"CAP REQ :message-tags%s\r\n"
+		"NICK %s\r\n"
+		"USER %s 0 * :typer\r\n",
+		(passive ? " causal.agency/passive" : ""),
+		nick, user
+	);
 
 	signal(SIGALRM, timer);
 	struct itimerval itimer = { .it_interval.tv_sec = 5, .it_value.tv_sec = 5 };
