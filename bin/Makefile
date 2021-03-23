@@ -6,6 +6,7 @@ CFLAGS += -I${LIBS_PREFIX}/include
 LDFLAGS += -L${LIBS_PREFIX}/lib
 
 CFLAGS += -Wall -Wextra -Wpedantic -Wno-gnu-case-range
+
 LDLIBS.dtch = -lutil
 LDLIBS.fbclock = -lz
 LDLIBS.glitch = -lz
@@ -16,6 +17,7 @@ LDLIBS.ptee = -lutil
 LDLIBS.relay = -ltls
 LDLIBS.scheme = -lm
 LDLIBS.title = -lcurl
+LDLIBS.typer = -ltls
 
 -include config.mk
 
@@ -50,6 +52,7 @@ BINS_LINUX += fbatt
 BINS_LINUX += fbclock
 BINS_LINUX += psfed
 BINS_TLS += relay
+BINS_TLS += typer
 
 BINS_ALL = ${BINS} ${BINS_BSD} ${BINS_LINUX} ${BINS_TLS}
 
