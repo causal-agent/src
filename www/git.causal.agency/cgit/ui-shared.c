@@ -896,7 +896,7 @@ void cgit_add_clone_urls(void (*fn)(const char *))
 static int print_this_commit_option(void)
 {
 	struct object_id oid;
-	if (get_oid(ctx.qry.head, &oid))
+	if (!ctx.qry.head || get_oid(ctx.qry.head, &oid))
 		return 1;
 	html_option(oid_to_hex(&oid), "this commit", ctx.qry.head);
 	return 0;
