@@ -1,0 +1,50 @@
+.Dd April 17, 2021
+.Dt FREECELL 6
+.Os
+.
+.Sh NAME
+.Nm freecell
+.Nd patience game
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl d Ar delay
+.Op Fl n Ar game
+.
+.Sh DESCRIPTION
+.Nm
+is a terminal FreeCell patience game.
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl d Ar delay
+Set the delay in milliseconds
+between queued moves.
+The default is 50.
+.It Fl n Ar game
+Select the game number to play.
+.El
+.
+.Pp
+Moves are performed
+by typing a sequence of two keys.
+To automatically move a card
+to a free cell,
+type the same key twice.
+The keys are as follows:
+.Bl -tag -width Ds
+.It Ic Escape
+Cancel a pending move.
+.It Ic u , Backspace
+Undo the previous move.
+.It Ic 1 , 2 , 3 , 4
+Select the cells.
+.It Ic q , w , e , r , a , s , d , f
+Select the tableau cascades.
+.It Ic _ , Space
+Manually move
+the selected card
+to the foundations.
+.It Ic Shift
+Move a single card
+to an empty tableau cascade.
+.El

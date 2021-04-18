@@ -9,6 +9,7 @@ CFLAGS += -Wall -Wextra -Wpedantic -Wno-gnu-case-range
 
 LDLIBS.dtch = -lutil
 LDLIBS.fbclock = -lz
+LDLIBS.freecell = -lcurses
 LDLIBS.glitch = -lz
 LDLIBS.hnel = -lutil
 LDLIBS.modem = -lutil
@@ -54,17 +55,22 @@ BINS_LINUX += psfed
 BINS_TLS += relay
 BINS_TLS += typer
 
-BINS_ALL = ${BINS} ${BINS_BSD} ${BINS_LINUX} ${BINS_TLS}
+GAMES += freecell
+
+BINS_ALL = ${BINS} ${BINS_BSD} ${BINS_LINUX} ${BINS_TLS} ${GAMES}
 
 MANS = ${BINS:%=man1/%.1}
 MANS_BSD = ${BINS_BSD:%=man1/%.1}
+MANS_GAMES = ${GAMES:%=man6/%.6}
 MANS_LINUX = ${BINS_LINUX:%=man1/%.1}
 MANS_TLS = ${BINS_TLS:%=man1/%.1}
-MANS_ALL = ${BINS_ALL:%=man1/%.1}
+MANS_ALL = ${MANS} ${MANS_BSD} ${MANS_LINUX} ${MANS_TLS} ${MANS_GAMES}
 
 any: meta ${BINS}
 
 bsd: meta ${BINS_BSD}
+
+games: meta ${GAMES}
 
 linux: meta ${BINS_LINUX}
 
@@ -117,15 +123,6 @@ setuid: bri
 	chown root bri
 	chmod u+s bri
 
-link:
-	install -d ${PREFIX}/bin ${MANDIR}/man1
-	ln -fs ${BINS_ALL:%=${PWD}/%} ${PREFIX}/bin
-	ln -fs ${MANS_ALL:%=${PWD}/%} ${MANDIR}/man1
-
-unlink:
-	rm -f ${BINS_ALL:%=${PREFIX}/bin/%}
-	rm -f ${MANS_ALL:%=${MANDIR}/%}
-
 install: ${BINS} ${MANS}
 	install -d ${PREFIX}/bin ${MANDIR}/man1
 	install ${BINS} ${PREFIX}/bin
@@ -135,6 +132,11 @@ install-bsd: ${BINS_BSD} ${MANS_BSD}
 	install -d ${PREFIX}/bin ${MANDIR}/man1
 	install ${BINS_BSD} ${PREFIX}/bin
 	install -m 644 ${MANS_BSD} ${MANDIR}/man1
+
+install-games: ${GAMES} ${MANS_GAMES}
+	install -d ${PREFIX}/bin ${MANDIR}/man6
+	install ${GAMES} ${PREFIX}/bin
+	install -m 644 ${MANS_GAMES} ${MANDIR}/man6
 
 install-linux: ${BINS_LINUX} ${MANS_BSD}
 	install -d ${PREFIX}/bin ${MANDIR}/man1
@@ -179,6 +181,9 @@ htmltags: *.[chly] mtags Makefile *.sh
 
 .pl.html:
 	sh html.sh man1/${<:.pl=.1} $< > $@
+
+freecell.html: freecell.c man6/freecell.6
+	sh html.sh man6/freecell.6 freecell.c > $@
 
 index.html: README.7 Makefile html.sh
 	sh html.sh README.7 Makefile html.sh > $@
