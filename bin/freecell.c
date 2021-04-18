@@ -232,23 +232,23 @@ static void drawCard(bool hi, int y, int x, Card card) {
 	if (!card) return;
 	move(y, x);
 	attr_set(hi ? A_REVERSE : A_NORMAL, (card & Color) ? 2 : 1, NULL);
-	switch (card & Rank) {
-		break; case A: addstr("A ");
-		break; case 10: addstr("10");
-		break; case J: addstr("J ");
-		break; case Q: addstr("Q ");
-		break; case K: addstr("K ");
-		break; default: {
-			addch('0' + (card & Rank));
-			addch(' ');
-		}
-	}
 	switch (card & Suit) {
 		break; case Club: addstr("\u2663");
 		break; case Diamond: addstr("\u2666");
 		break; case Spade: addstr("\u2660");
 		break; case Heart: addstr("\u2665");
 		break; default:;
+	}
+	switch (card & Rank) {
+		break; case A: addstr(" A");
+		break; case 10: addstr("10");
+		break; case J: addstr(" J");
+		break; case Q: addstr(" Q");
+		break; case K: addstr(" K");
+		break; default: {
+			addch(' ');
+			addch('0' + (card & Rank));
+		}
 	}
 	attr_set(A_NORMAL, 0, NULL);
 }
