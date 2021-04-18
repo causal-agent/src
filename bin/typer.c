@@ -63,10 +63,13 @@ static void format(const char *format, ...) {
 }
 
 static bool joined;
+static bool reverse;
 
 static void handle(char *line) {
-	if (line && line[0] == '@') strsep(&line, " ");
-	if (line && line[0] == ':') strsep(&line, " ");
+	char *tags = NULL;
+	char *origin = NULL;
+	if (line && line[0] == '@') tags = 1 + strsep(&line, " ");
+	if (line && line[0] == ':') origin = 1 + strsep(&line, " ");
 	char *cmd = strsep(&line, " ");
 	if (!cmd) return;
 	if (!strcmp(cmd, "CAP")) {
@@ -81,6 +84,15 @@ static void handle(char *line) {
 		joined = true;
 	} else if (!strcmp(cmd, "PING")) {
 		format("PONG %s\r\n", line);
+	} else if (reverse && !strcmp(cmd, "TAGMSG") && tags && origin) {
+		char *nick = strsep(&origin, "!");
+		if (strstr(tags, "typing=active")) {
+			format("PRIVMSG %s :\u2328\uFE0F %s is typing!\r\n", chan, nick);
+		} else if (strstr(tags, "typing=paused")) {
+			format("PRIVMSG %s :\U0001F914 %s is thinking!\r\n", chan, nick);
+		} else if (strstr(tags, "typing=done")) {
+			format("PRIVMSG %s :\u270B %s stopped typing!\r\n", chan, nick);
+		}
 	}
 }
 
@@ -102,9 +114,10 @@ int main(int argc, char *argv[]) {
 	const char *user = "typer";
 	bool passive = false;
 
-	for (int opt; 0 < (opt = getopt(argc, argv, "Pc:n:p:u:v"));) {
+	for (int opt; 0 < (opt = getopt(argc, argv, "PRc:n:p:u:v"));) {
 		switch (opt) {
 			break; case 'P': passive = true;
+			break; case 'R': reverse = true;
 			break; case 'c': cert = optarg;
 			break; case 'n': nick = optarg;
 			break; case 'p': port = optarg;
@@ -143,10 +156,15 @@ int main(int argc, char *argv[]) {
 		nick, user
 	);
 
-	signal(SIGALRM, timer);
-	struct itimerval itimer = { .it_interval.tv_sec = 5, .it_value.tv_sec = 5 };
-	error = setitimer(ITIMER_REAL, &itimer, NULL);
-	if (error) err(EX_OSERR, "setitimer");
+	if (!reverse) {
+		signal(SIGALRM, timer);
+		struct itimerval itimer = {
+			.it_interval.tv_sec = 5,
+			.it_value.tv_sec = 5
+		};
+		error = setitimer(ITIMER_REAL, &itimer, NULL);
+		if (error) err(EX_OSERR, "setitimer");
+	}
 
 	size_t len = 0;
 	char buf[4096];
