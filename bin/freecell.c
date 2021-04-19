@@ -173,10 +173,9 @@ static void moveSingle(uint dst, uint src) {
 	enq(dst, src);
 }
 
-static uint freeCells(uint cells[static Stacks], uint dst) {
+static uint freeCells(uint cells[static 4]) {
 	uint len = 0;
-	for (uint i = Cell; i < Stacks; ++i) {
-		if (i == dst) continue;
+	for (uint i = Cell; i < Tableau; ++i) {
 		if (!stacks[i].len) cells[len++] = i;
 	}
 	return len;
@@ -195,8 +194,8 @@ static uint moveDepth(uint src) {
 
 static void moveColumn(uint dst, uint src) {
 	uint depth;
-	uint cells[Stacks];
-	uint free = freeCells(cells, dst);
+	uint cells[4];
+	uint free = freeCells(cells);
 	for (depth = moveDepth(src); depth; --depth) {
 		if (free < depth-1) continue;
 		if (valid(dst, stacks[src].cards[stacks[src].len-depth])) break;
