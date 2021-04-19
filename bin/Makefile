@@ -1,26 +1,11 @@
-PREFIX = ~/.local
-MANDIR = ${PREFIX}/share/man
+PREFIX ?= ~/.local
+MANDIR ?= ${PREFIX}/share/man
 
-LIBS_PREFIX = /usr/local
+LIBS_PREFIX ?= /usr/local
 CFLAGS += -I${LIBS_PREFIX}/include
 LDFLAGS += -L${LIBS_PREFIX}/lib
 
 CFLAGS += -Wall -Wextra -Wpedantic -Wno-gnu-case-range
-
-LDLIBS.dtch = -lutil
-LDLIBS.fbclock = -lz
-LDLIBS.freecell = -lcurses
-LDLIBS.glitch = -lz
-LDLIBS.hnel = -lutil
-LDLIBS.modem = -lutil
-LDLIBS.pngo = -lz
-LDLIBS.ptee = -lutil
-LDLIBS.relay = -ltls
-LDLIBS.scheme = -lm
-LDLIBS.title = -lcurl
-LDLIBS.typer = -ltls
-
--include config.mk
 
 BINS += beef
 BINS += bibsort
@@ -47,36 +32,99 @@ BINS += up
 BINS += when
 BINS += xx
 
-BINS_BSD += ever
-BINS_LINUX += bri
-BINS_LINUX += fbatt
-BINS_LINUX += fbclock
-BINS_LINUX += psfed
-BINS_TLS += relay
-BINS_TLS += typer
+BSD += ever
 
 GAMES += freecell
 
-BINS_ALL = ${BINS} ${BINS_BSD} ${BINS_LINUX} ${BINS_TLS} ${GAMES}
+LINUX += bri
+LINUX += fbatt
+LINUX += fbclock
+LINUX += psfed
+
+TLS += relay
+TLS += typer
 
 MANS = ${BINS:%=man1/%.1}
-MANS_BSD = ${BINS_BSD:%=man1/%.1}
-MANS_GAMES = ${GAMES:%=man6/%.6}
-MANS_LINUX = ${BINS_LINUX:%=man1/%.1}
-MANS_TLS = ${BINS_TLS:%=man1/%.1}
-MANS_ALL = ${MANS} ${MANS_BSD} ${MANS_LINUX} ${MANS_TLS} ${MANS_GAMES}
+MANS.BSD = ${BSD:%=man1/%.1}
+MANS.GAMES = ${GAMES:%=man6/%.6}
+MANS.LINUX = ${LINUX:%=man1/%.1}
+MANS.TLS = ${TLS:%=man1/%.1}
 
-any: meta ${BINS}
+LDLIBS.dtch = -lutil
+LDLIBS.fbclock = -lz
+LDLIBS.freecell = -lcurses
+LDLIBS.glitch = -lz
+LDLIBS.hnel = -lutil
+LDLIBS.modem = -lutil
+LDLIBS.pngo = -lz
+LDLIBS.ptee = -lutil
+LDLIBS.relay = -ltls
+LDLIBS.scheme = -lm
+LDLIBS.title = -lcurl
+LDLIBS.typer = -ltls
 
-bsd: meta ${BINS_BSD}
+ALL ?= meta any
 
-games: meta ${GAMES}
+-include config.mk
 
-linux: meta ${BINS_LINUX}
-
-tls: meta ${BINS_TLS}
+all: ${ALL}
 
 meta: .gitignore tags
+
+any: ${BINS}
+
+bsd: ${BSD}
+
+games: ${GAMES}
+
+linux: ${LINUX}
+
+tls: ${TLS}
+
+IGNORE = *.o *.html
+IGNORE += ${BINS} ${BSD} ${GAMES} ${LINUX} ${TLS}
+IGNORE += scheme.h tags htmltags
+
+.gitignore: Makefile
+	echo config.mk '${IGNORE}' | tr ' ' '\n' | sort > $@
+
+tags: *.[chly]
+	ctags -w *.[chly]
+
+clean:
+	rm -f ${IGNORE}
+
+install: ${ALL:%=install-%}
+
+install-meta:
+	install -d ${PREFIX}/bin ${MANDIR}/man1
+
+install-any: install-meta ${BINS} ${MANS}
+	install ${BINS} ${PREFIX}/bin
+	install -m 644 ${MANS} ${MANDIR}/man1
+
+install-bsd: install-meta ${BSD} ${MANS.BSD}
+	install ${BSD} ${PREFIX}/bin
+	install -m 644 ${MANS.BSD} ${MANDIR}/man1
+
+install-games: install-meta ${GAMES} ${MANS.GAMES}
+	install ${GAMES} ${PREFIX}/bin
+	install -m 644 ${MANS.GAMES} ${MANDIR}/man6
+
+install-linux: install-meta ${LINUX} ${MANS.LINUX}
+	install ${LINUX} ${PREFIX}/bin
+	install -m 644 ${MANS.LINUX} ${MANDIR}/man1
+
+install-tls: install-meta ${TLS} ${MANS.TLS}
+	install ${TLS} ${PREFIX}/bin
+	install -m 644 ${MANS.TLS} ${MANDIR}/man1
+
+uninstall:
+	rm -f ${BINS:%=${PREFIX}/bin/%} ${MANS:%=${MANDIR}/%}
+	rm -f ${BSD:%=${PREFIX}/bin/%} ${MANS.BSD:%=${MANDIR}/%}
+	rm -f ${GAMES:%=${PREFIX}/bin/%} ${MANS.GAMES:%=${MANDIR}/%}
+	rm -f ${LINUX:%=${PREFIX}/bin/%} ${MANS.LINUX:%=${MANDIR}/%}
+	rm -f ${TLS:%=${PREFIX}/bin/%} ${MANS.TLS:%=${MANDIR}/%}
 
 .SUFFIXES: .pl
 
@@ -90,11 +138,7 @@ meta: .gitignore tags
 	cp -f $< $@
 	chmod a+x $@
 
-OBJS.hilex += c11.o
-OBJS.hilex += hilex.o
-OBJS.hilex += make.o
-OBJS.hilex += mdoc.o
-OBJS.hilex += sh.o
+OBJS.hilex = c11.o hilex.o make.o mdoc.o sh.o
 
 hilex: ${OBJS.hilex}
 	${CC} ${LDFLAGS} ${OBJS.$@} ${LDLIBS.$@} -o $@
@@ -106,88 +150,6 @@ fbatt.o fbclock.o: scheme.h
 psf2png.o scheme.o: png.h
 
 scheme.h: scheme
-	./scheme -c > scheme.h
+	./scheme -c > $@
 
-tags: *.[chly]
-	ctags -w *.[chly]
-
-IGNORE = *.o *.html ${BINS_ALL} scheme.h tags htmltags
-
-.gitignore: Makefile
-	echo config.mk '${IGNORE}' | tr ' ' '\n' | sort > .gitignore
-
-clean:
-	rm -f ${IGNORE}
-
-setuid: bri
-	chown root bri
-	chmod u+s bri
-
-install: ${BINS} ${MANS}
-	install -d ${PREFIX}/bin ${MANDIR}/man1
-	install ${BINS} ${PREFIX}/bin
-	install -m 644 ${MANS} ${MANDIR}/man1
-
-install-bsd: ${BINS_BSD} ${MANS_BSD}
-	install -d ${PREFIX}/bin ${MANDIR}/man1
-	install ${BINS_BSD} ${PREFIX}/bin
-	install -m 644 ${MANS_BSD} ${MANDIR}/man1
-
-install-games: ${GAMES} ${MANS_GAMES}
-	install -d ${PREFIX}/bin ${MANDIR}/man6
-	install ${GAMES} ${PREFIX}/bin
-	install -m 644 ${MANS_GAMES} ${MANDIR}/man6
-
-install-linux: ${BINS_LINUX} ${MANS_BSD}
-	install -d ${PREFIX}/bin ${MANDIR}/man1
-	install ${BINS_LINUX} ${PREFIX}/bin
-	install -m 644 ${MANS_LINUX} ${MANDIR}/man1
-
-install-tls: ${BINS_TLS} ${MANS_BSD}
-	install -d ${PREFIX}/bin ${MANDIR}/man1
-	install ${BINS_TLS} ${PREFIX}/bin
-	install -m 644 ${MANS_TLS} ${MANDIR}/man1
-
-uninstall:
-	rm -f ${BINS_ALL:%=${PREFIX}/bin/%}
-	rm -f ${MANS_ALL:%=${MANDIR}/%}
-
-HTMLS = index.html ${BINS_ALL:=.html} png.html
-WEBROOT = /usr/local/www/causal.agency
-
-html: ${HTMLS}
-	@true
-
-${HTMLS}: html.sh scheme hilex htagml htmltags
-
-htmltags: *.[chly] mtags Makefile *.sh
-	rm -f $@
-	for f in *.[chly]; do ctags -aw -f $@ $$f; done
-	./mtags -a -f $@ Makefile *.sh
-
-.SUFFIXES: .html
-
-.c.html:
-	sh html.sh man1/${<:.c=.1} $< > $@
-
-.h.html:
-	sh html.sh man3/${<:.h=.3} $< > $@
-
-.y.html:
-	sh html.sh man1/${<:.y=.1} $< > $@
-
-.sh.html:
-	sh html.sh man1/${<:.sh=.1} $< > $@
-
-.pl.html:
-	sh html.sh man1/${<:.pl=.1} $< > $@
-
-freecell.html: freecell.c man6/freecell.6
-	sh html.sh man6/freecell.6 freecell.c > $@
-
-index.html: README.7 Makefile html.sh
-	sh html.sh README.7 Makefile html.sh > $@
-
-install-html: ${HTMLS}
-	install -d ${WEBROOT}/bin
-	install -C -m 644 ${HTMLS} ${WEBROOT}/bin
+include html.mk
