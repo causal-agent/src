@@ -284,7 +284,7 @@ static void draw(void) {
 		char key;
 		if (i < Cell) {
 			y = FoundationY;
-			x = FoundationX + (i-Foundation) * (CardWidth+Padding);
+			x = FoundationX + (3-(i-Foundation)) * (CardWidth+Padding);
 			key = '_';
 		} else if (i < Tableau) {
 			y = CellY;
