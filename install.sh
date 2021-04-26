@@ -9,7 +9,7 @@ while getopts 'X' opt; do
 	esac
 done
 
-packages='curl htop neovim sl the_silver_searcher tree'
+packages='curl htop sl the_silver_searcher tree'
 
 FreeBSD() {
 	sudo pkg install ddate $packages
