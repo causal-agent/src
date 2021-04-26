@@ -23,6 +23,7 @@ TXTS += 017-unpasswords.txt
 TXTS += 018-operating-systems.txt
 TXTS += 019-mailing-list.txt
 TXTS += 020-c-style.txt
+TXTS += 021-time-machine.txt
 
 all: ${TXTS}
 

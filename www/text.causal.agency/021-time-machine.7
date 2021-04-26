@@ -1,0 +1,144 @@
+.Dd April 25, 2021
+.Dt TIME-MACHINE 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm Time Machine
+.Nd an awful one
+.
+.Sh DESCRIPTION
+If, like me,
+you have a Raspberry Pi 3 at home
+that you've just upgraded to
+.Fx 13.0
+which has a hard drive
+from an old laptop
+attached to it by USB adapter
+with ZFS on it
+and you want to
+use that as a Time Machine
+backup destination
+over SMB using
+.Xr samba 8 ,
+despite
+.Xr samba 8
+being awful software
+and using ZFS on a system
+with only 1 GB of RAM
+being a terrible idea,
+this is how to do it.
+.
+.Pp
+In
+.Pa /usr/local/etc/smb4.conf :
+.Bd -literal -offset indent
+[global]
+vfs objects = zfsacl catia fruit streams_xattr
+fruit:metadata = stream
+fruit:model = Macmini
+
+[TimeMachine]
+read only = no
+path = /media/zhdd/backup/TimeMachine
+fruit:time machine = yes
+fruit:time machine max size = 250G
+.Ed
+.
+.Pp
+The important thing here is
+.Sy zfsacl
+in the vfs objects list.
+Most pages will tell you about the others,
+but without
+.Sy zfsacl
+Time Machine will just fail to
+create the backup
+and not provide any useful error.
+I'm not actually sure if the
+.Sy fruit:metadata
+setting is required,
+but a bunch of pages recommend it.
+The
+.Sy fruit:model
+just makes it look nice in Finder.
+The rest creates an SMB share called
+.Dq TimeMachine
+that macOS will be willing to use.
+You can limit the size of the share that
+.Xr samba 8
+reports so that Time Machine
+doesn't fill up the whole drive.
+.
+.Pp
+The other important thing to do
+is to create some swap space.
+When I first tried backing up
+to this share,
+it stopped after a while
+because
+.Xr smbd 8
+got killed
+when there was nowhere to swap pages to.
+A wiki page told me to
+create swap on ZFS like this:
+.Bd -literal -offset indent
+zfs create -V 2G \e
+	-o org.freebsd:swap=on \e
+	-o checksum=off \e
+	-o compression=off \e
+	-o dedup=off \e
+	-o sync=disabled \e
+	-o primarycache=none \e
+	zhdd/swap
+swapon /dev/zvol/zhdd/swap
+.Ed
+.
+.Pp
+To be fair to
+.Xr samba 8 ,
+most of the memory
+is being used by the ZFS ARC
+.Po
+which you can see in
+.Xr top 1
+.Pc ,
+but
+.Xr smbd 8
+still seems to be using
+far more memory than is reasonable.
+It's interesting seeing processes
+with 0 RES in
+.Xr htop 1
+because they're all being swapped out
+while the ARC takes half the available RAM.
+And having to wait for my shell
+to be paged back in when I quit
+.Xr htop 1 .
+.
+.Pp
+Anyway,
+as expected this whole thing
+is terribly slow.
+On my initial backup,
+I'm currently at 26.49 GB
+of 104.22 GB
+with an estimate of 8 hours remaining.
+Normally transfer time estimates
+are wildly inaccurate,
+but I think in this case it's right.
+.
+.Sh AUTHORS
+.An june Aq Mt june@causal.agency
+.
+.Sh BUGS
+.Fx
+doesn't seem to want to mount
+the ZFS volumes on the hard-drive-over-USB
+automatically at boot.
+I have to
+.Xr zpool-import 8
+the drive manually each time.
+I don't know if there's a workaround for this,
+but I don't have anything essential
+to the system on the drive,
+and it doesn't need to reboot often.
