@@ -2,7 +2,7 @@ set -o noclobber -o nounset -o vi
 
 CDPATH=:~
 
-alias vi=$EDITOR vim=$EDITOR
+alias vi=$EDITOR
 alias ls='LC_COLLATE=C ls -p'
 alias ll='ls -hl'
 alias bc='bc -l'
