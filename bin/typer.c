@@ -64,6 +64,7 @@ static void format(const char *format, ...) {
 
 static bool joined;
 static bool reverse;
+static bool copy;
 
 static void handle(char *line) {
 	char *tags = NULL;
@@ -84,6 +85,10 @@ static void handle(char *line) {
 		joined = true;
 	} else if (!strcmp(cmd, "PING")) {
 		format("PONG %s\r\n", line);
+	} else if (copy && !strcmp(cmd, "TAGMSG") && tags) {
+		if (strstr(tags, "typing=")) {
+			format("@%s TAGMSG %s\r\n", tags, chan);
+		}
 	} else if (reverse && !strcmp(cmd, "TAGMSG") && tags && origin) {
 		char *nick = strsep(&origin, "!");
 		if (strstr(tags, "typing=active")) {
@@ -114,8 +119,9 @@ int main(int argc, char *argv[]) {
 	const char *user = "typer";
 	bool passive = false;
 
-	for (int opt; 0 < (opt = getopt(argc, argv, "PRc:n:p:u:v"));) {
+	for (int opt; 0 < (opt = getopt(argc, argv, "CPRc:n:p:u:v"));) {
 		switch (opt) {
+			break; case 'C': copy = true;
 			break; case 'P': passive = true;
 			break; case 'R': reverse = true;
 			break; case 'c': cert = optarg;
@@ -156,7 +162,7 @@ int main(int argc, char *argv[]) {
 		nick, user
 	);
 
-	if (!reverse) {
+	if (!copy && !reverse) {
 		signal(SIGALRM, timer);
 		struct itimerval itimer = {
 			.it_interval.tv_sec = 5,

@@ -1,4 +1,4 @@
-.Dd April 18, 2021
+.Dd April 28, 2021
 .Dt TYPER 1
 .Os
 .
@@ -8,7 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl PRv
+.Op Fl CPRv
 .Op Fl c Ar cert
 .Op Fl n Ar nick
 .Op Fl p Ar port
@@ -22,6 +22,10 @@ is an IRC bot
 that types all day long.
 The arguments are as follows:
 .Bl -tag -width Ds
+.It Fl C
+Copy
+.Nm .
+Type whenever anyone else is typing.
 .It Fl P
 Request the
 .Sy causal.agency/passive
