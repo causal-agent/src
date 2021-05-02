@@ -5,6 +5,7 @@ CDPATH=:~
 alias vi=$EDITOR
 alias ls='LC_COLLATE=C ls -p'
 alias ll='ls -hl'
+alias ff='find . -type f -name'
 alias bc='bc -l'
 alias ag='ag --pager=$PAGER'
 alias gs='git status --short --branch || ls' gd='git diff'
