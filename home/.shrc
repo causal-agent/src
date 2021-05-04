@@ -18,6 +18,15 @@ alias rand='openssl rand -base64 33'
 alias private='eval "$(gpg -d ~/.private)"'
 type doas >/dev/null && alias sudo=doas
 
+man() {
+	test $# -ne 1 && { command man "$@"; return $?; }
+	(IFS=:
+	for sect in $MANSECT; do
+		command man -w $sect "$1" >/dev/null 2>&1 && exec man $sect "$1"
+	done
+	exec man "$1")
+}
+
 cd() {
 	local path
 	if [ $# -eq 0 ]; then
