@@ -26,7 +26,7 @@ while (<>) {
 sub byLast {
 	my ($af, $al) = split /\s(\S+)(,.*)?$/, $a;
 	my ($bf, $bl) = split /\s(\S+)(,.*)?$/, $b;
-	$al cmp $bl || $af cmp $bf;
+	($al // $af) cmp ($bl // $bf) || $af cmp $bf;
 }
 
 foreach $ref (@refs) {
