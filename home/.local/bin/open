@@ -10,9 +10,9 @@ case "$1" in
 		curl -LSs "$1" | imv -
 		;;
 	(https://youtu.be/*|https://www.youtube.com/watch*|https://twitch.tv/*)
-		exec mpv "$1" >/dev/null 2>/dev/null
+		exec mpv "$1" >/dev/null 2>&1
 		;;
 	(*)
-		exec xterm -e w3m "$1"
+		exec firefox -new-tab "$1" >/dev/null 2>&1
 		;;
 esac

@@ -7,6 +7,7 @@ autogroup 0 clock,XTerm
 
 unbind-key all
 bind-key 4-n terminal
+bind-key 4-t "firefox -new-tab about:blank"
 bind-key 4-Delete lock
 bind-key 4-Down window-lower
 bind-key 4-Up window-raise

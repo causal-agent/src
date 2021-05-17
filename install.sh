@@ -18,7 +18,7 @@ FreeBSD() {
 OpenBSD() {
 	doas pkg_add $packages
 	if test $X; then
-		doas pkg_add go-fonts imv scrot sct w3m-- xcursor-dmz xsel
+		doas pkg_add firefox go-fonts imv scrot sct w3m-- xcursor-dmz xsel
 	fi
 }
 
