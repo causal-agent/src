@@ -49,6 +49,10 @@ bind-key 4S-h window-move-left
 bind-key 4S-j window-move-down
 bind-key 4S-k window-move-up
 bind-key 4S-l window-move-right
+bind-key 4S-y window-snap-up-left
+bind-key 4S-u window-snap-up-right
+bind-key 4S-b window-snap-down-left
+bind-key 4S-n window-snap-down-right
 bind-key 4M-h window-resize-left
 bind-key 4M-j window-resize-down
 bind-key 4M-k window-resize-up
