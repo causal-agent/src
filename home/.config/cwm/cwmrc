@@ -4,6 +4,7 @@ moveamount 10
 
 ignore clock
 autogroup 0 clock,XTerm
+gap 38 0 0 0
 
 unbind-key all
 bind-key 4-n terminal
