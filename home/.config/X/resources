@@ -5,6 +5,9 @@ Xft.hinting: false
 Xcursor.size: 64
 Xcursor.theme: dmz-aa
 
+XLock.usefirst: false
+XLock.echokeys: true
+
 *Background: rgb:14/13/0E
 *Foreground: rgb:B7/A9/80
 *BorderColor: rgb:99/8D/6B
