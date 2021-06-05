@@ -138,7 +138,12 @@ static void printScalar(struct tm scalar) {
 	} else if (scalar.tm_mday) {
 		printf("%dw ", scalar.tm_mday / 7);
 	}
-	if (scalar.tm_yday && scalar.tm_mon) printf("(%dd) ", scalar.tm_yday);
+	if (scalar.tm_yday && scalar.tm_mon) {
+		if (scalar.tm_yday % 7 == 0) {
+			printf("(%dw) ", scalar.tm_yday / 7);
+		}
+		printf("(%dd) ", scalar.tm_yday);
+	}
 	printf("\n");
 }
 
