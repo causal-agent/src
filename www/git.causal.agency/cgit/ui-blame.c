@@ -10,7 +10,7 @@
 #include "ui-blame.h"
 #include "html.h"
 #include "ui-shared.h"
-#include "argv-array.h"
+#include "strvec.h"
 #include "blame.h"
 
 
@@ -48,7 +48,7 @@ static void emit_blame_entry_hash(struct blame_entry *ent)
 	unsigned long line = 0;
 
 	char *detail = emit_suspect_detail(suspect);
-	html("<span class='sha1'>");
+	html("<span class='oid'>");
 	cgit_commit_link(find_unique_abbrev(oid, DEFAULT_ABBREV), detail,
 			 NULL, ctx.qry.head, oid_to_hex(oid), suspect->path);
 	html("</span>");
@@ -104,7 +104,7 @@ static void print_object(const struct object_id *oid, const char *path,
 	enum object_type type;
 	char *buf;
 	unsigned long size;
-	struct argv_array rev_argv = ARGV_ARRAY_INIT;
+	struct strvec rev_argv = STRVEC_INIT;
 	struct rev_info revs;
 	struct blame_scoreboard sb;
 	struct blame_origin *o;
@@ -124,15 +124,16 @@ static void print_object(const struct object_id *oid, const char *path,
 		return;
 	}
 
-	argv_array_push(&rev_argv, "blame");
-	argv_array_push(&rev_argv, rev);
+	strvec_push(&rev_argv, "blame");
+	strvec_push(&rev_argv, rev);
 	init_revisions(&revs, NULL);
 	revs.diffopt.flags.allow_textconv = 1;
-	setup_revisions(rev_argv.argc, rev_argv.argv, &revs, NULL);
+	setup_revisions(rev_argv.nr, rev_argv.v, &revs, NULL);
 	init_scoreboard(&sb);
 	sb.revs = &revs;
 	sb.repo = the_repository;
-	setup_scoreboard(&sb, path, &o);
+	sb.path = path;
+	setup_scoreboard(&sb, &o);
 	o->suspects = blame_entry_prepend(NULL, 0, sb.num_lines, o);
 	prio_queue_put(&sb.commits, o->commit);
 	blame_origin_decref(o);
@@ -224,8 +225,7 @@ cleanup:
 }
 
 static int walk_tree(const struct object_id *oid, struct strbuf *base,
-		     const char *pathname, unsigned mode, int stage,
-		     void *cbdata)
+		     const char *pathname, unsigned mode, void *cbdata)
 {
 	struct walk_tree_context *walk_tree_ctx = cbdata;
 
@@ -260,7 +260,7 @@ static int basedir_len(const char *path)
 
 void cgit_print_blame(void)
 {
-	const char *rev = ctx.qry.sha1;
+	const char *rev = ctx.qry.oid;
 	struct object_id oid;
 	struct commit *commit;
 	struct pathspec_item path_items = {
@@ -294,10 +294,8 @@ void cgit_print_blame(void)
 	walk_tree_ctx.match_baselen = (path_items.match) ?
 				       basedir_len(path_items.match) : -1;
 
-	read_tree_recursive(the_repository,
-			    repo_get_commit_tree(the_repository, commit),
-			    "", 0, 0,
-			    &paths, walk_tree, &walk_tree_ctx);
+	read_tree(the_repository, repo_get_commit_tree(the_repository, commit),
+		  &paths, walk_tree, &walk_tree_ctx);
 	if (!walk_tree_ctx.state)
 		cgit_print_error_page(404, "Not found", "Not found");
 	else if (walk_tree_ctx.state == 2)
