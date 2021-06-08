@@ -25,7 +25,7 @@ test_expect_success 'verify gzip format' '
 
 test_expect_success 'untar' '
 	rm -rf master &&
-	tar -xzf master.tar.gz
+	gzip -dc master.tar.gz | tar -xf -
 '
 
 test_expect_success 'count files' '
@@ -61,13 +61,12 @@ test_expect_success LZIP 'strip off the header lines' '
 '
 
 test_expect_success LZIP 'verify lzip format' '
-	lzip --test master.tar.lz &&
-	cp master.tar.lz /tmp/.
+	lzip --test master.tar.lz
 '
 
 test_expect_success LZIP 'untar' '
 	rm -rf master &&
-	tar --lzip -xf master.tar.lz
+	lzip -dc master.tar.lz | tar -xf -
 '
 
 test_expect_success LZIP 'count files' '
@@ -103,13 +102,12 @@ test_expect_success XZ 'strip off the header lines' '
 '
 
 test_expect_success XZ 'verify xz format' '
-	xz --test master.tar.xz &&
-	cp master.tar.xz /tmp/.
+	xz --test master.tar.xz
 '
 
 test_expect_success XZ 'untar' '
 	rm -rf master &&
-	tar --xz -xf master.tar.xz
+	xz -dc master.tar.xz | tar -xf -
 '
 
 test_expect_success XZ 'count files' '
@@ -145,13 +143,12 @@ test_expect_success ZSTD 'strip off the header lines' '
 '
 
 test_expect_success ZSTD 'verify zstd format' '
-	zstd --test master.tar.zst &&
-	cp master.tar.zst /tmp/.
+	zstd --test master.tar.zst
 '
 
 test_expect_success ZSTD 'untar' '
 	rm -rf master &&
-	tar --zstd -xf master.tar.zst
+	zstd -dc master.tar.zst | tar -xf -
 '
 
 test_expect_success ZSTD 'count files' '
