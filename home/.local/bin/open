@@ -10,6 +10,7 @@ case "$1" in
 		curl -LSs "$1" | imv -
 		;;
 	(https://youtu.be/*|https://www.youtube.com/watch*|https://twitch.tv/*)
+		ulimit -c 0 # mpv segfaults on exit every time on OpenBSD...
 		exec mpv "$1" >/dev/null 2>&1
 		;;
 	(*)
