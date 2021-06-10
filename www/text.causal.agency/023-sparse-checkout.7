@@ -1,0 +1,144 @@
+.Dd June  9, 2021
+.Dt SPARSE-CHECKOUT 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm Sparse Checkout
+.Nd a cool git feature
+.
+.Sh DESCRIPTION
+I was going to write a post about
+.Xr git-subtree 1
+(and I still plan to!)
+but while talking about it
+with a friend
+I came across another command:
+.Xr git-sparse-checkout 1 .
+I got pretty excited because
+I already had a use case for it.
+.
+.Pp
+.Xr git-sparse-checkout 1
+does pretty much what it sounds like.
+It lets you only have
+a subset of files in the repository actually
+.Dq checked out .
+This is really useful
+for huge respositories
+where you are only interested in
+some part of it.
+Any operation touching the working tree
+is much faster because
+it can skip all the files you don't care about.
+.
+.Pp
+My use case is with the
+.Fx
+.Xr ports 7
+tree,
+which recently moved to git
+and contains almost 14 thousand files.
+Working with the whole repository
+was super painful.
+.Xr git-status 1 ,
+which I run as a habit
+when my shell is idle,
+would take dozens of seconds
+to check the whole working tree
+and report back.
+(I didn't get any real time measurements
+before enabling
+.Xr git-sparse-checkout 1 ,
+and I'm not about to disable it now,
+since it'd have to check out
+all those files again.)
+I'm only actually working on
+a small handful of ports,
+so all that work is wasted.
+Time to turn on sparse checkout:
+.Bd -literal -offset indent
+git sparse-checkout init --cone
+.Ed
+.
+.Pp
+The
+.Fl \-cone
+option here
+(which I keep reading as
+.Dq clone
+because it's git)
+restricts the kinds of patterns
+you can use to select files to check out,
+but makes the calculation more efficient.
+Basically it means you can only select
+paths along with everything below them,
+which I think is pretty much
+always what you want anyway.
+Enabling sparse checkout
+can take quite a while
+because it has to do a lot of un-checking-out.
+I should mention
+that you can pass
+.Fl \-sparse
+to
+.Xr git-clone 1
+to avoid ever checking out
+the whole tree.
+.
+.Pp
+The default selection when you run
+.Cm init
+is to check out all the files
+at the root of the repository,
+but none of the subdirectories.
+For
+.Xr ports 7 ,
+I also want to check out
+the shared scripts and Makefiles:
+.Bd -literal -offset indent
+git sparse-checkout add Keywords Mk Templates Tools
+.Ed
+.
+.Pp
+And then I can selectively check out
+just the ports I'm working on:
+.Bd -literal -offset indent
+git sparse-checkout add irc/catgirl irc/pounce
+.Ed
+.
+.Pp
+After enabling sparse checkout,
+.Xr git-status 1
+takes what I'd call
+a normal amount of time.
+I also did this on
+a couple-weeks-out-of-date copy of the
+.Xr ports 7
+tree,
+and when I ran
+.Xr git-pull 1
+it was also really quick,
+because it didn't have to bother
+updating all those files
+I'm not interested in.
+It still downloads all the git objects,
+of course,
+and you can just add any new paths you need
+to the sparse checkout list.
+My disk usage also went down
+by about a gigabyte.
+.
+.Pp
+I'm super pleased to discover this part of git,
+because it makes working with huge
+and/or monorepo-style repositories
+so much more feasible!
+You can see how I came across it,
+since
+.Xr git-subtree 1
+is also a useful tool for monorepos.
+Stay tuned for that post,
+I guess :)
+.
+.Sh AUTHORS
+.An june Aq Mt june@causal.agency
