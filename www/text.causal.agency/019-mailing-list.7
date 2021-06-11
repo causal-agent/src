@@ -231,10 +231,9 @@ The
 script runs
 .Xr bubger 1 ,
 writing the list of updated paths to
-.Pa ~/list/FILES ,
-truncating it before each update:
+.Pa ~/list/FILES :
 .Bd -literal -offset indent
-exec bubger -it -C ~/list [...] >~/list/FILES
+exec bubger -i -C ~/list [...] >~/list/FILES
 .Ed
 .
 .Pp
