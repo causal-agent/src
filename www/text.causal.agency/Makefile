@@ -26,6 +26,7 @@ TXTS += 020-c-style.txt
 TXTS += 021-time-machine.txt
 TXTS += 022-swans-are-dead.txt
 TXTS += 023-sparse-checkout.txt
+TXTS += 024-seprintf.txt
 
 all: ${TXTS}
 

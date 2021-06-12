@@ -1,0 +1,137 @@
+.Dd June 12, 2021
+.Dt SEPRINTF 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm seprintf
+.Nd an snprintf alternative
+.
+.Sh SYNOPSIS
+.Ft "char *"
+.Fn seprintf "char *ptr" "char *end" "const char *fmt" "..."
+.
+.Sh DESCRIPTION
+While discussing string building in C recently,
+mcf pointed out
+.Xr seprint 2
+from Plan 9,
+and it kind of blew my mind.
+I had implemented my own function in
+.Xr catgirl 1
+for building up strings using
+.Xr snprintf 3
+and a struct containing
+pointer, length and capacity,
+but it felt out of place.
+.Fn seprintf
+(I add the
+.Dq f ,
+Plan 9 doesn't)
+is a much simpler
+and more
+.Dq C-like
+interface with really nice usage patterns.
+.
+.Pp
+The obvious difference from
+.Xr snprintf 3
+is that
+.Fn seprintf
+takes an
+.Fa end
+pointer
+rather than a size.
+This means you need only calculate it
+once for each buffer,
+rather than subtracting
+the running length from the buffer size.
+.Fn seprintf Ap s
+return value is a pointer
+to the terminating null
+of the string it wrote,
+so you can pass that back in
+to continue appending
+to the same buffer.
+.
+.Pp
+I'm not sure of the exact behaviour on Plan 9,
+but my implementation indicates truncation occurred
+by returning the
+.Fa end
+pointer.
+That makes it both easy to check,
+and perfectly fine to keep calling
+.Fn seprintf
+anyway.
+It just won't write anything if
+.Fa ptr
+==
+.Fa end .
+.
+.Pp
+In the case of formatting failure
+(which should be prevented by
+compile-time format string checking,
+but should still be considered),
+.Fn seprintf
+returns
+.Dv NULL .
+I'm again not sure if this matches Plan 9.
+I like this a lot better than
+.Xr snprintf 3
+returning -1,
+because an unchecked
+.Dv NULL
+is likely to quickly cause a crash,
+while blindly adding
+.Xr snprintf 3 Ap s
+return value
+to your running length
+is a non-obvious logic error.
+.
+.Sh EXAMPLES
+Here's an example of what some code using
+.Fn seprintf
+might look like:
+.Bd -literal -offset indent
+char buf[4096];
+char *ptr = buf, *end = &buf[sizeof(buf)];
+ptr = seprintf(ptr, end, "argv: ");
+for (int i = 1; i < argc; ++i) {
+	ptr = seprintf(
+		ptr, end, "%s%s",
+		(i > 1 ? ", " : ""), argv[i]
+	);
+}
+if (ptr == end) errx(1, "truncation occurred :(");
+.Ed
+.
+.Pp
+And here is the very short implementation of it against
+.Xr vsnprintf 3
+which I copy into my project header files:
+.Bd -literal -offset indent
+#include <stdarg.h>
+#include <stdio.h>
+static inline char *
+seprintf(char *ptr, char *end, const char *fmt, ...)
+	__attribute__((format(printf, 3, 4)));
+static inline char *
+seprintf(char *ptr, char *end, const char *fmt, ...) {
+	va_list ap;
+	va_start(ap, fmt);
+	int n = vsnprintf(ptr, end - ptr, fmt, ap);
+	va_end(ap);
+	if (n < 0) return NULL;
+	if (n > end - ptr) return end;
+	return ptr + n;
+}
+.Ed
+.
+.Sh AUTHORS
+.An june Aq Mt june@causal.agency
+.Pp
+Another short one before
+.Xr git-subtree 1 .
+I just think this function
+is really neat.
