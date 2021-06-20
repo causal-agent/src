@@ -245,18 +245,10 @@ evaltree(union node *n, int flags)
 			popredir(0);
 		goto setstatus;
 	case NCMD:
-#ifdef notyet
-		if (eflag && !(flags & EV_TESTED))
-			checkexit = ~0;
-		status = evalcommand(n, flags, (struct backcmd *)NULL);
-		goto setstatus;
-#else
 		evalfn = evalcommand;
 checkexit:
-		if (eflag && !(flags & EV_TESTED))
-			checkexit = ~0;
+		checkexit = ~flags & EV_TESTED;
 		goto calleval;
-#endif
 	case NFOR:
 		evalfn = evalfor;
 		goto calleval;
@@ -316,7 +308,7 @@ setstatus:
 out:
 	dotrap();
 
-	if (checkexit & status)
+	if (eflag && checkexit && status)
 		goto exexit;
 
 	if (flags & EV_EXIT) {

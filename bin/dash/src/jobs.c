@@ -81,6 +81,7 @@
 #define DOWAIT_NONBLOCK 0
 #define DOWAIT_BLOCK 1
 #define DOWAIT_WAITCMD 2
+#define DOWAIT_WAITCMD_ALL 4
 
 /* array of jobs */
 static struct job *jobtab;
@@ -615,7 +616,7 @@ waitcmd(int argc, char **argv)
 				jp->waited = 1;
 				jp = jp->prev_job;
 			}
-			if (!dowait(DOWAIT_WAITCMD, 0))
+			if (!dowait(DOWAIT_WAITCMD_ALL, 0))
 				goto sigout;
 		}
 	}
@@ -1139,6 +1140,7 @@ static int dowait(int block, struct job *jp)
 		pid = waitone(block, jp);
 		rpid &= !!pid;
 
+		block &= ~DOWAIT_WAITCMD_ALL;
 		if (!pid || (jp && jp->state != JOBRUNNING))
 			block = DOWAIT_NONBLOCK;
 	} while (pid >= 0);
