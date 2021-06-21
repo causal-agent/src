@@ -4,7 +4,6 @@ set -eu
 readonly Host='temp.causal.agency'
 
 upload() {
-	local src ext ts rand url
 	src=$1
 	ext=${src##*.}
 	ts=$(date +'%s')
@@ -16,25 +15,25 @@ upload() {
 
 temp() {
 	temp=$(mktemp -d)
-	trap "rm -r '$temp'" EXIT
+	trap 'rm -r "$temp"' EXIT
 }
 
 uploadText() {
 	temp
-	cat > "${temp}/input.txt"
+	cat >"${temp}/input.txt"
 	upload "${temp}/input.txt"
 }
 
 uploadCommand() {
 	temp
-	echo "$ $*" > "${temp}/exec.txt"
-	"$@" >> "${temp}/exec.txt" 2>&1 || true
+	echo "$ $1" >"${temp}/exec.txt"
+	$SHELL -c "$1" >>"${temp}/exec.txt" 2>&1 || true
 	upload "${temp}/exec.txt"
 }
 
 uploadHilex() {
 	temp
-	hilex -f html -o document,tab=4 "$@" > "${temp}/hilex.html"
+	hilex -f html -o document,tab=4 "$@" >"${temp}/hilex.html"
 	upload "${temp}/hilex.html"
 }
 
@@ -45,25 +44,25 @@ uploadScreen() {
 	else
 		scrot -s "$@" "${temp}/capture.png"
 	fi
-	pngo "${temp}/capture.png" || true
+	pngo "${temp}/capture.png"
 	upload "${temp}/capture.png"
 }
 
 uploadTerminal() {
 	temp
-	cat > "${temp}/term.html" <<-EOF
+	cat >"${temp}/term.html" <<-EOF
 	<!DOCTYPE html>
 	<title>${1}</title>
 	<style>
 	$(scheme -s)
 	</style>
 	EOF
-	ptee "$@" | shotty -Bs >> "${temp}/term.html"
+	ptee $SHELL -c "$1" | shotty -Bs >>"${temp}/term.html"
 	upload "${temp}/term.html"
 }
 
 while getopts 'chst' opt; do
-	case "$opt" in
+	case $opt in
 		(c) fn=uploadCommand;;
 		(h) fn=uploadHilex;;
 		(s) fn=uploadScreen;;
