@@ -10,6 +10,16 @@ generate() {
 copy() {
 	printf '%s' "$1" | pbcopy
 }
+unwrap() {
+	sed '
+		:x
+		/=$/ {
+			N
+			s/=\n//g
+			bx
+		}
+	'
+}
 
 asciinema() {
 	echo 'Fetching CSRF token...'
@@ -158,6 +168,43 @@ lobsters() {
 		>/dev/null
 	copy "${password}"
 	open "${lobstersBase}/login"
+}
+
+patreon() {
+	readonly patreonAPI='https://www.patreon.com/api'
+	echo 'Submitting form...'
+	curl -Ss -X POST -d @- \
+		-H 'Content-Type: application/vnd.api+json' \
+		"${patreonAPI}/auth/forgot-password?json-api-version=1.0" <<-EOF
+		{"data":{"email":"${email}"}}
+		EOF
+	echo 'Waiting for email...'
+	url=$(
+		git fetch-email -i -M Trash \
+			-F 'password@patreon.com' -T "${email}" \
+			-S 'Patreon Password Reset' |
+		unwrap |
+		grep -o -m 1 'https://email[.]mailgun[.]patreon[.]com/.*'
+	)
+	echo 'Fetching token...'
+	location=$(curl -ISs --url "${url}" | grep -i '^Location: ' | tr -d '\r')
+	u=$(echo "${location}" | sed 's/.*[?&]u=\([^&]*\).*/\1/')
+	sec=$(echo "${location}" | sed 's/.*[?&]sec=\([^&]*\).*/\1/')
+	password=$(generate)
+	echo 'Setting password...'
+	curl -Ss -X POST -d @- \
+		-H 'Content-Type: application/vnd.api+json' \
+		"${patreonAPI}/auth/forgot-password/change?json-api-version=1.0" <<-EOF
+		{
+			"data":{
+				"user_id":"${u}",
+				"security_token":"${sec}",
+				"password":"${password}"
+			}
+		}
+		EOF
+	copy "${password}"
+	open 'https://www.patreon.com/login'
 }
 
 tildenews() {
