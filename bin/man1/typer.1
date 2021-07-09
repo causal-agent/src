@@ -1,4 +1,4 @@
-.Dd April 28, 2021
+.Dd July  9, 2021
 .Dt TYPER 1
 .Os
 .
@@ -8,24 +8,20 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl CPRv
+.Op Fl PRv
 .Op Fl c Ar cert
+.Op Fl j Ar chan
 .Op Fl n Ar nick
 .Op Fl p Ar port
 .Op Fl u Ar user
 .Ar host
-.Ar chan
 .
 .Sh DESCRIPTION
 .Nm
 is an IRC bot
-that types all day long.
+that types whenever anyone else does.
 The arguments are as follows:
 .Bl -tag -width Ds
-.It Fl C
-Copy
-.Nm .
-Type whenever anyone else is typing.
 .It Fl P
 Request the
 .Sy causal.agency/passive
@@ -39,6 +35,8 @@ as regular messages for all to see.
 Use the TLS client certificate
 and private key loaded from
 .Ar cert .
+.It Fl j Ar chan
+Join a channel.
 .It Fl n Ar nick
 Set the nickname.
 The default is
@@ -56,9 +54,6 @@ Log IRC protocol to standard error.
 .It Ar host
 Connect to
 .Ar host .
-.It Ar chan
-Type in the channel
-.Ar chan .
 .El
 .
 .Sh STANDARDS

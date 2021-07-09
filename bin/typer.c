@@ -26,20 +26,19 @@
  */
 
 #include <err.h>
-#include <signal.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
 #include <sysexits.h>
 #include <tls.h>
 #include <unistd.h>
 
 static bool verbose;
 static struct tls *client;
-static const char *chan;
+static const char *join;
+static bool reverse;
 
 static void clientWrite(const char *ptr, size_t len) {
 	if (verbose) printf("%.*s", (int)len, ptr);
@@ -62,10 +61,6 @@ static void format(const char *format, ...) {
 	clientWrite(buf, len);
 }
 
-static bool joined;
-static bool reverse;
-static bool copy;
-
 static void handle(char *line) {
 	char *tags = NULL;
 	char *origin = NULL;
@@ -74,41 +69,30 @@ static void handle(char *line) {
 	char *cmd = strsep(&line, " ");
 	if (!cmd) return;
 	if (!strcmp(cmd, "CAP")) {
-		char *param = strsep(&cmd, " ");
+		char *param = strsep(&line, " ");
 		if (!param) errx(EX_PROTOCOL, "CAP missing parameter");
 		if (!strcmp(param, "NAK")) {
-			errx(EX_CONFIG, "server does not support message-tags");
+			errx(EX_CONFIG, "server does not support %s", line);
 		}
 		format("CAP END\r\n");
-	} else if (!strcmp(cmd, "001")) {
-		format("JOIN %s\r\n", chan);
-		joined = true;
+	} else if (!strcmp(cmd, "001") && join) {
+		format("JOIN %s\r\n", join);
 	} else if (!strcmp(cmd, "PING")) {
 		format("PONG %s\r\n", line);
-	} else if (copy && !strcmp(cmd, "TAGMSG") && tags) {
-		if (strstr(tags, "typing=")) {
-			format("@%s TAGMSG %s\r\n", tags, chan);
-		}
-	} else if (reverse && !strcmp(cmd, "TAGMSG") && tags && origin) {
-		char *nick = strsep(&origin, "!");
-		if (strstr(tags, "typing=active")) {
-			format("PRIVMSG %s :\u2328\uFE0F %s is typing!\r\n", chan, nick);
-		} else if (strstr(tags, "typing=paused")) {
-			format("PRIVMSG %s :\U0001F914 %s is thinking!\r\n", chan, nick);
-		} else if (strstr(tags, "typing=done")) {
-			format("PRIVMSG %s :\u270B %s stopped typing!\r\n", chan, nick);
-		}
 	}
-}
-
-static void timer(int sig) {
-	(void)sig;
-	if (!joined) return;
-	const char *status = (arc4random_uniform(4) ? "active" : "done");
-	format(
-		"@+typing=%s;+draft/typing=%s TAGMSG %s\r\n",
-		status, status, chan
-	);
+	if (strcmp(cmd, "TAGMSG") || !tags || !origin) return;
+	if (!strstr(tags, "typing=")) return;
+	char *nick = strsep(&origin, "!");
+	if (*line == ':') line++;
+	if (!reverse) {
+		format("@%s TAGMSG %s\r\n", tags, line);
+	} else if (strstr(tags, "typing=active")) {
+		format("PRIVMSG %s :\u2328\uFE0F %s is typing!\r\n", line, nick);
+	} else if (strstr(tags, "typing=paused")) {
+		format("PRIVMSG %s :\U0001F914 %s is thinking!\r\n", line, nick);
+	} else if (strstr(tags, "typing=done")) {
+		format("PRIVMSG %s :\u270B %s stopped typing!\r\n", line, nick);
+	}
 }
 
 int main(int argc, char *argv[]) {
@@ -119,12 +103,12 @@ int main(int argc, char *argv[]) {
 	const char *user = "typer";
 	bool passive = false;
 
-	for (int opt; 0 < (opt = getopt(argc, argv, "CPRc:n:p:u:v"));) {
+	for (int opt; 0 < (opt = getopt(argc, argv, "PRc:j:n:p:u:v"));) {
 		switch (opt) {
-			break; case 'C': copy = true;
 			break; case 'P': passive = true;
 			break; case 'R': reverse = true;
 			break; case 'c': cert = optarg;
+			break; case 'j': join = optarg;
 			break; case 'n': nick = optarg;
 			break; case 'p': port = optarg;
 			break; case 'u': user = optarg;
@@ -132,9 +116,8 @@ int main(int argc, char *argv[]) {
 			break; default:  return EX_USAGE;
 		}
 	}
-	if (argc - optind < 2) errx(EX_USAGE, "host and chan required");
+	if (optind == argc) errx(EX_USAGE, "host required");
 	host = argv[optind];
-	chan = argv[optind + 1];
 
 	client = tls_client();
 	if (!client) errx(EX_SOFTWARE, "tls_client");
@@ -161,16 +144,6 @@ int main(int argc, char *argv[]) {
 		(passive ? " causal.agency/passive" : ""),
 		nick, user
 	);
-
-	if (!copy && !reverse) {
-		signal(SIGALRM, timer);
-		struct itimerval itimer = {
-			.it_interval.tv_sec = 5,
-			.it_value.tv_sec = 5
-		};
-		error = setitimer(ITIMER_REAL, &itimer, NULL);
-		if (error) err(EX_OSERR, "setitimer");
-	}
 
 	size_t len = 0;
 	char buf[4096];
