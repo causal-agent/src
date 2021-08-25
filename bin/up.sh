@@ -39,7 +39,7 @@ uploadHilex() {
 
 uploadScreen() {
 	temp
-	if type screencapture >/dev/null; then
+	if command -v screencapture >/dev/null; then
 		screencapture -i "$@" "${temp}/capture.png"
 	else
 		scrot -s "$@" "${temp}/capture.png"
