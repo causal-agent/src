@@ -27,6 +27,7 @@ TXTS += 021-time-machine.txt
 TXTS += 022-swans-are-dead.txt
 TXTS += 023-sparse-checkout.txt
 TXTS += 024-seprintf.txt
+TXTS += 025-v6-pwd.txt
 
 all: ${TXTS}
 

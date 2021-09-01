@@ -1,0 +1,326 @@
+.Dd September  1, 2021
+.Dt V6-PWD 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm V6 pwd
+.Nd deciphering old code
+.
+.Sh DESCRIPTION
+We were talking about
+.Xr wall 1
+on IRC
+and how long it had been annoying users.
+My manual page says
+.Xr wall 1
+appeared in
+.At v6 ,
+which means that
+.Xr wall 1
+has been annoying users for 46 years!
+.
+.Pp
+The Wikipedia page links to the source for
+.At v6 ,
+so I was curious to see how the very first
+.Xr wall 1
+was implemented.
+It's not that surprising,
+except that it is hardcoded
+to handle only 50 logins,
+and it forks to write to each tty,
+waiting one second between each.
+I think the forking must be to avoid
+any of the terminals being opened
+from becoming the controlling terminal
+of the original
+.Xr wall 1
+process.
+.
+.Pp
+Then I started looking
+at some of the other source files
+and found the implementation of
+.Xr pwd 1 ,
+which was surprising.
+There's no
+.Xr getcwd 3
+function
+(the earlier form of which,
+.Xr getwd 3 ,
+appeared in
+.Bx 4.0 ) ,
+so
+.Xr pwd 1
+has to figure out
+the path to the working directory itself.
+It took me a while to figure out how it works.
+.
+.Pp
+To make it easy to talk about,
+I'm just going to include the whole thing here:
+.Bd -literal
+char dot[] ".";
+char dotdot[] "..";
+char root[] "/";
+char name[512];
+int file, off -1;
+struct statb {int devn, inum, i[18];}x;
+struct entry { int jnum; char name[16];}y;
+
+main() {
+	int n;
+
+loop0:
+	stat(dot, &x);
+	if((file = open(dotdot,0)) < 0) prname();
+loop1:
+	if((n = read(file,&y,16)) < 16) prname();
+	if(y.jnum != x.inum)goto loop1;
+	close(file);
+	if(y.jnum == 1) ckroot();
+	cat();
+	chdir(dotdot);
+	goto loop0;
+}
+ckroot() {
+	int i, n;
+
+	if((n = stat(y.name,&x)) < 0) prname();
+	i = x.devn;
+	if((n = chdir(root)) < 0) prname();
+	if((file = open(root,0)) < 0) prname();
+loop:
+	if((n = read(file,&y,16)) < 16) prname();
+	if(y.jnum == 0) goto loop;
+	if((n = stat(y.name,&x)) < 0) prname();
+	if(x.devn != i) goto loop;
+	x.i[0] =& 060000;
+	if(x.i[0] != 040000) goto loop;
+	if(y.name[0]=='.')if(((y.name[1]=='.') && (y.name[2]==0)) ||
+				(y.name[1] == 0)) goto pr;
+	cat();
+pr:
+	write(1,root,1);
+	prname();
+}
+prname() {
+	if(off<0)off=0;
+	name[off] = '\en';
+	write(1,name,off+1);
+	exit();
+}
+cat() {
+	int i, j;
+
+	i = -1;
+	while(y.name[++i] != 0);
+	if((off+i+2) > 511) prname();
+	for(j=off+1; j>=0; --j) name[j+i+1] = name[j];
+	off=i+off+1;
+	name[i] = root[0];
+	for(--i; i>=0; --i) name[i] = y.name[i];
+}
+.Ed
+.
+.Pp
+First, some syntax trivia:
+it seems you don't need
+.Sy =
+to give globals values.
+I guess that makes sense.
+I also noticed that
+it avoids giving
+.Va inum
+and
+.Va jnum
+the same name.
+I think that's because in old C,
+struct field names all shared the same namespace.
+The last difference I noticed
+is the operator
+.Sy =&
+rather than
+.Sy &= .
+Honestly I think the former makes more sense,
+but I can see that the one we have now
+is less ambiguous.
+.
+.Pp
+To get
+.Fn prname
+and
+.Fn cat
+out of the way,
+it's building up a path from the bottom.
+At first I thought it must be
+starting at the end of its buffer
+and moving back as it adds components,
+but no,
+it moves the entire path-so-far over
+every time it adds a new component
+onto the front.
+.Fn cat
+is just a bunch of manual string copying.
+It also gives up
+if the new component
+would make the path longer than 511 characters.
+Fair enough.
+.
+.Pp
+So how does it build up the path?
+The loop in
+.Fn main
+first calls
+.Xr stat 2
+on the current directory
+.Pa \&.
+in order to get its inode number.
+I love that
+.Vt struct statb
+is just declared at the top of this file.
+Clearly this code predates the C preprocessor.
+.
+.Pp
+It then opens the parent directory
+.Pa ..
+and reads directory entries from it.
+The inner loop is looking for
+a directory entry with the same inode number
+as the current directory,
+to figure out what the current directory is called.
+Curiously,
+it reads 16-byte directory entries,
+despite declaring a larger struct.
+The preprocessor can't be invented soon enough.
+.
+.Pp
+Once it finds the matching directory entry,
+it adds the name of the entry
+onto the front of the path,
+changes directory to
+.Pa ..
+and starts over.
+It stops when the current directory
+has an inode number of 1,
+which must be the root of a file system,
+but then it does something else.
+It took me a while to decipher what
+.Fn ckroot
+is doing.
+.
+.Pp
+The loop in
+.Fn main
+stops when it gets to the root
+of a file system,
+but that's not necessarily
+.Pa / .
+I think what
+.Fn ckroot
+is doing is trying to figure out
+where that file system is mounted.
+It starts by checking the device number
+that the current directory is on.
+Or really it calls
+.Xr stat 2
+on the name of the directory entry that
+.Fn main
+just found,
+which I think must be
+.Pa \&.
+at this point anyway since it's at a root.
+.
+.Pp
+Anyway,
+it then changes directory to and opens
+.Pa /
+and starts reading directory entries from that,
+calling
+.Xr stat 2
+on each of them
+and checking for a matching device number.
+I think this implies that file systems
+can only be mounted in
+.Pa /
+and not at any lower level,
+at least not if you want
+.Xr pwd 1
+to understand it.
+I'm not sure what the check for
+an inode number of 0 is skipping over
+in this loop.
+Some kind of special entry in
+.Pa /
+perhaps.
+.
+.Pp
+Once it finds an entry
+with a matching device number,
+it checks the flags
+to make sure the entry is a directory.
+It does so with hardcoded constants,
+but it seems they haven't changed
+in all these years.
+According to
+.Xr stat 2 ,
+040000 is
+.Dv S_IFDIR .
+The number of file types
+clearly has grown since then though,
+since
+.Dv S_IFMT
+is now 0170000 rather than 060000.
+.
+.Pp
+I think the reason it checks
+that the entry is a directory
+is because if it actually is
+on the root file system already,
+then any regular file
+would have a matching device number.
+If the entry is indeed a directory,
+it then checks if the entry is
+.Pa \&.
+or
+.Pa \&.. ,
+which indicates that it really is already at
+.Pa / .
+If it's not,
+it adds the mount point that it found
+to the front of the path.
+.
+.Pp
+Finally,
+it prints
+.Pa /
+followed by the path it built up.
+If it failed at any point before that,
+it would print the path it had built so far
+with no leading
+.Pa / .
+Better than nothing!
+.
+.Pp
+So that's how I think
+.Xr pwd 1
+works in
+.At v6 .
+It was a fun puzzle to work through,
+and it was interesting to see
+the assumptions it makes.
+How simple things were back then...
+.
+.Sh SEE ALSO
+.Lk https://minnie.tuhs.org/cgi-bin/utree.pl?file=V6
+.Pp
+.Pa pwd.c
+appears in
+.Pa V6/usr/source/s2 .
+.
+.Sh AUTHORS
+.An june Aq Mt june@causal.agency
+.Pp
+I regret saying in two previous posts
+what I planned to write next,
+because this is still not that.
