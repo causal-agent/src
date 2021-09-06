@@ -114,6 +114,9 @@ void cgit_print_repo_readme(const char *path)
 	}
 	free(mimetype);
 
+	if (path)
+		ctx.page.title = fmtalloc("%s - %s", path, ctx.page.title);
+
 	cgit_print_layout_start();
 	if (ctx.repo->readme.nr == 0)
 		goto done;
