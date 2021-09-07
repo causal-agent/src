@@ -32,6 +32,9 @@ index.html: README.7 Makefile html.mk html.sh
 .h.html:
 	sh html.sh man3/${<:.h=.3} $< > $@
 
+.l.html:
+	sh html.sh man1/${<:.l=.1} $< > $@
+
 .y.html:
 	sh html.sh man1/${<:.y=.1} $< > $@
 
