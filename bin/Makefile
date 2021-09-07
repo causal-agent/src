@@ -11,6 +11,7 @@ BINS += beef
 BINS += bibsort
 BINS += bit
 BINS += c
+BINS += dehtml
 BINS += dtch
 BINS += glitch
 BINS += hilex

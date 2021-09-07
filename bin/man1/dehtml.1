@@ -1,0 +1,35 @@
+.Dd September  7, 2021
+.Dt DEHTML 1
+.Os
+.
+.Sh NAME
+.Nm dehtml
+.Nd extract text from HTML
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl s
+.Op Ar
+.
+.Sh DESCRIPTION
+The
+.Nm
+utility extracts text
+from HTML documents.
+Text inside
+.Sy <title> ,
+.Sy <style>
+and
+.Sy <script>
+tags is discarded.
+Numeric and common named HTML entities
+are converted.
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl s
+Collapse whitespace outside of
+.Sy <pre>
+tags.
+.El
