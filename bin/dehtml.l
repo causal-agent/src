@@ -60,8 +60,12 @@ static const struct {
 	{ L'>', "&gt;" },
 	{ L'"', "&quot;" },
 	{ L' ', "&nbsp;" },
-	{ L'\u2014', "&mdash;" },
 	{ L'\u00A9', "&copy;" },
+	{ L'\u00B7', "&middot;" },
+	{ L'\u00BB', "&raquo;" },
+	{ L'\u200F', "&rlm;" },
+	{ L'\u2014', "&mdash;" },
+	{ L'\u2191', "&uarr;" },
 };
 
 static void entity(void) {
