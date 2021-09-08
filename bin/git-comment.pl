@@ -10,22 +10,36 @@ use Git;
 
 my $repo = Git->repository();
 
-my $comment_start = $repo->config('comment.start') // "/*";
-my $comment_lead = $repo->config('comment.lead') // " *";
-my $comment_end = $repo->config('comment.end') // " */";
+my $commentStart = $repo->config('comment.start') // "/*";
+my $commentLead = $repo->config('comment.lead') // " *";
+my $commentEnd = $repo->config('comment.end') // " */";
+my $threshold = $repo->config('comment.groupThreshold') // 1;
 GetOptions(
-	'comment-start=s' => \$comment_start,
-	'comment-lead=s' => \$comment_lead,
-	'comment-end:s' => \$comment_end,
+	'comment-start=s' => \$commentStart,
+	'comment-lead=s' => \$commentLead,
+	'comment-end:s' => \$commentEnd,
+	'group-threshold=i' => \$threshold,
 ) or die;
+
+sub printComment {
+	my ($indent, $abbrev, $summary, @body) = @_;
+	print "$indent$commentStart $abbrev $summary\n";
+	print "$indent$commentLead\n";
+	foreach (@body) {
+		print "$indent$commentLead";
+		print " $_" if $_;
+		print "\n";
+	}
+	print "$indent$commentEnd\n" if $commentEnd;
+}
 
 my ($pipe, $ctx) = $repo->command_output_pipe('blame', '--porcelain', @ARGV);
 
-my ($commit, %abbrev, %summary, %body, %printed);
+my ($commit, $group, $printed, %abbrev, %summary, %body);
 while (<$pipe>) {
 	chomp;
-	if (/^([[:xdigit:]]+) \d+ \d+ \d+/) {
-		$commit = $1;
+	if (/^([[:xdigit:]]+) \d+ \d+ (\d+)/) {
+		($commit, $group, $printed) = ($1, $2, 0);
 		next if $abbrev{$commit};
 		my @body = $repo->command(
 			'show', '--no-patch', '--pretty=format:%h%n%b', $commit
@@ -36,16 +50,12 @@ while (<$pipe>) {
 		$summary{$commit} = $1;
 	} elsif (/^\t(\s*)(.*)/) {
 		my ($indent, $line) = ($1, $2);
-		if (@{$body{$commit}} && !$printed{$commit}) {
-			print "$indent$comment_start $abbrev{$commit} $summary{$commit}\n";
-			print "$indent$comment_lead\n";
-			foreach (@{$body{$commit}}) {
-				print "$indent$comment_lead";
-				print " $_" if $_;
-				print "\n";
-			}
-			print "$indent$comment_end\n" if $comment_end;
-			$printed{$commit} = 1;
+		if (@{$body{$commit}} && $group > $threshold && !$printed) {
+			printComment(
+				$indent, $abbrev{$commit}, $summary{$commit},
+				@{$body{$commit}}
+			);
+			$printed = 1;
 		}
 		print "$indent$line\n";
 	}
