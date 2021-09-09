@@ -74,7 +74,7 @@ while (<$pipe>) {
 
 	} elsif (/^\t(\s*)(.*)/) {
 		my ($indent, $line) = ($1, $2);
-		unless ($printed) {
+		unless ($printed || $line =~ /^}?$/) {
 			$printed = 1;
 			if (
 				$group >= $minGroup &&
