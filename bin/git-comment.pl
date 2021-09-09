@@ -1,6 +1,20 @@
 #!/usr/bin/env perl
+# Copyright (C) 2021  June McEnroe <june@causal.agency>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# FIXME?
+# MacPorts is strange.
 use lib (split(/:/, $ENV{GITPERLLIB} || '/opt/local/share/perl5'));
 
 use strict;
@@ -10,13 +24,10 @@ use Git;
 
 my $repo = Git->repository();
 
-my $all = 0;
+my ($all, $minGroup, $minRepeat, $noRepeat) = (0, 2, 20, 0);
 my $commentStart = $repo->config('comment.start') // "/*";
 my $commentLead = $repo->config('comment.lead') // " *";
 my $commentEnd = $repo->config('comment.end') // " */";
-my $minGroup = $repo->config('comment.minGroup') // 2;
-my $minRepeat = $repo->config('comment.minRepeat') // 20;
-my $noRepeat = $repo->config_bool('comment.noRepeat');
 GetOptions(
 	'all' => \$all,
 	'comment-start=s' => \$commentStart,
@@ -56,8 +67,10 @@ while (<$pipe>) {
 		);
 		$abbrev{$commit} = shift @body;
 		$body{$commit} = \@body;
+
 	} elsif (/^summary (.*)/) {
 		$summary{$commit} = $1;
+
 	} elsif (/^\t(\s*)(.*)/) {
 		my ($indent, $line) = ($1, $2);
 		unless ($printed) {

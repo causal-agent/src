@@ -1,0 +1,88 @@
+.Dd September  8, 2021
+.Dt GIT-COMMENT 1
+.Os
+.
+.Sh NAME
+.Nm git-comment
+.Nd add comments from commit messages
+.
+.Sh SYNOPSIS
+.Nm git comment
+.Op Fl \-all
+.Op Fl \-comment-start Ar string
+.Op Fl \-comment-lead Ar string
+.Op Fl \-comment-end Ar string
+.Op Fl \-min-group Ar lines
+.Op Fl \-min-repeat Ar lines
+.Op Fl \-no-repeat
+.Op Ar options ...
+.Op Fl \-
+.Ar file
+.
+.Sh DESCRIPTION
+Annotates the given file with comments
+containing the commit messages
+of the revisions
+which last modified
+each group of lines.
+.
+.Pp
+.Nm
+accepts all the options of
+.Xr git-blame 1
+in addition to the following:
+.Bl -tag -width Ds
+.It Fl \-all
+Include all commit messages.
+The default is to include
+only commit messages with bodies
+(lines after the summary).
+.
+.It Fl \-comment-start Ar string
+Start comments with
+.Ar string .
+The default is the value of
+.Cm comment.start
+or
+.Ql /* .
+.
+.It Fl \-comment-lead Ar string
+Continue comments with the leading
+.Ar string .
+The default is the value of
+.Cm comment.lead
+or
+.Ql " *" .
+.
+.It Fl \-comment-end Ar string
+End comments with
+.Ar string .
+The default is the value of
+.Cm comment.end
+or
+.Ql " */" .
+.
+.It Fl \-min-group Ar lines
+Add comments only for groups of at least
+.Ar lines .
+The default is 2 lines.
+.
+.It Fl \-min-repeat Ar lines
+Avoid repeating a comment
+if it occurred in the last
+.Ar lines .
+The default is 20 lines.
+.
+.It Fl \-no-repeat
+Avoid repeating comments entirely.
+.El
+.
+.Sh EXAMPLES
+For files with
+.Ql #
+comments:
+.Bd -literal -offset indent
+git config comment.start '#'
+git config comment.lead '#'
+git config comment.end ''
+.Ed
