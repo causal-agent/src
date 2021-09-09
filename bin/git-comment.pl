@@ -61,6 +61,7 @@ while (<$pipe>) {
 	chomp;
 	if (/^([[:xdigit:]]+) \d+ (\d+) (\d+)/) {
 		($commit, $nr, $group, $printed) = ($1, $2, $3, 0);
+		$abbrev{$commit} = 'dirty' if $commit =~ /^0+$/;
 		next if $abbrev{$commit};
 		my @body = $repo->command(
 			'show', '--no-patch', '--pretty=format:%h%n%b', $commit
