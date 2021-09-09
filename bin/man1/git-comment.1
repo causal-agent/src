@@ -71,7 +71,7 @@ The default is 2 lines.
 Avoid repeating a comment
 if it occurred in the last
 .Ar lines .
-The default is 20 lines.
+The default is 30 lines.
 .
 .It Fl \-no-repeat
 Avoid repeating comments entirely.
@@ -85,4 +85,10 @@ comments:
 git config comment.start '#'
 git config comment.lead '#'
 git config comment.end ''
+.Ed
+.
+.Pp
+Add as many comments as possible:
+.Bd -literal -offset indent
+git comment --all --min-group 1 --min-repeat 1
 .Ed

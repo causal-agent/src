@@ -24,7 +24,7 @@ use Git;
 
 my $repo = Git->repository();
 
-my ($all, $minGroup, $minRepeat, $noRepeat) = (0, 2, 20, 0);
+my ($all, $minGroup, $minRepeat, $noRepeat) = (0, 2, 30, 0);
 my $commentStart = $repo->config('comment.start') // "/*";
 my $commentLead = $repo->config('comment.lead') // " *";
 my $commentEnd = $repo->config('comment.end') // " */";
