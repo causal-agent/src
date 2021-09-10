@@ -28,6 +28,7 @@ my ($all, $minGroup, $minRepeat, $noRepeat) = (0, 2, 30, 0);
 my $commentStart = $repo->config('comment.start') // "/*";
 my $commentLead = $repo->config('comment.lead') // " *";
 my $commentEnd = $repo->config('comment.end') // " */";
+my $pretty = $repo->config('comment.pretty') // 'format:%h %s%n%n%-b';
 GetOptions(
 	'all' => \$all,
 	'comment-start=s' => \$commentStart,
@@ -36,13 +37,14 @@ GetOptions(
 	'min-group=i' => \$minGroup,
 	'min-repeat=i' => \$minRepeat,
 	'no-repeat' => \$noRepeat,
+	'pretty=s' => \$pretty,
 ) or die;
 
 sub printComment {
-	my ($indent, $abbrev, $summary, @body) = @_;
-	print "$indent$commentStart $abbrev $summary";
+	my ($indent, $summary, @body) = @_;
+	print "$indent$commentStart $summary";
 	if (@body) {
-		print "\n$indent$commentLead\n";
+		print "\n";
 		foreach (@body) {
 			print "$indent$commentLead";
 			print " $_" if $_;
@@ -56,37 +58,32 @@ sub printComment {
 
 my ($pipe, $ctx) = $repo->command_output_pipe('blame', '--porcelain', @ARGV);
 
-my ($commit, $nr, $group, $printed, %abbrev, %summary, %body, %nrs);
+my ($commit, $nr, $group, $printed, %message, %nrs);
 while (<$pipe>) {
 	chomp;
 	if (/^([[:xdigit:]]+) \d+ (\d+) (\d+)/) {
 		($commit, $nr, $group, $printed) = ($1, $2, $3, 0);
-		$abbrev{$commit} = 'dirty' if $commit =~ /^0+$/;
-		next if $abbrev{$commit};
-		my @body = $repo->command(
-			'show', '--no-patch', '--pretty=format:%h%n%b', $commit
+		next if $message{$commit};
+		if ($commit =~ /^0+$/) {
+			$message{$commit} = ['Not committed yet'];
+			next;
+		}
+		my @message = $repo->command(
+			'show', '--no-patch', "--pretty=$pretty", $commit
 		);
-		$abbrev{$commit} = shift @body;
-		$body{$commit} = \@body;
-
-	} elsif (/^summary (.*)/) {
-		$summary{$commit} = $1;
-
+		$message{$commit} = \@message;
 	} elsif (/^\t(\s*)(.*)/) {
 		my ($indent, $line) = ($1, $2);
-		unless ($printed || $line =~ /^}?$/) {
+		unless ($printed || $line =~ /^}?;?$/) {
 			$printed = 1;
 			if (
 				$group >= $minGroup &&
 				!($noRepeat && $nrs{$commit}) &&
 				!($nrs{$commit} && $nr < $nrs{$commit} + $minRepeat) &&
-				($all || @{$body{$commit}})
+				($all || @{$message{$commit}} > 1)
 			) {
 				$nrs{$commit} = $nr;
-				printComment(
-					$indent, $abbrev{$commit}, $summary{$commit},
-					@{$body{$commit}}
-				);
+				printComment($indent, @{$message{$commit}});
 			}
 		}
 		print "$indent$line\n";

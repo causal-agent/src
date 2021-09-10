@@ -1,4 +1,4 @@
-.Dd September  8, 2021
+.Dd September 10, 2021
 .Dt GIT-COMMENT 1
 .Os
 .
@@ -15,16 +15,26 @@
 .Op Fl \-min-group Ar lines
 .Op Fl \-min-repeat Ar lines
 .Op Fl \-no-repeat
+.Op Fl \-pretty Ar format
 .Op Ar options ...
 .Op Fl \-
 .Ar file
 .
 .Sh DESCRIPTION
-Annotates the given file with comments
-containing the commit messages
-of the revisions
+The
+.Nm
+command
+adds comments to a file
+showing the commit messages
 which last modified
 each group of lines.
+By default only commit messages with bodies
+and which modified groups of at least 2 lines
+are added.
+Each comment contains
+the abbreviated commit hash
+and the commit summary,
+followed by the commit body.
 .
 .Pp
 .Nm
@@ -75,6 +85,16 @@ The default is 30 lines.
 .
 .It Fl \-no-repeat
 Avoid repeating comments entirely.
+.
+.It Fl \-pretty Ar format
+Set the pretty-print format
+to use for commit messages.
+The default is the value of
+.Cm comment.pretty
+or
+.Ql format:%h\ %s%n%n%-b .
+See
+.Xr git-show 1 .
 .El
 .
 .Sh EXAMPLES
@@ -92,3 +112,6 @@ Add as many comments as possible:
 .Bd -literal -offset indent
 git comment --all --min-group 1 --min-repeat 1
 .Ed
+.
+.Sh SEE ALSO
+.Xr git-blame 1
