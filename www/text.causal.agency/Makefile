@@ -28,6 +28,7 @@ TXTS += 022-swans-are-dead.txt
 TXTS += 023-sparse-checkout.txt
 TXTS += 024-seprintf.txt
 TXTS += 025-v6-pwd.txt
+TXTS += 026-git-comment.txt
 
 all: ${TXTS}
 

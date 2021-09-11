@@ -1,0 +1,190 @@
+.Dd September 10, 2021
+.Dt GIT-COMMENT 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm git-comment
+.Nd add comments from commit messages
+.
+.Sh SYNOPSIS
+.Nm git comment
+.Op Fl \-all
+.Op Fl \-comment-start Ar string
+.Op Fl \-comment-lead Ar string
+.Op Fl \-comment-end Ar string
+.Op Fl \-min-group Ar lines
+.Op Fl \-min-repeat Ar lines
+.Op Fl \-no-repeat
+.Op Fl \-pretty Ar format
+.Op Ar options ...
+.Op Fl \-
+.Ar file
+.
+.Sh DESCRIPTION
+The
+.Nm
+command
+adds comments to a file
+showing the commit messages
+which last modified
+each group of lines.
+By default only commit messages with bodies
+and which modified groups of at least 2 lines
+are added.
+Each comment contains
+the abbreviated commit hash
+and the commit summary,
+followed by the commit body.
+.
+.Pp
+.Nm
+accepts all the options of
+.Xr git-blame 1
+in addition to the following:
+.Bl -tag -width Ds
+.It Fl \-all
+Include all commit messages.
+The default is to include
+only commit messages with bodies
+(lines after the summary).
+.
+.It Fl \-comment-start Ar string
+Start comments with
+.Ar string .
+The default is the value of
+.Cm comment.start
+or
+.Ql /* .
+.
+.It Fl \-comment-lead Ar string
+Continue comments with the leading
+.Ar string .
+The default is the value of
+.Cm comment.lead
+or
+.Ql " *" .
+.
+.It Fl \-comment-end Ar string
+End comments with
+.Ar string .
+The default is the value of
+.Cm comment.end
+or
+.Ql " */" .
+.
+.It Fl \-min-group Ar lines
+Add comments only for groups of at least
+.Ar lines .
+The default is 2 lines.
+.
+.It Fl \-min-repeat Ar lines
+Avoid repeating a comment
+if it occurred in the last
+.Ar lines .
+The default is 30 lines.
+.
+.It Fl \-no-repeat
+Avoid repeating comments entirely.
+.
+.It Fl \-pretty Ar format
+Set the pretty-print format
+to use for commit messages.
+The default is the value of
+.Cm comment.pretty
+or
+.Ql format:%h\ %s%n%n%-b .
+See
+.Xr git-show 1 .
+.El
+.
+.Sh EXAMPLES
+For files with
+.Ql #
+comments:
+.Bd -literal -offset indent
+git config comment.start '#'
+git config comment.lead '#'
+git config comment.end ''
+.Ed
+.
+.Pp
+Add as many comments as possible:
+.Bd -literal -offset indent
+git comment --all --min-group 1 --min-repeat 1
+.Ed
+.
+.Pp
+Some examples of output from
+.Xr catgirl 1 :
+.Bd -literal
+/* 347e2b4 Don't apply uiThreshold to Network and Debug
+ *
+ * Messages don't really need to be hidden from <network> and I think
+ * it could be confusing. Debug messages are all Cold so everything
+ * would be hidden, and I want to keep them that way so that <debug>
+ * doesn't clutter the status line needlessly.
+ */
+if (id == Network || id == Debug) {
+	window->thresh = Cold;
+} else {
+	window->thresh = uiThreshold;
+}
+
+/* b4c26a2 Measure timestamp width using ncurses
+ *
+ * This allows for non-ASCII characters in timestamps, and simplifies
+ * things by including the trailing space in the width.
+ */
+int y;
+char buf[TimeCap];
+struct tm *time = localtime(&(time_t) { -22100400 });
+size_t len = strftime(buf, sizeof(buf), uiTime.format, time);
+if (!len) errx(EX_CONFIG, "invalid timestamp format: %s", uiTime.format);
+waddstr(main, buf);
+waddch(main, ' ');
+getyx(main, y, uiTime.width);
+(void)y;
+
+/* 43b1dba Restore toggling ignore with M--
+ *
+ * So that pressing M-- repeatedly maintains the previous behavior.
+ */
+if (n < 0 && window->thresh == Ice) {
+	window->thresh = Cold;
+} else {
+	window->thresh += n;
+}
+
+/* 1891c77 Preserve colon from previous tab-complete
+ *
+ * This fixes the case when pinging multiple nicks and one of them needs to
+ * be cycled through.
+ */
+bool colon = (tab.len >= 2 && buf[tab.pos + tab.len - 2] == L':');
+.Ed
+.
+.Sh SEE ALSO
+.Lk https://git.causal.agency/src/tree/bin/git-comment.pl
+.
+.Sh AUTHORS
+.An june Aq Mt june@causal.agency
+.
+.Pp
+In case it's unclear,
+this is a
+.Xr git 1
+subcommand I wrote.
+Did you know you can add new
+.Xr git 1
+subcommands just by
+adding executables named
+.Pa git-*
+to somewhere in
+.Ev PATH ?
+.
+.Pp
+This is also,
+I think,
+my third Perl script ever.
+It's an interestingly shaped language.
+Quite neat.
