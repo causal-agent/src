@@ -74,7 +74,7 @@ while (<$pipe>) {
 		$message{$commit} = \@message;
 	} elsif (/^\t(\s*)(.*)/) {
 		my ($indent, $line) = ($1, $2);
-		unless ($printed || $line =~ /^}?;?$/) {
+		unless ($printed || $line =~ /^[})]?;?$/) {
 			$printed = 1;
 			if (
 				$group >= $minGroup &&
