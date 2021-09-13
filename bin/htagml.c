@@ -150,23 +150,23 @@ int main(int argc, char *argv[]) {
 	int num = 0;
 	printf(pre ? "<pre>" : index ? "<ul class=\"index\">\n" : "");
 	while (0 < getline(&buf, &bufCap, file) && ++num) {
-		struct Tag *tag = NULL;
+		char *tag = NULL;
 		for (size_t i = 0; i < len; ++i) {
 			if (tags[i].num) {
 				if (num != tags[i].num) continue;
 			} else {
 				if (strncmp(tags[i].str, buf, tags[i].len)) continue;
 			}
-			tag = &tags[i];
-			tag->num = num;
+			tag = tags[i].tag;
+			tags[i] = tags[--len];
 			break;
 		}
 		if (index) {
 			if (!tag) continue;
 			printf("<li><a class=\"tag\" href=\"#");
-			id(tag->tag);
+			id(tag);
 			printf("\">");
-			escape(true, tag->tag, strlen(tag->tag));
+			escape(true, tag, strlen(tag));
 			printf("</a></li>\n");
 			continue;
 		}
@@ -181,12 +181,12 @@ int main(int argc, char *argv[]) {
 			continue;
 		}
 
-		size_t mlen = strlen(tag->tag);
-		char *match = (pipe ? hstrstr : strstr)(buf, tag->tag);
+		size_t mlen = strlen(tag);
+		char *match = (pipe ? hstrstr : strstr)(buf, tag);
 		while (match > buf && isalnum(match[-1])) {
-			match = (pipe ? hstrstr : strstr)(&match[mlen], tag->tag);
+			match = (pipe ? hstrstr : strstr)(&match[mlen], tag);
 		}
-		if (!match && tag->tag[0] == 'M') {
+		if (!match && tag[0] == 'M') {
 			mlen = 4;
 			match = (pipe ? hstrstr : strstr)(buf, "main");
 		}
@@ -196,9 +196,9 @@ int main(int argc, char *argv[]) {
 		}
 		escape(!pipe, buf, match - buf);
 		printf("<a class=\"tag\" id=\"");
-		id(tag->tag);
+		id(tag);
 		printf("\" href=\"#");
-		id(tag->tag);
+		id(tag);
 		printf("\">");
 		match += escape(!pipe, match, mlen);
 		printf("</a>");
