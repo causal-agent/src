@@ -16,7 +16,6 @@
 
 #include <ctype.h>
 #include <err.h>
-#include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,13 +23,18 @@
 #include <sysexits.h>
 #include <unistd.h>
 
-static char *nomagic(const char *pattern) {
-	char *buf = malloc(2 * strlen(pattern) + 1);
+static char *deregex(const char *patt) {
+	char *buf = malloc(strlen(patt) + 1);
 	if (!buf) err(EX_OSERR, "malloc");
 	char *ptr = buf;
-	for (const char *ch = pattern; *ch; ++ch) {
-		if (strchr(".[*", *ch)) *ptr++ = '\\';
-		*ptr++ = *ch;
+	if (*patt == '^') patt++;
+	for (; *patt; ++patt) {
+		if (patt[0] == '$' && !patt[1]) {
+			*ptr++ = '\n';
+			break;
+		}
+		if (patt[0] == '\\' && patt[1]) patt++;
+		*ptr++ = *patt;
 	}
 	*ptr = '\0';
 	return buf;
@@ -98,7 +102,8 @@ int main(int argc, char *argv[]) {
 	struct Tag {
 		char *tag;
 		int num;
-		regex_t regex;
+		char *str;
+		size_t len;
 	} *tags = malloc(cap * sizeof(*tags));
 	if (!tags) err(EX_OSERR, "malloc");
 
@@ -123,15 +128,11 @@ int main(int argc, char *argv[]) {
 		if (def[0] == '/' || def[0] == '?') {
 			def++;
 			def[strlen(def)-1] = '\0';
-			char *search = nomagic(def);
-			int error = regcomp(
-				&tags[len].regex, search, REG_NEWLINE | REG_NOSUB
-			);
-			free(search);
-			if (error) {
-				warnx("invalid regex for tag %s: %s", tag, def);
-				continue;
+			if (def[0] != '^') {
+				warnx("unanchored regex for tag %s: %s", tag, def);
 			}
+			tags[len].str = deregex(def);
+			tags[len].len = strlen(tags[len].str);
 		} else {
 			tags[len].num = strtol(def, &def, 10);
 			if (*def) {
@@ -154,7 +155,7 @@ int main(int argc, char *argv[]) {
 			if (tags[i].num) {
 				if (num != tags[i].num) continue;
 			} else {
-				if (regexec(&tags[i].regex, buf, 0, NULL, 0)) continue;
+				if (strncmp(tags[i].str, buf, tags[i].len)) continue;
 			}
 			tag = &tags[i];
 			tag->num = num;
