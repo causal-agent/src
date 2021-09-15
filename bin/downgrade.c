@@ -120,6 +120,16 @@ static void handle(char *ptr) {
 		format("NICK %s_\r\n", nick);
 	} else if (!strcmp(cmd, "001")) {
 		if (join) format("JOIN %s\r\n", join);
+	} else if (!strcmp(cmd, "005")) {
+		char *self = strsep(&ptr, " ");
+		if (!self) errx(EX_PROTOCOL, "RPL_ISUPPORT missing nick");
+		while (ptr && *ptr != ':') {
+			char *tok = strsep(&ptr, " ");
+			char *key = strsep(&tok, "=");
+			if (!strcmp(key, "BOT") && tok) {
+				format("MODE %s +%s\r\n", self, tok);
+			}
+		}
 	} else if (!strcmp(cmd, "INVITE") && invite) {
 		strsep(&ptr, " ");
 		if (!ptr) errx(EX_PROTOCOL, "INVITE missing channel");
