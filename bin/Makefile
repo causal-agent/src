@@ -42,6 +42,7 @@ LINUX += fbatt
 LINUX += fbclock
 LINUX += psfed
 
+TLS += downgrade
 TLS += relay
 TLS += typer
 
@@ -51,6 +52,7 @@ MANS.GAMES = ${GAMES:%=man6/%.6}
 MANS.LINUX = ${LINUX:%=man1/%.1}
 MANS.TLS = ${TLS:%=man1/%.1}
 
+LDLIBS.downgrade = -ltls
 LDLIBS.dtch = -lutil
 LDLIBS.fbclock = -lz
 LDLIBS.freecell = -lcurses

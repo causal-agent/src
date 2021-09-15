@@ -1,0 +1,116 @@
+.Dd September 14, 2021
+.Dt DOWNGRADE 1
+.Os
+.
+.Sh NAME
+.Nm downgrade
+.Nd IRC features for all
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl iv
+.Op Fl c Ar cert
+.Op Fl j Ar join
+.Op Fl k Ar priv
+.Op Fl n Ar nick
+.Op Fl p Ar port
+.Ar host
+.
+.Sh DESCRIPTION
+The
+.Nm
+IRC bot downgrades new IRC
+.Dq features
+so
+.Em everyone
+can see them.
+It supports typing notifications,
+message reactions
+and message replies.
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl c Ar cert
+Load the TLS client certificate from
+.Ar cert
+and authenticate using SASL EXTERNAL.
+.It Fl i
+Accept invites to channels.
+.It Fl j Ar join
+Join the channel list
+.Ar join .
+.It Fl k Ar priv
+Load the TLS client private key from
+.Ar priv .
+The default is the same path as
+.Ar cert .
+.It Fl n Ar nick
+Set the nickname and username to
+.Ar nick .
+The default is
+.Nm .
+.It Fl p Ar port
+Connect to
+.Ar port .
+The default is 6697.
+.It Fl v
+Log IRC protocol.
+.It Ar host
+Connect to
+.Ar host .
+.El
+.
+.Sh EXAMPLES
+.Bd -literal
+-downgrade- * guest-n4 is typing...
+<guest-n4> wtf
+-downgrade- * june reacted to guest-n4's message ("wtf") with "\[u1F44D]"
+-downgrade- * guest-n4 is typing...
+-downgrade- * guest-n4 has given up :(
+.Ed
+.Bd -literal
+<june> ,bef
+-downgrade- * tildebot is typing...
+<tildebot> [Ducks] june: There was no duck!
+-downgrade- * tildebot was replying to june's message (",bef")
+.Ed
+.
+.Sh STANDARDS
+.Bl -item
+.It
+.Rs
+.%A Kiyoshi Aman
+.%A Kyle Fuller
+.%A St\('ephan Kochen
+.%A Alexey Sokolov
+.%A James Wheare
+.%T Message Tags
+.%U https://ircv3.net/specs/extensions/message-tags
+.Re
+.It
+.Rs
+.%A MuffinMedic
+.%A James Wheare
+.%T typing client tag
+.%U https://ircv3.net/specs/client-tags/typing
+.Re
+.It
+.Rs
+.%A James Wheare
+.%T Message IDs
+.%U https://ircv3.net/specs/extensions/message-ids
+.Re
+.It
+.Rs
+.%A James Wheare
+.%T react client tag
+.%U https://ircv3.net/specs/client-tags/react
+.Re
+.It
+.Rs
+.%A James Wheare
+.%T reply client tag
+.%U https://ircv3.net/specs/client-tags/reply
+.Re
+.El
