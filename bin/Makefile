@@ -44,7 +44,6 @@ LINUX += psfed
 
 TLS += downgrade
 TLS += relay
-TLS += typer
 
 MANS = ${BINS:%=man1/%.1}
 MANS.BSD = ${BSD:%=man1/%.1}
