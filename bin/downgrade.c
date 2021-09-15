@@ -55,7 +55,7 @@ static void format(const char *format, ...) {
 static bool invite;
 static const char *join;
 
-enum { Cap = 256 };
+enum { Cap = 1024 };
 static struct Message {
 	char *id;
 	char *nick;
@@ -198,12 +198,9 @@ static void handle(char *ptr) {
 		}
 	} else if (react && reply) {
 		struct Message *to = find(reply);
+		format("NOTICE %s :* %s reacted to ", msg.chan, msg.nick);
 		if (to && strcmp(to->chan, msg.chan)) {
-			format(
-				"NOTICE %s :"
-				"* %s reacted to a message in another channel with \"%s\"\r\n",
-				msg.chan, msg.nick, react
-			);
+			format("a message in another channel");
 		} else if (to && to->mesg) {
 			size_t len = 0;
 			for (size_t n; to->mesg[len]; len += n) {
@@ -211,23 +208,15 @@ static void handle(char *ptr) {
 				if (len + n > 50) break;
 			}
 			format(
-				"NOTICE %s :"
-				"* %s reacted to %s's message (\"%.*s\"%s) with \"%s\"\r\n",
-				msg.chan, msg.nick,
-				to->nick, (int)len, to->mesg, (to->mesg[len] ? "..." : ""),
-				react
+				"%s's message (\"%.*s\"%s)",
+				to->nick, (int)len, to->mesg, (to->mesg[len] ? "..." : "")
 			);
 		} else if (to) {
-			format(
-				"NOTICE %s :* %s reacted to %s's reaction with \"%s\"\r\n",
-				msg.chan, msg.nick, to->nick, react
-			);
+			format("%s's reaction", to->nick);
 		} else {
-			format(
-				"NOTICE %s :* %s reacted to an unknown message with \"%s\"\r\n",
-				msg.chan, msg.nick, react
-			);
+			format("an unknown message");
 		}
+		format(" with \"%s\"\r\n", react);
 	} else if (react) {
 		format(
 			"NOTICE %s :* %s reacted to nothing with \"%s\"\r\n",
@@ -235,12 +224,9 @@ static void handle(char *ptr) {
 		);
 	} else if (reply) {
 		struct Message *to = find(reply);
+		format("NOTICE %s :* %s was replying to ", msg.chan, msg.nick);
 		if (to && strcmp(to->chan, msg.chan)) {
-			format(
-				"NOTICE %s :"
-				"* %s was replying to a message in another channel!\r\n",
-				msg.chan, msg.nick
-			);
+			format("a message in another channel!\r\n");
 		} else if (to && to->mesg) {
 			size_t len = 0;
 			for (size_t n; to->mesg[len]; len += n) {
@@ -248,21 +234,13 @@ static void handle(char *ptr) {
 				if (len + n > 50) break;
 			}
 			format(
-				"NOTICE %s :"
-				"* %s was replying to %s's message (\"%.*s\"%s)\r\n",
-				msg.chan, msg.nick,
+				"%s's message (\"%.*s\"%s)\r\n",
 				to->nick, (int)len, to->mesg, (to->mesg[len] ? "..." : "")
 			);
 		} else if (to) {
-			format(
-				"NOTICE %s :* %s was replying to %s's reaction\r\n",
-				msg.chan, msg.nick, to->nick
-			);
+			format("%s's reaction\r\n", to->nick);
 		} else {
-			format(
-				"NOTICE %s :* %s was replying to an unknown message!\r\n",
-				msg.chan, msg.nick
-			);
+			format("an unknown message!\r\n");
 		}
 	}
 }
