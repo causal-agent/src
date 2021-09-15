@@ -26,6 +26,10 @@
 #include <tls.h>
 #include <unistd.h>
 
+#ifdef __FreeBSD__
+#include <capsicum_helpers.h>
+#endif
+
 enum { BufferCap = 8192 + 512 };
 
 static bool verbose;
@@ -297,6 +301,11 @@ int main(int argc, char *argv[]) {
 	} while (error == TLS_WANT_POLLIN || error == TLS_WANT_POLLOUT);
 	if (error) errx(EX_PROTOCOL, "tls_handshake: %s", tls_error(client));
 	tls_config_clear_keys(config);
+
+#ifdef __FreeBSD__
+	error = caph_enter() || caph_limit_stdio();
+	if (error) err(EX_OSERR, "caph_enter");
+#endif
 
 	signal(SIGHUP, quit);
 	signal(SIGINT, quit);
