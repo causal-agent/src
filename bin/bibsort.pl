@@ -42,8 +42,9 @@ foreach $ref (@refs) {
 }
 
 sub byAuthor {
+	my ($ta, $tb) = ($a->{T}[0], $b->{T}[0]);
 	local ($a, $b) = ($a->{A}[0], $b->{A}[0]);
-	byLast();
+	byLast() || $ta cmp $tb;
 }
 
 {
