@@ -79,7 +79,7 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 {ident} { return Ident; }
 
 "//"([^\n]|"\\\n")* |
-"/*"([^*]|"*"[^/])*"*"+"/" {
+"/*"([^*]|"*"+[^*/])*"*"+"/" {
 	return Comment;
 }
 
