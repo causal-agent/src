@@ -1,4 +1,4 @@
-/* Copyright (C) 2018  June McEnroe <june@causal.agency>
+/* Copyright (C) 2018, 2021  June McEnroe <june@causal.agency>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -14,8 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arpa/inet.h>
 #include <err.h>
+#include <inttypes.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -25,256 +26,290 @@
 #include <unistd.h>
 #include <zlib.h>
 
-#define PACKED __attribute__((packed))
-#define PAIR(a, b) ((uint16_t)(a) << 8 | (uint16_t)(b))
-
-#define CRC_INIT (crc32(0, Z_NULL, 0))
+#define ARRAY_LEN(a) (sizeof(a) / sizeof(a[0]))
 
 static bool verbose;
 static const char *path;
 static FILE *file;
 static uint32_t crc;
 
-static void readExpect(void *ptr, size_t size, const char *expect) {
-	fread(ptr, size, 1, file);
-	if (ferror(file)) err(EX_IOERR, "%s", path);
-	if (feof(file)) errx(EX_DATAERR, "%s: missing %s", path, expect);
-	crc = crc32(crc, ptr, size);
+static void pngRead(void *ptr, size_t len, const char *desc) {
+	size_t n = fread(ptr, len, 1, file);
+	if (!n && ferror(file)) err(EX_IOERR, "%s", path);
+	if (!n) errx(EX_DATAERR, "%s: missing %s", path, desc);
+	crc = crc32(crc, ptr, len);
 }
 
-static void writeExpect(const void *ptr, size_t size) {
-	fwrite(ptr, size, 1, file);
-	if (ferror(file)) err(EX_IOERR, "%s", path);
-	crc = crc32(crc, ptr, size);
+static void pngWrite(const void *ptr, size_t len) {
+	size_t n = fwrite(ptr, len, 1, file);
+	if (!n) err(EX_IOERR, "%s", path);
+	crc = crc32(crc, ptr, len);
 }
 
-static const uint8_t Signature[8] = "\x89PNG\r\n\x1A\n";
+static const uint8_t Sig[8] = "\x89PNG\r\n\x1A\n";
 
-static void readSignature(void) {
-	uint8_t signature[8];
-	readExpect(signature, 8, "signature");
-	if (0 != memcmp(signature, Signature, 8)) {
+static void sigRead(void) {
+	uint8_t sig[sizeof(Sig)];
+	pngRead(sig, sizeof(sig), "signature");
+	if (memcmp(sig, Sig, sizeof(sig))) {
 		errx(EX_DATAERR, "%s: invalid signature", path);
 	}
 }
 
-static void writeSignature(void) {
-	writeExpect(Signature, sizeof(Signature));
+static void sigWrite(void) {
+	pngWrite(Sig, sizeof(Sig));
 }
 
-struct PACKED Chunk {
-	uint32_t size;
-	char type[4];
+static uint32_t u32Read(const char *desc) {
+	uint8_t b[4];
+	pngRead(b, sizeof(b), desc);
+	return (uint32_t)b[0] << 24 | (uint32_t)b[1] << 16
+		| (uint32_t)b[2] << 8 | (uint32_t)b[3];
+}
+
+static void u32Write(uint32_t x) {
+	uint8_t b[4] = { x >> 24 & 0xFF, x >> 16 & 0xFF, x >> 8 & 0xFF, x & 0xFF };
+	pngWrite(b, sizeof(b));
+}
+
+struct Chunk {
+	uint32_t len;
+	char type[5];
 };
 
-static const char *typeStr(struct Chunk chunk) {
-	static char buf[5];
-	memcpy(buf, chunk.type, 4);
-	return buf;
-}
-
-static struct Chunk readChunk(void) {
+static struct Chunk chunkRead(void) {
 	struct Chunk chunk;
-	readExpect(&chunk, sizeof(chunk), "chunk");
-	chunk.size = ntohl(chunk.size);
-	crc = crc32(CRC_INIT, (Byte *)chunk.type, sizeof(chunk.type));
+	chunk.len = u32Read("chunk length");
+	crc = crc32(0, Z_NULL, 0);
+	pngRead(chunk.type, 4, "chunk type");
+	chunk.type[4] = 0;
 	return chunk;
 }
 
-static void writeChunk(struct Chunk chunk) {
-	chunk.size = htonl(chunk.size);
-	writeExpect(&chunk, sizeof(chunk));
-	crc = crc32(CRC_INIT, (Byte *)chunk.type, sizeof(chunk.type));
+static void chunkWrite(struct Chunk chunk) {
+	u32Write(chunk.len);
+	crc = crc32(0, Z_NULL, 0);
+	pngWrite(chunk.type, 4);
 }
 
-static void readCrc(void) {
-	uint32_t expected = crc;
-	uint32_t found;
-	readExpect(&found, sizeof(found), "CRC32");
-	found = ntohl(found);
-	if (found != expected) {
-		errx(
-			EX_DATAERR, "%s: expected CRC32 %08X, found %08X",
-			path, expected, found
-		);
-	}
-}
-
-static void writeCrc(void) {
-	uint32_t net = htonl(crc);
-	writeExpect(&net, sizeof(net));
-}
-
-static void skipChunk(struct Chunk chunk) {
-	if (!(chunk.type[0] & 0x20)) {
-		errx(EX_CONFIG, "%s: unsupported critical chunk %s", path, typeStr(chunk));
-	}
-	uint8_t discard[4096];
-	while (chunk.size > sizeof(discard)) {
-		readExpect(discard, sizeof(discard), "chunk data");
-		chunk.size -= sizeof(discard);
-	}
-	if (chunk.size) readExpect(discard, chunk.size, "chunk data");
-	readCrc();
-}
-
-static struct PACKED {
-	uint32_t width;
-	uint32_t height;
-	uint8_t depth;
-	enum PACKED {
-		Grayscale      = 0,
-		Truecolor      = 2,
-		Indexed        = 3,
-		GrayscaleAlpha = 4,
-		TruecolorAlpha = 6,
-	} color;
-	enum PACKED { Deflate } compression;
-	enum PACKED { Adaptive } filter;
-	enum PACKED { Progressive, Adam7 } interlace;
-} header;
-_Static_assert(13 == sizeof(header), "header size");
-
-static size_t pixelBits(void) {
-	switch (header.color) {
-		case Grayscale:      return 1 * header.depth;
-		case Truecolor:      return 3 * header.depth;
-		case Indexed:        return 1 * header.depth;
-		case GrayscaleAlpha: return 2 * header.depth;
-		case TruecolorAlpha: return 4 * header.depth;
-		default: abort();
-	}
-}
-
-static size_t pixelSize(void) {
-	return (pixelBits() + 7) / 8;
-}
-
-static size_t lineSize(void) {
-	return (header.width * pixelBits() + 7) / 8;
-}
-
-static size_t dataSize(void) {
-	return (1 + lineSize()) * header.height;
-}
-
-static const char *ColorStr[] = {
-	[Grayscale] = "grayscale",
-	[Truecolor] = "truecolor",
-	[Indexed] = "indexed",
-	[GrayscaleAlpha] = "grayscale alpha",
-	[TruecolorAlpha] = "truecolor alpha",
-};
-static void printHeader(void) {
-	fprintf(
-		stderr,
-		"%s: %ux%u %hhu-bit %s\n",
-		path,
-		header.width, header.height,
-		header.depth, ColorStr[header.color]
+static void crcRead(void) {
+	uint32_t expect = crc;
+	uint32_t actual = u32Read("CRC32");
+	if (actual == expect) return;
+	errx(
+		EX_DATAERR, "%s: expected CRC32 %08X, found %08X",
+		path, expect, actual
 	);
 }
 
-static void readHeader(struct Chunk chunk) {
-	if (chunk.size != sizeof(header)) {
+static void crcWrite(void) {
+	u32Write(crc);
+}
+
+static void chunkSkip(struct Chunk chunk) {
+	if (!(chunk.type[0] & 0x20)) {
+		errx(EX_CONFIG, "%s: unsupported critical chunk %s", path, chunk.type);
+	}
+	uint8_t buf[4096];
+	while (chunk.len > sizeof(buf)) {
+		pngRead(buf, sizeof(buf), "chunk data");
+		chunk.len -= sizeof(buf);
+	}
+	if (chunk.len) pngRead(buf, chunk.len, "chunk data");
+	crcRead();
+}
+
+enum Color {
+	Grayscale = 0,
+	Truecolor = 2,
+	Indexed = 3,
+	GrayscaleAlpha = 4,
+	TruecolorAlpha = 6,
+};
+enum Compression {
+	Deflate,
+};
+enum FilterMethod {
+	Adaptive,
+};
+enum Interlace {
+	Progressive,
+	Adam7,
+};
+
+enum { HeaderLen = 13 };
+static struct {
+	uint32_t width;
+	uint32_t height;
+	uint8_t depth;
+	uint8_t color;
+	uint8_t compression;
+	uint8_t filter;
+	uint8_t interlace;
+} header;
+
+static size_t pixelBits(void) {
+	switch (header.color) {
+		case Grayscale:
+		case Indexed:
+			return 1 * header.depth;
+		case GrayscaleAlpha:
+			return 2 * header.depth;
+		case Truecolor:
+			return 3 * header.depth;
+		case TruecolorAlpha:
+			return 4 * header.depth;
+		default:
+			abort();
+	}
+}
+static size_t pixelLen(void) {
+	return (pixelBits() + 7) / 8;
+}
+static size_t lineLen(void) {
+	return (header.width * pixelBits() + 7) / 8;
+}
+static size_t dataLen(void) {
+	return (1 + lineLen()) * header.height;
+}
+
+static void headerPrint(void) {
+	static const char *String[] = {
+		[Grayscale] = "grayscale",
+		[Truecolor] = "truecolor",
+		[Indexed] = "indexed",
+		[GrayscaleAlpha] = "grayscale alpha",
+		[TruecolorAlpha] = "truecolor alpha",
+	};
+	fprintf(
+		stderr, "%s: %" PRIu32 "x%" PRIu32 " %" PRIu8 "-bit %s\n",
+		path, header.width, header.height, header.depth, String[header.color]
+	);
+}
+
+static void headerRead(struct Chunk chunk) {
+	if (chunk.len != HeaderLen) {
 		errx(
-			EX_DATAERR, "%s: expected IHDR size %zu, found %u",
-			path, sizeof(header), chunk.size
+			EX_DATAERR, "%s: expected %s length %" PRIu32 ", found %" PRIu32,
+			path, chunk.type, (uint32_t)HeaderLen, chunk.len
 		);
 	}
-	readExpect(&header, sizeof(header), "header");
-	readCrc();
-
-	header.width = ntohl(header.width);
-	header.height = ntohl(header.height);
+	header.width = u32Read("header width");
+	header.height = u32Read("header height");
+	pngRead(&header.depth, 1, "header depth");
+	pngRead(&header.color, 1, "header color");
+	pngRead(&header.compression, 1, "header compression");
+	pngRead(&header.filter, 1, "header filter");
+	pngRead(&header.interlace, 1, "header interlace");
+	crcRead();
 
 	if (!header.width) errx(EX_DATAERR, "%s: invalid width 0", path);
 	if (!header.height) errx(EX_DATAERR, "%s: invalid height 0", path);
-	switch (PAIR(header.color, header.depth)) {
-		case PAIR(Grayscale, 1):
-		case PAIR(Grayscale, 2):
-		case PAIR(Grayscale, 4):
-		case PAIR(Grayscale, 8):
-		case PAIR(Grayscale, 16):
-		case PAIR(Truecolor, 8):
-		case PAIR(Truecolor, 16):
-		case PAIR(Indexed, 1):
-		case PAIR(Indexed, 2):
-		case PAIR(Indexed, 4):
-		case PAIR(Indexed, 8):
-		case PAIR(GrayscaleAlpha, 8):
-		case PAIR(GrayscaleAlpha, 16):
-		case PAIR(TruecolorAlpha, 8):
-		case PAIR(TruecolorAlpha, 16):
-			break;
-		default:
-			errx(
-				EX_DATAERR, "%s: invalid color type %hhu and bit depth %hhu",
-				path, header.color, header.depth
-			);
+	static const struct {
+		uint8_t color;
+		uint8_t depth;
+	} Valid[] = {
+		{ Grayscale, 1 },
+		{ Grayscale, 2 },
+		{ Grayscale, 4 },
+		{ Grayscale, 8 },
+		{ Grayscale, 16 },
+		{ Truecolor, 8 },
+		{ Truecolor, 16 },
+		{ Indexed, 1 },
+		{ Indexed, 2 },
+		{ Indexed, 4 },
+		{ Indexed, 8 },
+		{ Indexed, 16 },
+		{ GrayscaleAlpha, 8 },
+		{ GrayscaleAlpha, 16 },
+		{ TruecolorAlpha, 8 },
+		{ TruecolorAlpha, 16 },
+	};
+	bool valid = false;
+	for (size_t i = 0; i < ARRAY_LEN(Valid); ++i) {
+		valid = (
+			header.color == Valid[i].color &&
+			header.depth == Valid[i].depth
+		);
+		if (valid) break;
+	}
+	if (!valid) {
+		errx(
+			EX_DATAERR,
+			"%s: invalid color type %" PRIu8 " and bit depth %" PRIu8,
+			path, header.color, header.depth
+		);
 	}
 	if (header.compression != Deflate) {
 		errx(
-			EX_DATAERR, "%s: invalid compression method %hhu",
+			EX_DATAERR, "%s: invalid compression method %" PRIu8,
 			path, header.compression
 		);
 	}
 	if (header.filter != Adaptive) {
-		errx(EX_DATAERR, "%s: invalid filter method %hhu", path, header.filter);
+		errx(
+			EX_DATAERR, "%s: invalid filter method %" PRIu8,
+			path, header.filter
+		);
 	}
 	if (header.interlace > Adam7) {
-		errx(EX_DATAERR, "%s: invalid interlace method %hhu", path, header.interlace);
+		errx(
+			EX_DATAERR, "%s: invalid interlace method %" PRIu8,
+			path, header.interlace
+		);
 	}
 
-	if (verbose) printHeader();
+	if (verbose) headerPrint();
 }
 
-static void writeHeader(void) {
-	if (verbose) printHeader();
+static void headerWrite(void) {
+	if (verbose) headerPrint();
 
-	struct Chunk ihdr = { .size = sizeof(header), .type = "IHDR" };
-	writeChunk(ihdr);
-	header.width = htonl(header.width);
-	header.height = htonl(header.height);
-	writeExpect(&header, sizeof(header));
-	writeCrc();
-
-	header.width = ntohl(header.width);
-	header.height = ntohl(header.height);
+	struct Chunk ihdr = { HeaderLen, "IHDR" };
+	chunkWrite(ihdr);
+	u32Write(header.width);
+	u32Write(header.height);
+	pngWrite(&header.depth, 1);
+	pngWrite(&header.color, 1);
+	pngWrite(&header.compression, 1);
+	pngWrite(&header.filter, 1);
+	pngWrite(&header.interlace, 1);
+	crcWrite();
 }
 
 static struct {
 	uint32_t len;
-	uint8_t entries[256][3];
-} palette;
+	uint8_t rgb[256][3];
+} pal;
 
 static struct {
 	uint32_t len;
-	uint8_t alpha[256];
+	uint8_t a[256];
 } trans;
 
-static void paletteClear(void) {
-	palette.len = 0;
+static void palClear(void) {
+	pal.len = 0;
 	trans.len = 0;
 }
 
-static uint32_t paletteIndex(bool alpha, const uint8_t *rgba) {
+static uint32_t palIndex(bool alpha, const uint8_t *rgba) {
 	uint32_t i;
-	for (i = 0; i < palette.len; ++i) {
-		if (alpha && i < trans.len && trans.alpha[i] != rgba[3]) continue;
-		if (0 == memcmp(palette.entries[i], rgba, 3)) break;
+	for (i = 0; i < pal.len; ++i) {
+		if (alpha && i < trans.len && trans.a[i] != rgba[3]) continue;
+		if (!memcmp(pal.rgb[i], rgba, 3)) break;
 	}
 	return i;
 }
 
-static bool paletteAdd(bool alpha, const uint8_t *rgba) {
-	uint32_t i = paletteIndex(alpha, rgba);
-	if (i < palette.len) return true;
+static bool palAdd(bool alpha, const uint8_t *rgba) {
+	uint32_t i = palIndex(alpha, rgba);
+	if (i < pal.len) return true;
 	if (i == 256) return false;
-	memcpy(palette.entries[i], rgba, 3);
-	palette.len++;
+	memcpy(pal.rgb[i], rgba, 3);
+	pal.len++;
 	if (alpha) {
-		trans.alpha[i] = rgba[3];
+		trans.a[i] = rgba[3];
 		trans.len++;
 	}
 	return true;
@@ -283,97 +318,120 @@ static bool paletteAdd(bool alpha, const uint8_t *rgba) {
 static void transCompact(void) {
 	uint32_t i;
 	for (i = 0; i < trans.len; ++i) {
-		if (trans.alpha[i] == 0xFF) break;
+		if (trans.a[i] == 0xFF) break;
 	}
 	if (i == trans.len) return;
 
-	for (uint32_t j = i + 1; j < trans.len; ++j) {
-		if (trans.alpha[j] == 0xFF) continue;
-
-		uint8_t alpha = trans.alpha[i];
-		trans.alpha[i] = trans.alpha[j];
-		trans.alpha[j] = alpha;
-
+	for (uint32_t j = i+1; j < trans.len; ++j) {
+		if (trans.a[j] == 0xFF) continue;
+		uint8_t a = trans.a[i];
+		trans.a[i] = trans.a[j];
+		trans.a[j] = a;
 		uint8_t rgb[3];
-		memcpy(rgb, palette.entries[i], 3);
-		memcpy(palette.entries[i], palette.entries[j], 3);
-		memcpy(palette.entries[j], rgb, 3);
-
+		memcpy(rgb, pal.rgb[i], 3);
+		memcpy(pal.rgb[i], pal.rgb[j], 3);
+		memcpy(pal.rgb[j], rgb, 3);
 		i++;
 	}
 	trans.len = i;
 }
 
-static void readPalette(struct Chunk chunk) {
-	if (chunk.size % 3) {
-		errx(EX_DATAERR, "%s: PLTE size %u not divisible by 3", path, chunk.size);
+static void palRead(struct Chunk chunk) {
+	if (chunk.len % 3) {
+		errx(
+			EX_DATAERR, "%s: %s length %" PRIu32 " not divisible by 3",
+			path, chunk.type, chunk.len
+		);
 	}
-
-	palette.len = chunk.size / 3;
-	if (palette.len > 256) {
-		errx(EX_DATAERR, "%s: PLTE length %u > 256", path, palette.len);
+	pal.len = chunk.len / 3;
+	if (pal.len > 256) {
+		errx(
+			EX_DATAERR, "%s: %s length %" PRIu32 " > 256",
+			path, chunk.type, pal.len
+		);
 	}
-
-	readExpect(palette.entries, chunk.size, "palette data");
-	readCrc();
-
-	if (verbose) fprintf(stderr, "%s: palette length %u\n", path, palette.len);
+	pngRead(pal.rgb, chunk.len, "palette data");
+	crcRead();
+	if (verbose) {
+		fprintf(stderr, "%s: palette length %" PRIu32 "\n", path, pal.len);
+	}
 }
 
-static void writePalette(void) {
-	if (verbose) fprintf(stderr, "%s: palette length %u\n", path, palette.len);
-	struct Chunk plte = { .size = 3 * palette.len, .type = "PLTE" };
-	writeChunk(plte);
-	writeExpect(palette.entries, plte.size);
-	writeCrc();
+static void palWrite(void) {
+	if (verbose) {
+		fprintf(stderr, "%s: palette length %" PRIu32 "\n", path, pal.len);
+	}
+	struct Chunk plte = { 3 * pal.len, "PLTE" };
+	chunkWrite(plte);
+	pngWrite(pal.rgb, plte.len);
+	crcWrite();
 }
 
-static void readTrans(struct Chunk chunk) {
-	trans.len = chunk.size;
+static void transRead(struct Chunk chunk) {
+	trans.len = chunk.len;
 	if (trans.len > 256) {
-		errx(EX_DATAERR, "%s: tRNS length %u > 256", path, trans.len);
+		errx(
+			EX_DATAERR, "%s: %s length %" PRIu32 " > 256",
+			path, chunk.type, trans.len
+		);
 	}
-	readExpect(trans.alpha, chunk.size, "transparency alpha");
-	readCrc();
-	if (verbose) fprintf(stderr, "%s: transparency length %u\n", path, trans.len);
+	pngRead(trans.a, chunk.len, "transparency data");
+	crcRead();
+	if (verbose) {
+		fprintf(stderr, "%s: trans length %" PRIu32 "\n", path, trans.len);
+	}
 }
 
-static void writeTrans(void) {
-	if (verbose) fprintf(stderr, "%s: transparency length %u\n", path, trans.len);
-	struct Chunk trns = { .size = trans.len, .type = "tRNS" };
-	writeChunk(trns);
-	writeExpect(trans.alpha, trns.size);
-	writeCrc();
+static void transWrite(void) {
+	if (verbose) {
+		fprintf(stderr, "%s: trans length %" PRIu32 "\n", path, trans.len);
+	}
+	struct Chunk trns = { trans.len, "tRNS" };
+	chunkWrite(trns);
+	pngWrite(trans.a, trns.len);
+	crcWrite();
 }
 
 static uint8_t *data;
 
-static void allocData(void) {
-	data = malloc(dataSize());
-	if (!data) err(EX_OSERR, "malloc(%zu)", dataSize());
+static void dataAlloc(void) {
+	data = malloc(dataLen());
+	if (!data) err(EX_OSERR, "malloc");
 }
 
-static void readData(struct Chunk chunk) {
-	if (verbose) fprintf(stderr, "%s: data size %zu\n", path, dataSize());
+static const char *humanize(size_t n) {
+	static char buf[64];
+	if (n >> 10) {
+		snprintf(buf, sizeof(buf), "%zuK", n >> 10);
+	} else {
+		snprintf(buf, sizeof(buf), "%zuB", n);
+	}
+	return buf;
+}
 
-	struct z_stream_s stream = { .next_out = data, .avail_out = dataSize() };
+static void dataRead(struct Chunk chunk) {
+	if (verbose) {
+		fprintf(stderr, "%s: data size %s\n", path, humanize(dataLen()));
+	}
+
+	z_stream stream = { .next_out = data, .avail_out = dataLen() };
 	int error = inflateInit(&stream);
-	if (error != Z_OK) errx(EX_SOFTWARE, "%s: inflateInit: %s", path, stream.msg);
+	if (error != Z_OK) errx(EX_SOFTWARE, "inflateInit: %s", stream.msg);
 
 	for (;;) {
-		if (0 != memcmp(chunk.type, "IDAT", 4)) {
+		if (strcmp(chunk.type, "IDAT")) {
 			errx(EX_DATAERR, "%s: missing IDAT chunk", path);
 		}
 
-		uint8_t *idat = malloc(chunk.size);
+		uint8_t *idat = malloc(chunk.len);
 		if (!idat) err(EX_OSERR, "malloc");
 
-		readExpect(idat, chunk.size, "image data");
-		readCrc();
-
+		pngRead(idat, chunk.len, "image data");
+		crcRead();
+		
 		stream.next_in = idat;
-		stream.avail_in = chunk.size;
-		int error = inflate(&stream, Z_SYNC_FLUSH);
+		stream.avail_in = chunk.len;
+		error = inflate(&stream, Z_SYNC_FLUSH);
 		free(idat);
 
 		if (error == Z_STREAM_END) break;
@@ -381,71 +439,67 @@ static void readData(struct Chunk chunk) {
 			errx(EX_DATAERR, "%s: inflate: %s", path, stream.msg);
 		}
 
-		chunk = readChunk();
+		chunk = chunkRead();
 	}
-
 	inflateEnd(&stream);
-	if ((size_t)stream.total_out != dataSize()) {
+	if ((size_t)stream.total_out != dataLen()) {
 		errx(
-			EX_DATAERR, "%s: expected data size %zu, found %zu",
-			path, dataSize(), (size_t)stream.total_out
+			EX_DATAERR, "%s: expected data length %zu, found %zu",
+			path, dataLen(), (size_t)stream.total_out
 		);
 	}
 
 	if (verbose) {
 		fprintf(
-			stderr, "%s: deflate size %zu\n", path, (size_t)stream.total_in
+			stderr, "%s: deflate size %s\n",
+			path, humanize(stream.total_in)
 		);
 	}
 }
 
-static void writeData(void) {
-	if (verbose) fprintf(stderr, "%s: data size %zu\n", path, dataSize());
+static void dataWrite(void) {
+	if (verbose) {
+		fprintf(stderr, "%s: data size %s\n", path, humanize(dataLen()));
+	}
 
-	uLong size = compressBound(dataSize());
-	uint8_t *deflate = malloc(size);
+	uLong len = compressBound(dataLen());
+	uint8_t *deflate = malloc(len);
 	if (!deflate) err(EX_OSERR, "malloc");
 
-	int error = compress2(deflate, &size, data, dataSize(), Z_BEST_COMPRESSION);
-	if (error != Z_OK) errx(EX_SOFTWARE, "%s: compress2: %d", path, error);
+	int error = compress2(deflate, &len, data, dataLen(), Z_BEST_COMPRESSION);
+	if (error != Z_OK) errx(EX_SOFTWARE, "compress2: %d", error);
 
-	struct Chunk idat = { .size = size, .type = "IDAT" };
-	writeChunk(idat);
-	writeExpect(deflate, size);
-	writeCrc();
-
+	struct Chunk idat = { len, "IDAT" };
+	chunkWrite(idat);
+	pngWrite(deflate, len);
+	crcWrite();
 	free(deflate);
 
-	if (verbose) fprintf(stderr, "%s: deflate size %lu\n", path, size);
+	struct Chunk iend = { 0, "IEND" };
+	chunkWrite(iend);
+	crcWrite();
+
+	if (verbose) fprintf(stderr, "%s: deflate size %s\n", path, humanize(len));
 }
 
-static void writeEnd(void) {
-	struct Chunk iend = { .size = 0, .type = "IEND" };
-	writeChunk(iend);
-	writeCrc();
-}
-
-enum PACKED Filter {
+enum Filter {
 	None,
 	Sub,
 	Up,
 	Average,
 	Paeth,
-	FilterCount,
+	FilterCap,
 };
 
 struct Bytes {
-	uint8_t x;
-	uint8_t a;
-	uint8_t b;
-	uint8_t c;
+	uint8_t x, a, b, c;
 };
 
 static uint8_t paethPredictor(struct Bytes f) {
 	int32_t p = (int32_t)f.a + (int32_t)f.b - (int32_t)f.c;
-	int32_t pa = abs(p - (int32_t)f.a);
-	int32_t pb = abs(p - (int32_t)f.b);
-	int32_t pc = abs(p - (int32_t)f.c);
+	int32_t pa = labs(p - (int32_t)f.a);
+	int32_t pb = labs(p - (int32_t)f.b);
+	int32_t pc = labs(p - (int32_t)f.c);
 	if (pa <= pb && pa <= pc) return f.a;
 	if (pb <= pc) return f.b;
 	return f.c;
@@ -458,7 +512,7 @@ static uint8_t recon(enum Filter type, struct Bytes f) {
 		case Up:      return f.x + f.b;
 		case Average: return f.x + ((uint32_t)f.a + (uint32_t)f.b) / 2;
 		case Paeth:   return f.x + paethPredictor(f);
-		default:      abort();
+		default: abort();
 	}
 }
 
@@ -469,244 +523,301 @@ static uint8_t filt(enum Filter type, struct Bytes f) {
 		case Up:      return f.x - f.b;
 		case Average: return f.x - ((uint32_t)f.a + (uint32_t)f.b) / 2;
 		case Paeth:   return f.x - paethPredictor(f);
-		default:      abort();
+		default: abort();
 	}
 }
 
-static struct Line {
-	enum Filter type;
-	uint8_t data[];
-} **lines;
-
-static void allocLines(void) {
-	lines = calloc(header.height, sizeof(*lines));
-	if (!lines) err(EX_OSERR, "calloc(%u, %zu)", header.height, sizeof(*lines));
+static uint8_t *lineType(uint32_t y) {
+	return &data[y * (1 + lineLen())];
 }
-
-static void scanlines(void) {
-	size_t stride = 1 + lineSize();
-	for (uint32_t y = 0; y < header.height; ++y) {
-		lines[y] = (struct Line *)&data[y * stride];
-		if (lines[y]->type >= FilterCount) {
-			errx(EX_DATAERR, "%s: invalid filter type %hhu", path, lines[y]->type);
-		}
-	}
+static uint8_t *lineData(uint32_t y) {
+	return 1 + lineType(y);
 }
 
 static struct Bytes origBytes(uint32_t y, size_t i) {
-	bool a = (i >= pixelSize()), b = (y > 0), c = (a && b);
+	bool a = (i >= pixelLen()), b = (y > 0), c = (a && b);
 	return (struct Bytes) {
-		.x = lines[y]->data[i],
-		.a = a ? lines[y]->data[i - pixelSize()] : 0,
-		.b = b ? lines[y - 1]->data[i] : 0,
-		.c = c ? lines[y - 1]->data[i - pixelSize()] : 0,
+		.x = lineData(y)[i],
+		.a = (a ? lineData(y)[i-pixelLen()] : 0),
+		.b = (b ? lineData(y-1)[i] : 0),
+		.c = (c ? lineData(y-1)[i-pixelLen()] : 0),
 	};
 }
 
-static void reconData(void) {
+static void dataRecon(void) {
 	for (uint32_t y = 0; y < header.height; ++y) {
-		for (size_t i = 0; i < lineSize(); ++i) {
-			lines[y]->data[i] =
-				recon(lines[y]->type, origBytes(y, i));
+		for (size_t i = 0; i < lineLen(); ++i) {
+			lineData(y)[i] = recon(*lineType(y), origBytes(y, i));
 		}
-		lines[y]->type = None;
+		*lineType(y) = None;
 	}
 }
 
-static void filterData(void) {
+static void dataFilter(void) {
 	if (header.color == Indexed || header.depth < 8) return;
-	for (uint32_t y = header.height - 1; y < header.height; --y) {
-		uint8_t filter[FilterCount][lineSize()];
-		uint32_t heuristic[FilterCount] = {0};
+	uint8_t *filter[FilterCap];
+	for (enum Filter i = None; i < FilterCap; ++i) {
+		filter[i] = malloc(lineLen());
+		if (!filter[i]) err(EX_OSERR, "malloc");
+	}
+	for (uint32_t y = header.height-1; y < header.height; --y) {
+		uint32_t heuristic[FilterCap] = {0};
 		enum Filter minType = None;
-		for (enum Filter type = None; type < FilterCount; ++type) {
-			for (size_t i = 0; i < lineSize(); ++i) {
+		for (enum Filter type = None; type < FilterCap; ++type) {
+			for (size_t i = 0; i < lineLen(); ++i) {
 				filter[type][i] = filt(type, origBytes(y, i));
 				heuristic[type] += abs((int8_t)filter[type][i]);
 			}
 			if (heuristic[type] < heuristic[minType]) minType = type;
 		}
-		lines[y]->type = minType;
-		memcpy(lines[y]->data, filter[minType], lineSize());
+		*lineType(y) = minType;
+		memcpy(lineData(y), filter[minType], lineLen());
+	}
+	for (enum Filter i = None; i < FilterCap; ++i) {
+		free(filter[i]);
 	}
 }
 
-static void discardAlpha(void) {
-	if (header.color != GrayscaleAlpha && header.color != TruecolorAlpha) return;
-	size_t sampleSize = header.depth / 8;
-	size_t colorSize = pixelSize() - sampleSize;
-	for (uint32_t y = 0; y < header.height; ++y) {
-		for (uint32_t x = 0; x < header.width; ++x) {
-			for (size_t i = 0; i < sampleSize; ++i) {
-				if (lines[y]->data[x * pixelSize() + colorSize + i] != 0xFF) return;
-			}
-		}
+static bool alphaUnused(void) {
+	if (header.color != GrayscaleAlpha && header.color != TruecolorAlpha) {
+		return false;
 	}
+	size_t sampleLen = header.depth / 8;
+	size_t colorLen = pixelLen() - sampleLen;
+	for (uint32_t y = 0; y < header.height; ++y)
+	for (uint32_t x = 0; x < header.width; ++x)
+	for (size_t i = 0; i < sampleLen; ++i) {
+		if (lineData(y)[x * pixelLen() + colorLen + i] != 0xFF) return false;
+	}
+	return true;
+}
 
+static void alphaDiscard(void) {
+	if (header.color != GrayscaleAlpha && header.color != TruecolorAlpha) {
+		return;
+	}
+	size_t sampleLen = header.depth / 8;
+	size_t colorLen = pixelLen() - sampleLen;
 	uint8_t *ptr = data;
 	for (uint32_t y = 0; y < header.height; ++y) {
-		*ptr++ = lines[y]->type;
+		*ptr++ = *lineType(y);
 		for (uint32_t x = 0; x < header.width; ++x) {
-			memmove(ptr, &lines[y]->data[x * pixelSize()], colorSize);
-			ptr += colorSize;
+			memmove(ptr, &lineData(y)[x * pixelLen()], colorLen);
+			ptr += colorLen;
 		}
 	}
-	header.color = (header.color == GrayscaleAlpha) ? Grayscale : Truecolor;
-	scanlines();
+	header.color = (header.color == GrayscaleAlpha ? Grayscale : Truecolor);
 }
 
-static void discardColor(void) {
+static bool depth16Unused(void) {
+	if (header.color != Grayscale && header.color != Truecolor) return false;
+	if (header.depth != 16) return false;
+	for (uint32_t y = 0; y < header.height; ++y)
+	for (size_t i = 0; i < lineLen(); i += 2) {
+		if (lineData(y)[i] != lineData(y)[i+1]) return false;
+	}
+	return true;
+}
+
+static void depth16Reduce(void) {
+	if (header.depth != 16) return;
+	uint8_t *ptr = data;
+	for (uint32_t y = 0; y < header.height; ++y) {
+		*ptr++ = *lineType(y);
+		for (size_t i = 0; i < lineLen() / 2; ++i) {
+			*ptr++ = lineData(y)[i*2];
+		}
+	}
+	header.depth = 8;
+}
+
+static bool colorUnused(void) {
+	if (header.color != Truecolor && header.color != TruecolorAlpha) {
+		return false;
+	}
+	if (header.depth != 8) return false;
+	for (uint32_t y = 0; y < header.height; ++y)
+	for (uint32_t x = 0; x < header.width; ++x) {
+		uint8_t r = lineData(y)[x * pixelLen() + 0];
+		uint8_t g = lineData(y)[x * pixelLen() + 1];
+		uint8_t b = lineData(y)[x * pixelLen() + 2];
+		if (r != g || g != b) return false;
+	}
+	return true;
+}
+
+static void colorDiscard(void) {
 	if (header.color != Truecolor && header.color != TruecolorAlpha) return;
-	size_t sampleSize = header.depth / 8;
-	for (uint32_t y = 0; y < header.height; ++y) {
-		for (uint32_t x = 0; x < header.width; ++x) {
-			uint8_t *r = &lines[y]->data[x * pixelSize()];
-			uint8_t *g = r + sampleSize;
-			uint8_t *b = g + sampleSize;
-			if (0 != memcmp(r, g, sampleSize)) return;
-			if (0 != memcmp(g, b, sampleSize)) return;
-		}
-	}
-
+	if (header.depth != 8) return;
 	uint8_t *ptr = data;
 	for (uint32_t y = 0; y < header.height; ++y) {
-		*ptr++ = lines[y]->type;
+		*ptr++ = *lineType(y);
 		for (uint32_t x = 0; x < header.width; ++x) {
-			uint8_t *pixel = &lines[y]->data[x * pixelSize()];
-			memmove(ptr, pixel, sampleSize);
-			ptr += sampleSize;
+			uint8_t r = lineData(y)[x * pixelLen() + 0];
+			uint8_t g = lineData(y)[x * pixelLen() + 1];
+			uint8_t b = lineData(y)[x * pixelLen() + 2];
+			*ptr++ = ((uint32_t)r + (uint32_t)g + (uint32_t)b) / 3;
 			if (header.color == TruecolorAlpha) {
-				memmove(ptr, pixel + 3 * sampleSize, sampleSize);
-				ptr += sampleSize;
+				*ptr++ = lineData(y)[x * pixelLen() + 3];
 			}
 		}
 	}
-	header.color = (header.color == Truecolor) ? Grayscale : GrayscaleAlpha;
-	scanlines();
+	header.color = (header.color == Truecolor ? Grayscale : GrayscaleAlpha);
 }
 
-static void indexColor(void) {
+static void colorIndex(void) {
 	if (header.color != Truecolor && header.color != TruecolorAlpha) return;
 	if (header.depth != 8) return;
 	bool alpha = (header.color == TruecolorAlpha);
-	for (uint32_t y = 0; y < header.height; ++y) {
-		for (uint32_t x = 0; x < header.width; ++x) {
-			if (!paletteAdd(alpha, &lines[y]->data[x * pixelSize()])) return;
-		}
+	for (uint32_t y = 0; y < header.height; ++y)
+	for (uint32_t x = 0; x < header.width; ++x) {
+		if (!palAdd(alpha, &lineData(y)[x * pixelLen()])) return;
 	}
-	transCompact();
 
+	transCompact();
 	uint8_t *ptr = data;
 	for (uint32_t y = 0; y < header.height; ++y) {
-		*ptr++ = lines[y]->type;
+		*ptr++ = *lineType(y);
 		for (uint32_t x = 0; x < header.width; ++x) {
-			*ptr++ = paletteIndex(alpha, &lines[y]->data[x * pixelSize()]);
+			*ptr++ = palIndex(alpha, &lineData(y)[x * pixelLen()]);
 		}
 	}
 	header.color = Indexed;
-	scanlines();
 }
 
-static void reduceDepth8(void) {
+static bool depth8Unused(void) {
+	if (header.depth != 8) return false;
+	if (header.color == Indexed) return pal.len <= 16;
+	if (header.color != Grayscale) return false;
+	for (uint32_t y = 0; y < header.height; ++y)
+	for (size_t i = 0; i < lineLen(); ++i) {
+		if ((lineData(y)[i] >> 4) != (lineData(y)[i] & 0x0F)) return false;
+	}
+	return true;
+}
+
+static void depth8Reduce(void) {
 	if (header.color != Grayscale && header.color != Indexed) return;
 	if (header.depth != 8) return;
-	if (header.color == Grayscale) {
-		for (uint32_t y = 0; y < header.height; ++y) {
-			for (size_t i = 0; i < lineSize(); ++i) {
-				uint8_t a = lines[y]->data[i];
-				if ((a >> 4) != (a & 0x0F)) return;
-			}
-		}
-	} else if (palette.len > 16) {
-		return;
-	}
-
 	uint8_t *ptr = data;
 	for (uint32_t y = 0; y < header.height; ++y) {
-		*ptr++ = lines[y]->type;
-		for (size_t i = 0; i < lineSize(); i += 2) {
-			uint8_t iByte = lines[y]->data[i];
-			uint8_t jByte = (i + 1 < lineSize()) ? lines[y]->data[i + 1] : 0;
-			uint8_t a = iByte & 0x0F;
-			uint8_t b = jByte & 0x0F;
+		*ptr++ = *lineType(y);
+		for (size_t i = 0; i < lineLen(); i += 2) {
+			uint8_t a, b;
+			uint8_t aa = lineData(y)[i];
+			uint8_t bb = (i+1 < lineLen() ? lineData(y)[i+1] : 0);
+			if (header.color == Grayscale) {
+				a = aa >> 4;
+				b = bb >> 4;
+			} else {
+				a = aa & 0x0F;
+				b = bb & 0x0F;
+			}
 			*ptr++ = a << 4 | b;
 		}
 	}
 	header.depth = 4;
-	scanlines();
 }
 
-static void reduceDepth4(void) {
-	if (header.depth != 4) return;
-	if (header.color == Grayscale) {
-		for (uint32_t y = 0; y < header.height; ++y) {
-			for (size_t i = 0; i < lineSize(); ++i) {
-				uint8_t a = lines[y]->data[i] >> 4;
-				uint8_t b = lines[y]->data[i] & 0x0F;
-				if ((a >> 2) != (a & 0x03)) return;
-				if ((b >> 2) != (b & 0x03)) return;
-			}
-		}
-	} else if (palette.len > 4) {
-		return;
+static bool depth4Unused(void) {
+	if (header.depth != 4) return false;
+	if (header.color == Indexed) return pal.len <= 4;
+	if (header.color != Grayscale) return false;
+	for (uint32_t y = 0; y < header.height; ++y)
+	for (size_t i = 0; i < lineLen(); ++i) {
+		uint8_t a = lineData(y)[i] >> 4;
+		uint8_t b = lineData(y)[i] & 0x0F;
+		if ((a >> 2) != (a & 0x03)) return false;
+		if ((b >> 2) != (b & 0x03)) return false;
 	}
+	return true;
+}
 
+static void depth4Reduce(void) {
+	if (header.color != Grayscale && header.color != Indexed) return;
+	if (header.depth != 4) return;
 	uint8_t *ptr = data;
 	for (uint32_t y = 0; y < header.height; ++y) {
-		*ptr++ = lines[y]->type;
-		for (size_t i = 0; i < lineSize(); i += 2) {
-			uint8_t iByte = lines[y]->data[i];
-			uint8_t jByte = (i + 1 < lineSize()) ? lines[y]->data[i + 1] : 0;
-			uint8_t a = iByte >> 4 & 0x03, b = iByte & 0x03;
-			uint8_t c = jByte >> 4 & 0x03, d = jByte & 0x03;
+		*ptr++ = *lineType(y);
+		for (size_t i = 0; i < lineLen(); i += 2) {
+			uint8_t a, b, c, d;
+			uint8_t aabb = lineData(y)[i];
+			uint8_t ccdd = (i+1 < lineLen() ? lineData(y)[i+1] : 0);
+			if (header.color == Grayscale) {
+				a = aabb >> 6;
+				c = ccdd >> 6;
+				b = aabb >> 2 & 0x03;
+				d = ccdd >> 2 & 0x03;
+			} else {
+				a = aabb >> 4 & 0x03;
+				c = ccdd >> 4 & 0x03;
+				b = aabb & 0x03;
+				d = ccdd & 0x03;
+			}
 			*ptr++ = a << 6 | b << 4 | c << 2 | d;
 		}
 	}
 	header.depth = 2;
-	scanlines();
 }
 
-static void reduceDepth2(void) {
-	if (header.depth != 2) return;
-	if (header.color == Grayscale) {
-		for (uint32_t y = 0; y < header.height; ++y) {
-			for (size_t i = 0; i < lineSize(); ++i) {
-				uint8_t a = lines[y]->data[i] >> 6;
-				uint8_t b = lines[y]->data[i] >> 4 & 0x03;
-				uint8_t c = lines[y]->data[i] >> 2 & 0x03;
-				uint8_t d = lines[y]->data[i] & 0x03;
-				if ((a >> 1) != (a & 0x01)) return;
-				if ((b >> 1) != (b & 0x01)) return;
-				if ((c >> 1) != (c & 0x01)) return;
-				if ((d >> 1) != (d & 0x01)) return;
-			}
-		}
-	} else if (palette.len > 2) {
-		return;
+static bool depth2Unused(void) {
+	if (header.depth != 2) return false;
+	if (header.color == Indexed) return pal.len <= 2;
+	if (header.color != Grayscale) return false;
+	for (uint32_t y = 0; y < header.height; ++y)
+	for (size_t i = 0; i < lineLen(); ++i) {
+		uint8_t a = lineData(y)[i] >> 6;
+		uint8_t b = lineData(y)[i] >> 4 & 0x03;
+		uint8_t c = lineData(y)[i] >> 2 & 0x03;
+		uint8_t d = lineData(y)[i] & 0x03;
+		if ((a >> 1) != (a & 1)) return false;
+		if ((b >> 1) != (b & 1)) return false;
+		if ((c >> 1) != (c & 1)) return false;
+		if ((d >> 1) != (d & 1)) return false;
 	}
+	return true;
+}
 
+static void depth2Reduce(void) {
+	if (header.color != Grayscale && header.color != Indexed) return;
+	if (header.depth != 2) return;
 	uint8_t *ptr = data;
 	for (uint32_t y = 0; y < header.height; ++y) {
-		*ptr++ = lines[y]->type;
-		for (size_t i = 0; i < lineSize(); i += 2) {
-			uint8_t iByte = lines[y]->data[i];
-			uint8_t jByte = (i + 1 < lineSize()) ? lines[y]->data[i + 1] : 0;
-			uint8_t a = iByte >> 6 & 0x01, b = iByte >> 4 & 0x01;
-			uint8_t c = iByte >> 2 & 0x01, d = iByte & 0x01;
-			uint8_t e = jByte >> 6 & 0x01, f = jByte >> 4 & 0x01;
-			uint8_t g = jByte >> 2 & 0x01, h = jByte & 0x01;
-			*ptr++ = a << 7 | b << 6 | c << 5 | d << 4 | e << 3 | f << 2 | g << 1 | h;
+		*ptr++ = *lineType(y);
+		for (size_t i = 0; i < lineLen(); i += 2) {
+			uint8_t a, b, c, d, e, f, g, h;
+			uint8_t aabbccdd = lineData(y)[i];
+			uint8_t eeffgghh = (i+1 < lineLen() ? lineData(y)[i+1] : 0);
+			if (header.color == Grayscale) {
+				a = aabbccdd >> 7;
+				b = aabbccdd >> 5 & 1;
+				c = aabbccdd >> 3 & 1;
+				d = aabbccdd >> 1 & 1;
+				e = eeffgghh >> 7;
+				f = eeffgghh >> 5 & 1;
+				g = eeffgghh >> 3 & 1;
+				h = eeffgghh >> 1 & 1;
+			} else {
+				a = aabbccdd >> 6 & 1;
+				b = aabbccdd >> 4 & 1;
+				c = aabbccdd >> 2 & 1;
+				d = aabbccdd & 1;
+				e = eeffgghh >> 6 & 1;
+				f = eeffgghh >> 4 & 1;
+				g = eeffgghh >> 2 & 1;
+				h = eeffgghh & 1;
+			}
+			*ptr++ = 0
+				| a << 7 | b << 6 | c << 5 | d << 4
+				| e << 3 | f << 2 | g << 1 | h;
 		}
 	}
 	header.depth = 1;
-	scanlines();
 }
 
-static void reduceDepth(void) {
-	reduceDepth8();
-	reduceDepth4();
-	reduceDepth2();
-}
+static bool discardAlpha;
+static bool discardColor;
+static uint8_t reduceDepth = 16;
 
 static void optimize(const char *inPath, const char *outPath) {
 	if (inPath) {
@@ -714,99 +825,102 @@ static void optimize(const char *inPath, const char *outPath) {
 		file = fopen(path, "r");
 		if (!file) err(EX_NOINPUT, "%s", path);
 	} else {
-		path = "(stdin)";
+		path = "stdin";
 		file = stdin;
 	}
 
-	readSignature();
-	struct Chunk ihdr = readChunk();
-	if (0 != memcmp(ihdr.type, "IHDR", 4)) {
-		errx(EX_DATAERR, "%s: expected IHDR, found %s", path, typeStr(ihdr));
+	sigRead();
+	struct Chunk ihdr = chunkRead();
+	if (strcmp(ihdr.type, "IHDR")) {
+		errx(EX_DATAERR, "%s: expected IHDR, found %s", path, ihdr.type);
 	}
-	readHeader(ihdr);
+	headerRead(ihdr);
 	if (header.interlace != Progressive) {
-		errx(
-			EX_CONFIG, "%s: unsupported interlace method %hhu",
-			path, header.interlace
-		);
+		errx(EX_CONFIG, "%s: unsupported interlacing", path);
 	}
 
-	paletteClear();
-	allocData();
+	palClear();
+	dataAlloc();
 	for (;;) {
-		struct Chunk chunk = readChunk();
-		if (0 == memcmp(chunk.type, "PLTE", 4)) {
-			readPalette(chunk);
-		} else if (0 == memcmp(chunk.type, "tRNS", 4)) {
-			readTrans(chunk);
-		} else if (0 == memcmp(chunk.type, "IDAT", 4)) {
-			readData(chunk);
-		} else if (0 != memcmp(chunk.type, "IEND", 4)) {
-			skipChunk(chunk);
-		} else {
+		struct Chunk chunk = chunkRead();
+		if (!strcmp(chunk.type, "PLTE")) {
+			palRead(chunk);
+		} else if (!strcmp(chunk.type, "tRNS")) {
+			transRead(chunk);
+		} else if (!strcmp(chunk.type, "IDAT")) {
+			dataRead(chunk);
+		} else if (!strcmp(chunk.type, "IEND")) {
 			break;
+		} else {
+			chunkSkip(chunk);
 		}
 	}
-
 	fclose(file);
 
-	allocLines();
-	scanlines();
-	reconData();
+	dataRecon();
+	if (discardAlpha || alphaUnused()) alphaDiscard();
+	if (reduceDepth < 16 || depth16Unused()) depth16Reduce();
+	if (discardColor || colorUnused()) colorDiscard();
+	colorIndex();
+	if (reduceDepth < 8 || depth8Unused()) depth8Reduce();
+	if (reduceDepth < 4 || depth4Unused()) depth4Reduce();
+	if (reduceDepth < 2 || depth2Unused()) depth2Reduce();
+	dataFilter();
 
-	discardAlpha();
-	discardColor();
-	indexColor();
-	reduceDepth();
-	filterData();
-	free(lines);
-
+	char buf[PATH_MAX];
 	if (outPath) {
 		path = outPath;
-		file = fopen(path, "w");
-		if (!file) err(EX_CANTCREAT, "%s", path);
+		if (outPath == inPath) {
+			snprintf(buf, sizeof(buf), "%so", outPath);
+			file = fopen(buf, "wx");
+			if (!file) err(EX_CANTCREAT, "%s", buf);
+		} else {
+			file = fopen(path, "w");
+			if (!file) err(EX_CANTCREAT, "%s", outPath);
+		}
 	} else {
-		path = "(stdout)";
+		path = "stdout";
 		file = stdout;
 	}
 
-	writeSignature();
-	writeHeader();
+	sigWrite();
+	headerWrite();
 	if (header.color == Indexed) {
-		writePalette();
-		if (trans.len) writeTrans();
+		palWrite();
+		if (trans.len) transWrite();
 	}
-	writeData();
-	writeEnd();
+	dataWrite();
 	free(data);
-
 	int error = fclose(file);
 	if (error) err(EX_IOERR, "%s", path);
+
+	if (outPath && outPath == inPath) {
+		error = rename(buf, outPath);
+		if (error) err(EX_CANTCREAT, "%s", outPath);
+	}
 }
 
 int main(int argc, char *argv[]) {
 	bool stdio = false;
-	char *output = NULL;
+	char *outPath = NULL;
 
-	int opt;
-	while (0 < (opt = getopt(argc, argv, "co:v"))) {
+	for (int opt; 0 < (opt = getopt(argc, argv, "ab:cgo:v"));) {
 		switch (opt) {
+			break; case 'a': discardAlpha = true;
+			break; case 'b': reduceDepth = strtoul(optarg, NULL, 10);
 			break; case 'c': stdio = true;
-			break; case 'o': output = optarg;
+			break; case 'g': discardColor = true;
+			break; case 'o': outPath = optarg;
 			break; case 'v': verbose = true;
-			break; default: return EX_USAGE;
+			break; default:  return EX_USAGE;
 		}
 	}
 
-	if (argc - optind == 1 && (output || stdio)) {
-		optimize(argv[optind], output);
-	} else if (optind < argc) {
+	if (optind < argc) {
 		for (int i = optind; i < argc; ++i) {
-			optimize(argv[i], argv[i]);
+			optimize(argv[i], (stdio ? NULL : outPath ? outPath : argv[i]));
 		}
 	} else {
-		optimize(NULL, output);
+		optimize(NULL, outPath);
 	}
-
-	return EX_OK;
 }

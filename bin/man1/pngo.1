@@ -1,4 +1,4 @@
-.Dd September 17, 2018
+.Dd September 21, 2021
 .Dt PNGO 1
 .Os
 .
@@ -8,30 +8,17 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl cv
+.Op Fl acgv
+.Op Fl b Ar depth
 .Op Fl o Ar file
 .Op Ar
 .
 .Sh DESCRIPTION
 .Nm
-optimizes PNG files for size.
-.
+optimizes PNG files for size
+by performing the following:
 .Pp
-The arguments are as follows:
-.Bl -tag -width Ds
-.It Fl c
-Write to standard output.
-.It Fl o Ar file
-Write to
-.Ar file .
-.It Fl v
-Output PNG header information.
-.El
-.
-.Pp
-.Nm
-performs the following optimizations:
-.Bl -bullet
+.Bl -enum -compact
 .It
 Discard ancillary chunks.
 .It
@@ -39,18 +26,39 @@ Discard unnecessary alpha channel.
 .It
 Convert unnecessary truecolor to grayscale.
 .It
-Palletize color and alpha if possible.
+Palletize color if possible.
 .It
-Reduce bit depth if possible.
+Reduce unnecessary bit depth.
 .It
-Apply a simple filter heuristic.
+Apply a simple filter type heuristic.
 .It
-Apply zlib's best compresion.
+Apply zlib's best compression.
+.El
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl a
+Always discard the alpha channel.
+.It Fl b Ar depth
+Reduce bit depth to
+.Ar depth
+or lower.
+.It Fl c
+Write to standard output.
+.It Fl g
+Convert to grayscale.
+.It Fl o Ar file
+Write to
+.Ar file .
+.It Fl v
+Print header information and sizes
+to standard error.
 .El
 .
 .Sh SEE ALSO
 .Xr glitch 1
 .
-.Sh CAVEATS
+.Sh BUGS
 .Nm
 does not support interlaced PNGs.
