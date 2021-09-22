@@ -169,6 +169,7 @@ int main(void) {
 		struct kreq req;
 		enum kcgi_err error = khttp_parse(&req, &Key, 1, &page, 1, 0);
 		if (error) errx(EX_PROTOCOL, "khttp_parse: %s", kcgi_strerror(error));
+		sandbox();
 		error = handle(&req);
 		if (error) errx(EX_PROTOCOL, "%s", kcgi_strerror(error));
 		khttp_free(&req);
