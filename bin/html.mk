@@ -4,7 +4,6 @@ HTMLS = index.html png.html
 HTMLS += ${BINS:=.html}
 HTMLS += ${BSD:=.html}
 HTMLS += ${GAMES:=.html}
-HTMLS += ${LINUX:=.html}
 HTMLS += ${TLS:=.html}
 
 html: ${HTMLS}

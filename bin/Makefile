@@ -37,18 +37,12 @@ BSD += ever
 
 GAMES += freecell
 
-LINUX += bri
-LINUX += fbatt
-LINUX += fbclock
-LINUX += psfed
-
 TLS += downgrade
 TLS += relay
 
 MANS = ${BINS:%=man1/%.1}
 MANS.BSD = ${BSD:%=man1/%.1}
 MANS.GAMES = ${GAMES:%=man6/%.6}
-MANS.LINUX = ${LINUX:%=man1/%.1}
 MANS.TLS = ${TLS:%=man1/%.1}
 
 LDLIBS.downgrade = -ltls
@@ -78,12 +72,10 @@ bsd: ${BSD}
 
 games: ${GAMES}
 
-linux: ${LINUX}
-
 tls: ${TLS}
 
 IGNORE = *.o *.html
-IGNORE += ${BINS} ${BSD} ${GAMES} ${LINUX} ${TLS}
+IGNORE += ${BINS} ${BSD} ${GAMES} ${TLS}
 IGNORE += scheme.h tags htmltags
 
 .gitignore: Makefile
@@ -112,10 +104,6 @@ install-games: install-meta ${GAMES} ${MANS.GAMES}
 	install ${GAMES} ${PREFIX}/bin
 	install -m 644 ${MANS.GAMES} ${MANDIR}/man6
 
-install-linux: install-meta ${LINUX} ${MANS.LINUX}
-	install ${LINUX} ${PREFIX}/bin
-	install -m 644 ${MANS.LINUX} ${MANDIR}/man1
-
 install-tls: install-meta ${TLS} ${MANS.TLS}
 	install ${TLS} ${PREFIX}/bin
 	install -m 644 ${MANS.TLS} ${MANDIR}/man1
@@ -124,7 +112,6 @@ uninstall:
 	rm -f ${BINS:%=${PREFIX}/bin/%} ${MANS:%=${MANDIR}/%}
 	rm -f ${BSD:%=${PREFIX}/bin/%} ${MANS.BSD:%=${MANDIR}/%}
 	rm -f ${GAMES:%=${PREFIX}/bin/%} ${MANS.GAMES:%=${MANDIR}/%}
-	rm -f ${LINUX:%=${PREFIX}/bin/%} ${MANS.LINUX:%=${MANDIR}/%}
 	rm -f ${TLS:%=${PREFIX}/bin/%} ${MANS.TLS:%=${MANDIR}/%}
 
 .SUFFIXES: .pl
