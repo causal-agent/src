@@ -219,7 +219,7 @@ enable-tree-linenumbers::
 favicon::
 	Url used as link to a shortcut icon for cgit. It is suggested to use
 	the value "/favicon.ico" since certain browsers will ignore other
-	values. Default value: "/favicon.ico".
+	values. Default value: none.
 
 footer::
 	The content of the file specified with this option will be included
