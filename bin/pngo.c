@@ -454,24 +454,40 @@ static void dataWrite(void) {
 		fprintf(stderr, "%s: data size %s\n", path, humanize(dataLen));
 	}
 
-	uLong len = compressBound(dataLen);
-	uint8_t *deflate = malloc(len);
-	if (!deflate) err(EX_OSERR, "malloc");
+	z_stream stream = {
+		.next_in = data,
+		.avail_in = dataLen,
+	};
+	int error = deflateInit2(
+		&stream, Z_BEST_COMPRESSION, Z_DEFLATED, 15, 8, Z_FILTERED
+	);
+	if (error != Z_OK) errx(EX_SOFTWARE, "deflateInit2: %s", stream.msg);
 
-	int error = compress2(deflate, &len, data, dataLen, Z_BEST_COMPRESSION);
-	if (error != Z_OK) errx(EX_SOFTWARE, "compress2: %d", error);
+	uLong bound = deflateBound(&stream, dataLen);
+	uint8_t *buf = malloc(bound);
+	if (!buf) err(EX_OSERR, "malloc");
 
-	struct Chunk idat = { len, "IDAT" };
+	stream.next_out = buf;
+	stream.avail_out = bound;
+	deflate(&stream, Z_FINISH);
+	deflateEnd(&stream);
+
+	struct Chunk idat = { stream.total_out, "IDAT" };
 	chunkWrite(idat);
-	pngWrite(deflate, len);
+	pngWrite(buf, stream.total_out);
 	crcWrite();
-	free(deflate);
+	free(buf);
 
 	struct Chunk iend = { 0, "IEND" };
 	chunkWrite(iend);
 	crcWrite();
 
-	if (verbose) fprintf(stderr, "%s: deflate size %s\n", path, humanize(len));
+	if (verbose) {
+		fprintf(
+			stderr, "%s: deflate size %s\n",
+			path, humanize(stream.total_out)
+		);
+	}
 }
 
 enum Filter {
