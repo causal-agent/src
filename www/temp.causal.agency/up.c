@@ -45,6 +45,27 @@ static enum kcgi_err fail(struct kreq *req, enum khttp http) {
 		|| khttp_printf(req, "%s\n", khttps[http]);
 }
 
+static const char *upload(const char *ext, void *ptr, size_t len) {
+	static char name[256];
+	snprintf(
+		name, sizeof(name), "%jx%08x%s%s",
+		(intmax_t)time(NULL), arc4random(),
+		(ext && ext[0] != '.' ? "." : ""), (ext ? ext : "")
+	);
+	int fd = openat(cwd, name, O_CREAT | O_EXCL | O_WRONLY, 0644);
+	if (fd < 0) {
+		warn("%s", name);
+		return NULL;
+	}
+	ssize_t n = write(fd, ptr, len);
+	int error = close(fd);
+	if (n < 0 || error) {
+		warn("%s", name);
+		return NULL;
+	}
+	return name;
+}
+
 static enum kcgi_err handle(struct kreq *req) {
 	if (req->page) return fail(req, KHTTP_404);
 
@@ -83,30 +104,29 @@ static enum kcgi_err handle(struct kreq *req) {
 		struct kpair *field = req->fieldmap[0];
 		if (!field || !field->valsz) return fail(req, KHTTP_400);
 
-		char name[256];
 		const char *ext = strrchr(field->file, '.');
-		if (!ext) ext = "";
-		snprintf(
-			name, sizeof(name), "%jx%08x%s",
-			(intmax_t)time(NULL), arc4random(), ext
-		);
-
-		int fd = openat(cwd, name, O_CREAT | O_EXCL | O_WRONLY, 0644);
-		if (fd < 0) {
-			warn("openat");
-			return fail(req, KHTTP_507);
-		}
-		ssize_t len = write(fd, field->val, field->valsz);
-		int error = close(fd);
-		if (len < 0 || error) {
-			warn("write");
-			return fail(req, KHTTP_507);
-		}
+		const char *name = upload(ext, field->val, field->valsz);
+		if (!name) return fail(req, KHTTP_507);
 
 		return head(req, KHTTP_303, KMIME_TEXT_PLAIN)
 			|| khttp_head(req, kresps[KRESP_LOCATION], "/%s", name)
 			|| khttp_body(req)
 			|| khttp_puts(req, name);
+
+	} else if (req->method == KMETHOD_PUT) {
+		struct kpair *field = req->fields;
+		if (!field || !field->valsz) return fail(req, KHTTP_400);
+
+		const char *ext = req->suffix;
+		if (!ext[0]) ext = strrchr(field->file, '.');
+		const char *name = upload(ext, field->val, field->valsz);
+		if (!name) return fail(req, KHTTP_507);
+
+		return head(req, KHTTP_200, KMIME_TEXT_PLAIN)
+			|| khttp_body(req)
+			|| khttp_printf(
+				req, "%s://%s/%s\n", kschemes[req->scheme], req->host, name
+			);
 
 	} else {
 		return fail(req, KHTTP_405);
