@@ -148,29 +148,20 @@ static struct {
 	uint8_t interlace;
 } header;
 
-static size_t pixelBits(void) {
+static size_t pixelLen;
+static size_t lineLen;
+static size_t dataLen;
+
+static void recalc(void) {
+	size_t pixelBits = header.depth;
 	switch (header.color) {
-		case Grayscale:
-		case Indexed:
-			return 1 * header.depth;
-		case GrayscaleAlpha:
-			return 2 * header.depth;
-		case Truecolor:
-			return 3 * header.depth;
-		case TruecolorAlpha:
-			return 4 * header.depth;
-		default:
-			abort();
+		break; case GrayscaleAlpha: pixelBits *= 2;
+		break; case Truecolor: pixelBits *= 3;
+		break; case TruecolorAlpha: pixelBits *= 4;
 	}
-}
-static size_t pixelLen(void) {
-	return (pixelBits() + 7) / 8;
-}
-static size_t lineLen(void) {
-	return (header.width * pixelBits() + 7) / 8;
-}
-static size_t dataLen(void) {
-	return (1 + lineLen()) * header.height;
+	pixelLen = (pixelBits + 7) / 8;
+	lineLen = (header.width * pixelBits + 7) / 8;
+	dataLen = (1 + lineLen) * header.height;
 }
 
 static void headerPrint(void) {
@@ -202,6 +193,7 @@ static void headerRead(struct Chunk chunk) {
 	pngRead(&header.filter, 1, "header filter");
 	pngRead(&header.interlace, 1, "header interlace");
 	crcRead();
+	recalc();
 
 	if (!header.width) errx(EX_DATAERR, "%s: invalid width 0", path);
 	if (!header.height) errx(EX_DATAERR, "%s: invalid height 0", path);
@@ -395,7 +387,7 @@ static void transWrite(void) {
 static uint8_t *data;
 
 static void dataAlloc(void) {
-	data = malloc(dataLen());
+	data = malloc(dataLen);
 	if (!data) err(EX_OSERR, "malloc");
 }
 
@@ -411,10 +403,10 @@ static const char *humanize(size_t n) {
 
 static void dataRead(struct Chunk chunk) {
 	if (verbose) {
-		fprintf(stderr, "%s: data size %s\n", path, humanize(dataLen()));
+		fprintf(stderr, "%s: data size %s\n", path, humanize(dataLen));
 	}
 
-	z_stream stream = { .next_out = data, .avail_out = dataLen() };
+	z_stream stream = { .next_out = data, .avail_out = dataLen };
 	int error = inflateInit(&stream);
 	if (error != Z_OK) errx(EX_SOFTWARE, "inflateInit: %s", stream.msg);
 
@@ -442,10 +434,10 @@ static void dataRead(struct Chunk chunk) {
 		chunk = chunkRead();
 	}
 	inflateEnd(&stream);
-	if ((size_t)stream.total_out != dataLen()) {
+	if ((size_t)stream.total_out != dataLen) {
 		errx(
 			EX_DATAERR, "%s: expected data length %zu, found %zu",
-			path, dataLen(), (size_t)stream.total_out
+			path, dataLen, (size_t)stream.total_out
 		);
 	}
 
@@ -459,14 +451,14 @@ static void dataRead(struct Chunk chunk) {
 
 static void dataWrite(void) {
 	if (verbose) {
-		fprintf(stderr, "%s: data size %s\n", path, humanize(dataLen()));
+		fprintf(stderr, "%s: data size %s\n", path, humanize(dataLen));
 	}
 
-	uLong len = compressBound(dataLen());
+	uLong len = compressBound(dataLen);
 	uint8_t *deflate = malloc(len);
 	if (!deflate) err(EX_OSERR, "malloc");
 
-	int error = compress2(deflate, &len, data, dataLen(), Z_BEST_COMPRESSION);
+	int error = compress2(deflate, &len, data, dataLen, Z_BEST_COMPRESSION);
 	if (error != Z_OK) errx(EX_SOFTWARE, "compress2: %d", error);
 
 	struct Chunk idat = { len, "IDAT" };
@@ -528,25 +520,25 @@ static uint8_t filt(enum Filter type, struct Bytes f) {
 }
 
 static uint8_t *lineType(uint32_t y) {
-	return &data[y * (1 + lineLen())];
+	return &data[y * (1 + lineLen)];
 }
 static uint8_t *lineData(uint32_t y) {
 	return 1 + lineType(y);
 }
 
 static struct Bytes origBytes(uint32_t y, size_t i) {
-	bool a = (i >= pixelLen()), b = (y > 0), c = (a && b);
+	bool a = (i >= pixelLen), b = (y > 0), c = (a && b);
 	return (struct Bytes) {
 		.x = lineData(y)[i],
-		.a = (a ? lineData(y)[i-pixelLen()] : 0),
+		.a = (a ? lineData(y)[i-pixelLen] : 0),
 		.b = (b ? lineData(y-1)[i] : 0),
-		.c = (c ? lineData(y-1)[i-pixelLen()] : 0),
+		.c = (c ? lineData(y-1)[i-pixelLen] : 0),
 	};
 }
 
 static void dataRecon(void) {
 	for (uint32_t y = 0; y < header.height; ++y) {
-		for (size_t i = 0; i < lineLen(); ++i) {
+		for (size_t i = 0; i < lineLen; ++i) {
 			lineData(y)[i] = recon(*lineType(y), origBytes(y, i));
 		}
 		*lineType(y) = None;
@@ -557,21 +549,21 @@ static void dataFilter(void) {
 	if (header.color == Indexed || header.depth < 8) return;
 	uint8_t *filter[FilterCap];
 	for (enum Filter i = None; i < FilterCap; ++i) {
-		filter[i] = malloc(lineLen());
+		filter[i] = malloc(lineLen);
 		if (!filter[i]) err(EX_OSERR, "malloc");
 	}
 	for (uint32_t y = header.height-1; y < header.height; --y) {
 		uint32_t heuristic[FilterCap] = {0};
 		enum Filter minType = None;
 		for (enum Filter type = None; type < FilterCap; ++type) {
-			for (size_t i = 0; i < lineLen(); ++i) {
+			for (size_t i = 0; i < lineLen; ++i) {
 				filter[type][i] = filt(type, origBytes(y, i));
 				heuristic[type] += abs((int8_t)filter[type][i]);
 			}
 			if (heuristic[type] < heuristic[minType]) minType = type;
 		}
 		*lineType(y) = minType;
-		memcpy(lineData(y), filter[minType], lineLen());
+		memcpy(lineData(y), filter[minType], lineLen);
 	}
 	for (enum Filter i = None; i < FilterCap; ++i) {
 		free(filter[i]);
@@ -583,11 +575,11 @@ static bool alphaUnused(void) {
 		return false;
 	}
 	size_t sampleLen = header.depth / 8;
-	size_t colorLen = pixelLen() - sampleLen;
+	size_t colorLen = pixelLen - sampleLen;
 	for (uint32_t y = 0; y < header.height; ++y)
 	for (uint32_t x = 0; x < header.width; ++x)
 	for (size_t i = 0; i < sampleLen; ++i) {
-		if (lineData(y)[x * pixelLen() + colorLen + i] != 0xFF) return false;
+		if (lineData(y)[x * pixelLen + colorLen + i] != 0xFF) return false;
 	}
 	return true;
 }
@@ -597,23 +589,24 @@ static void alphaDiscard(void) {
 		return;
 	}
 	size_t sampleLen = header.depth / 8;
-	size_t colorLen = pixelLen() - sampleLen;
+	size_t colorLen = pixelLen - sampleLen;
 	uint8_t *ptr = data;
 	for (uint32_t y = 0; y < header.height; ++y) {
 		*ptr++ = *lineType(y);
 		for (uint32_t x = 0; x < header.width; ++x) {
-			memmove(ptr, &lineData(y)[x * pixelLen()], colorLen);
+			memmove(ptr, &lineData(y)[x * pixelLen], colorLen);
 			ptr += colorLen;
 		}
 	}
 	header.color = (header.color == GrayscaleAlpha ? Grayscale : Truecolor);
+	recalc();
 }
 
 static bool depth16Unused(void) {
 	if (header.color != Grayscale && header.color != Truecolor) return false;
 	if (header.depth != 16) return false;
 	for (uint32_t y = 0; y < header.height; ++y)
-	for (size_t i = 0; i < lineLen(); i += 2) {
+	for (size_t i = 0; i < lineLen; i += 2) {
 		if (lineData(y)[i] != lineData(y)[i+1]) return false;
 	}
 	return true;
@@ -624,11 +617,12 @@ static void depth16Reduce(void) {
 	uint8_t *ptr = data;
 	for (uint32_t y = 0; y < header.height; ++y) {
 		*ptr++ = *lineType(y);
-		for (size_t i = 0; i < lineLen() / 2; ++i) {
+		for (size_t i = 0; i < lineLen / 2; ++i) {
 			*ptr++ = lineData(y)[i*2];
 		}
 	}
 	header.depth = 8;
+	recalc();
 }
 
 static bool colorUnused(void) {
@@ -638,9 +632,9 @@ static bool colorUnused(void) {
 	if (header.depth != 8) return false;
 	for (uint32_t y = 0; y < header.height; ++y)
 	for (uint32_t x = 0; x < header.width; ++x) {
-		uint8_t r = lineData(y)[x * pixelLen() + 0];
-		uint8_t g = lineData(y)[x * pixelLen() + 1];
-		uint8_t b = lineData(y)[x * pixelLen() + 2];
+		uint8_t r = lineData(y)[x * pixelLen + 0];
+		uint8_t g = lineData(y)[x * pixelLen + 1];
+		uint8_t b = lineData(y)[x * pixelLen + 2];
 		if (r != g || g != b) return false;
 	}
 	return true;
@@ -653,16 +647,17 @@ static void colorDiscard(void) {
 	for (uint32_t y = 0; y < header.height; ++y) {
 		*ptr++ = *lineType(y);
 		for (uint32_t x = 0; x < header.width; ++x) {
-			uint8_t r = lineData(y)[x * pixelLen() + 0];
-			uint8_t g = lineData(y)[x * pixelLen() + 1];
-			uint8_t b = lineData(y)[x * pixelLen() + 2];
+			uint8_t r = lineData(y)[x * pixelLen + 0];
+			uint8_t g = lineData(y)[x * pixelLen + 1];
+			uint8_t b = lineData(y)[x * pixelLen + 2];
 			*ptr++ = ((uint32_t)r + (uint32_t)g + (uint32_t)b) / 3;
 			if (header.color == TruecolorAlpha) {
-				*ptr++ = lineData(y)[x * pixelLen() + 3];
+				*ptr++ = lineData(y)[x * pixelLen + 3];
 			}
 		}
 	}
 	header.color = (header.color == Truecolor ? Grayscale : GrayscaleAlpha);
+	recalc();
 }
 
 static void colorIndex(void) {
@@ -671,7 +666,7 @@ static void colorIndex(void) {
 	bool alpha = (header.color == TruecolorAlpha);
 	for (uint32_t y = 0; y < header.height; ++y)
 	for (uint32_t x = 0; x < header.width; ++x) {
-		if (!palAdd(alpha, &lineData(y)[x * pixelLen()])) return;
+		if (!palAdd(alpha, &lineData(y)[x * pixelLen])) return;
 	}
 
 	transCompact();
@@ -679,10 +674,11 @@ static void colorIndex(void) {
 	for (uint32_t y = 0; y < header.height; ++y) {
 		*ptr++ = *lineType(y);
 		for (uint32_t x = 0; x < header.width; ++x) {
-			*ptr++ = palIndex(alpha, &lineData(y)[x * pixelLen()]);
+			*ptr++ = palIndex(alpha, &lineData(y)[x * pixelLen]);
 		}
 	}
 	header.color = Indexed;
+	recalc();
 }
 
 static bool depth8Unused(void) {
@@ -690,7 +686,7 @@ static bool depth8Unused(void) {
 	if (header.color == Indexed) return pal.len <= 16;
 	if (header.color != Grayscale) return false;
 	for (uint32_t y = 0; y < header.height; ++y)
-	for (size_t i = 0; i < lineLen(); ++i) {
+	for (size_t i = 0; i < lineLen; ++i) {
 		if ((lineData(y)[i] >> 4) != (lineData(y)[i] & 0x0F)) return false;
 	}
 	return true;
@@ -702,10 +698,10 @@ static void depth8Reduce(void) {
 	uint8_t *ptr = data;
 	for (uint32_t y = 0; y < header.height; ++y) {
 		*ptr++ = *lineType(y);
-		for (size_t i = 0; i < lineLen(); i += 2) {
+		for (size_t i = 0; i < lineLen; i += 2) {
 			uint8_t a, b;
 			uint8_t aa = lineData(y)[i];
-			uint8_t bb = (i+1 < lineLen() ? lineData(y)[i+1] : 0);
+			uint8_t bb = (i+1 < lineLen ? lineData(y)[i+1] : 0);
 			if (header.color == Grayscale) {
 				a = aa >> 4;
 				b = bb >> 4;
@@ -717,6 +713,7 @@ static void depth8Reduce(void) {
 		}
 	}
 	header.depth = 4;
+	recalc();
 }
 
 static bool depth4Unused(void) {
@@ -724,7 +721,7 @@ static bool depth4Unused(void) {
 	if (header.color == Indexed) return pal.len <= 4;
 	if (header.color != Grayscale) return false;
 	for (uint32_t y = 0; y < header.height; ++y)
-	for (size_t i = 0; i < lineLen(); ++i) {
+	for (size_t i = 0; i < lineLen; ++i) {
 		uint8_t a = lineData(y)[i] >> 4;
 		uint8_t b = lineData(y)[i] & 0x0F;
 		if ((a >> 2) != (a & 0x03)) return false;
@@ -739,10 +736,10 @@ static void depth4Reduce(void) {
 	uint8_t *ptr = data;
 	for (uint32_t y = 0; y < header.height; ++y) {
 		*ptr++ = *lineType(y);
-		for (size_t i = 0; i < lineLen(); i += 2) {
+		for (size_t i = 0; i < lineLen; i += 2) {
 			uint8_t a, b, c, d;
 			uint8_t aabb = lineData(y)[i];
-			uint8_t ccdd = (i+1 < lineLen() ? lineData(y)[i+1] : 0);
+			uint8_t ccdd = (i+1 < lineLen ? lineData(y)[i+1] : 0);
 			if (header.color == Grayscale) {
 				a = aabb >> 6;
 				c = ccdd >> 6;
@@ -758,6 +755,7 @@ static void depth4Reduce(void) {
 		}
 	}
 	header.depth = 2;
+	recalc();
 }
 
 static bool depth2Unused(void) {
@@ -765,7 +763,7 @@ static bool depth2Unused(void) {
 	if (header.color == Indexed) return pal.len <= 2;
 	if (header.color != Grayscale) return false;
 	for (uint32_t y = 0; y < header.height; ++y)
-	for (size_t i = 0; i < lineLen(); ++i) {
+	for (size_t i = 0; i < lineLen; ++i) {
 		uint8_t a = lineData(y)[i] >> 6;
 		uint8_t b = lineData(y)[i] >> 4 & 0x03;
 		uint8_t c = lineData(y)[i] >> 2 & 0x03;
@@ -784,10 +782,10 @@ static void depth2Reduce(void) {
 	uint8_t *ptr = data;
 	for (uint32_t y = 0; y < header.height; ++y) {
 		*ptr++ = *lineType(y);
-		for (size_t i = 0; i < lineLen(); i += 2) {
+		for (size_t i = 0; i < lineLen; i += 2) {
 			uint8_t a, b, c, d, e, f, g, h;
 			uint8_t aabbccdd = lineData(y)[i];
-			uint8_t eeffgghh = (i+1 < lineLen() ? lineData(y)[i+1] : 0);
+			uint8_t eeffgghh = (i+1 < lineLen ? lineData(y)[i+1] : 0);
 			if (header.color == Grayscale) {
 				a = aabbccdd >> 7;
 				b = aabbccdd >> 5 & 1;
@@ -813,6 +811,7 @@ static void depth2Reduce(void) {
 		}
 	}
 	header.depth = 1;
+	recalc();
 }
 
 static bool discardAlpha;
