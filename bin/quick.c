@@ -153,6 +153,7 @@ int main(int argc, char *argv[]) {
 	setenv("SCRIPT_NAME", "/", 1);
 
 	for (int sock; 0 <= (sock = accept(server, NULL, NULL)); close(sock)) {
+		fcntl(sock, F_SETFD, FD_CLOEXEC);
 		request(sock, &argv[optind]);
 	}
 	err(EX_IOERR, "accept");
