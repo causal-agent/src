@@ -15,7 +15,6 @@
  */
 
 #include <arpa/inet.h>
-#include <ctype.h>
 #include <err.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -70,13 +69,8 @@ static void request(int sock, char *argv[]) {
 		} else if (!strcasecmp(header, "Content-Length")) {
 			bodyLen = strtoull(value, NULL, 10);
 			setenv("CONTENT_LENGTH", value, 1);
-		} else {
-			char buf[256];
-			for (char *ch = header; *ch; ++ch) {
-				*ch = (*ch == '-' ? '_' : toupper(*ch));
-			}
-			snprintf(buf, sizeof(buf), "HTTP_%s", header);
-			setenv(buf, value, 1);
+		} else if (!strcasecmp(header, "Host")) {
+			setenv("HTTP_HOST", value, 1);
 		}
 	}
 
