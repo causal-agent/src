@@ -1,8 +1,7 @@
 WEBROOT = /usr/local/www/temp.causal.agency
 
-CFLAGS += -std=c11 -Wall -Wextra -Wpedantic -I/usr/local/include
-LDFLAGS += -static -L/usr/local/lib
-LDLIBS = -lkcgihtml -lkcgi -lz -lmd
+CFLAGS += -std=c11 -Wall -Wextra -Wpedantic $$(pkg-config --cflags kcgi)
+LDLIBS = -static $$(pkg-config --static --libs kcgi-html)
 
 up:
 

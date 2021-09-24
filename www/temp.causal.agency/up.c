@@ -21,11 +21,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/capsicum.h>
 #include <sys/types.h>
 #include <sysexits.h>
 #include <time.h>
 #include <unistd.h>
+
+#ifdef __FreeBSD__
+#include <sys/capsicum.h>
+#endif
 
 #include <kcgi.h>
 #include <kcgihtml.h>
@@ -137,6 +140,7 @@ static void sandbox(void) {
 	cwd = open(".", O_DIRECTORY);
 	if (cwd < 0) err(EX_CONFIG, ".");
 
+#ifdef __FreeBSD__
 	int error = cap_enter();
 	if (error) err(EX_OSERR, "cap_enter");
 
@@ -144,6 +148,7 @@ static void sandbox(void) {
 	cap_rights_init(&rights, CAP_LOOKUP, CAP_CREATE, CAP_PWRITE);
 	error = cap_rights_limit(cwd, &rights);
 	if (error) err(EX_OSERR, "cap_rights_limit");
+#endif
 }
 
 int main(void) {
