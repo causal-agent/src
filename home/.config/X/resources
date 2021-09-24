@@ -16,6 +16,7 @@ XTerm*utf8: true
 XTerm*metaSendsEscape: true
 XTerm*alternateScroll: true
 XTerm*allowMouseOps: false
+XTerm*disallowedMouseOps: X10,Locator,VT200*,Any*,Extended,SGR,URXVT
 XTerm*bellIsUrgent: true
 XTerm*charClass: 33:48,36-47:48,58-59:48,61:48,63-64:48,95:48,126:48
 
