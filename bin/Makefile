@@ -25,6 +25,7 @@ BINS += pbd
 BINS += pngo
 BINS += psf2png
 BINS += ptee
+BINS += quick
 BINS += scheme
 BINS += shotty
 BINS += sup

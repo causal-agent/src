@@ -1,0 +1,66 @@
+.Dd September 23, 2021
+.Dt QUICK 1
+.Os
+.
+.Sh NAME
+.Nm quick
+.Nd (and dirty) HTTP/CGI server
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl p Ar port
+.Ar script
+.Op Ar args ...
+.
+.Sh DESCRIPTION
+.Nm
+is a barely functional HTTP server
+for running CGI scripts.
+It listens only on localhost,
+on a randomly assigned port,
+unless
+.Fl p
+is used.
+The URL of the server
+is printed to standard output.
+.
+.Sh EXAMPLES
+.Dl quick cgit | xargs -n1 open
+.
+.Sh STANDARDS
+.Nm
+does
+.Em not
+implement the following:
+.Bl -item
+.It
+.Rs
+.%A T. Berners-Lee
+.%A R. Fielding
+.%A H. Frystyk
+.%A J. Gettys
+.%A J. Mogul
+.%T Hypertext Transfer Protocol -- HTTP/1.1
+.%R RFC 2068
+.%U https://tools.ietf.org/html/rfc2068
+.%D January 1997
+.Re
+.It
+.Rs
+.%A K. Coar
+.%A D. Robinson
+.%T The Common Gateway Interface (CGI) Version 1.1
+.%R RFC 3875
+.%U https://tools.ietf.org/html/rfc3875
+.%D October 2004
+.Re
+.El
+.
+.Sh CAVEATS
+Oh, so many.
+No error handling,
+no validation,
+no security.
+This is a local testing tool only.
+.Pp
+Every response is served as a 200 OK.
