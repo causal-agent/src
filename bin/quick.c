@@ -19,7 +19,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <signal.h>
+#include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,77 +30,73 @@
 #include <unistd.h>
 
 static void request(int sock, char *argv[]) {
-	FILE *req = fdopen(dup(sock), "r");
-	if (!req) err(EX_OSERR, "fdopen");
-	fcntl(fileno(req), F_SETFD, FD_CLOEXEC);
+	struct pollfd pfd = { .fd = sock, .events = POLLIN };
+	int nfds = poll(&pfd, 1, -1);
+	if (nfds < 0) err(EX_OSERR, "poll");
 
-	size_t cap = 0;
-	char *buf = NULL;
-	ssize_t len = getline(&buf, &cap, req);
-	if (len < 0) goto close;
+	char buf[4096];
+	ssize_t len = recv(sock, buf, sizeof(buf)-1, MSG_PEEK);
+	if (len < 0) {
+		warn("recv");
+		return;
+	}
+	char *blank = memmem(buf, len, "\r\n\r\n", 4);
+	if (!blank) {
+		warnx("can't find end of request headers in peek");
+		return;
+	}
+	len = recv(sock, buf, &blank[4] - buf, 0);
+	if (len < 0) {
+		warn("recv");
+		return;
+	}
+	buf[len] = '\0';
 
 	char *ptr = buf;
-	char *method = strsep(&ptr, " ");
-	char *query = strsep(&ptr, " ");
+	char *req = strsep(&ptr, "\r\n");
+	char *method = strsep(&req, " ");
+	char *query = strsep(&req, " ");
 	char *path = strsep(&query, "?");
-	char *proto = strsep(&ptr, "\r\n");
-	if (!method || !path || !proto) goto close;
-
+	char *proto = strsep(&req, " ");
+	if (!method || !path || !proto) {
+		warnx("invalid request line");
+		return;
+	}
 	setenv("REQUEST_METHOD", method, 1);
 	setenv("PATH_INFO", path, 1);
 	setenv("QUERY_STRING", (query ? query : ""), 1);
 	setenv("SERVER_PROTOCOL", proto, 1);
+
 	unsetenv("CONTENT_TYPE");
 	unsetenv("CONTENT_LENGTH");
 	unsetenv("HTTP_HOST");
-
-	size_t bodyLen = 0;
-	while (0 <= (len = getline(&buf, &cap, req))) {
-		if (len && buf[len-1] == '\n') buf[--len] = '\0';
-		if (len && buf[len-1] == '\r') buf[--len] = '\0';
-		if (!len) break;
-
-		char *value = buf;
+	while (ptr) {
+		char *value = strsep(&ptr, "\r\n");
+		if (!value[0]) continue;
 		char *header = strsep(&value, ":");
-		if (!header || !value++) goto close;
-
+		if (!header || !value++) {
+			warnx("invalid header");
+			return;
+		}
 		if (!strcasecmp(header, "Content-Type")) {
 			setenv("CONTENT_TYPE", value, 1);
 		} else if (!strcasecmp(header, "Content-Length")) {
-			bodyLen = strtoull(value, NULL, 10);
 			setenv("CONTENT_LENGTH", value, 1);
 		} else if (!strcasecmp(header, "Host")) {
 			setenv("HTTP_HOST", value, 1);
 		}
 	}
 
-	int rw[2];
-	int error = pipe(rw);
-	if (error) err(EX_OSERR, "pipe");
-	fcntl(rw[0], F_SETFD, FD_CLOEXEC);
-	fcntl(rw[1], F_SETFD, FD_CLOEXEC);
-
 	dprintf(sock, "HTTP/1.1 200 OK\nConnection: close\n");
 	pid_t pid = fork();
 	if (pid < 0) err(EX_OSERR, "fork");
 	if (!pid) {
-		dup2(rw[0], STDIN_FILENO);
+		dup2(sock, STDIN_FILENO);
 		dup2(sock, STDOUT_FILENO);
 		execv(argv[0], argv);
 		warn("%s", argv[0]);
 		_exit(127);
 	}
-
-	close(rw[0]);
-	char body[4096];
-	while (bodyLen) {
-		size_t cap = (bodyLen < sizeof(body) ? bodyLen : sizeof(body));
-		size_t len = fread(&body, 1, cap, req);
-		if (!len) break;
-		write(rw[1], body, len);
-		bodyLen -= len;
-	}
-	close(rw[1]);
 
 	int status;
 	pid = wait(&status);
@@ -110,10 +106,6 @@ static void request(int sock, char *argv[]) {
 	} else if (WIFSIGNALED(status)) {
 		warnx("%s killed %d", argv[0], WTERMSIG(status));
 	}
-
-close:
-	fclose(req);
-	free(buf);
 }
 
 int main(int argc, char *argv[]) {
@@ -160,7 +152,6 @@ int main(int argc, char *argv[]) {
 	setenv("REMOTE_HOST", host, 1);
 	setenv("SCRIPT_NAME", "/", 1);
 
-	signal(SIGPIPE, SIG_IGN);
 	for (int sock; 0 <= (sock = accept(server, NULL, NULL)); close(sock)) {
 		request(sock, &argv[optind]);
 	}
