@@ -22,7 +22,9 @@ XTerm*charClass: 33:48,36-47:48,58-59:48,61:48,63-64:48,95:48,126:48
 
 XTerm*VT100*translations: #override \n\
 	Super <Key>C: copy-selection(CLIPBOARD) \n\
-	Super <Key>V: insert-selection(CLIPBOARD)
+	Super <Key>V: insert-selection(CLIPBOARD) \n\
+	<Btn4Down>: scroll-back(1,line,m) \n\
+	<Btn5Down>: scroll-forw(1,line,m)
 
 XTerm*faceName: Go Mono:size=11
 XTerm*internalBorder: 6
