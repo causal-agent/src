@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
 	error = getnameinfo(
 		(struct sockaddr *)&addr, addrlen,
 		host, sizeof(host), serv, sizeof(serv),
-		NI_NOFQDN
+		NI_NOFQDN | NI_NUMERICSERV
 	);
 	if (error) errx(EX_UNAVAILABLE, "getnameinfo: %s", gai_strerror(error));
 	printf("http://%s:%s/\n", host, serv);
