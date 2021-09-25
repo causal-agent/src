@@ -33,8 +33,9 @@
 #include <kcgi.h>
 #include <kcgihtml.h>
 
-static int cwd = -1;
+static int dir = -1;
 
+static const char *Page = "up";
 static const struct kvalid Key = { NULL, "file" };
 
 static enum kcgi_err head(struct kreq *req, enum khttp http, enum kmime mime) {
@@ -55,7 +56,7 @@ static const char *upload(const char *ext, void *ptr, size_t len) {
 		(intmax_t)time(NULL), arc4random(),
 		(ext && ext[0] != '.' ? "." : ""), (ext ? ext : "")
 	);
-	int fd = openat(cwd, name, O_CREAT | O_EXCL | O_WRONLY, 0644);
+	int fd = openat(dir, name, O_CREAT | O_EXCL | O_WRONLY, 0644);
 	if (fd < 0) {
 		warn("%s", name);
 		return NULL;
@@ -136,47 +137,80 @@ static enum kcgi_err handle(struct kreq *req) {
 	}
 }
 
-static void sandbox(void) {
-	cwd = open(".", O_DIRECTORY);
-	if (cwd < 0) err(EX_CONFIG, ".");
-
-#ifdef __FreeBSD__
-	int error = cap_enter();
-	if (error) err(EX_OSERR, "cap_enter");
-
-	cap_rights_t rights;
-	cap_rights_init(&rights, CAP_LOOKUP, CAP_CREATE, CAP_PWRITE);
-	error = cap_rights_limit(cwd, &rights);
-	if (error) err(EX_OSERR, "cap_rights_limit");
+static void cgi(void) {
+#ifdef __OpenBSD__
+	if (pledge("stdio wpath cpath proc", NULL)) err(EX_OSERR, "pledge");
 #endif
+
+	struct kreq req;
+	enum kcgi_err error = khttp_parse(&req, &Key, 1, &Page, 1, 0);
+	if (error) errx(EX_PROTOCOL, "khttp_parse: %s", kcgi_strerror(error));
+
+#ifdef __OpenBSD__
+	if (pledge("stdio wpath cpath", NULL)) err(EX_OSERR, "pledge");
+#endif
+#ifdef __FreeBSD__
+	if (cap_enter()) err(EX_OSERR, "cap_enter");
+#endif
+
+	error = handle(&req);
+	if (error) errx(EX_PROTOCOL, "%s", kcgi_strerror(error));
+	khttp_free(&req);
 }
 
-int main(void) {
-	const char *page = "up";
-	if (khttp_fcgi_test()) {
-		struct kfcgi *fcgi;
-		enum kcgi_err error = khttp_fcgi_init(&fcgi, &Key, 1, &page, 1, 0);
-		if (error) errx(EX_CONFIG, "khttp_fcgi_init: %s", kcgi_strerror(error));
-		sandbox();
-		for (
-			struct kreq req;
-			KCGI_OK == (error = khttp_fcgi_parse(fcgi, &req));
-			khttp_free(&req)
-		) {
-			error = handle(&req);
-			if (error && error != KCGI_HUP) break;
-		}
-		if (error != KCGI_EXIT) {
-			errx(EX_PROTOCOL, "khttp_fcgi_parse: %s", kcgi_strerror(error));
-		}
-		khttp_fcgi_free(fcgi);
-	} else {
+static void fcgi(void) {
+#ifdef __OpenBSD__
+	if (pledge("stdio wpath cpath unix sendfd recvfd proc", NULL)) {
+		err(EX_OSERR, "pledge");
+	}
+#endif
+
+	struct kfcgi *fcgi;
+	enum kcgi_err error = khttp_fcgi_init(&fcgi, &Key, 1, &Page, 1, 0);
+	if (error) errx(EX_CONFIG, "khttp_fcgi_init: %s", kcgi_strerror(error));
+
+#ifdef __OpenBSD__
+	if (pledge("stdio wpath cpath recvfd", NULL)) err(EX_OSERR, "pledge");
+#endif
+#ifdef __FreeBSD__
+	if (cap_enter()) err(EX_OSERR, "cap_enter");
+#endif
+
+	for (
 		struct kreq req;
-		enum kcgi_err error = khttp_parse(&req, &Key, 1, &page, 1, 0);
-		if (error) errx(EX_PROTOCOL, "khttp_parse: %s", kcgi_strerror(error));
-		sandbox();
+		KCGI_OK == (error = khttp_fcgi_parse(fcgi, &req));
+		khttp_free(&req)
+	) {
 		error = handle(&req);
-		if (error) errx(EX_PROTOCOL, "%s", kcgi_strerror(error));
-		khttp_free(&req);
+		if (error && error != KCGI_HUP) break;
+	}
+	if (error != KCGI_EXIT) {
+		errx(EX_PROTOCOL, "khttp_fcgi_parse: %s", kcgi_strerror(error));
+	}
+	khttp_fcgi_free(fcgi);
+}
+
+int main(int argc, char *argv[]) {
+	int error;
+	const char *path = (argc > 1 ? argv[1] : ".");
+	dir = open(path, O_DIRECTORY);
+	if (dir < 0) err(EX_NOINPUT, "%s", path);
+
+#ifdef __OpenBSD__
+	error = unveil(path, "wc");
+	if (error) err(EX_OSERR, "unveil");
+#endif
+
+#ifdef __FreeBSD__
+	cap_rights_t rights;
+	cap_rights_init(&rights, CAP_LOOKUP, CAP_CREATE, CAP_PWRITE);
+	error = cap_rights_limit(dir, &rights);
+	if (error) err(EX_OSERR, "cap_rights_limit");
+#endif
+
+	if (khttp_fcgi_test()) {
+		fcgi();
+	} else {
+		cgi();
 	}
 }
