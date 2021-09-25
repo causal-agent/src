@@ -312,6 +312,11 @@ int main(int argc, char *argv[]) {
 	if (error) errx(EX_PROTOCOL, "tls_handshake: %s", tls_error(client));
 	tls_config_clear_keys(config);
 
+#ifdef __OpenBSD__
+	error = pledge("stdio", NULL);
+	if (error) err(EX_OSERR, "pledge");
+#endif
+
 #ifdef __FreeBSD__
 	error = caph_enter() || caph_limit_stdio();
 	if (error) err(EX_OSERR, "caph_enter");
