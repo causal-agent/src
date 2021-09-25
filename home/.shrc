@@ -18,14 +18,6 @@ alias rand='openssl rand -base64 33'
 alias private='eval "$(gpg -d ~/.private)"'
 command -v doas >/dev/null && alias sudo=doas
 
-cat() {
-	if [ $# -eq 1 ] && test -t 1; then
-		less "$@"
-	else
-		command cat "$@"
-	fi
-}
-
 man() {
 	test $# -ne 1 && { command man "$@"; return $?; }
 	(IFS=:
