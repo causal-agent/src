@@ -122,6 +122,9 @@ int main(int argc, char *argv[]) {
 	if (server < 0) err(EX_OSERR, "socket");
 	fcntl(server, F_SETFD, FD_CLOEXEC);
 
+	int on = 1;
+	setsockopt(server, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+
 	struct sockaddr_in addr = {
 		.sin_family = AF_INET,
 		.sin_port = htons(port),
