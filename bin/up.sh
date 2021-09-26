@@ -2,6 +2,7 @@
 set -eu
 
 readonly Host='temp.causal.agency'
+readonly Root='/var/www'
 
 upload() {
 	src=$1
@@ -9,7 +10,7 @@ upload() {
 	ts=$(date +'%s')
 	rand=$(openssl rand -hex 4)
 	url=$(printf '%s/%x%s.%s' "$Host" "$ts" "$rand" "$ext")
-	scp -q "$src" "${Host}:/usr/local/www/${url}"
+	scp -q "$src" "${Host}:${Root}/${url}"
 	echo "https://${url}"
 }
 
