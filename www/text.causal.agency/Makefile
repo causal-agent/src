@@ -30,12 +30,12 @@ TXTS += 024-seprintf.txt
 TXTS += 025-v6-pwd.txt
 TXTS += 026-git-comment.txt
 
-all: ${TXTS}
+all: colb ${TXTS}
 
 .SUFFIXES: .7 .txt
 
 .7.txt:
-	mandoc -T utf8 $< | col -bx > $@
+	mandoc -T utf8 $< | ./colb > $@
 
 feed.atom: feed.sh ${TXTS}
 	sh feed.sh > feed.atom
@@ -43,7 +43,7 @@ feed.atom: feed.sh ${TXTS}
 clean:
 	rm -f ${TXTS} feed.atom igp
 
-install: ${TXTS} feed.atom
+install: colb ${TXTS} feed.atom
 	install -p -m 644 ${TXTS} feed.atom ${WEBROOT}
 
 install-igp: igp
