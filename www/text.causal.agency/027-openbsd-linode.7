@@ -1,0 +1,195 @@
+.Dd September 26, 2021
+.Dt OPENBSD-LINODE 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm Installing OpenBSD on Linode
+.Nd a guide
+.
+.Sh DESCRIPTION
+I've been thinking for a while
+about moving my servers to Linode,
+and also about moving them to
+.Ox .
+I actually originally got into
+.Fx
+(and from there,
+.Ox )
+only because DigitalOcean
+started offering it as a
+.Dq droplet
+image.
+I've been running those servers fine for years,
+but now I prefer to run
+.Ox ,
+and some recent DigitalOcean outages
+had me thinking about it more,
+so I'm giving it a shot.
+.
+.Pp
+As an aside,
+running
+.Ox
+on DigitalOcean
+is not really a good option.
+It seems more awkward to install your own OS there,
+and if you do,
+I've heard that IPv6 won't work
+because they don't know how to run SLAAC.
+Also,
+now that I've used
+the Linode control panel and LISH a bit,
+DigitalOcean kind of feels like a toy
+in comparison.
+.
+.Pp
+Here's what I did to install
+.Ox
+on Linode:
+.Bl -enum
+.It
+Create a Linode with the
+.Dq Choose a Distribution
+box blank.
+.
+.It
+Under the Storage tab,
+create a disk called
+.Dq miniroot
+of type raw
+with size 8 MB.
+This will hold the install image.
+.
+.It
+Create another disk called
+.Dq root
+of type raw
+using the remaining available storage.
+.
+.It
+Boot the Linode in rescue mode
+from the option in the three-dots menu
+next to
+.Dq Power On .
+Attach
+.Dq miniroot
+to
+.Pa /dev/sda .
+.
+.It
+Log into the LISH console
+and obtain the install image:
+.Bd -literal
+curl -O https://cdn.openbsd.org/pub/OpenBSD/6.9/amd64/miniroot69.img
+dd if=miniroot69.img of=/dev/sda
+.Ed
+.Pp
+Power off the Linode.
+.
+.It
+Under the Configurations tab,
+create a configuration called
+.Dq install
+in full virtualization mode.
+Paravirtualization works fine once installed,
+but for some reason the installer
+can't see the root disk
+without full virtualization.
+Under boot settings,
+select direct disk.
+Attach
+.Dq root
+to
+.Pa /dev/sda ,
+.Dq miniroot
+to
+.Pa /dev/sdb
+and set the root device to
+.Pa /dev/sdb .
+.
+.It
+Create a similar configuration called
+.Dq boot
+but using paravirtualiztion
+and without
+.Dq miniroot
+attached.
+Set the root device to
+.Pa /dev/sda .
+.
+.It
+Boot the
+.Dq install
+configuration,
+launch the LISH console
+and switch to Glish.
+I believe it's possible
+to have the installer use serial console,
+but it requires entering commands
+at the boot prompt
+before the timeout,
+and I never managed it.
+.
+.It
+Proceed through the
+.Ox
+installer.
+When asked to
+change the default console to com0,
+answer yes
+so that regular LISH will work.
+Power off the Linode.
+.
+.It
+Boot the
+.Dq boot
+configuration
+and log in to LISH.
+Since the installer configured networking
+in full virtualization,
+rename the file to the paravirtualized interface:
+.Bd -literal
+mv /etc/hostname.em0 /etc/hostname.vio0
+.Ed
+.Pp
+In order to get the right public IPv6 address,
+disable privacy extensions
+by changing the inet6 line of
+.Pa hostname.vio0
+to:
+.Bd -literal
+inet6 autoconf -temporary -soii
+.Ed
+.
+.It
+Bring networking up
+and run
+.Xr syspatch 8
+since
+.Pa rc.firsttime
+couldn't do it:
+.Bd -literal
+sh /etc/netstart
+syspatch
+.Ed
+.
+.It
+Reboot.
+.El
+.
+.Pp
+I guess I'll be slowly moving things over
+to the new servers
+for the next little while.
+With any luck the next post here
+will not say
+.Fx
+in its header!
+.
+.Sh SEE ALSO
+I learned the basic idea
+of how to do this from
+.Lk https://www.subgeniuskitty.com/notes/openbsd_on_linode .
+.
+.Sh AUTHORS
+.An june Aq Mt june@causal.agency

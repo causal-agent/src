@@ -29,6 +29,7 @@ TXTS += 023-sparse-checkout.txt
 TXTS += 024-seprintf.txt
 TXTS += 025-v6-pwd.txt
 TXTS += 026-git-comment.txt
+TXTS += 027-openbsd-linode.txt
 
 all: colb ${TXTS}
 
