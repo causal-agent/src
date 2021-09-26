@@ -1,4 +1,4 @@
-WEBROOT = /usr/local/www/temp.causal.agency
+CGI_BIN = /var/www/cgi-bin
 
 CFLAGS += -std=c11 -Wall -Wextra -Wpedantic $$(pkg-config --cflags kcgi)
 LDLIBS = -static $$(pkg-config --static --libs kcgi-html)
@@ -9,7 +9,7 @@ clean:
 	rm -f up
 
 install: up
-	install -m 700 up ${WEBROOT}/up
+	install up ${CGI_BIN}/up
 
 uninstall:
-	rm -f ${WEBROOT}/up
+	rm -f ${CGI_BIN}/up
