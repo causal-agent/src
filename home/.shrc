@@ -16,7 +16,7 @@ alias gc='git commit' gca='gc --amend' gt='git tag'
 alias gp='git push' gu='git pull' gf='git fetch' gr='git rebase'
 alias rand='openssl rand -base64 33'
 alias private='eval "$(gpg -d ~/.private)"'
-command -v doas >/dev/null && alias sudo=doas
+command -v doas >/dev/null || alias doas=sudo
 
 man() {
 	test $# -ne 1 && { command man "$@"; return $?; }
