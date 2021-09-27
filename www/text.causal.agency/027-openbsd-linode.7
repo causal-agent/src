@@ -123,12 +123,19 @@ Boot the
 configuration,
 launch the LISH console
 and switch to Glish.
-I believe it's possible
+It's possible
 to have the installer use serial console,
 but it requires entering commands
 at the boot prompt
 before the timeout,
 and I never managed it.
+If you do manage it,
+run:
+.Bd -literal
+stty com0 9600
+set tty com0
+boot
+.Ed
 .
 .It
 Proceed through the
