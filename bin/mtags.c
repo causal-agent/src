@@ -34,6 +34,7 @@ static void escape(FILE *file, const char *str, size_t len) {
 }
 
 int main(int argc, char *argv[]) {
+	int error;
 	bool append = false;
 	const char *path = "tags";
 	for (int opt; 0 < (opt = getopt(argc, argv, "af:"));) {
@@ -47,10 +48,15 @@ int main(int argc, char *argv[]) {
 	FILE *tags = fopen(path, (append ? "a" : "w"));
 	if (!tags) err(EX_CANTCREAT, "%s", path);
 
+#ifdef __OpenBSD__
+	error = pledge("stdio rpath", NULL);
+	if (error) err(EX_OSERR, "pledge");
+#endif
+
 	regex_t makeFile, makeLine;
 	regex_t mdocFile, mdocLine;
 	regex_t shFile, shLine;
-	int error = 0
+	error = 0
 		|| regcomp(&makeFile, "(^|/)Makefile|[.]mk$", REG_EXTENDED | REG_NOSUB)
 		|| regcomp(
 			&makeLine,
