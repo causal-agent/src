@@ -14,16 +14,17 @@ repository-sort=age
 branch-sort=age
 
 css=/custom.css
-email-filter=/usr/local/libexec/cgit-email
-about-filter=/usr/local/libexec/about-filter
-source-filter=/usr/local/libexec/source-filter
-owner-filter=/usr/local/libexec/owner-filter
+about-filter=/bin/about-filter
+source-filter=/bin/source-filter
+owner-filter=/bin/owner-filter
+email-filter=/bin/email-filter
 
 readme=:README.7
 readme=:README
 
 remove-suffix=1
 enable-git-config=1
-scan-path=/home/june/pub
+scan-path=/git.causal.agency
 
+cache-root=/cache/cgit
 cache-size=1024
