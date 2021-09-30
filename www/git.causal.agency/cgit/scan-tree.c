@@ -137,8 +137,6 @@ static void add_repo(const char *base, struct strbuf *path, repo_config_fn fn)
 	repo->path = xstrdup(path->buf);
 	while (!repo->owner) {
 		if ((pwd = getpwuid(st.st_uid)) == NULL) {
-			fprintf(stderr, "Error reading owner-info for %s: %s (%d)\n",
-				path->buf, strerror(errno), errno);
 			break;
 		}
 		if (pwd->pw_gecos)
