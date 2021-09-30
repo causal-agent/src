@@ -149,6 +149,11 @@ static void ansiHeader(const char *opts[]) {
 	close(rw[0]);
 	close(rw[1]);
 	setlinebuf(stdout);
+
+#ifdef __OpenBSD__
+	error = pledge("stdio", NULL);
+	if (error) err(EX_OSERR, "pledge");
+#endif
 }
 
 static void ansiFooter(const char *opts[]) {
@@ -368,6 +373,16 @@ int main(int argc, char *argv[]) {
 		if (!file) err(EX_NOINPUT, "%s", path);
 		pager = isatty(STDOUT_FILENO);
 	}
+
+#ifdef __OpenBSD__
+	int error;
+	if (formatter->header == ansiHeader && pager) {
+		error = pledge("stdio proc exec", NULL);
+	} else {
+		error = pledge("stdio", NULL);
+	}
+	if (error) err(EX_OSERR, "pledge");
+#endif
 
 	if (!name) {
 		if (NULL != (name = strrchr(path, '/'))) {
