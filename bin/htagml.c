@@ -81,10 +81,10 @@ int main(int argc, char *argv[]) {
 	bool pre = false;
 	bool pipe = false;
 	bool index = false;
-	const char *tagsFile = "tags";
+	const char *tagsPath = "tags";
 	for (int opt; 0 < (opt = getopt(argc, argv, "f:ipx"));) {
 		switch (opt) {
-			break; case 'f': tagsFile = optarg;
+			break; case 'f': tagsPath = optarg;
 			break; case 'i': pipe = true;
 			break; case 'p': pre = true;
 			break; case 'x': index = true;
@@ -94,8 +94,16 @@ int main(int argc, char *argv[]) {
 	if (optind == argc) errx(EX_USAGE, "name required");
 	const char *name = argv[optind];
 
-	FILE *file = fopen(tagsFile, "r");
-	if (!file) err(EX_NOINPUT, "%s", tagsFile);
+	FILE *file = fopen(name, "r");
+	if (!file) err(EX_NOINPUT, "%s", name);
+
+	FILE *tagsFile = fopen(tagsPath, "r");
+	if (!tagsFile) err(EX_NOINPUT, "%s", tagsPath);
+
+#ifdef __OpenBSD__
+	int error = pledge("stdio", NULL);
+	if (error) err(EX_OSERR, "pledge");
+#endif
 
 	size_t len = 0;
 	size_t cap = 256;
@@ -109,7 +117,7 @@ int main(int argc, char *argv[]) {
 
 	char *buf = NULL;
 	size_t bufCap = 0;
-	while (0 < getline(&buf, &bufCap, file)) {
+	while (0 < getline(&buf, &bufCap, tagsFile)) {
 		char *line = buf;
 		char *tag = strsep(&line, "\t");
 		char *file = strsep(&line, "\t");
@@ -142,10 +150,7 @@ int main(int argc, char *argv[]) {
 		}
 		len++;
 	}
-	fclose(file);
-
-	file = fopen(name, "r");
-	if (!file) err(EX_NOINPUT, "%s", name);
+	fclose(tagsFile);
 
 	int num = 0;
 	printf(pre ? "<pre>" : index ? "<ul class=\"index\">\n" : "");
