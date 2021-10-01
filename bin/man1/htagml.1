@@ -1,4 +1,4 @@
-.Dd January 12, 2021
+.Dd October  1, 2021
 .Dt HTAGML 1
 .Os
 .
@@ -8,7 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl ip | x
+.Op Fl imp | x
 .Op Fl f Ar tagsfile
 .Ar file
 .
@@ -38,6 +38,12 @@ has been pre-formatted
 on standard input,
 such as by a syntax highlighter.
 Only tag hyperlinks are added.
+.It Fl m
+Rename the
+.Xr ctags 1
+.Sq M
+tag to
+.Sy main .
 .It Fl p
 Wrap the output in a
 .Sy pre

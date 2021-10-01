@@ -80,12 +80,14 @@ static char *hstrstr(const char *haystack, const char *needle) {
 int main(int argc, char *argv[]) {
 	bool pre = false;
 	bool pipe = false;
+	bool main = false;
 	bool index = false;
 	const char *tagsPath = "tags";
-	for (int opt; 0 < (opt = getopt(argc, argv, "f:ipx"));) {
+	for (int opt; 0 < (opt = getopt(argc, argv, "f:impx"));) {
 		switch (opt) {
 			break; case 'f': tagsPath = optarg;
 			break; case 'i': pipe = true;
+			break; case 'm': main = true;
 			break; case 'p': pre = true;
 			break; case 'x': index = true;
 			break; default:  return EX_USAGE;
@@ -194,6 +196,7 @@ int main(int argc, char *argv[]) {
 		if (!match && tag[0] == 'M') {
 			mlen = 4;
 			match = (pipe ? hstrstr : strstr)(buf, "main");
+			if (main) tag = "main";
 		}
 		if (!match) {
 			mlen = strlen(buf) - 1;
