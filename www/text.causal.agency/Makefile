@@ -1,7 +1,4 @@
-WEBROOT ?= /var/www/text.causal.agency
-LIBEXEC ?= /usr/local/libexec
-
-CFLAGS += -Wall -Wextra
+WEBROOT = /var/www/text.causal.agency
 
 TXTS += 001-make.txt
 TXTS += 002-writing-mdoc.txt
@@ -38,15 +35,11 @@ all: colb ${TXTS}
 .7.txt:
 	mandoc -T utf8 $< | ./colb > $@
 
-feed.atom: feed.sh ${TXTS}
+feed.atom: feed.sh colb ${TXTS}
 	sh feed.sh > feed.atom
 
 clean:
-	rm -f ${TXTS} feed.atom igp
+	rm -f colb ${TXTS} feed.atom
 
 install: colb ${TXTS} feed.atom
 	install -p -m 644 ${TXTS} feed.atom ${WEBROOT}
-
-install-igp: igp
-	install igp ${LIBEXEC}
-	install -p -m 644 igp.c ${WEBROOT}
