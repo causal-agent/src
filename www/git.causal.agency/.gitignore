@@ -1,15 +1,12 @@
 about-filter
-cat
 compress
 ctags
 email-filter
+filter
 gzip
 hilex
 htagml
 mandoc
-mktemp
 mtags
 owner-filter
-rm
-sh
 source-filter
