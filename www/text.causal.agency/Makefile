@@ -1,4 +1,4 @@
-WEBROOT ?= /usr/local/www/text.causal.agency
+WEBROOT ?= /var/www/text.causal.agency
 LIBEXEC ?= /usr/local/libexec
 
 CFLAGS += -Wall -Wextra

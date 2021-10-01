@@ -1,4 +1,4 @@
-WEBROOT = /usr/local/www/causal.agency
+WEBROOT = /var/www/causal.agency
 
 FILES = index.html style.css scheme.css scheme.png
 
