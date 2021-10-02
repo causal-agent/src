@@ -38,6 +38,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "shell.h"
 #include "nodes.h"
@@ -54,14 +55,11 @@
 
 /* sizes of mailboxes */
 static off_t mailsize[MAXMBOXES];
-/* Set if MAIL or MAILPATH is changed. */
-static int changed;
 
 
 
 /*
- * Print appropriate message(s) if mail has arrived.  If changed is set,
- * then the value of MAIL has changed, so we just update the values.
+ * Print appropriate message(s) if mail has arrived.
  */
 
 void
@@ -95,7 +93,7 @@ chkmail(void)
 			*msp = 0;
 			continue;
 		}
-		if (!changed && statb.st_size > *msp) {
+		if (statb.st_size > *msp) {
 			outfmt(
 				&errout, snlfmt,
 				pathopt ? pathopt : "you have mail"
@@ -103,7 +101,6 @@ chkmail(void)
 		}
 		*msp = statb.st_size;
 	}
-	changed = 0;
 	popstackmark(&smark);
 }
 
@@ -111,5 +108,5 @@ chkmail(void)
 void
 changemail(const char *val)
 {
-	changed++;
+	memset(mailsize, 0, sizeof(mailsize));
 }
