@@ -80,7 +80,7 @@ chkmail(void)
 		int len;
 
 		len = padvance_magic(&mpath, nullstr, 2);
-		if (!len)
+		if (len == -1)
 			break;
 		p = stackblock();
 		if (*p == '\0')
