@@ -52,8 +52,8 @@
 
 #define MAXMBOXES 10
 
-/* times of mailboxes */
-static time_t mailtime[MAXMBOXES];
+/* sizes of mailboxes */
+static off_t mailsize[MAXMBOXES];
 /* Set if MAIL or MAILPATH is changed. */
 static int changed;
 
@@ -70,13 +70,13 @@ chkmail(void)
 	const char *mpath;
 	char *p;
 	char *q;
-	time_t *mtp;
+	off_t *msp;
 	struct stackmark smark;
 	struct stat64 statb;
 
 	setstackmark(&smark);
 	mpath = mpathset() ? mpathval() : mailval();
-	for (mtp = mailtime; mtp < mailtime + MAXMBOXES; mtp++) {
+	for (msp = mailsize; msp < mailsize + MAXMBOXES; msp++) {
 		int len;
 
 		len = padvance_magic(&mpath, nullstr, 2);
@@ -92,16 +92,16 @@ chkmail(void)
 #endif
 		q[-1] = '\0';			/* delete trailing '/' */
 		if (stat64(p, &statb) < 0) {
-			*mtp = 0;
+			*msp = 0;
 			continue;
 		}
-		if (!changed && statb.st_mtime != *mtp) {
+		if (!changed && statb.st_size > *msp) {
 			outfmt(
 				&errout, snlfmt,
 				pathopt ? pathopt : "you have mail"
 			);
 		}
-		*mtp = statb.st_mtime;
+		*msp = statb.st_size;
 	}
 	changed = 0;
 	popstackmark(&smark);
