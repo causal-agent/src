@@ -151,7 +151,7 @@ lobsters() {
 		git fetch-email -i -M Trash \
 			-F "${lobstersFrom}" -T "${email}" \
 			-S 'Reset your password' |
-		sed -n 's|^https://.*[?]token=\(.*\)|\1|p'
+		sed -n 's|^https://.*[?]token=\([^&]*\).*|\1|p'
 	)
 	echo 'Fetching CSRF token...'
 	csrf=$(
