@@ -1,4 +1,4 @@
-WEBROOT ?= /usr/local/www/causal.agency
+WEBROOT ?= /var/www/causal.agency
 
 HTMLS = index.html png.html
 HTMLS += ${BINS:=.html}
