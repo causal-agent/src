@@ -11,6 +11,7 @@ title=${title%.[1-9]}
 cat <<EOF
 <!DOCTYPE html>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>${title}</title>
 <style>
 html { line-height: 1.25em; font-family: monospace; }
