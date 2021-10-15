@@ -77,8 +77,8 @@ h1.Sh { font-size: 1.5em; }
 table.Nm td:first-child { padding-right: 1ch; }
 code.Fl { white-space: nowrap; }
 span.RsT { font-style: italic; }
-dl.Bl-tag:not(.Bl-compact) dt { margin-top: 1em; }
-ul.Bl-bullet:not(.Bl-compact) li { margin-top: 1em; }
+dl.Bl-tag:not(.Bl-compact) > dt { margin-top: 1em; }
+ul.Bl-bullet:not(.Bl-compact) > li { margin-top: 1em; }
 div.Bd-indent { margin-left: 4ch; }
 table.Bl-column { width: 100%; }
 table.foot { margin-top: 1em; }
