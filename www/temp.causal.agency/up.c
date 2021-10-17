@@ -26,10 +26,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#ifdef __FreeBSD__
-#include <sys/capsicum.h>
-#endif
-
 #include <kcgi.h>
 #include <kcgihtml.h>
 
@@ -147,13 +143,6 @@ int main(int argc, char *argv[]) {
 	if (error) err(EX_OSERR, "unveil");
 #endif
 
-#ifdef __FreeBSD__
-	cap_rights_t rights;
-	cap_rights_init(&rights, CAP_LOOKUP, CAP_CREATE, CAP_PWRITE);
-	error = cap_rights_limit(dir, &rights);
-	if (error) err(EX_OSERR, "cap_rights_limit");
-#endif
-
 	if (!khttp_fcgi_test()) {
 #ifdef __OpenBSD__
 		error = pledge("stdio wpath cpath proc", NULL);
@@ -167,10 +156,6 @@ int main(int argc, char *argv[]) {
 #ifdef __OpenBSD__
 		error = pledge("stdio wpath cpath", NULL);
 		if (error) err(EX_OSERR, "pledge");
-#endif
-#ifdef __FreeBSD__
-		error = cap_enter();
-		if (error) err(EX_OSERR, "cap_enter");
 #endif
 
 		error = handle(&req);
@@ -191,10 +176,6 @@ int main(int argc, char *argv[]) {
 #ifdef __OpenBSD__
 	error = pledge("stdio wpath cpath recvfd", NULL);
 	if (error) err(EX_OSERR, "pledge");
-#endif
-#ifdef __FreeBSD__
-	error = cap_enter();
-	if (error) err(EX_OSERR, "cap_enter");
 #endif
 
 	for (
