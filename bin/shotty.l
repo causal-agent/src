@@ -507,8 +507,9 @@ int main(int argc, char *argv[]) {
 	bool debug = false;
 	bool size = false;
 	bool hide = false;
+	int interval = 0;
 
-	for (int opt; 0 < (opt = getopt(argc, argv, "Bb:df:h:insw:"));) {
+	for (int opt; 0 < (opt = getopt(argc, argv, "Bb:df:h:inst:w:"));) {
 		switch (opt) {
 			break; case 'B': bright = true;
 			break; case 'b': defaultBg = atoi(optarg);
@@ -518,6 +519,7 @@ int main(int argc, char *argv[]) {
 			break; case 'i': colors = true;
 			break; case 'n': hide = true;
 			break; case 's': size = true;
+			break; case 't': interval = atoi(optarg);
 			break; case 'w': cols = atoi(optarg);
 			break; default:  return EX_USAGE;
 		}
@@ -559,4 +561,25 @@ int main(int argc, char *argv[]) {
 	}
 	if (hide) mode &= ~Cursor;
 	if (!mc) html();
+
+	if (interval) {
+		printf(
+			Q(
+				<script>
+				let frames = document.querySelectorAll("pre");
+				let frame = 0;
+				function animate() {
+					for (let i = 0; i < frames.length; ++i) {
+						frames[i].hidden = (i != frame);
+					}
+					frame++;
+					if (frame == frames.length) frame = 0;
+				}
+				animate();
+				setInterval(animate, %d);
+				</script>
+			),
+			interval
+		);
+	}
 }

@@ -12,6 +12,7 @@
 .Op Fl b Ar bg
 .Op Fl f Ar fg
 .Op Fl h Ar rows
+.Op Fl t Ar ms
 .Op Fl w Ar cols
 .Op Ar file
 .
@@ -81,6 +82,12 @@ Hide the cursor.
 .It Fl s
 Copy the terminal size
 from the current terminal.
+.
+.It Fl t Ar ms
+Animate between snapshots
+at an interval of
+.Ar ms
+milliseconds.
 .
 .It Fl w Ar cols
 Set the terminal width.
