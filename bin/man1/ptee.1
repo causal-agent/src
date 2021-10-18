@@ -8,6 +8,7 @@
 .
 .Sh SYNOPSIS
 .Nm
+.Op Fl t Ar ms
 .Ar command ...
 .Cm >
 .Ar file
@@ -31,6 +32,16 @@ to standard output.
 Type
 .Ic ^Q
 to toggle writing to standard output.
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl t Ar ms
+Write a media copy sequence
+to standard output every
+.Ar ms
+milliseconds.
+.El
 .
 .Sh SEE ALSO
 .Xr script 1
