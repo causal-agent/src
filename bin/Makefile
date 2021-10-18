@@ -77,7 +77,7 @@ tls: ${TLS}
 
 IGNORE = *.o *.html
 IGNORE += ${BINS} ${BSD} ${GAMES} ${TLS}
-IGNORE += scheme.h tags htmltags
+IGNORE += tags htmltags
 
 .gitignore: Makefile
 	echo config.mk '${IGNORE}' | tr ' ' '\n' | sort > $@
@@ -134,11 +134,6 @@ hilex: ${OBJS.hilex}
 
 ${OBJS.hilex}: hilex.h
 
-fbatt.o fbclock.o: scheme.h
-
 psf2png.o scheme.o: png.h
-
-scheme.h: scheme
-	./scheme -c > $@
 
 include html.mk
