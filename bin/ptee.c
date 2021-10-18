@@ -78,12 +78,12 @@ int main(int argc, char *argv[]) {
 			ssize_t rlen = read(STDIN_FILENO, buf, sizeof(buf));
 			if (rlen < 0) err(EX_IOERR, "read");
 
-			if (rlen == 1 && buf[0] == CTRL('S')) {
+			if (rlen == 1 && buf[0] == CTRL('Q')) {
 				stop ^= true;
 				continue;
 			}
 
-			if (rlen == 1 && buf[0] == CTRL('Q')) {
+			if (rlen == 1 && buf[0] == CTRL('S')) {
 				char dump[] = "\x1B[10i";
 				ssize_t wlen = write(STDOUT_FILENO, dump, sizeof(dump) - 1);
 				if (wlen < 0) err(EX_IOERR, "write");
