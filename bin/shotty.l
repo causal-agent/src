@@ -431,8 +431,16 @@ static void update(enum Code cc) {
 }
 
 static bool bright;
+static bool colors;
 static int defaultBg = 0;
 static int defaultFg = 7;
+
+static const char *Inline[16] = {
+	"#000000;", "#CD0000;", "#00CD00;", "#CDCD00;",
+	"#0000EE;", "#CD00CD;", "#00CDCD;", "#E5E5E5;",
+	"#7F7F7F;", "#FF0000;", "#00FF00;", "#FFFF00;",
+	"#5C5CFF;", "#FF00FF;", "#00FFFF;", "#FFFFFF;",
+};
 
 static void span(const struct Cell *prev, const struct Cell *cell) {
 	if (
@@ -443,18 +451,22 @@ static void span(const struct Cell *prev, const struct Cell *cell) {
 	) {
 		if (prev) printf("</span>");
 		int attr = cell->attr;
-		int bg = (cell->bg < 0 ? defaultBg : cell->bg);
-		int fg = (cell->fg < 0 ? defaultFg : cell->fg);
+		int bg = (attr & Reverse ? cell->fg : cell->bg);
+		int fg = (attr & Reverse ? cell->bg : cell->fg);
+		if (bg < 0) bg = defaultBg;
+		if (fg < 0) fg = defaultFg;
 		if (bright && cell->attr & Bold) {
 			if (fg < 8) fg += 8;
 			attr &= ~Bold;
 		}
 		printf(
-			Q(<span style="%s%s%s" class="bg%d fg%d">),
+			Q(<span class="bg%d fg%d" style="%s%s%s%s%s%s%s">),
+			bg, fg,
 			(attr & Bold ? "font-weight:bold;" : ""),
 			(attr & Italic ? "font-style:italic;" : ""),
 			(attr & Underline ? "text-decoration:underline;" : ""),
-			(attr & Reverse ? fg : bg), (attr & Reverse ? bg : fg)
+			(colors ? "background-color:" : ""), (colors ? Inline[bg] : ""),
+			(colors ? "color:" : ""), (colors ? Inline[fg] : "")
 		);
 	}
 	switch (cell->ch) {
@@ -496,13 +508,14 @@ int main(int argc, char *argv[]) {
 	bool size = false;
 	bool hide = false;
 
-	for (int opt; 0 < (opt = getopt(argc, argv, "Bb:df:h:nsw:"));) {
+	for (int opt; 0 < (opt = getopt(argc, argv, "Bb:df:h:insw:"));) {
 		switch (opt) {
 			break; case 'B': bright = true;
 			break; case 'b': defaultBg = atoi(optarg);
 			break; case 'd': debug = true;
 			break; case 'f': defaultFg = atoi(optarg);
 			break; case 'h': rows = atoi(optarg);
+			break; case 'i': colors = true;
 			break; case 'n': hide = true;
 			break; case 's': size = true;
 			break; case 'w': cols = atoi(optarg);
