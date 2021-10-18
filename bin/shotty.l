@@ -45,8 +45,6 @@
 	X(CUP) \
 	X(CUU) \
 	X(DCH) \
-	X(DECKPAM) \
-	X(DECKPNM) \
 	X(DECRC) \
 	X(DECRST) \
 	X(DECSC) \
@@ -132,8 +130,8 @@ ESC \x1B
 
 {ESC}7	return DECSC;
 {ESC}8	return DECRC;
-{ESC}=	return DECKPAM;
-{ESC}>	return DECKPNM;
+{ESC}=	// DECKPAM
+{ESC}>	// DECKPNM
 {ESC}M	return RI;
 
 {ESC}"(0"	g0 = DECSpecial;
@@ -425,10 +423,7 @@ static void update(enum Code cc) {
 			x = bound(0, x+w, (mode & Wrap ? cols : cols-1));
 			return;
 		}
-
 		break; case MC:;
-		break; case DECKPAM:;
-		break; case DECKPNM:;
 	}
 
 	x = bound(0, x, cols-1);
