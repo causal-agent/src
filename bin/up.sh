@@ -53,6 +53,7 @@ uploadTerminal() {
 	temp
 	cat >"${temp}/term.html" <<-EOF
 	<!DOCTYPE html>
+	<meta charset="utf-8">
 	<title>${1}</title>
 	<style>
 	$(scheme -s)
