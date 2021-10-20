@@ -487,8 +487,8 @@ static void span(const struct Cell *prev, const struct Cell *cell) {
 		int attr = cell->attr;
 		int bg = (attr & Reverse ? cell->fg : cell->bg);
 		int fg = (attr & Reverse ? cell->bg : cell->fg);
-		if (bg < 0) bg = defaultBg;
-		if (fg < 0) fg = defaultFg;
+		if (bg < 0) bg = (attr & Reverse ? defaultFg : defaultBg);
+		if (fg < 0) fg = (attr & Reverse ? defaultBg : defaultFg);
 		if (bright && cell->attr & Bold) {
 			if (fg < 8) fg += 8;
 			attr &= ~Bold;
