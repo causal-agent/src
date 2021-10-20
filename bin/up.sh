@@ -59,7 +59,8 @@ uploadTerminal() {
 	$(scheme -s)
 	</style>
 	EOF
-	ptee $SHELL -c "$1" | shotty -Bs >>"${temp}/term.html"
+	ptee $SHELL -c "$1" >"${temp}/term.pty"
+	shotty -Bs "${temp}/term.pty" >>"${temp}/term.html"
 	upload "${temp}/term.html"
 }
 
