@@ -160,6 +160,7 @@ ESC \x1B
 <CSI>l	BEGIN(0); return RM;
 <CSI>m	BEGIN(0); return SGR;
 <CSI>r	BEGIN(0); return DECSTBM;
+<CSI>t	BEGIN(0); // XTWINOPS
 
 <CSI_QM>h	BEGIN(0); return DECSET;
 <CSI_QM>l	BEGIN(0); return DECRST;
