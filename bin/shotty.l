@@ -493,7 +493,8 @@ static void span(const struct Cell *prev, const struct Cell *cell) {
 			if (fg < 8) fg += 8;
 			attr &= ~Bold;
 		}
-		printf(Q(<span class="bg%d fg%d" style=) "\"", bg, fg);
+		printf(Q(<span class="bg%d fg%d"), bg, fg);
+		if (attr || colors) printf(" style=\"");
 		if (attr & Bold) printf("font-weight:bold;");
 		if (attr & Italic) printf("font-style:italic;");
 		if (attr & Underline) printf("text-decoration:underline;");
@@ -503,7 +504,7 @@ static void span(const struct Cell *prev, const struct Cell *cell) {
 				Palette[bg], Palette[fg]
 			);
 		}
-		printf("\">");
+		printf("%s>", (attr || colors ? "\"" : ""));
 	}
 	switch (cell->ch) {
 		break; case L'&': printf("&amp;");
