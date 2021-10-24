@@ -28,7 +28,7 @@ shift $(( $# - 20 ))
 for txt; do
 	entry="${txt%.txt}.7"
 	date=$(grep '^[.]Dd' "$entry" | cut -c 5-)
-	title=$(grep '^[.]Nm' "$entry" | cut -c 5- | encode)
+	title=$(grep -m 1 '^[.]Nm' "$entry" | cut -c 5- | encode)
 	summary=$(grep '^[.]Nd' "$entry" | cut -c 5- | encode)
 	published=$(date -ju -f '%B %d, %Y %T' "${date} 00:00:00" '+%FT%TZ')
 	mtime=$(stat -f '%m' "$entry")
