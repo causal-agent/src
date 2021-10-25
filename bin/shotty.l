@@ -498,7 +498,7 @@ static void span(const struct Cell *prev, const struct Cell *cell) {
 		if (attr & Bold) printf("font-weight:bold;");
 		if (attr & Italic) printf("font-style:italic;");
 		if (attr & Underline) printf("text-decoration:underline;");
-		if (colors) {
+		if (colors && bg < 256 && fg < 256) {
 			printf(
 				"background-color:#%06X;color:#%06X;",
 				Palette[bg], Palette[fg]
