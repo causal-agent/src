@@ -15,7 +15,7 @@
  */
 
 %option prefix="sh"
-%option noyywrap
+%option noinput nounput noyywrap
 
 %{
 #include <assert.h>
@@ -167,11 +167,6 @@ reserved [!{}]|else|do|elif|for|done|fi|then|until|while|if|case|esac
 }
 
 .|\n { return Normal; }
-
-%{
-	(void)yyunput;
-	(void)input;
-%}
 
 %%
 

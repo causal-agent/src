@@ -15,7 +15,7 @@
  */
 
 %option prefix="mdoc"
-%option noyywrap
+%option noinput nounput noyywrap
 
 %{
 #include "hilex.h"
@@ -54,11 +54,6 @@
 [^.\\""[:space:]]+ { return Normal; }
 
 .|\n { return Normal; }
-
-%{
-	(void)yyunput;
-	(void)input;
-%}
 
 %%
 

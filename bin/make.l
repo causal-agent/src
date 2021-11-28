@@ -15,7 +15,7 @@
  */
 
 %option prefix="make"
-%option noyywrap
+%option noinput nounput noyywrap
 
 %{
 #include "hilex.h"
@@ -121,11 +121,6 @@ operator [:!]|::
 }
 
 .|\n { return Normal; }
-
-%{
-	(void)yyunput;
-	(void)input;
-%}
 
 %%
 

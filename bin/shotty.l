@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-%option noyywrap
+%option noinput nounput noyywrap
 
 %{
 
@@ -101,8 +101,6 @@ ESC \x1B
 %x OSC
 
 %%
-	(void)input;
-	(void)yyunput;
 	pn = 0;
 
 {ESC}"["	BEGIN(CSI);

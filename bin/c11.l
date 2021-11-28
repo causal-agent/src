@@ -15,7 +15,7 @@
  */
 
 %option prefix="c11"
-%option noyywrap
+%option noinput nounput noyywrap
 
 %{
 #include "hilex.h"
@@ -138,11 +138,6 @@ register|restrict|return|static|struct|switch|typedef|union|volatile|while |
 }
 
 .|\n { return Normal; }
-
-%{
-	(void)yyunput;
-	(void)input;
-%}
 
 %%
 

@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-%option noyywrap
+%option noinput nounput noyywrap
 
 %{
 enum Token {
@@ -101,8 +101,6 @@ static bool isTag(const char *tag) {
 }
 
 int main(int argc, char *argv[]) {
-	(void)input;
-	(void)yyunput;
 	setlocale(LC_CTYPE, "");
 
 	bool collapse = 0;
