@@ -16,7 +16,7 @@ branch-sort=age
 css=/custom.css
 about-filter=/bin/about-filter
 source-filter=/bin/source-filter
-owner-filter=/bin/owner-filter
+#owner-filter=/bin/owner-filter
 email-filter=/bin/email-filter
 
 readme=:README.7
