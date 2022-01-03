@@ -12,29 +12,29 @@ done
 packages='curl htop sl the_silver_searcher tree'
 
 FreeBSD() {
-	sudo pkg install ddate $packages
+	pkg install ddate $packages
 }
 
 OpenBSD() {
-	doas pkg_add $packages
+	pkg_add $packages
 	if test $X; then
-		doas pkg_add firefox go-fonts imv scrot sct w3m-- xcursor-dmz xsel
+		pkg_add firefox go-fonts imv scrot sct w3m-- xcursor-dmz xsel
 	fi
 }
 
 Linux() {
-	sudo pacman -Sy --needed bc ctags gdb openssh vi $packages
+	pacman -Sy --needed bc ctags gdb openssh vi $packages
 }
 
 Darwin() {
-	sudo /opt/local/bin/port selfupdate
-	sudo /opt/local/bin/port -N install git mandoc nvi pkgconfig $packages
-	sudo mkdir -p /opt/local/etc/select/man
+	port selfupdate
+	port -N install git mandoc nvi pkgconfig $packages
+	mkdir -p /opt/local/etc/select/man
 	printf 'bin/man\nshare/man/man1/man.1\nshare/man/man1/man.1.gz\n' \
-		| sudo tee /opt/local/etc/select/man/base >/dev/null
+		>/opt/local/etc/select/man/base
 	printf '/usr/bin/man\n/usr/share/man/man1/man.1\n-\n' \
-		| sudo tee /opt/local/etc/select/man/system >/dev/null
-	sudo port select --set man system
+		>/opt/local/etc/select/man/system
+	port select --set man system
 }
 
 $(uname)
