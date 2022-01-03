@@ -1,8 +1,8 @@
 PREFIX ?= ~/.local
 MANDIR ?= ${PREFIX}/share/man
 
-MODULE = ftp.rfc-editor.org::rfcs-text-only
-RFCS = ${MODULE}/rfc-index.txt ${MODULE}/'rfc[1-9]*.txt'
+MODULE = ftp.rfc-editor.org::rfcs
+RFCS = ${MODULE}/rfc-index.txt ${MODULE}/'rfc[1-9]*.txt' ${MODULE}/'rfc*.json'
 
 all: rfc rfctags
 

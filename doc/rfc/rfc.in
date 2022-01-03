@@ -4,6 +4,28 @@ set -eu
 mktemp='mktemp -t rfc'
 [ "$(uname)" = 'OpenBSD' ] && mktemp="${mktemp}.XXXXXXXXXX"
 
+bib=
+while getopts 'b:' opt; do
+	case $opt in
+		(b) bib=$OPTARG;;
+		(?) exit 1;;
+	esac
+done
+shift $((OPTIND - 1))
+
+if test -n "${bib}"; then
+	exec jq -r '
+		".Rs",
+		(.authors[] | ".%A \(.)"),
+		".%T \(.title | ltrimstr(" "))",
+		".%I IETF",
+		".%R \(.doc_id)",
+		".%U https://tools.ietf.org/html/\(.doc_id | ascii_downcase)",
+		".%D \(.pub_date)",
+		".Re"
+	' %%PREFIX%%/share/rfc/"rfc${bib}.json"
+fi
+
 rfc=%%PREFIX%%/share/rfc/"rfc${1:--index}.txt"
 tags=$($mktemp)
 trap 'rm "${tags}"' EXIT
