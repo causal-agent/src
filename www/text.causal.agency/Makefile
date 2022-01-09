@@ -28,6 +28,7 @@ TXTS += 025-v6-pwd.txt
 TXTS += 026-git-comment.txt
 TXTS += 027-openbsd-linode.txt
 TXTS += 028-names.txt
+TXTS += 029-topics.txt
 
 all: colb ${TXTS}
 
