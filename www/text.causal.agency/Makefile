@@ -29,6 +29,7 @@ TXTS += 026-git-comment.txt
 TXTS += 027-openbsd-linode.txt
 TXTS += 028-names.txt
 TXTS += 029-topics.txt
+TXTS += 030-discs.txt
 
 all: colb ${TXTS}
 
