@@ -110,6 +110,39 @@ discogs() {
 	open 'https://discogs.com/login'
 }
 
+gitea() {
+	echo 'Fetching CSRF token...'
+	csrf=$(
+		curl -Ss "${giteaBase}/user/forgot_password" |
+		sed -n 's/.*name="_csrf" value="\([^"]*\)".*/\1/p'
+	)
+	echo 'Submitting form...'
+	curl -Ss -X POST \
+		-F "email=${email}" -F "_csrf=${csrf}" \
+		"${giteaBase}/user/forgot_password" \
+		>/dev/null
+	echo 'Waiting for email...'
+	code=$(
+		git fetch-email -i -M Trash \
+			-F "${giteaFrom}" -T "${email}" -S 'Recover your account' |
+		unwrap | sed -n 's/.*code=3D\(.*\)/\1/p' | head -n 1
+	)
+	echo 'Fetching CSRF token...'
+	csrf=$(
+		curl -Ss "${giteaBase}/user/recover_account" |
+		sed -n 's/.*name="_csrf" value="\([^"]*\)".*/\1/p'
+	)
+	password=$(generate)
+	echo 'Setting password...'
+	curl -Ss -X POST \
+		-F "_csrf=${csrf}" -F "code=${code}" \
+		-F "password=${password}" \
+		"${giteaBase}/user/recover_account" \
+		>/dev/null
+	copy "${password}"
+	open "${giteaBase}/user/login"
+}
+
 liberapay() {
 	echo 'Fetching CSRF token...'
 	csrf=$(
@@ -205,6 +238,12 @@ patreon() {
 		EOF
 	copy "${password}"
 	open 'https://www.patreon.com/login'
+}
+
+tildegit() {
+	giteaBase='https://tildegit.org'
+	giteaFrom='git@tildegit.org'
+	gitea
 }
 
 tildenews() {
