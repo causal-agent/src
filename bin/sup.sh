@@ -203,6 +203,34 @@ lobsters() {
 	open "${lobstersBase}/login"
 }
 
+lwn() {
+	username=$email
+	echo 'Submitting form...'
+	curl -Ss -X POST -F "username=${username}" \
+		'https://lwn.net/Login/MailPWLink' \
+		>/dev/null
+	echo 'Waiting for email...'
+	key=$(
+		git fetch-email -i -M Trash \
+			-F 'lwn@lwn.net' -S 'A link to set your LWN.net password' |
+		sed -n 's|.*/Login/SetPassword/.*/\(.*\)|\1|p'
+	)
+	echo 'Retrieving UID...'
+	uid=$(
+		curl -Ss "https://lwn.net/Login/SetPassword/${username}/${key}" |
+		sed -n 's/.*name="uid" value="\([^"]*\)".*/\1/p'
+	)
+	password=$(generate)
+	echo 'Setting password...'
+	curl -Ss -X POST \
+		-F "uid=${uid}" -F "key=${key}" \
+		-F "new1=${password}" -F "new2=${password}" \
+		'https://lwn.net/Login/DoSetPassword' \
+		>/dev/null
+	copy "${password}"
+	open 'https://lwn.net/Login/'
+}
+
 patreon() {
 	readonly patreonAPI='https://www.patreon.com/api'
 	echo 'Submitting form...'
