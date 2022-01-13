@@ -30,6 +30,7 @@ TXTS += 027-openbsd-linode.txt
 TXTS += 028-names.txt
 TXTS += 029-topics.txt
 TXTS += 030-discs.txt
+TXTS += 031-books-2021.txt
 
 all: colb ${TXTS}
 
