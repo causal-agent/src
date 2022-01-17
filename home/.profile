@@ -10,7 +10,8 @@ export MANPATH=:~/.local/share/man
 
 export EDITOR=vi
 command -v nvi >/dev/null && EDITOR=nvi
-export EXINIT='set ai iclower sm sw=4 ts=4 para=BlBdPpIt sect=ShSs | map gg 1G'
+export EXINIT='set ai extended iclower sm sw=4 ts=4 para=BlBdPpIt sect=ShSs
+map gg 1G'
 export PAGER=less
 export LESS=FRXix4
 export CLICOLOR=1
