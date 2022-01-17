@@ -27,14 +27,10 @@ Linux() {
 }
 
 Darwin() {
-	port selfupdate
-	port -N install git mandoc nvi pkgconfig $packages
-	mkdir -p /opt/local/etc/select/man
-	printf 'bin/man\nshare/man/man1/man.1\nshare/man/man1/man.1.gz\n' \
-		>/opt/local/etc/select/man/base
-	printf '/usr/bin/man\n/usr/share/man/man1/man.1\n-\n' \
-		>/opt/local/etc/select/man/system
-	port select --set man system
+	packages=$(echo $packages | sed 's/the_silver_searcher/ag/')
+	cd git/jorts
+	git pull
+	./Plan -j4 git mandoc nvi $packages | sh
 }
 
 $(uname)
