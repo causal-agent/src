@@ -17,6 +17,8 @@ export LESS=FRXix4
 export CLICOLOR=1
 export MANSECT=2:3:1:8:6:5:7:4:9
 export NETHACKOPTIONS='pickup_types:$!?+/=, color, DECgraphics'
+command -v diff-highlight >/dev/null &&
+export GIT_PAGER="diff-highlight | $PAGER"
 
 test -e /usr/share/mk/sys.mk || export CFLAGS=-O
 test -d /usr/home && cd
