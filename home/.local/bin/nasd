@@ -2,8 +2,13 @@
 set -eu
 
 dir=$(mktemp -d)
-echo 'bits 64' > "${dir}/input"
-cat >> "${dir}/input"
-nasm -o "${dir}/output" "${dir}/input" || true
-ndisasm -b 64 "${dir}/output" || true
-rm -r "$dir"
+trap 'rm -r "$dir"' EXIT
+
+echo 'bits 64' >"${dir}/input"
+for ins; do
+	printf '%s\n' "$ins" >>"${dir}/input"
+done
+[ $# -eq 0 ] && cat >>"${dir}/input"
+
+nasm -o "${dir}/output" "${dir}/input"
+ndisasm -b 64 "${dir}/output"
