@@ -1,0 +1,55 @@
+.Dd January 30, 2022
+.Dt ENC 1
+.Os
+.
+.Sh NAME
+.Nm enc
+.Nd encrypt and decrypt files
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl acdef
+.Op Ar
+.
+.Sh DESCRIPTION
+.Nm
+encrypts and decrypts files
+using ChaCha20 via
+.Xr openssl 1 .
+When encrypting files,
+the
+.Pa .enc
+extension is added.
+When decrypting files,
+the
+.Pa .enc
+extension is removed,
+if possible.
+Otherwise output is written
+to standard output.
+Input files are not removed.
+If no files are provided,
+standard input is encrypted or decrypted.
+.
+.Pp
+The arguments are as follows:
+.Bl -tag -width Ds
+.It Fl a
+Encrypted data is Base64-encoded.
+.It Fl c
+Always write to standard output.
+.It Fl d
+Decrypt.
+.It Fl e
+Encrypt.
+This is the default.
+.It Fl f
+Do not ask to confirm overwriting files.
+.El
+.
+.Sh EXAMPLES
+.Bd -literal -offset indent
+$ enc secret.txt
+$ rm secret.txt
+$ enc -d secret.txt.enc
+.Ed

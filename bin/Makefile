@@ -13,6 +13,7 @@ BINS += bit
 BINS += c
 BINS += dehtml
 BINS += dtch
+BINS += enc
 BINS += git-comment
 BINS += glitch
 BINS += hilex

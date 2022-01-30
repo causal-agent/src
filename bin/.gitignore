@@ -8,6 +8,7 @@ config.mk
 dehtml
 downgrade
 dtch
+enc
 ever
 freecell
 git-comment
