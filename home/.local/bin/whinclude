@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+echo "#include <${1}>" |
+cc ${CFLAGS:-} -E -x c - |
+sed -En '
+	/^# [0-9]+ "[^<]/{
+		s/.*"([^"]+)".*/\1/p
+		q
+	}
+'
