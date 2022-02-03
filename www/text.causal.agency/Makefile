@@ -32,6 +32,7 @@ TXTS += 029-topics.txt
 TXTS += 030-discs.txt
 TXTS += 031-books-2021.txt
 TXTS += 032-albums-2021.txt
+TXTS += 033-jorts.txt
 
 all: colb ${TXTS}
 

@@ -1,0 +1,485 @@
+.Dd February  2, 2022
+.Dt JORTS 7
+.Os "Causal Agency"
+.
+.Sh NAME
+.Nm Introducing Jorts
+.Nd june's ports
+.
+.Sh DESCRIPTION
+Alright so I've gone off the deep end,
+maybe.
+After continual frustration with MacPorts
+culminating in not being able to install
+.Xr nvi 1
+on my work MacBook,
+I have just gone ahead
+and started my own personal ports tree
+for macOS.
+After a couple of weeks,
+I have 32 ports in my tree
+and only two remaining requested ports
+installed from MacPorts.
+.
+.Pp
+I set out with a couple ideas in mind:
+.Bl -bullet
+.It
+This will be my own personal ports tree.
+It only has to work for me.
+Since I'm using it on both
+my personal Intel MacBook Pro
+still running Catalina
+and my work M1 MacBook Pro
+running Monterey,
+it is at least that portable.
+.
+.It
+It's ok to rely on
+system libraries and tools
+provided by macOS.
+I'm not creating a distro,
+so it doesn't need to be totally isolated.
+This lets me skip really annoying things
+like compiler toolchains.
+.
+.It
+Sources get vendored,
+either from release tarballs
+or with
+.Xr git-subtree 1 .
+This allows totally pain-free
+local patching,
+and boy has this paid off.
+I can just do what I need to do
+to get the thing to build how I want
+and commit it in git like anything else.
+.Pp
+It also means that the tree itself
+is entirely self-contained
+and doesn't rely on any external sources
+or network access.
+Honestly with some old and obscure software
+it feels like upstream could disappear at any moment,
+so this gives me peace of mind too.
+.Pp
+Another advantage of vendoring upstream sources
+is that all of the code installed on my system
+(in
+.Pa /usr/local
+anyway)
+is easily inspected,
+much like
+.Pa /usr/src
+on a BSD.
+This can be super useful for debugging
+or just for reference.
+.
+.It
+Produce simple package tarballs.
+They're just the contents of
+.Ev DESTDIR
+after a staged install.
+They get installed for real
+by untarring them in
+.Pa / .
+They can then be uninstalled
+(or upgraded)
+by removing the paths contained
+in the tarball from the system.
+.
+.It
+Track installed packages with symbolic links
+to specific package tarballs.
+Keep old tarballs around for rollbacks.
+This means I can see what's installed
+with plain old
+.Xr ls 1 !
+.Bd -literal
+$ ls */Installed
+\&...
+libretls/Installed          toilet/Installed
+mandoc/Installed            tree/Installed
+
+$ ls -l toilet/Installed
+lrwxr-xr-x  1 root  staff  19 17 Jan 21:45 toilet/Installed -> toilet-0.3~1.tar.gz
+.Ed
+.
+.It
+Use
+.Xr bmake 1 .
+It's scrutable.
+It also knows how to bootstrap itself
+pretty well.
+Since
+.Xr bmake 1
+is itself a port in my tree
+that would require
+.Xr bmake 1
+to build and install,
+I wrote a small
+.Pa Bootstrap
+shell script
+to install
+.Xr bmake 1
+.Dq manually
+then use that
+.Xr bmake 1
+to build and install its own port.
+It also requires a bit of care
+when upgrading the
+.Xr bmake 1
+port since macOS
+rather doesn't like a binary
+deleting itself while it's running.
+.
+.It
+No GNU software.
+I simply refuse to do it.
+To that end,
+prefer configuring/building with
+.Xr cmake 1
+where at all possible.
+I fell into this early on
+since I originally just wanted to install
+.Xr nvi 1
+and
+.Sy lichray/nvi2
+is a better upstream source these days
+that uses
+.Xr cmake 1 .
+.Pp
+With a port and support for
+.Xr cmake 1
+in
+.Pa Port.mk ,
+I can make changes to
+.Pa CMakeLists.txt
+files without issue.
+I can also vendor upstreams
+directly from git
+rather than having to find
+release tarballs with generated
+.Pa configure
+scripts and so on.
+When I need to make changes
+to the build systems of projects using autotools,
+I either have to have autotools installed
+(from outside my tree)
+or painstakingly reflect my edits by hand
+in the generated files,
+both of which suck hard.
+.El
+.
+.Pp
+Ok so that's actually quite a number of ideas.
+But they have come together
+into something surprisingly usable
+surprisingly quickly!
+Like I said,
+this is only intended to be
+my own personal ports tree,
+but I hope that some of these ideas
+are interesting
+and maybe inspire others
+to explore similar approaches.
+.
+.Pp
+But wait,
+I'm not done yet!
+There are some other interesting things
+that I came up with along the way,
+and also some complaints
+about some upstreams,
+but I'll try to keep those to a minimum.
+.
+.Pp
+So it turns out that dependencies are hard.
+Who knew?
+It's easy enough to enforce
+direct dependencies
+at build time
+by just checking for the required
+.Pa Installed
+symlinks.
+It's less straightforward
+to do this recursively,
+which you need if
+you want to be able to say,
+.Do
+Install
+.Xr nvi
+for me!
+.Dc
+and get
+.Xr ncurses 3 ,
+.Xr cmake 1
+and
+.Xr pkgconf 1
+installed first
+if they aren't already.
+.
+.Pp
+Rather than trying to do all that in
+.Xr bmake 1 ,
+I wrote a shell script called
+.Pa Plan ,
+which itself produces a shell script.
+Given a list of ports
+to install or upgrade,
+it recursively gathers their dependencies
+and feeds them to
+.Xr tsort 1 ,
+which is a neat utility
+which topologically sorts a graph.
+In other words,
+it determines the order
+in which the graph of dependencies
+should be installed.
+The
+.Pa Plan
+script produces a list of
+.Xr bmake 1
+commands to make that happen
+on standard output,
+which can be piped to
+.Xr sh 1 .
+So,
+the way to say the above is:
+.Bd -literal -offset ident
+$ ./Plan -j4 nvi | sh -e
+.Ed
+.
+.Pp
+Now,
+what's missing from this approach
+is the ability to automatically
+uninstall no-longer-needed dependencies.
+It's something I've criticized Homebrew for lacking
+and one of the reasons I started using MacPorts,
+so it's somewhat ironic that
+my own system lacks it as well.
+However,
+I don't think it's much of a problem,
+since I'm only packaging
+what I actually want installed
+in the first place.
+On my personal computer,
+I have all 32 of my ports installed,
+and I expect that to continue.
+I can always keep using MacPorts
+to install things I only intend
+to use temporarily.
+.
+.Pp
+Another thing I was slightly concerned about
+from the beginning was disk usage.
+I think the benefits of vendoring sources
+far outweigh the cost in storage,
+but it would be nice to at least minimize that cost.
+Previously,
+I wrote about
+.Xr git-sparse-checkout 1 ,
+which allows you to only have certain paths
+checked out in your git working tree.
+Since port sources aren't always interesting
+and only
+.Em required
+while actually building the port,
+it makes sense to not have them always checked out.
+.
+.Pp
+Rather than manipulate
+.Xr git-sparse-checkout 1
+myself,
+I added support for it
+directly into
+.Pa Port.mk .
+If sparse checkout is enabled,
+building a port will automatically
+add its source tree to the checkout list,
+and cleaning that port will
+remove it from the list.
+At rest,
+only the port system itself
+and the package tarballs
+need to be present on the file system.
+.
+.Pp
+It turns out that upstream
+build system behaviour
+is super inconsistent,
+even among projects using
+the same tools.
+I started collecting a list of checks
+to perform on the output of my port builds
+to make sure they didn't do anything weird.
+They live in
+.Pa Check.sh ,
+which gets run
+when a package tarball is created.
+The current list of checks is:
+.Bl -bullet
+.It
+Check for directories not included by
+.Ev PACKAGE_DIRS .
+In other words,
+make sure the port isn't
+trying to install anything
+outside of
+.Pa /usr/local .
+Sometimes this makes sense,
+though,
+which is what
+.Ev PACKAGE_DIRS
+is for.
+.It
+Check for references to PWD,
+i.e. the build directory.
+This can mean the build
+didn't understand
+.Ev PREFIX
+and
+.Ev DESTDIR
+correctly,
+or that it built with debug info.
+.It
+Check for binaries without manuals.
+If your software installs an executable in
+.Pa bin
+but not a manual page,
+your software is incomplete!
+Sometimes this just means
+I missed an extra documentation install target.
+.It
+Check for dynamic linking to outside objects.
+In other words,
+if something ended up linking to
+a library installed by MacPorts
+rather than the one from
+.Nm jorts
+or macOS.
+.It
+Check for dynamic linking
+to system libraries
+.Nm jorts
+provides instead.
+Similar to the last one,
+if both macOS and
+.Nm jorts
+provide a library,
+check that ports link with the latter.
+.It
+Check for scripts with outside interpreters.
+This is analogous to the linking checks
+but for scripts,
+checking that their shebang lines
+refer to interpreters installed
+by macOS or
+.Nm jorts .
+.El
+.
+.Pp
+A number of my ports
+still fail some of these checks,
+but I have fixed a lot of problems
+the script called out.
+.
+.Pp
+Speaking of problem ports...
+git's build system is truly awful.
+I'm sorry,
+it's just really disappointing.
+On the upside though,
+I did manage to patch it
+to use
+.Xr asciidoctor 1
+directly to generate manual pages
+from asciidoc source,
+rather than generating docbook or whatever
+then converting that.
+One less build dependency!
+I also fixed up curl's
+.Pa CMakeLists.txt
+(which I guess are normally only used on Windows)
+to build and install documentation properly.
+And I got libcaca's Cocoa driver working again!
+Very important to be able to run
+.Xr cacafire 1
+in a Cocoa window.
+.
+.Pp
+Shout out to SDL2,
+which didn't require any patching
+or extra options beyond
+.Ev USE_CMAKE=yes .
+Model upstream.
+.
+.Pp
+Some other odds and ends:
+I like being able to name ports how I want
+(for example,
+.Sy ag )
+and use my own port version convention,
+using
+.Ql +
+to append VCS revisions
+and
+.Ql ~
+to append port revisions.
+I don't think those are likely
+to ever clash with upstream versioning schemes.
+Not that I even need to follow upstream versioning.
+There is no reason the version number of
+.Xr dash 1
+should start with a zero.
+.
+.Pp
+Speaking of versions,
+a big downside of maintaining your own ports tree
+is that you actually need to update it.
+Thankfully,
+once I packaged
+.Xr curl 1
+and
+.Xr jq 1
+(which needs a new release dammit,
+it's been 4 years and the build is broken
+on macOS),
+I could use the Repology API
+to check if I'm behind everyone else.
+Far more reliable than
+trying to automate checking upstreams
+for new versions.
+That lives in the
+.Pa Outdated
+shell script.
+.
+.Pp
+Phew!
+I wrote a lot about this.
+It feels a little self-indulgent,
+but I've had fun working on this
+and want to share.
+If anyone else tries anything similar,
+or is weird enough to give
+.Nm jorts
+a try themselves,
+I'd love to hear about it!
+.
+.Sh SEE ALSO
+.Lk https://git.causal.agency/jorts/
+.Pp
+.Lk https://youtu.be/Sx3ORAO1Y6s
+.
+.Sh AUTHORS
+.An june Aq Mt june@causal.agency
+.Pp
+Listening to
+.Em Arcade Fire \(em Arcade Fire (EP) ,
+.Em Arcade Fire \(em The Suburbs .
+.Pp
+Typed on a brand new
+Leopold FC660M
+with Cherry MX Red switches.
+Lovely keyboard.
