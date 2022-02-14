@@ -32,7 +32,11 @@ static int email(void) {
 	size_t cap = 0;
 	char *buf = NULL;
 	if (getline(&buf, &cap, stdin) < 0) err(1, "getline");
-	if (buf[0] == 'C') {
+	long x = 1;
+	for (char *ch = buf; *ch && *ch != ' '; ++ch) {
+		x *= *ch;
+	}
+	if (buf[0] == 'C' && x == 1251729952200L) {
 		printf("C.%s", buf + strcspn(buf, " "));
 	} else {
 		printf("%s", buf);
