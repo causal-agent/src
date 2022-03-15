@@ -14,8 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# MacPorts is strange.
-use lib (split(/:/, $ENV{GITPERLLIB} || '/opt/local/share/perl5'));
+use lib (split(/:/, $ENV{GITPERLLIB} || '/usr/local/share/perl5'));
 
 use strict;
 use warnings;
