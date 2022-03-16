@@ -23,7 +23,10 @@ OpenBSD() {
 }
 
 Linux() {
-	pacman -Sy --needed bc ctags gdb openssh vi $packages
+	packages=$(
+		echo $packages | sed 's/the_silver_searcher/silversearcher-ag/'
+	)
+	apt-get install bc build-essential exuberant-ctags gdb nvi $packages
 }
 
 Darwin() {
