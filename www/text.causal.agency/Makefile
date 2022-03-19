@@ -34,6 +34,7 @@ TXTS += 031-books-2021.txt
 TXTS += 032-albums-2021.txt
 TXTS += 033-jorts.txt
 TXTS += 034-voices.txt
+TXTS += 035-addendum-2021.txt
 
 all: colb ${TXTS}
 
