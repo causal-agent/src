@@ -23,4 +23,6 @@ export GIT_PAGER="diff-highlight | $PAGER"
 test -e /usr/share/mk/sys.mk || export CFLAGS=-O
 test -d /usr/home && cd
 
+test -f ~/.profile.local && . ~/.profile.local
+
 export ENV=~/.shrc
