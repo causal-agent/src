@@ -77,6 +77,10 @@ static char *hstrstr(const char *haystack, const char *needle) {
 	return NULL;
 }
 
+static int isident(int c) {
+	return isalnum(c) || c == '_';
+}
+
 int main(int argc, char *argv[]) {
 	bool pre = false;
 	bool pipe = false;
@@ -190,7 +194,10 @@ int main(int argc, char *argv[]) {
 
 		size_t mlen = strlen(tag);
 		char *match = (pipe ? hstrstr : strstr)(buf, tag);
-		while (match > buf && isalnum(match[-1])) {
+		while (
+			match &&
+			((match > buf && isident(match[-1])) || isident(match[mlen]))
+		) {
 			match = (pipe ? hstrstr : strstr)(&match[mlen], tag);
 		}
 		if (!match && tag[0] == 'M') {
