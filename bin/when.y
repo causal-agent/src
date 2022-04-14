@@ -103,6 +103,15 @@ static struct tm dateSub(struct tm date, struct tm scalar) {
 }
 
 static struct tm dateDiff(struct tm a, struct tm b) {
+	time_t atime = timegm(&a), btime = timegm(&b);
+	if (atime < btime) {
+		struct tm x = a;
+		a = b;
+		b = x;
+		time_t xtime = atime;
+		atime = btime;
+		btime = xtime;
+	}
 	struct tm diff = {
 		.tm_year = a.tm_year - b.tm_year,
 		.tm_mon = a.tm_mon - b.tm_mon,
@@ -117,7 +126,6 @@ static struct tm dateDiff(struct tm a, struct tm b) {
 		diff.tm_mday = 0;
 		while (dateAdd(b, diff).tm_mday != a.tm_mday) diff.tm_mday++;
 	}
-	time_t atime = timegm(&a), btime = timegm(&b);
 	diff.tm_yday = (atime - btime) / 24 / 60 / 60;
 	return diff;
 }
