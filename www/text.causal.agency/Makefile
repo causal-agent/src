@@ -37,6 +37,7 @@ TXTS += 034-voices.txt
 TXTS += 035-addendum-2021.txt
 TXTS += 036-compassion.txt
 TXTS += 037-care.txt
+TXTS += 038-agency.txt
 
 all: colb ${TXTS}
 
