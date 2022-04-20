@@ -47,6 +47,7 @@ ${TXTS}: colb
 
 .7.txt:
 	mandoc -T utf8 $< | ./colb > $@
+	touch -m -r $< $@
 
 feed.atom: feed.sh ${TXTS}
 	sh feed.sh > feed.atom
