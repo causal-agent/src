@@ -39,21 +39,19 @@ TXTS += 036-compassion.txt
 TXTS += 037-care.txt
 TXTS += 038-agency.txt
 
-all: ${TXTS} feed.atom
+all: colb ${TXTS}
 
 .SUFFIXES: .7 .txt
-
-${TXTS}: colb
 
 .7.txt:
 	mandoc -T utf8 $< | ./colb > $@
 	touch -m -r $< $@
 
-feed.atom: feed.sh ${TXTS}
+feed.atom: feed.sh colb ${TXTS}
 	sh feed.sh > feed.atom
 
 clean:
 	rm -f colb ${TXTS} feed.atom
 
-install: ${TXTS} feed.atom
+install: colb ${TXTS} feed.atom
 	install -p -m 644 ${TXTS} feed.atom ${WEBROOT}
