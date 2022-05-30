@@ -25,7 +25,7 @@ man() {
 	for sect in $MANSECT; do
 		command man -w $sect "$1" >/dev/null 2>&1 && exec man $sect "$1"
 	done
-	exec man "$1")
+	exec command man "$1")
 }
 
 cd() {
@@ -50,15 +50,5 @@ fi
 export LESS_TERMCAP_us=$(tput sitm)
 export LESS_TERMCAP_ue=$(tput ritm)
 
-hostname=$(hostname -s)
-rprompt() {
-	local pwd
-	pwd=${PWD#${HOME}}
-	[ "${pwd}" != "${PWD}" ] && pwd="~${pwd}"
-	[ "${TERM%-*}" = 'xterm' ] \
-		&& printf '\33]0;%s\a' "${SSH_CLIENT:+${hostname}:}${pwd##*/}" >&2
-	printf '%s' "${SSH_CLIENT:+${hostname}:}${pwd}"
-}
-PS1='
-$ '
-RPS1='${?#0} $(rprompt)'
+PS1='\[\033]0;${SSH_CLIENT:+\\h:}\W\a\]
+${?#0}$ '
