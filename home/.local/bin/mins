@@ -1,0 +1,4 @@
+#!/bin/sh
+exec dc <<EOF
+$1 60~rn[h]nn[m]p
+EOF
