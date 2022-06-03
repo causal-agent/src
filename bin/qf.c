@@ -103,6 +103,7 @@ static void curse(void) {
 	cbreak();
 	noecho();
 	nodelay(stdscr, true);
+	TABSIZE = 4;
 	curs_set(0);
 	start_color();
 	use_default_colors();
