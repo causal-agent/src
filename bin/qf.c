@@ -14,10 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <ctype.h>
 #include <curses.h>
 #include <err.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +39,7 @@ struct Line {
 	char *path;
 	unsigned nr;
 	char *text;
+	regmatch_t match;
 };
 
 static struct {
@@ -52,6 +55,9 @@ static void push(struct Line line) {
 	}
 	lines.ptr[lines.len++] = line;
 }
+
+static const char *pattern;
+static regex_t regex;
 
 static void parse(struct Line line) {
 	line.path = strsep(&line.text, ":");
@@ -80,6 +86,9 @@ static void parse(struct Line line) {
 	} else {
 		line.type = Text;
 	}
+	if (line.type == Match && pattern) {
+		regexec(&regex, line.text, 1, &line.match, 0);
+	}
 	push(line);
 }
 
@@ -99,7 +108,7 @@ static void curse(void) {
 	use_default_colors();
 	init_pair(Path, COLOR_GREEN, -1);
 	init_pair(Number, COLOR_YELLOW, -1);
-	init_pair(Highlight, COLOR_BLACK, COLOR_YELLOW);
+	init_pair(Highlight, COLOR_MAGENTA, -1);
 }
 
 static size_t top;
@@ -124,11 +133,29 @@ static void draw(void) {
 				addstr(line.path);
 				color_set(0, NULL);
 			}
-			break; case Match: case Context: {
+			break; case Match: {
 				color_set(Number, NULL);
 				printw("%u", line.nr);
 				color_set(0, NULL);
-				addch(line.type == Match ? ':' : '-');
+				addch(':');
+				if (line.match.rm_so == line.match.rm_eo) {
+					addstr(line.text);
+					break;
+				}
+				addnstr(line.text, line.match.rm_so);
+				color_set(Highlight, NULL);
+				addnstr(
+					&line.text[line.match.rm_so],
+					line.match.rm_eo - line.match.rm_so
+				);
+				color_set(0, NULL);
+				addstr(&line.text[line.match.rm_eo]);
+			}
+			break; case Context: {
+				color_set(Number, NULL);
+				printw("%u", line.nr);
+				color_set(0, NULL);
+				addch('-');
 				addstr(line.text);
 			}
 			break; case Text: addstr(line.text);
@@ -198,13 +225,27 @@ static void input(void) {
 				endwin();
 				exit(EX_OK);
 			}
+			break; case 'r': clearok(stdscr, true);
 		}
 	}
 	if (cur < top) top = cur;
 	if (cur >= top + LINES) top = cur - LINES + 1;
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
+	if (isatty(STDIN_FILENO)) errx(EX_USAGE, "no input");
+	if (argc > 1) {
+		pattern = argv[1];
+		int flags = REG_EXTENDED | REG_ICASE;
+		for (const char *ch = pattern; *ch; ++ch) {
+			if (isupper(*ch)) {
+				flags &= ~REG_ICASE;
+				break;
+			}
+		}
+		int error = regcomp(&regex, pattern, flags);
+		if (error) errx(EX_USAGE, "invalid pattern");
+	}
 	curse();
 	struct pollfd fds[2] = {
 		{ .fd = STDIN_FILENO, .events = POLLIN },
