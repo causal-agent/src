@@ -1,0 +1,56 @@
+.Dd June  2, 2022
+.Dt QF 1
+.Os
+.
+.Sh NAME
+.Nm qf
+.Nd grep pager
+.
+.Sh SYNOPSIS
+.Nm
+.
+.Sh DESCRIPTION
+.Nm
+is a pager for
+.Xr grep 1 ,
+.Xr ag 1 ,
+.Xr rg 1 ,
+etc.\&
+which allows
+jumping to matches in
+.Ev $EDITOR .
+It parses any input
+prefixed by path
+and line number
+separated by a colon
+.Ql ":"
+followed by either a colon
+or a hyphen
+.Ql "-" .
+It otherwise operates similar to
+.Xr less 1 .
+.
+.Pp
+The keys are as follows:
+.Bl -tag -width Ds
+.It Ic Enter
+Open the currently selected line in
+.Ev $EDITOR .
+When the editor exits,
+.Nm
+resumes.
+.It Ic {}
+Jump between files.
+.It Ic gG
+Jump to first or last line.
+.It Ic jk
+Move to next or previous line.
+.It Ic nN
+Jump to next or previous match line.
+.It Ic q
+Exit.
+.El
+.
+.Sh EXAMPLES
+.Dl $ ag -C open | qf
+.Dl $ git grep -n open | qf

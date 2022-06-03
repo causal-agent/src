@@ -1,0 +1,254 @@
+/* Copyright (C) 2022  June McEnroe <june@causal.agency>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <curses.h>
+#include <err.h>
+#include <fcntl.h>
+#include <paths.h>
+#include <poll.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sysexits.h>
+#include <unistd.h>
+
+enum Type {
+	File,
+	Match,
+	Context,
+	Text,
+};
+
+struct Line {
+	enum Type type;
+	char *path;
+	unsigned nr;
+	char *text;
+};
+
+static struct {
+	struct Line *ptr;
+	size_t len, cap;
+} lines;
+
+static void push(struct Line line) {
+	if (lines.len == lines.cap) {
+		lines.cap = (lines.cap ? lines.cap * 2 : 256);
+		lines.ptr = realloc(lines.ptr, sizeof(*lines.ptr) * lines.cap);
+		if (!lines.ptr) err(EX_OSERR, "realloc");
+	}
+	lines.ptr[lines.len++] = line;
+}
+
+static void parse(struct Line line) {
+	char *text = line.text;
+	size_t sep = strcspn(line.text, ":");
+	if (!line.text[sep]) {
+		line.type = Text;
+		push(line);
+		return;
+	}
+	line.path = strndup(line.text, sep);
+	if (!line.path) err(EX_OSERR, "strndup");
+	line.text += sep + 1;
+	if (
+		!lines.len ||
+		!lines.ptr[lines.len-1].path ||
+		strcmp(line.path, lines.ptr[lines.len-1].path)
+	) {
+		if (lines.len) {
+			push((struct Line) { .type = Text, .text = " " });
+		}
+		line.type = File;
+		push(line);
+	}
+	char *rest;
+	line.nr = strtoul(line.text, &rest, 10);
+	if (rest != line.text && rest[0] == ':') {
+		line.type = Match;
+		line.text = &rest[1];
+	} else if (rest != line.text && rest[0] == '-') {
+		line.type = Context;
+		line.text = &rest[1];
+	} else {
+		line.type = Text;
+		line.text = text;
+	}
+	push(line);
+}
+
+enum {
+	Path = 1,
+	Number = 2,
+	Highlight = 3,
+};
+
+static int tty = -1;
+
+static void curse(void) {
+	tty = open(_PATH_TTY, O_RDWR);
+	if (tty < 0) err(EX_IOERR, "%s", _PATH_TTY);
+	FILE *ttyin = fdopen(tty, "r");
+	if (!ttyin) err(EX_OSERR, "fdopen");
+	set_term(newterm(NULL, stdout, ttyin));
+	cbreak();
+	noecho();
+	nodelay(stdscr, true);
+	curs_set(0);
+	start_color();
+	use_default_colors();
+	init_pair(Path, COLOR_GREEN, -1);
+	init_pair(Number, COLOR_YELLOW, -1);
+	init_pair(Highlight, COLOR_BLACK, COLOR_YELLOW);
+}
+
+static size_t top;
+static size_t cur;
+
+static void draw(void) {
+	int y, x;
+	for (int i = 0; i < LINES; ++i) {
+		move(i, 0);
+		clrtoeol();
+		if (top + i >= lines.len) continue;
+		struct Line line = lines.ptr[top + i];
+		if (top + i == cur) {
+			getyx(stdscr, y, x);
+			attron(A_REVERSE);
+		} else {
+			attroff(A_REVERSE);
+		}
+		switch (line.type) {
+			break; case File: {
+				color_set(Path, NULL);
+				addstr(line.path);
+				color_set(0, NULL);
+			}
+			break; case Match: case Context: {
+				color_set(Number, NULL);
+				printw("%u", line.nr);
+				color_set(0, NULL);
+				addch(line.type == Match ? ':' : '-');
+				addstr(line.text);
+			}
+			break; case Text: addstr(line.text);
+		}
+	}
+	move(y, x);
+	refresh();
+}
+
+static void edit(struct Line line) {
+	char cmd[32];
+	snprintf(cmd, sizeof(cmd), "+%u", (line.nr ? line.nr : 1));
+	const char *editor = getenv("EDITOR");
+	if (!editor) editor = "vi";
+	pid_t pid = fork();
+	if (pid < 0) err(EX_OSERR, "fork");
+	if (!pid) {
+		dup2(tty, STDIN_FILENO);
+		close(tty);
+		execlp(editor, editor, cmd, line.path, NULL);
+		err(EX_CONFIG, "%s", editor);
+	}
+	int status;
+	pid = waitpid(pid, &status, 0);
+	if (pid < 0) err(EX_OSERR, "waitpid");
+}
+
+static void toPrev(enum Type type) {
+	if (!cur) return;
+	size_t prev = cur - 1;
+	while (prev && lines.ptr[prev].type != type) {
+		prev--;
+	}
+	if (lines.ptr[prev].type == type) {
+		cur = prev;
+	}
+}
+
+static void toNext(enum Type type) {
+	size_t next = cur + 1;
+	while (next < lines.len && lines.ptr[next].type != type) {
+		next++;
+	}
+	if (next < lines.len && lines.ptr[next].type == type) {
+		cur = next;
+	}
+}
+
+static void input(void) {
+	char ch;
+	while (ERR != (ch = getch())) {
+		switch (ch) {
+			break; case '\n': {
+				if (lines.ptr[cur].type == Text) break;
+				endwin();
+				edit(lines.ptr[cur]);
+				refresh();
+			}
+			break; case '{': toPrev(File);
+			break; case '}': toNext(File);
+			break; case 'G': cur = lines.len - 1;
+			break; case 'N': toPrev(Match);
+			break; case 'g': cur = 0;
+			break; case 'j': if (cur + 1 < lines.len) cur++;
+			break; case 'k': if (cur) cur--;
+			break; case 'n': toNext(Match);
+			break; case 'q': {
+				endwin();
+				exit(EX_OK);
+			}
+		}
+	}
+	if (cur < top) top = cur;
+	if (cur >= top + LINES) top = cur - LINES + 1;
+}
+
+int main(void) {
+	curse();
+	struct pollfd fds[2] = {
+		{ .fd = STDIN_FILENO, .events = POLLIN },
+		{ .fd = tty, .events = POLLIN },
+	};
+	char buf[4096];
+	size_t len = 0;
+	while (poll(fds, 2, -1)) {
+		if (fds[0].revents) {
+			ssize_t n = read(fds[0].fd, &buf[len], sizeof(buf) - len);
+			if (n < 0) err(EX_IOERR, "read");
+			if (!n) fds[0].events = 0;
+			len += n;
+			char *ptr = buf;
+			for (
+				char *nl;
+				(nl = memchr(ptr, '\n', &buf[len] - ptr));
+				ptr = &nl[1]
+			) {
+				struct Line line = { .text = strndup(ptr, nl - ptr) };
+				if (!line.text) err(EX_OSERR, "strndup");
+				parse(line);
+			}
+			len -= ptr - buf;
+			memmove(buf, ptr, len);
+		}
+		if (fds[1].revents) {
+			input();
+		}
+		draw();
+	}
+	err(EX_IOERR, "poll");
+}
