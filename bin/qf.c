@@ -54,37 +54,31 @@ static void push(struct Line line) {
 }
 
 static void parse(struct Line line) {
-	char *text = line.text;
-	size_t sep = strcspn(text, ":");
-	if (!text[sep]) {
+	line.path = strsep(&line.text, ":");
+	if (!line.text) {
 		line.type = Text;
+		line.text = line.path;
 		if (lines.len) line.path = lines.ptr[lines.len-1].path;
 		push(line);
 		return;
 	}
-	line.path = text;
-	text[sep] = '\0';
-	line.text = &text[sep+1];
-	if (
-		!lines.len ||
-		!lines.ptr[lines.len-1].path ||
-		strcmp(line.path, lines.ptr[lines.len-1].path)
-	) {
-		if (lines.len) {
-			push((struct Line) { .type = Text, .text = " " });
-		}
+	struct Line prev = {0};
+	if (lines.len) prev = lines.ptr[lines.len-1];
+	if (!prev.path || strcmp(line.path, prev.path)) {
+		if (lines.len) push((struct Line) { .type = Text, .text = " " });
 		line.type = File;
 		push(line);
 	}
 	char *rest;
 	line.nr = strtoul(line.text, &rest, 10);
-	line.type = Match;
-	if (rest != line.text && rest[0] == ':') {
+	if (rest > line.text && rest[0] == ':') {
 		line.type = Match;
 		line.text = &rest[1];
-	} else if (rest != line.text && rest[0] == '-') {
+	} else if (rest > line.text && rest[0] == '-') {
 		line.type = Context;
 		line.text = &rest[1];
+	} else {
+		line.type = Text;
 	}
 	push(line);
 }
