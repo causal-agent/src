@@ -17,11 +17,11 @@
 #include <curses.h>
 #include <err.h>
 #include <fcntl.h>
-#include <paths.h>
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <sysexits.h>
 #include <unistd.h>
 
@@ -96,14 +96,8 @@ enum {
 	Highlight = 3,
 };
 
-static int tty = -1;
-
 static void curse(void) {
-	tty = open(_PATH_TTY, O_RDWR);
-	if (tty < 0) err(EX_IOERR, "%s", _PATH_TTY);
-	FILE *ttyin = fdopen(tty, "r");
-	if (!ttyin) err(EX_OSERR, "fdopen");
-	set_term(newterm(NULL, stdout, ttyin));
+	set_term(newterm(NULL, stdout, stderr));
 	cbreak();
 	noecho();
 	nodelay(stdscr, true);
@@ -159,8 +153,7 @@ static void edit(struct Line line) {
 	pid_t pid = fork();
 	if (pid < 0) err(EX_OSERR, "fork");
 	if (!pid) {
-		dup2(tty, STDIN_FILENO);
-		close(tty);
+		dup2(STDERR_FILENO, STDIN_FILENO);
 		execlp(editor, editor, cmd, line.path, NULL);
 		err(EX_CONFIG, "%s", editor);
 	}
@@ -222,13 +215,15 @@ int main(void) {
 	curse();
 	struct pollfd fds[2] = {
 		{ .fd = STDIN_FILENO, .events = POLLIN },
-		{ .fd = tty, .events = POLLIN },
+		{ .fd = STDERR_FILENO, .events = POLLIN },
 	};
-	char buf[4096];
 	size_t len = 0;
+	size_t cap = 4096;
+	char *buf = malloc(cap);
+	if (!buf) err(EX_OSERR, "malloc");
 	while (poll(fds, 2, -1)) {
 		if (fds[0].revents) {
-			ssize_t n = read(fds[0].fd, &buf[len], sizeof(buf) - len);
+			ssize_t n = read(fds[0].fd, &buf[len], cap - len);
 			if (n < 0) err(EX_IOERR, "read");
 			if (!n) fds[0].events = 0;
 			len += n;
@@ -244,6 +239,11 @@ int main(void) {
 			}
 			len -= ptr - buf;
 			memmove(buf, ptr, len);
+			if (len == cap) {
+				cap *= 2;
+				buf = realloc(buf, cap);
+				if (!buf) err(EX_OSERR, "realloc");
+			}
 		}
 		if (fds[1].revents) {
 			input();
