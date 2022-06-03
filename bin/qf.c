@@ -249,18 +249,22 @@ int main(int argc, char *argv[]) {
 	}
 	curse();
 	struct pollfd fds[2] = {
-		{ .fd = STDIN_FILENO, .events = POLLIN },
 		{ .fd = STDERR_FILENO, .events = POLLIN },
+		{ .fd = STDIN_FILENO, .events = POLLIN },
 	};
+	int nfds = 2;
 	size_t len = 0;
 	size_t cap = 4096;
 	char *buf = malloc(cap);
 	if (!buf) err(EX_OSERR, "malloc");
-	while (poll(fds, 2, -1)) {
+	while (poll(fds, nfds, -1)) {
 		if (fds[0].revents) {
-			ssize_t n = read(fds[0].fd, &buf[len], cap - len);
+			input();
+		}
+		if (nfds > 1 && fds[1].revents) {
+			ssize_t n = read(fds[1].fd, &buf[len], cap - len);
 			if (n < 0) err(EX_IOERR, "read");
-			if (!n) fds[0].events = 0;
+			if (!n) nfds--;
 			len += n;
 			char *ptr = buf;
 			for (
@@ -279,9 +283,6 @@ int main(int argc, char *argv[]) {
 				buf = realloc(buf, cap);
 				if (!buf) err(EX_OSERR, "realloc");
 			}
-		}
-		if (fds[1].revents) {
-			input();
 		}
 		draw();
 	}
