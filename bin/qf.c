@@ -68,6 +68,8 @@ static void parse(struct Line line) {
 		push(line);
 		return;
 	}
+	char *rest;
+	line.nr = strtoul(line.text, &rest, 10);
 	struct Line prev = {0};
 	if (lines.len) prev = lines.ptr[lines.len-1];
 	if (!prev.path || strcmp(line.path, prev.path)) {
@@ -75,8 +77,6 @@ static void parse(struct Line line) {
 		line.type = File;
 		push(line);
 	}
-	char *rest;
-	line.nr = strtoul(line.text, &rest, 10);
 	if (rest > line.text && rest[0] == ':') {
 		line.type = Match;
 		line.text = &rest[1];
