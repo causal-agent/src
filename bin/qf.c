@@ -55,15 +55,16 @@ static void push(struct Line line) {
 
 static void parse(struct Line line) {
 	char *text = line.text;
-	size_t sep = strcspn(line.text, ":");
-	if (!line.text[sep]) {
+	size_t sep = strcspn(text, ":");
+	if (!text[sep]) {
 		line.type = Text;
+		if (lines.len) line.path = lines.ptr[lines.len-1].path;
 		push(line);
 		return;
 	}
-	line.path = strndup(line.text, sep);
-	if (!line.path) err(EX_OSERR, "strndup");
-	line.text += sep + 1;
+	line.path = text;
+	text[sep] = '\0';
+	line.text = &text[sep+1];
 	if (
 		!lines.len ||
 		!lines.ptr[lines.len-1].path ||
@@ -77,15 +78,13 @@ static void parse(struct Line line) {
 	}
 	char *rest;
 	line.nr = strtoul(line.text, &rest, 10);
+	line.type = Match;
 	if (rest != line.text && rest[0] == ':') {
 		line.type = Match;
 		line.text = &rest[1];
 	} else if (rest != line.text && rest[0] == '-') {
 		line.type = Context;
 		line.text = &rest[1];
-	} else {
-		line.type = Text;
-		line.text = text;
 	}
 	push(line);
 }
