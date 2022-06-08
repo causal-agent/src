@@ -114,13 +114,17 @@ static void curse(void) {
 
 static size_t top;
 static size_t cur;
+static bool reading = true;
 
 static void draw(void) {
-	int y, x;
+	int y = 0, x = 0;
 	for (int i = 0; i < LINES; ++i) {
 		move(i, 0);
 		clrtoeol();
-		if (top + i >= lines.len) continue;
+		if (top + i >= lines.len) {
+			addstr(reading ? "..." : !lines.len ? "No results" : "");
+			break;
+		}
 		struct Line line = lines.ptr[top + i];
 		if (top + i == cur) {
 			getyx(stdscr, y, x);
@@ -248,23 +252,23 @@ int main(int argc, char *argv[]) {
 		if (error) errx(EX_USAGE, "invalid pattern");
 	}
 	curse();
+	draw();
 	struct pollfd fds[2] = {
 		{ .fd = STDERR_FILENO, .events = POLLIN },
 		{ .fd = STDIN_FILENO, .events = POLLIN },
 	};
-	int nfds = 2;
 	size_t len = 0;
 	size_t cap = 4096;
 	char *buf = malloc(cap);
 	if (!buf) err(EX_OSERR, "malloc");
-	while (poll(fds, nfds, -1)) {
+	while (poll(fds, (reading ? 2 : 1), -1)) {
 		if (fds[0].revents) {
 			input();
 		}
-		if (nfds > 1 && fds[1].revents) {
+		if (reading && fds[1].revents) {
 			ssize_t n = read(fds[1].fd, &buf[len], cap - len);
 			if (n < 0) err(EX_IOERR, "read");
-			if (!n) nfds--;
+			if (!n) reading = false;
 			len += n;
 			char *ptr = buf;
 			for (
