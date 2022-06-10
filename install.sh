@@ -33,7 +33,7 @@ Darwin() {
 	packages=$(echo $packages | sed 's/the_silver_searcher/ag/')
 	cd git/jorts
 	git pull
-	./Plan git mandoc nvi $packages | sh
+	./Install git mandoc nvi $packages
 }
 
 $(uname)
