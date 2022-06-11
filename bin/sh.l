@@ -36,7 +36,7 @@ static int pop(void) {
 }
 %}
 
-%s Param Command Arith Backtick
+%s Param Command Arith Backtick Subshell
 %x DQuote HereDocDel HereDoc HereDocLit
 
 word [[:alnum:]_.-]+
@@ -51,7 +51,7 @@ reserved [!{}]|else|do|elif|for|done|fi|then|until|while|if|case|esac
 
 "\\". { return Escape; }
 
-<INITIAL,DQuote,HereDoc,Param,Command,Arith>{
+<INITIAL,DQuote,HereDoc,Param,Command,Arith,Subshell>{
 	"$"[*@#?$!0-9-] |
 	"$"[_[:alpha:][_[:alnum:]]* |
 	"${"[#]?{param}"}" {
@@ -73,6 +73,10 @@ reserved [!{}]|else|do|elif|for|done|fi|then|until|while|if|case|esac
 		BEGIN(push(Backtick));
 		return Subst;
 	}
+	"(" {
+		BEGIN(push(Subshell));
+		return Normal;
+	}
 }
 <Param>"}" |
 <Command>")" |
@@ -80,6 +84,10 @@ reserved [!{}]|else|do|elif|for|done|fi|then|until|while|if|case|esac
 <Backtick>"`" {
 	BEGIN(pop());
 	return Subst;
+}
+<Subshell>")" {
+	BEGIN(pop());
+	return Normal;
 }
 
 "\n" {
