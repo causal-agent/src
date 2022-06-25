@@ -26,7 +26,7 @@ XTerm*VT100*translations: #override \n\
 	<Btn4Down>: scroll-back(1,line,m) \n\
 	<Btn5Down>: scroll-forw(1,line,m)
 
-XTerm*faceName: Go Mono:size=11
+XTerm*faceName: Go Mono:size=12
 XTerm*internalBorder: 6
 XTerm*colorBDMode: true
 XTerm*scrollBar: false
