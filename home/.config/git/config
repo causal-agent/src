@@ -12,6 +12,9 @@
 [merge]
 	conflictStyle = diff3
 
+[push]
+	autoSetupRemote = true
+
 [pull]
 	rebase = true
 
