@@ -1,4 +1,4 @@
-.Dd June 21, 2021
+.Dd July 26, 2022
 .Dt UP 1
 .Os
 .
@@ -8,15 +8,9 @@
 .
 .Sh SYNOPSIS
 .Nm
-.Op Fl h
-.Op Ar file
-.
-.Nm
-.Fl c | t
-.Ar command
-.
-.Nm
-.Fl s
+.Op Fl c | h | s | t
+.Op Fl w Ar warn
+.Op Ar file | command
 .
 .Sh DESCRIPTION
 .Nm
@@ -65,6 +59,10 @@ Run a command with
 and
 .Xr shotty 1
 to produce an HTML file for upload.
+.It Fl w Ar warn
+Create an HTML redirect with
+.Ar warn
+in its title.
 .El
 .
 .Pp

@@ -4,19 +4,30 @@ set -eu
 readonly Host='temp.causal.agency'
 readonly Root='/var/www'
 
-upload() {
-	src=$1
-	ext=${src##*.}
-	ts=$(date +'%s')
-	rand=$(openssl rand -hex 4)
-	url=$(printf '%s/%x%s.%s' "$Host" "$ts" "$rand" "$ext")
-	scp -q "$src" "${Host}:${Root}/${url}"
-	echo "https://${url}"
-}
-
+temp=
 temp() {
 	temp=$(mktemp -d)
 	trap 'rm -r "$temp"' EXIT
+}
+
+warn=
+upload() {
+	src=$1
+	ext=${src##*.}
+	name=$(printf '%x%s' "$(date +%s)" "$(openssl rand -hex 4)")
+	url="${Host}/${name}.${ext}"
+	scp -q "$src" "${Host}:${Root}/${url}"
+	if test -n "$warn"; then
+		test -n "$temp" || temp
+		cat >"${temp}/warn.html" <<-EOF
+			<!DOCTYPE html>
+			<title>${warn}</title>
+			<meta http-equiv="refresh" content="0;url=${name}.${ext}">
+		EOF
+		url="${Host}/${name}.html"
+		scp -q "${temp}/warn.html" "${Host}:${Root}/${url}"
+	fi
+	echo "https://${url}"
 }
 
 uploadText() {
@@ -64,12 +75,13 @@ uploadTerminal() {
 	upload "${temp}/term.html"
 }
 
-while getopts 'chst' opt; do
+while getopts 'chstw:' opt; do
 	case $opt in
 		(c) fn=uploadCommand;;
 		(h) fn=uploadHilex;;
 		(s) fn=uploadScreen;;
 		(t) fn=uploadTerminal;;
+		(w) warn=$OPTARG;;
 		(?) exit 1;;
 	esac
 done
