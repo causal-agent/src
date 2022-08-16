@@ -68,6 +68,14 @@ A number of months.
 A number of years.
 .El
 .
+.Sh FILES
+The file
+.Pa $XDG_CONFIG_HOME/when/dates
+or
+.Pa ~/.config/when/dates
+is read before any other expressions,
+if it exists.
+.
 .Sh EXAMPLES
 .Bl -tag -width "Dec 25 - ."
 .It Ic Dec 25 - \&.
@@ -77,3 +85,9 @@ The date next Friday.
 .It Ic \&. + 2w
 Your last day at work.
 .El
+.Pp
+Checking a milestone:
+.Bd -literal -offset indent
+$ echo 'hrt = oct 15 2021' >> ~/.config/when/dates
+$ when -hrt
+.Ed

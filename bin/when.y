@@ -18,6 +18,9 @@
 
 #include <ctype.h>
 #include <err.h>
+#include <errno.h>
+#include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -162,7 +165,10 @@ static void setDate(const char *name, struct tm date) {
 	dates.len++;
 }
 
+static bool silent;
+
 static void printDate(struct tm date) {
+	if (silent) return;
 	printf(
 		"%.3s %.3s %d %d\n",
 		Days[date.tm_wday], Months[date.tm_mon],
@@ -171,6 +177,7 @@ static void printDate(struct tm date) {
 }
 
 static void printScalar(struct tm scalar) {
+	if (silent) return;
 	if (scalar.tm_year) printf("%dy ", scalar.tm_year);
 	if (scalar.tm_mon) printf("%dm ", scalar.tm_mon);
 	if (scalar.tm_mday % 7) {
@@ -287,6 +294,30 @@ static int yylex(void) {
 }
 
 int main(int argc, char *argv[]) {
+	size_t cap = 0;
+	char *line = NULL;
+
+	char path[PATH_MAX];
+	const char *configHome = getenv("XDG_CONFIG_HOME");
+	if (configHome) {
+		snprintf(path, sizeof(path), "%s/when/dates", configHome);
+	} else {
+		snprintf(path, sizeof(path), "%s/.config/when/dates", getenv("HOME"));
+	}
+
+	FILE *file = fopen(path, "r");
+	if (file) {
+		silent = true;
+		while (0 < getline(&line, &cap, file)) {
+			input = line;
+			yyparse();
+		}
+		fclose(file);
+		silent = false;
+	} else if (errno != ENOENT) {
+		err(EX_CONFIG, "%s", path);
+	}
+
 	if (argc > 1) {
 		input = argv[1];
 		return yyparse();
@@ -296,8 +327,6 @@ int main(int argc, char *argv[]) {
 	printDate(date);
 	printf("\n");
 
-	char *line = NULL;
-	size_t cap = 0;
 	while (0 < getline(&line, &cap, stdin)) {
 		if (line[0] == '\n') continue;
 
