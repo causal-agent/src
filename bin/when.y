@@ -30,12 +30,13 @@ static int yylex(void);
 #define YYSTYPE struct tm
 
 static const char *Days[7] = {
-	"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat",
+	"Sunday", "Monday", "Tuesday", "Wednesday",
+	"Thursday", "Friday", "Saturday",
 };
 
 static const char *Months[12] = {
-	"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+	"January", "February", "March", "April", "May", "June",
+	"July", "August", "September", "October", "November", "December",
 };
 
 static const struct tm Week = { .tm_mday = 7 };
@@ -163,7 +164,7 @@ static void setDate(const char *name, struct tm date) {
 
 static void printDate(struct tm date) {
 	printf(
-		"%s %s %d %d\n",
+		"%.3s %.3s %d %d\n",
 		Days[date.tm_wday], Months[date.tm_mon],
 		date.tm_mday, 1900 + date.tm_year
 	);
@@ -256,22 +257,25 @@ static int yylex(void) {
 		return Number;
 	}
 
-	for (int i = 0; i < 7; ++i) {
-		if (strncasecmp(input, Days[i], 3)) continue;
-		while (isalpha(*input)) input++;
-		yylval.tm_wday = i;
-		return Day;
-	}
-
-	for (int i = 0; i < 12; ++i) {
-		if (strncasecmp(input, Months[i], 3)) continue;
-		while (isalpha(*input)) input++;
-		yylval.tm_mon = i;
-		return Month;
-	}
-
 	size_t len;
 	for (len = 0; isalnum(input[len]) || input[len] == '_'; ++len);
+
+	if (len >= 3) {
+		for (int i = 0; i < 7; ++i) {
+			if (strncasecmp(input, Days[i], len)) continue;
+			yylval.tm_wday = i;
+			input += len;
+			return Day;
+		}
+
+		for (int i = 0; i < 12; ++i) {
+			if (strncasecmp(input, Months[i], len)) continue;
+			yylval.tm_mon = i;
+			input += len;
+			return Month;
+		}
+	}
+
 	if (len && (len != 1 || !strchr("dwmy", *input))) {
 		yylval.tm_zone = strndup(input, len);
 		if (!yylval.tm_zone) err(EX_OSERR, "strndup");
