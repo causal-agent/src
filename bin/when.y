@@ -1,4 +1,4 @@
-/* Copyright (C) 2019  June McEnroe <june@causal.agency>
+/* Copyright (C) 2019, 2022  June McEnroe <june@causal.agency>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -130,6 +130,37 @@ static struct tm dateDiff(struct tm a, struct tm b) {
 	return diff;
 }
 
+static struct {
+	size_t cap, len;
+	struct tm *ptr;
+} dates;
+
+static struct tm getDate(const char *name) {
+	for (size_t i = 0; i < dates.len; ++i) {
+		if (!strcmp(dates.ptr[i].tm_zone, name)) return dates.ptr[i];
+	}
+	return (struct tm) {0};
+}
+
+static void setDate(const char *name, struct tm date) {
+	for (size_t i = 0; i < dates.len; ++i) {
+		if (strcmp(dates.ptr[i].tm_zone, name)) continue;
+		char *tm_zone = dates.ptr[i].tm_zone;
+		dates.ptr[i] = date;
+		dates.ptr[i].tm_zone = tm_zone;
+		return;
+	}
+	if (dates.len == dates.cap) {
+		dates.cap = (dates.cap ? dates.cap * 2 : 8);
+		dates.ptr = realloc(dates.ptr, sizeof(*dates.ptr) * dates.cap);
+		if (!dates.ptr) err(EX_OSERR, "realloc");
+	}
+	dates.ptr[dates.len] = date;
+	dates.ptr[dates.len].tm_zone = strdup(name);
+	if (!dates.ptr[dates.len].tm_zone) err(EX_OSERR, "strdup");
+	dates.len++;
+}
+
 static void printDate(struct tm date) {
 	printf(
 		"%s %s %d %d\n",
@@ -161,9 +192,9 @@ static void printScalar(struct tm scalar) {
 
 %}
 
-%token Number Month Day
+%token Name Number Month Day
 %left '+' '-'
-%right '<' '>'
+%right '=' '<' '>'
 
 %%
 
@@ -174,6 +205,8 @@ expr:
 
 date:
 	dateLit
+	| Name { $$ = getDate($1.tm_zone); free($1.tm_zone); }
+	| Name '=' date { setDate($1.tm_zone, $3); free($1.tm_zone); $$ = $3; }
 	| '(' date ')' { $$ = $2; }
 	| '<' date { $$ = dateSub($2, Week); }
 	| '>' date { $$ = dateAdd($2, Week); }
@@ -235,6 +268,15 @@ static int yylex(void) {
 		while (isalpha(*input)) input++;
 		yylval.tm_mon = i;
 		return Month;
+	}
+
+	size_t len;
+	for (len = 0; isalnum(input[len]) || input[len] == '_'; ++len);
+	if (len && (len != 1 || !strchr("dwmy", *input))) {
+		yylval.tm_zone = strndup(input, len);
+		if (!yylval.tm_zone) err(EX_OSERR, "strndup");
+		input += len;
+		return Name;
 	}
 
 	return *input++;

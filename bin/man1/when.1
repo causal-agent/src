@@ -1,4 +1,4 @@
-.Dd July 24, 2019
+.Dd August 15, 2022
 .Dt WHEN 1
 .Os
 .
@@ -24,6 +24,11 @@ The grammar is as follows:
 .Bl -tag -width Ds
 .It Sy \&.
 Today's date.
+The empty expression is equivalent.
+.
+.It Ar name Op Sy = Ar date
+A named date.
+Names are alphanumeric including underscores.
 .
 .It Ar month Ar date Op Ar year
 A full date,
