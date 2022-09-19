@@ -32,12 +32,8 @@ static int email(void) {
 	size_t cap = 0;
 	char *buf = NULL;
 	if (getline(&buf, &cap, stdin) < 0) err(1, "getline");
-	long x = 1;
-	for (char *ch = buf; *ch && *ch != ' '; ++ch) {
-		x *= *ch;
-	}
-	if (buf[0] == 'C' && x == 1251729952200L) {
-		printf("C.%s", buf + strcspn(buf, " "));
+	if (buf[0] == 'C' && !strcmp(&buf[strcspn(buf, " ")], " McEnroe")) {
+		printf("June McEnroe");
 	} else {
 		printf("%s", buf);
 	}
@@ -143,6 +139,7 @@ static int source(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
+#ifdef __OpenBSD__
 	int error;
 	switch (getprogname()[0]) {
 		break; case 'a': error = pledge("stdio exec", NULL);
@@ -150,6 +147,7 @@ int main(int argc, char *argv[]) {
 		break; default:  error = pledge("stdio", NULL);
 	}
 	if (error) err(1, "pledge");
+#endif
 	switch (getprogname()[0]) {
 		case 'a': return about(argc, argv);
 		case 'e': return email();
