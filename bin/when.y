@@ -319,8 +319,16 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (argc > 1) {
-		input = argv[1];
-		return yyparse();
+		if (strcmp(argv[1], "-")) {
+			input = argv[1];
+			return yyparse();
+		} else {
+			for (size_t i = 0; i < dates.len; ++i) {
+				printf("%s: ", dates.ptr[i].tm_zone);
+				printScalar(dateDiff(today(), dates.ptr[i]));
+			}
+			return EX_OK;
+		}
 	}
 
 	struct tm date = today();

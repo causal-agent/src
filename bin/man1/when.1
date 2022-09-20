@@ -1,4 +1,4 @@
-.Dd August 15, 2022
+.Dd September 19, 2022
 .Dt WHEN 1
 .Os
 .
@@ -9,6 +9,8 @@
 .Sh SYNOPSIS
 .Nm
 .Op Ar expr
+.Nm
+.Cm -
 .
 .Sh DESCRIPTION
 .Nm
@@ -18,6 +20,11 @@ If no
 is given,
 expressions are read
 from standard input.
+If
+.Cm -
+is given,
+the intervals between each named date
+and today are printed.
 .
 .Pp
 The grammar is as follows:
