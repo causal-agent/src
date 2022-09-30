@@ -1,6 +1,6 @@
 WEBROOT = /var/www/causal.agency
 
-FILES = index.html style.css scheme.css scheme.png
+FILES = index.html style.css scheme.css scheme.png alpha.html
 
 all: ${FILES}
 

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>all 26 letters of the alphabet RANKED</title>
+<style>
+body, button { font-size: 200%; text-align: center; }
+button { margin: 1em; padding: 1ch; }
+button#shuffle { font-size: 100%; }
+</style>
+
+which letter do you like more?
+<p>
+<button id="a">A</button>
+<button id="b">B</button>
+<p>
+<details>
+<summary>current ranking</summary>
+<p>
+<span id="ranking">ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>
+<p>
+<button id="shuffle">reshuffle</button>
+</details>
+
+<script>
+let buttonA = document.getElementById("a");
+let buttonB = document.getElementById("b");
+let ranking = document.getElementById("ranking");
+
+let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+let rand = (bound) => Math.floor(Math.random() * bound);
+function shuffle() {
+	for (let i = alpha.length - 1; i > 0; --i) {
+		let j = rand(i + 1);
+		let x = alpha[i];
+		alpha[i] = alpha[j];
+		alpha[j] = x;
+	}
+}
+if (localStorage.getItem("alpha")) {
+	alpha = localStorage.getItem("alpha").split("");
+} else {
+	shuffle();
+}
+
+let index = 0;
+let even = true;
+function choose(o) {
+	if (o == "b") {
+		let x = alpha[index];
+		alpha[index] = alpha[index + 1];
+		alpha[index + 1] = x;
+	}
+	index += 2;
+	if (index > alpha.length - 2) {
+		even = !even;
+		index = (even ? 0 : 1);
+	}
+	update();
+}
+
+document.onkeydown = function(event) {
+	if (event.key.toUpperCase() == alpha[index]) {
+		choose("a");
+	} else if (event.key.toUpperCase() == alpha[index + 1]) {
+		choose("b");
+	}
+}
+
+function update() {
+	localStorage.setItem("alpha", alpha.join(""));
+	ranking.innerText = alpha.join("");
+	let a = buttonA;
+	let b = buttonB;
+	if (rand(2)) {
+		a = buttonB;
+		b = buttonA;
+	}
+	let lc = (c) => c;
+	if (rand(2)) lc = (c) => c.toLowerCase();
+	a.innerText = lc(alpha[index]);
+	b.innerText = lc(alpha[index + 1]);
+	a.onclick = () => choose("a");
+	b.onclick = () => choose("b");
+}
+update();
+
+document.getElementById("shuffle").onclick = function() {
+	if (confirm("Are you SURE you want to throw away all your hard work?")) {
+		shuffle();
+		update();
+	}
+}
+</script>
