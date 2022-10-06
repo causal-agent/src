@@ -121,7 +121,10 @@ static struct tm dateDiff(struct tm a, struct tm b) {
 		.tm_mon = a.tm_mon - b.tm_mon,
 		.tm_mday = a.tm_mday - b.tm_mday,
 	};
-	if (a.tm_mon < b.tm_mon) {
+	if (
+		a.tm_mon < b.tm_mon ||
+		(a.tm_mon == b.tm_mon && a.tm_mday < b.tm_mday)
+	) {
 		diff.tm_year--;
 		diff.tm_mon += 12;
 	}
