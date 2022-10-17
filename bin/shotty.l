@@ -181,13 +181,13 @@ ESC \x1B
 		| (wchar_t)(yytext[1] & 0x3F);
 	return Data;
 }
-[\xE0-\xEF][\x80-\xBF]{2} {
+[\xE0-\xEF]([\x80-\xBF]{2}) {
 	ch = (wchar_t)(yytext[0] & 0x0F) << 12
 		| (wchar_t)(yytext[1] & 0x3F) << 6
 		| (wchar_t)(yytext[2] & 0x3F);
 	return Data;
 }
-[\xF0-\xF7][\x80-\xBF]{3} {
+[\xF0-\xF7]([\x80-\xBF]{3}) {
 	ch = (wchar_t)(yytext[0] & 0x07) << 18
 		| (wchar_t)(yytext[1] & 0x3F) << 12
 		| (wchar_t)(yytext[2] & 0x3F) << 6
