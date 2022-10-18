@@ -32,8 +32,8 @@ static int email(void) {
 	size_t cap = 0;
 	char *buf = NULL;
 	if (getline(&buf, &cap, stdin) < 0) err(1, "getline");
-	if (buf[0] == 'C' && !strcmp(&buf[strcspn(buf, " ")], " McEnroe")) {
-		printf("June McEnroe");
+	if (buf[0] == 'C' && !strncmp(&buf[strcspn(buf, " ")], " McEnroe", 8)) {
+		printf("June%s", &buf[strcspn(buf, " ")]);
 	} else {
 		printf("%s", buf);
 	}
