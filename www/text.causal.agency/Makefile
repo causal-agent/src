@@ -39,6 +39,7 @@ TXTS += 036-compassion.txt
 TXTS += 037-care.txt
 TXTS += 038-agency.txt
 TXTS += 039-apologies.txt
+TXTS += 040-sound-memory.txt
 
 all: colb ${TXTS}
 
