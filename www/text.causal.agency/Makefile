@@ -40,6 +40,7 @@ TXTS += 037-care.txt
 TXTS += 038-agency.txt
 TXTS += 039-apologies.txt
 TXTS += 040-sound-memory.txt
+TXTS += 041-albums-2022.txt
 
 all: colb ${TXTS}
 
