@@ -1,4 +1,4 @@
-/* Copyright (C) 2022  June McEnroe <june@causal.agency>
+/* Copyright (C) 2023  June McEnroe <june@causal.agency>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,4 +17,3 @@
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sysexits.h>
