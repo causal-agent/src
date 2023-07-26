@@ -1,11 +1,14 @@
 WEBROOT = /var/www/causal.agency
 
-FILES = index.html style.css scheme.css scheme.png alpha.html
+GEN = index.html leveler.html scheme.css scheme.png
+FILES = ${GEN} style.css alpha.html
 
 all: ${FILES}
 
-index.html: index.7
-	mandoc -T html -O style=style.css index.7 > index.html
+.SUFFIXES: .7 .html
+
+.7.html:
+	mandoc -T html -O style=style.css $< > $@
 
 scheme.css:
 	scheme -st > scheme.css
@@ -17,4 +20,4 @@ install: ${FILES}
 	install -C -m 644 ${FILES} ${WEBROOT}
 
 clean:
-	rm -f index.html scheme.css scheme.png
+	rm -f ${GEN}
