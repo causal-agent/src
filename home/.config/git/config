@@ -24,5 +24,8 @@
 [pretty]
 	log = %Cred%h %Creset%s%C(yellow)%d %Cgreen(%ar) %Cblue<%aN>
 
+[alias]
+	forgive = blame
+
 [include]
 	path = ./private
