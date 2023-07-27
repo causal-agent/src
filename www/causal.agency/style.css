@@ -11,6 +11,11 @@ dl.Bl-diag > dt { font-weight: bold; }
 code.Nm, code.Fl, code.Cm, code.Ic, code.In, code.Fd, code.Fn,
 code.Cd { font-weight: bold; font-family: inherit; }
 
+div.head, div.foot { display: flex; justify-content: space-between; }
+.head-ltitle, .foot-left { flex: 1; }
+.head-vol, .foot-date { flex: 0 1 auto; text-align: center; }
+.head-rtitle, .foot-os { flex: 1; text-align: right; }
+
 html { font-family: monospace; line-height: 1.25em; }
 body { max-width: 80ch; margin: 1em auto; padding: 0 1ch; }
 table { border-collapse: collapse; }
