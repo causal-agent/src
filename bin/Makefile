@@ -15,6 +15,7 @@ BINS += dehtml
 BINS += dtch
 BINS += enc
 BINS += git-comment
+BINS += git-import
 BINS += glitch
 BINS += hilex
 BINS += htagml

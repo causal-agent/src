@@ -1,0 +1,49 @@
+.Dd September 11, 2023
+.Dt GIT-IMPORT 1
+.Os
+.
+.Sh NAME
+.Nm git-import
+.Nd import a tarball into git
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl m Ar message
+.Op Fl p Ar count
+.Ar branch
+.Ar file
+.
+.Sh DESCRIPTION
+.Nm
+imports a tarball
+as a new commit on
+a git branch.
+If
+.Ar branch
+does not exist,
+it will be created.
+If
+.Ar file
+is a URL,
+it will be fetched with
+.Xr curl 1 .
+.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl m Ar message , Fl \-message Ar message
+Set the commit message.
+.It Fl p Ar count , Fl \-strip Ar count
+Remove the specified number
+of leading path elements.
+The default is 1.
+.El
+.
+.Sh ENVIRONMENT
+.Bl -tag -width Ds
+.It Ev CURL
+The path to
+.Xr curl 1 ,
+used to fetch the tarball
+from a URL.
+.El
