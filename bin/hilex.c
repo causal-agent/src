@@ -53,7 +53,7 @@ static const struct {
 	{ &LexC, "c", "[.][chlmy]$", NULL },
 	{ &LexMake, "make", "[.](mk|am)$|^Makefile$", NULL },
 	{ &LexMdoc, "mdoc", "[.][1-9]$", "^[.]Dd" },
-	{ &LexSh, "sh", "[.]sh$|^[.](profile|shrc)$", "^#![ ]?/bin/sh" },
+	{ &LexSh, "sh", "[.]sh$|^[.](profile|shrc)$", "^#![ ]?/bin/k?sh" },
 	{ &LexText, "text", "[.]txt$", NULL },
 };
 
