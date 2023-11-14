@@ -75,7 +75,7 @@ function showCard(card) {
 }
 
 function resetChecks() {
-	for (c of "wubrg") {
+	for (let c of "wubrg") {
 		let input = document.getElementById(c);
 		input.checked = false;
 		input.disabled = false;
@@ -87,7 +87,7 @@ function checkChecks(card) {
 	let score = 0;
 	let total = 0;
 	let checked = 0;
-	for (c of "wubrg") {
+	for (let c of "wubrg") {
 		let input = document.getElementById(c);
 		let produced = card.produced_mana.includes(c.toUpperCase());
 		if (produced) {
@@ -104,7 +104,7 @@ function checkChecks(card) {
 }
 
 document.onkeydown = function(event) {
-	for (c of "wubrg") {
+	for (let c of "wubrg") {
 		if (event.key == c) {
 			let input = document.getElementById(c);
 			if (!input.disabled) input.checked ^= true;
