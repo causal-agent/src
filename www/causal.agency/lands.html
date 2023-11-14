@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<title>Lands Quiz</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+html { font: 14pt sans-serif; line-height: 1.5em; }
+body { padding: 1em 1ch; max-width: 78ch; margin: auto; }
+h1 { text-align: center; }
+h2 { margin-top: 0; }
+button { font-size: 100%; padding: 0.5em 1ch; }
+img { max-width: 100%; }
+div.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 2ch; }
+</style>
+
+<h1 id="loading">Loading...</h1>
+<h1 id="error" hidden>Failed to load cards :(</h1>
+
+<div id="game" hidden>
+<h1>Magic Lands Quiz</h1>
+<p>Try to guess the colours of mana each land produces!</p>
+<div class="cols">
+	<div>
+		<img id="back" src="https://backs.scryfall.io/normal/0/a/0aeebaf5-8c7d-4636-9e82-8c27447861f7.jpg">
+		<a id="link" target="_blank">
+			<img id="image1" hidden>
+			<img id="image2" hidden>
+		</a>
+	</div>
+	<div>
+		<h2 id="name"></h2>
+		<input type="checkbox" id="w"> <label for="w">White</label><br>
+		<input type="checkbox" id="u"> <label for="u">Blue</label><br>
+		<input type="checkbox" id="b"> <label for="b">Black</label><br>
+		<input type="checkbox" id="r"> <label for="r">Red</label><br>
+		<input type="checkbox" id="g"> <label for="g">Green</label><br>
+		<p><button id="submit">Submit</button></p>
+		<h3>Score: <span id="score">0</span>/<span id="total">0</span></h3>
+	</div>
+</div>
+</div>
+
+<script>
+function shuffle(arr) {
+	let rand = (bound) => Math.floor(Math.random() * bound);
+	for (let i = arr.length-1; i > 0; --i) {
+		let j = rand(i+1);
+		let x = arr[i];
+		arr[i] = arr[j];
+		arr[j] = x;
+	}
+}
+
+const CardBack =
+"https://backs.scryfall.io/normal/0/a/0aeebaf5-8c7d-4636-9e82-8c27447861f7.jpg";
+
+function hideCard() {
+	document.getElementById("back").hidden = false;
+	document.getElementById("image1").hidden = true;
+	document.getElementById("image2").hidden = true;
+}
+
+function showCard(card) {
+	document.getElementById("back").hidden = true;
+	document.getElementById("link").href = card.scryfall_uri;
+	let image1 = document.getElementById("image1");
+	let image2 = document.getElementById("image2");
+	if (card.card_faces) {
+		image1.src = card.card_faces[0].image_uris.normal;
+		image2.src = card.card_faces[1].image_uris.normal;
+		image1.hidden = false;
+		image2.hidden = false;
+	} else {
+		image1.src = card.image_uris.normal;
+		image1.hidden = false;
+	}
+}
+
+function resetChecks() {
+	for (c of "wubrg") {
+		let input = document.getElementById(c);
+		input.checked = false;
+		input.disabled = false;
+		input.labels[0].style.fontWeight = "normal";
+	}
+}
+
+function checkChecks(card) {
+	let score = 0;
+	let total = 0;
+	let checked = 0;
+	for (c of "wubrg") {
+		let input = document.getElementById(c);
+		let produced = card.produced_mana.includes(c.toUpperCase());
+		if (produced) {
+			total++;
+			input.labels[0].style.fontWeight = "bold";
+			if (input.checked) score++;
+		}
+		if (input.checked) checked++;
+		input.disabled = true;
+	}
+	if (checked > total) score -= (checked - total);
+	if (score < 0) score = 0;
+	return { score: score, total: total };
+}
+
+document.onkeydown = function(event) {
+	for (c of "wubrg") {
+		if (event.key == c) {
+			let input = document.getElementById(c);
+			if (!input.disabled) input.checked ^= true;
+		}
+	}
+	if (event.key == "Enter") {
+		document.getElementById("submit").click();
+	}
+}
+
+let score = 0;
+let total = 0;
+let cards = [];
+let card = null;
+
+function nextCard() {
+	hideCard();
+	resetChecks();
+	card = cards.shift();
+	document.getElementById("name").innerText = card.name;
+}
+
+document.getElementById("submit").onclick = function() {
+	if (card) {
+		let { score: cardScore, total: cardTotal } = checkChecks(card);
+		total += cardTotal;
+		score += cardScore;
+		document.getElementById("score").innerText = score;
+		document.getElementById("total").innerText = total;
+		showCard(card);
+		card = null;
+		if (cards.length) {
+			this.innerText = "Next card";
+		} else {
+			this.disabled = true;
+			this.innerText = "No more cards";
+		}
+	} else {
+		nextCard();
+		this.innerText = "Submit";
+	}
+}
+
+function loadCards(resp) {
+	let loading = document.getElementById("loading");
+	let error = document.getElementById("error");
+	let game = document.getElementById("game");
+	if (resp.status != 200) {
+		loading.hidden = true;
+		error.hidden = false;
+	}
+	resp.json().then((json) => {
+		cards.push(...json.data);
+		if (json.has_more) {
+			setTimeout(() => fetch(json.next_page).then(loadCards), 50);
+		} else {
+			loading.hidden = true;
+			game.hidden = false;
+			shuffle(cards);
+			nextCard();
+		}
+	});
+}
+
+const Search =
+"https://api.scryfall.com/cards/search?q=t:land+id>=2+produces>=2+produces!=wubrg";
+fetch(Search).then(loadCards);
+
+</script>

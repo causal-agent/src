@@ -1,7 +1,7 @@
 WEBROOT = /var/www/causal.agency
 
 GEN = index.html leveler.html scheme.css scheme.png
-FILES = ${GEN} style.css alpha.html
+FILES = ${GEN} style.css alpha.html lands.html
 
 all: ${FILES}
 
