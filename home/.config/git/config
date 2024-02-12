@@ -2,6 +2,9 @@
 	name = June McEnroe
 	email = june@causal.agency
 
+[branch]
+	sort = committerdate
+
 [commit]
 	verbose = true
 
