@@ -41,6 +41,7 @@ TXTS += 038-agency.txt
 TXTS += 039-apologies.txt
 TXTS += 040-sound-memory.txt
 TXTS += 041-albums-2022.txt
+TXTS += 042-comfort-music.txt
 
 all: colb ${TXTS}
 
