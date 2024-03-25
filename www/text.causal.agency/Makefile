@@ -45,10 +45,14 @@ TXTS += 042-comfort-music.txt
 
 all: colb ${TXTS}
 
-.SUFFIXES: .7 .txt
+.SUFFIXES: .7 .fmt .txt
 
 .7.txt:
 	mandoc -T utf8 $< | ./colb > $@
+	touch -m -r $< $@
+
+.fmt.txt:
+	fmt $< | sed '1,/^$$/d' > $@
 	touch -m -r $< $@
 
 feed.atom: feed.sh colb ${TXTS}

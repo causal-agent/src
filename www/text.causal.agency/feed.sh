@@ -27,6 +27,7 @@ set -- *.txt
 shift $(( $# - 20 ))
 for txt; do
 	entry="${txt%.txt}.7"
+	test -f "$entry" || entry="${txt%.txt}.fmt"
 	date=$(grep '^[.]Dd' "$entry" | cut -c 5-)
 	title=$(grep -m 1 '^[.]Nm' "$entry" | cut -c 5- | encode)
 	summary=$(grep '^[.]Nd' "$entry" | cut -c 5- | encode)
