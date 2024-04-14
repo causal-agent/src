@@ -201,7 +201,6 @@ atom_head >static/feed.atom
 for date; do
 	index_page $date >>static/index.html
 	atom_entry_head $date >>static/feed.atom
-	index_page $date $Root | encode >>static/feed.atom
 	for photo in ${date}/*.JPG; do
 		thumbnail=$(thumbnail $photo)
 		index_photo $date $photo $thumbnail >>static/index.html
