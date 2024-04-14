@@ -1,0 +1,155 @@
+#!/bin/sh
+set -eu
+
+mkdir -p static/preview static/thumbnail
+
+resize() {
+	local photo=$1 size=$2 output=$3
+	if ! test -f $output; then
+		# FIXME: convert complains about not understanding XML
+		echo $output >&2
+		convert $photo -auto-orient -thumbnail $size $output 2>/dev/null ||:
+	fi
+}
+
+preview() {
+	local photo=$1
+	local preview=preview/${photo##*/}
+	resize $photo 25% static/$preview
+	echo $preview
+}
+
+thumbnail() {
+	local photo=$1
+	local thumbnail=thumbnail/${photo##*/}
+	resize $photo 5% static/$thumbnail
+	echo $thumbnail
+}
+
+encode() {
+	sed '
+		s/&/\&amp;/g
+		s/</\&lt;/g
+		s/"/\&quot;/g
+	' "$@"
+}
+
+page_title() {
+	date -j -f '%F' $1 '+%B %e, %Y'
+}
+
+page_head() {
+	local date=$1
+	local title=$(page_title $date)
+	cat <<-EOF
+	<!DOCTYPE html>
+	<meta charset="utf-8">
+	<title>${title}</title>
+	<style>
+	html { color: #bbb; background-color: black; font-family: sans-serif; }
+	figure { margin: 1em; text-align: center; }
+	img { max-width: calc(100vw - 2.5em); max-height: calc(100vh - 2.5em); }
+	details { max-width: 78ch; margin: 0.5em auto; }
+	</style>
+	<h1>${title}</h1>
+	EOF
+}
+
+photo_info() {
+	local photo=$1
+	ExposureTime=
+	FNumber=
+	FocalLength=
+	PhotographicSensitivity=
+	eval $(
+		identify -format '%[EXIF:*]' $photo 2>/dev/null |
+		grep -E 'ExposureTime|FNumber|FocalLength|PhotographicSensitivity' |
+		sed 's/^exif://'
+	)
+}
+
+photo_id() {
+	local photo=$1
+	photo=${photo##*/}
+	photo=${photo%%.*}
+	echo $photo
+}
+
+page_photo() {
+	local photo=$1 preview=$2 description=$3
+	if ! test -f $description; then
+		description=/dev/null
+	fi
+	photo_info $photo
+	cat <<-EOF
+	<figure id="$(photo_id $photo)">
+		<a href="${photo##*/}">
+			<img src="../${preview}" alt="$(encode $description)">
+		</a>
+		<figcaption>
+			${ExposureTime} ·
+			ƒ/$(bc -S 1 -e ${FNumber}) ·
+			$(bc -e ${FocalLength}) mm ·
+			${PhotographicSensitivity} ISO
+			<details>
+				<summary>description</summary>
+				$(encode $description)
+			</details>
+		</figcaption>
+	</figure>
+	EOF
+}
+
+index_head() {
+	cat <<-EOF
+	<!DOCTYPE html>
+	<meta charset="utf-8">
+	<title>Photos</title>
+	<style>
+	html { color: #bbb; background-color: black; font-family: sans-serif; }
+	a { text-decoration: none; color: inherit; }
+	</style>
+	EOF
+}
+
+index_page() {
+	local date=$1
+	cat <<-EOF
+	<h1><a href="${date}/">$(page_title $date)</a></h1>
+	EOF
+}
+
+index_photo() {
+	local date=$1 photo=$2 thumbnail=$3
+	cat <<-EOF
+	<a href="${date}/#$(photo_id $photo)"><img src="${thumbnail}"></a>
+	EOF
+}
+
+set --
+for date in 20*; do
+	mkdir -p static/${date}
+	page=static/${date}/index.html
+	if ! test -f $page; then
+		echo $page >&2
+		page_head $date >$page
+		for photo in ${date}/*.JPG; do
+			preview=$(preview $photo)
+			if ! test -f static/${photo}; then
+				ln $photo static/${photo}
+			fi
+			page_photo $photo $preview ${photo%.JPG}.txt >>$page
+		done
+	fi
+	set -- $date "$@"
+done
+
+echo static/index.html >&2
+index_head >static/index.html
+for date; do
+	index_page $date >>static/index.html
+	for photo in ${date}/*.JPG; do
+		thumbnail=$(thumbnail $photo)
+		index_photo $date $photo $thumbnail >>static/index.html
+	done
+done
