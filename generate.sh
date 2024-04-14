@@ -45,6 +45,7 @@ page_head() {
 	<!DOCTYPE html>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="alternate" type="application/atom+xml" href="../feed.atom">
 	<title>${title}</title>
 	<style>
 	html { color: #bbb; background-color: black; font-family: sans-serif; }
@@ -106,6 +107,7 @@ index_head() {
 	<!DOCTYPE html>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="alternate" type="application/atom+xml" href="feed.atom">
 	<title>Photos</title>
 	<style>
 	html { color: #bbb; background-color: black; font-family: sans-serif; }
@@ -115,16 +117,62 @@ index_head() {
 }
 
 index_page() {
-	local date=$1
+	local date=$1 root=${2:-}
 	cat <<-EOF
-	<h1><a href="${date}/">$(page_title $date)</a></h1>
+	<h1><a href="${root}${root:+/}${date}/">$(page_title $date)</a></h1>
 	EOF
 }
 
 index_photo() {
-	local date=$1 photo=$2 thumbnail=$3
+	local date=$1 photo=$2 thumbnail=$3 root=${4:-}
 	cat <<-EOF
-	<a href="${date}/#$(photo_id $photo)"><img src="${thumbnail}"></a>
+	<a href="${root}${root:+/}${date}/#$(photo_id $photo)">
+		<img src="${root}${root:+/}${thumbnail}">
+	</a>
+	EOF
+}
+
+Root=https://photo.causal.agency
+
+atom_head() {
+	local updated=$(date -u '+%FT%TZ')
+	cat <<-EOF
+	<?xml version="1.0" encoding="utf-8"?>
+	<feed xmlns="http://www.w3.org/2005/Atom">
+	<title>Photos</title>
+	<author><name>june</name><email>june@causal.agency</email></author>
+	<link href="${Root}"/>
+	<link rel="self" href="${Root}/feed.atom"/>
+	<id>${Root}/</id>
+	<updated>${updated}</updated>
+	EOF
+}
+
+atom_entry_head() {
+	local date=$1
+	local updated=$(
+		date -ju -f '%s' $(stat -f '%m' static/${date}/index.html) '+%FT%TZ'
+	)
+	cat <<-EOF
+	<entry>
+	<title>$(page_title $date)</title>
+	<link href="${Root}/${date}/"/>
+	<id>${Root}/${date}/</id>
+	<updated>${updated}</updated>
+	<content type="html">
+	EOF
+}
+
+atom_entry_tail() {
+	cat <<-EOF
+	</content>
+	</entry>
+	EOF
+}
+
+atom_tail() {
+	cat <<-EOF
+	</feed>
 	EOF
 }
 
@@ -148,10 +196,17 @@ done
 
 echo static/index.html >&2
 index_head >static/index.html
+echo static/feed.atom >&2
+atom_head >static/feed.atom
 for date; do
 	index_page $date >>static/index.html
+	atom_entry_head $date >>static/feed.atom
+	index_page $date $Root | encode >>static/feed.atom
 	for photo in ${date}/*.JPG; do
 		thumbnail=$(thumbnail $photo)
 		index_photo $date $photo $thumbnail >>static/index.html
+		index_photo $date $photo $thumbnail $Root | encode >>static/feed.atom
 	done
+	atom_entry_tail >>static/feed.atom
 done
+atom_tail >>static/feed.atom
