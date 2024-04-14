@@ -44,10 +44,11 @@ page_head() {
 	cat <<-EOF
 	<!DOCTYPE html>
 	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>${title}</title>
 	<style>
 	html { color: #bbb; background-color: black; font-family: sans-serif; }
-	figure { margin: 1em; text-align: center; }
+	figure { margin: 1em; padding-top: 0.5em; text-align: center; }
 	img { max-width: calc(100vw - 2.5em); max-height: calc(100vh - 2.5em); }
 	details { max-width: 78ch; margin: 0.5em auto; }
 	</style>
@@ -104,6 +105,7 @@ index_head() {
 	cat <<-EOF
 	<!DOCTYPE html>
 	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Photos</title>
 	<style>
 	html { color: #bbb; background-color: black; font-family: sans-serif; }
