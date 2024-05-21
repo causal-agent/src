@@ -204,8 +204,9 @@ static void printScalar(struct tm scalar) {
 %}
 
 %token Name Number Month Day
+%right '='
 %left '+' '-'
-%right '=' '<' '>'
+%right '<' '>'
 
 %%
 
