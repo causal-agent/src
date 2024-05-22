@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 enum Type {
@@ -51,7 +50,7 @@ static void push(struct Line line) {
 	if (lines.len == lines.cap) {
 		lines.cap = (lines.cap ? lines.cap * 2 : 256);
 		lines.ptr = realloc(lines.ptr, sizeof(*lines.ptr) * lines.cap);
-		if (!lines.ptr) err(EX_OSERR, "realloc");
+		if (!lines.ptr) err(1, "realloc");
 	}
 	lines.ptr[lines.len++] = line;
 }
@@ -176,15 +175,15 @@ static void edit(struct Line line) {
 	const char *editor = getenv("EDITOR");
 	if (!editor) editor = "vi";
 	pid_t pid = fork();
-	if (pid < 0) err(EX_OSERR, "fork");
+	if (pid < 0) err(1, "fork");
 	if (!pid) {
 		dup2(STDERR_FILENO, STDIN_FILENO);
 		execlp(editor, editor, cmd, line.path, NULL);
-		err(EX_CONFIG, "%s", editor);
+		err(127, "%s", editor);
 	}
 	int status;
 	pid = waitpid(pid, &status, 0);
-	if (pid < 0) err(EX_OSERR, "waitpid");
+	if (pid < 0) err(1, "waitpid");
 }
 
 static void toPrev(enum Type type) {
@@ -228,7 +227,7 @@ static void input(void) {
 			break; case 'n': toNext(Match);
 			break; case 'q': {
 				endwin();
-				exit(EX_OK);
+				exit(0);
 			}
 			break; case 'r': clearok(stdscr, true);
 		}
@@ -238,7 +237,7 @@ static void input(void) {
 }
 
 int main(int argc, char *argv[]) {
-	if (isatty(STDIN_FILENO)) errx(EX_USAGE, "no input");
+	if (isatty(STDIN_FILENO)) errx(1, "no input");
 	if (argc > 1) {
 		pattern = argv[1];
 		int flags = REG_EXTENDED | REG_ICASE;
@@ -249,7 +248,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 		int error = regcomp(&regex, pattern, flags);
-		if (error) errx(EX_USAGE, "invalid pattern");
+		if (error) errx(1, "invalid pattern");
 	}
 	curse();
 	draw();
@@ -260,14 +259,14 @@ int main(int argc, char *argv[]) {
 	size_t len = 0;
 	size_t cap = 4096;
 	char *buf = malloc(cap);
-	if (!buf) err(EX_OSERR, "malloc");
+	if (!buf) err(1, "malloc");
 	while (poll(fds, (reading ? 2 : 1), -1)) {
 		if (fds[0].revents) {
 			input();
 		}
 		if (reading && fds[1].revents) {
 			ssize_t n = read(fds[1].fd, &buf[len], cap - len);
-			if (n < 0) err(EX_IOERR, "read");
+			if (n < 0) err(1, "read");
 			if (!n) reading = false;
 			len += n;
 			char *ptr = buf;
@@ -277,7 +276,7 @@ int main(int argc, char *argv[]) {
 				ptr = &nl[1]
 			) {
 				struct Line line = { .text = strndup(ptr, nl - ptr) };
-				if (!line.text) err(EX_OSERR, "strndup");
+				if (!line.text) err(1, "strndup");
 				parse(line);
 			}
 			len -= ptr - buf;
@@ -285,10 +284,10 @@ int main(int argc, char *argv[]) {
 			if (len == cap) {
 				cap *= 2;
 				buf = realloc(buf, cap);
-				if (!buf) err(EX_OSERR, "realloc");
+				if (!buf) err(1, "realloc");
 			}
 		}
 		draw();
 	}
-	err(EX_IOERR, "poll");
+	err(1, "poll");
 }

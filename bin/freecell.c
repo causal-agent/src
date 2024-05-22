@@ -22,7 +22,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sysexits.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -367,7 +366,7 @@ int main(int argc, char *argv[]) {
 		switch (opt) {
 			break; case 'd': delay = strtoul(optarg, NULL, 10);
 			break; case 'n': game = strtoul(optarg, NULL, 10);
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
 	curse();

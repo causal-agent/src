@@ -20,12 +20,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 static char *deregex(const char *patt) {
 	char *buf = malloc(strlen(patt) + 1);
-	if (!buf) err(EX_OSERR, "malloc");
+	if (!buf) err(1, "malloc");
 	char *ptr = buf;
 	if (*patt == '^') patt++;
 	for (; *patt; ++patt) {
@@ -94,21 +93,21 @@ int main(int argc, char *argv[]) {
 			break; case 'm': main = true;
 			break; case 'p': pre = true;
 			break; case 'x': index = true;
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
-	if (optind == argc) errx(EX_USAGE, "name required");
+	if (optind == argc) errx(1, "name required");
 	const char *name = argv[optind];
 
 	FILE *file = fopen(name, "r");
-	if (!file) err(EX_NOINPUT, "%s", name);
+	if (!file) err(1, "%s", name);
 
 	FILE *tagsFile = fopen(tagsPath, "r");
-	if (!tagsFile) err(EX_NOINPUT, "%s", tagsPath);
+	if (!tagsFile) err(1, "%s", tagsPath);
 
 #ifdef __OpenBSD__
 	int error = pledge("stdio", NULL);
-	if (error) err(EX_OSERR, "pledge");
+	if (error) err(1, "pledge");
 #endif
 
 	size_t len = 0;
@@ -119,7 +118,7 @@ int main(int argc, char *argv[]) {
 		char *str;
 		size_t len;
 	} *tags = malloc(cap * sizeof(*tags));
-	if (!tags) err(EX_OSERR, "malloc");
+	if (!tags) err(1, "malloc");
 
 	char *buf = NULL;
 	size_t bufCap = 0;
@@ -128,15 +127,15 @@ int main(int argc, char *argv[]) {
 		char *tag = strsep(&line, "\t");
 		char *file = strsep(&line, "\t");
 		char *def = strsep(&line, "\n");
-		if (!tag || !file || !def) errx(EX_DATAERR, "malformed tags file");
+		if (!tag || !file || !def) errx(1, "malformed tags file");
 
 		if (strcmp(file, name)) continue;
 		if (len == cap) {
 			tags = realloc(tags, (cap *= 2) * sizeof(*tags));
-			if (!tags) err(EX_OSERR, "realloc");
+			if (!tags) err(1, "realloc");
 		}
 		tags[len].tag = strdup(tag);
-		if (!tags[len].tag) err(EX_OSERR, "strdup");
+		if (!tags[len].tag) err(1, "strdup");
 
 		tags[len].num = 0;
 		if (def[0] == '/' || def[0] == '?') {
@@ -184,7 +183,7 @@ int main(int argc, char *argv[]) {
 		if (pipe) {
 			ssize_t len = getline(&buf, &bufCap, stdin);
 			if (len < 0) {
-				errx(EX_DATAERR, "missing line %d on standard input", num);
+				errx(1, "missing line %d on standard input", num);
 			}
 		}
 		if (!tag) {

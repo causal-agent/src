@@ -26,13 +26,12 @@
 #include <strings.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 static void request(int sock, char *argv[]) {
 	struct pollfd pfd = { .fd = sock, .events = POLLIN };
 	int nfds = poll(&pfd, 1, -1);
-	if (nfds < 0) err(EX_OSERR, "poll");
+	if (nfds < 0) err(1, "poll");
 
 	char buf[4096];
 	ssize_t len = recv(sock, buf, sizeof(buf)-1, MSG_PEEK);
@@ -89,7 +88,7 @@ static void request(int sock, char *argv[]) {
 
 	dprintf(sock, "HTTP/1.1 200 OK\nConnection: close\n");
 	pid_t pid = fork();
-	if (pid < 0) err(EX_OSERR, "fork");
+	if (pid < 0) err(1, "fork");
 	if (!pid) {
 		dup2(sock, STDIN_FILENO);
 		dup2(sock, STDOUT_FILENO);
@@ -100,7 +99,7 @@ static void request(int sock, char *argv[]) {
 
 	int status;
 	pid = wait(&status);
-	if (pid < 0) err(EX_OSERR, "wait");
+	if (pid < 0) err(1, "wait");
 	if (WIFEXITED(status) && WEXITSTATUS(status)) {
 		warnx("%s exited %d", argv[0], WEXITSTATUS(status));
 	} else if (WIFSIGNALED(status)) {
@@ -113,13 +112,13 @@ int main(int argc, char *argv[]) {
 	for (int opt; 0 < (opt = getopt(argc, argv, "p:"));) {
 		switch (opt) {
 			break; case 'p': port = atoi(optarg);
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
-	if (optind == argc) errx(EX_USAGE, "script required");
+	if (optind == argc) errx(1, "script required");
 
 	int server = socket(AF_INET, SOCK_STREAM, 0);
-	if (server < 0) err(EX_OSERR, "socket");
+	if (server < 0) err(1, "socket");
 	fcntl(server, F_SETFD, FD_CLOEXEC);
 
 	int on = 1;
@@ -135,7 +134,7 @@ int main(int argc, char *argv[]) {
 		|| bind(server, (struct sockaddr *)&addr, addrlen)
 		|| getsockname(server, (struct sockaddr *)&addr, &addrlen)
 		|| listen(server, -1);
-	if (error) err(EX_UNAVAILABLE, "%hd", port);
+	if (error) err(1, "%hd", port);
 
 	char host[NI_MAXHOST], serv[NI_MAXSERV];
 	error = getnameinfo(
@@ -143,7 +142,7 @@ int main(int argc, char *argv[]) {
 		host, sizeof(host), serv, sizeof(serv),
 		NI_NOFQDN | NI_NUMERICSERV
 	);
-	if (error) errx(EX_UNAVAILABLE, "getnameinfo: %s", gai_strerror(error));
+	if (error) errx(1, "getnameinfo: %s", gai_strerror(error));
 	printf("http://%s:%s/\n", host, serv);
 	fflush(stdout);
 
@@ -159,5 +158,5 @@ int main(int argc, char *argv[]) {
 		fcntl(sock, F_SETFD, FD_CLOEXEC);
 		request(sock, &argv[optind]);
 	}
-	err(EX_IOERR, "accept");
+	err(1, "accept");
 }

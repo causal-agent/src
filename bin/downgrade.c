@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sysexits.h>
 #include <tls.h>
 #include <unistd.h>
 
@@ -40,7 +39,7 @@ static void clientWrite(const char *ptr, size_t len) {
 	while (len) {
 		ssize_t ret = tls_write(client, ptr, len);
 		if (ret == TLS_WANT_POLLIN || ret == TLS_WANT_POLLOUT) continue;
-		if (ret < 0) errx(EX_IOERR, "tls_write: %s", tls_error(client));
+		if (ret < 0) errx(1, "tls_write: %s", tls_error(client));
 		ptr += ret;
 		len -= ret;
 	}
@@ -77,11 +76,11 @@ static void push(struct Message msg) {
 	dst->id = strdup(msg.id);
 	dst->nick = strdup(msg.nick);
 	dst->chan = strdup(msg.chan);
-	if (!dst->id || !dst->nick || !dst->chan) err(EX_OSERR, "strdup");
+	if (!dst->id || !dst->nick || !dst->chan) err(1, "strdup");
 	dst->mesg = NULL;
 	if (msg.mesg) {
 		dst->mesg = strdup(msg.mesg);
-		if (!dst->mesg) err(EX_OSERR, "strdup");
+		if (!dst->mesg) err(1, "strdup");
 	}
 }
 
@@ -103,11 +102,11 @@ static void handle(char *ptr) {
 	if (!strcmp(cmd, "CAP")) {
 		strsep(&ptr, " ");
 		char *sub = strsep(&ptr, " ");
-		if (!sub) errx(EX_PROTOCOL, "CAP without subcommand");
+		if (!sub) errx(1, "CAP without subcommand");
 		if (!strcmp(sub, "NAK")) {
-			errx(EX_CONFIG, "server does not support %s", ptr);
+			errx(1, "server does not support %s", ptr);
 		} else if (!strcmp(sub, "ACK")) {
-			if (!ptr) errx(EX_PROTOCOL, "CAP ACK without caps");
+			if (!ptr) errx(1, "CAP ACK without caps");
 			if (*ptr == ':') ptr++;
 			if (!strcmp(ptr, "sasl")) format("AUTHENTICATE EXTERNAL\r\n");
 		}
@@ -116,13 +115,13 @@ static void handle(char *ptr) {
 	} else if (!strcmp(cmd, "433")) {
 		strsep(&ptr, " ");
 		char *nick = strsep(&ptr, " ");
-		if (!nick) errx(EX_PROTOCOL, "ERR_NICKNAMEINUSE missing nick");
+		if (!nick) errx(1, "ERR_NICKNAMEINUSE missing nick");
 		format("NICK %s_\r\n", nick);
 	} else if (!strcmp(cmd, "001")) {
 		if (join) format("JOIN %s\r\n", join);
 	} else if (!strcmp(cmd, "005")) {
 		char *self = strsep(&ptr, " ");
-		if (!self) errx(EX_PROTOCOL, "RPL_ISUPPORT missing nick");
+		if (!self) errx(1, "RPL_ISUPPORT missing nick");
 		while (ptr && *ptr != ':') {
 			char *tok = strsep(&ptr, " ");
 			char *key = strsep(&tok, "=");
@@ -132,16 +131,16 @@ static void handle(char *ptr) {
 		}
 	} else if (!strcmp(cmd, "INVITE") && invite) {
 		strsep(&ptr, " ");
-		if (!ptr) errx(EX_PROTOCOL, "INVITE missing channel");
+		if (!ptr) errx(1, "INVITE missing channel");
 		if (*ptr == ':') ptr++;
 		format("JOIN %s\r\n", ptr);
 	} else if (!strcmp(cmd, "PING")) {
-		if (!ptr) errx(EX_PROTOCOL, "PING missing parameter");
+		if (!ptr) errx(1, "PING missing parameter");
 		format("PONG %s\r\n", ptr);
 	} else if (!strcmp(cmd, "ERROR")) {
-		if (!ptr) errx(EX_PROTOCOL, "ERROR missing parameter");
+		if (!ptr) errx(1, "ERROR missing parameter");
 		if (*ptr == ':') ptr++;
-		errx(EX_UNAVAILABLE, "%s", ptr);
+		errx(1, "%s", ptr);
 	}
 
 	if (
@@ -149,13 +148,13 @@ static void handle(char *ptr) {
 		strcmp(cmd, "NOTICE") &&
 		strcmp(cmd, "TAGMSG")
 	) return;
-	if (!origin) errx(EX_PROTOCOL, "%s missing origin", cmd);
+	if (!origin) errx(1, "%s missing origin", cmd);
 
 	struct Message msg = {
 		.nick = strsep(&origin, "!"),
 		.chan = strsep(&ptr, " "),
 	};
-	if (!msg.chan) errx(EX_PROTOCOL, "%s missing target", cmd);
+	if (!msg.chan) errx(1, "%s missing target", cmd);
 	if (msg.chan[0] == ':') msg.chan++;
 	if (msg.chan[0] != '#') return;
 	if (strcmp(cmd, "TAGMSG")) msg.mesg = (*ptr == ':' ? &ptr[1] : ptr);
@@ -263,7 +262,7 @@ static void quit(int sig) {
 	(void)sig;
 	format("QUIT\r\n");
 	tls_close(client);
-	exit(EX_OK);
+	exit(0);
 }
 
 int main(int argc, char *argv[]) {
@@ -282,44 +281,44 @@ int main(int argc, char *argv[]) {
 			break; case 'n': nick = optarg;
 			break; case 'p': port = optarg;
 			break; case 'v': verbose = true;
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
-	if (optind == argc) errx(EX_USAGE, "host required");
+	if (optind == argc) errx(1, "host required");
 	host = argv[optind];
 
 	client = tls_client();
-	if (!client) errx(EX_SOFTWARE, "tls_client");
+	if (!client) errx(1, "tls_client");
 
 	struct tls_config *config = tls_config_new();
-	if (!config) errx(EX_SOFTWARE, "tls_config_new");
+	if (!config) errx(1, "tls_config_new");
 
 	if (cert) {
 		if (!priv) priv = cert;
 		int error = tls_config_set_keypair_file(config, cert, priv);
-		if (error) errx(EX_NOINPUT, "%s: %s", cert, tls_config_error(config));
+		if (error) errx(1, "%s: %s", cert, tls_config_error(config));
 	}
 
 	int error = tls_configure(client, config);
-	if (error) errx(EX_SOFTWARE, "tls_configure: %s", tls_error(client));
+	if (error) errx(1, "tls_configure: %s", tls_error(client));
 
 	error = tls_connect(client, host, port);
-	if (error) errx(EX_UNAVAILABLE, "tls_connect: %s", tls_error(client));
+	if (error) errx(1, "tls_connect: %s", tls_error(client));
 
 	do {
 		error = tls_handshake(client);
 	} while (error == TLS_WANT_POLLIN || error == TLS_WANT_POLLOUT);
-	if (error) errx(EX_PROTOCOL, "tls_handshake: %s", tls_error(client));
+	if (error) errx(1, "tls_handshake: %s", tls_error(client));
 	tls_config_clear_keys(config);
 
 #ifdef __OpenBSD__
 	error = pledge("stdio", NULL);
-	if (error) err(EX_OSERR, "pledge");
+	if (error) err(1, "pledge");
 #endif
 
 #ifdef __FreeBSD__
 	error = caph_enter() || caph_limit_stdio();
-	if (error) err(EX_OSERR, "caph_enter");
+	if (error) err(1, "caph_enter");
 #endif
 
 	signal(SIGHUP, quit);
@@ -342,8 +341,8 @@ int main(int argc, char *argv[]) {
 	for (;;) {
 		ssize_t n = tls_read(client, &buf[len], sizeof(buf) - len);
 		if (n == TLS_WANT_POLLIN || n == TLS_WANT_POLLOUT) continue;
-		if (n < 0) errx(EX_IOERR, "tls_read: %s", tls_error(client));
-		if (!n) errx(EX_UNAVAILABLE, "disconnected");
+		if (n < 0) errx(1, "tls_read: %s", tls_error(client));
+		if (!n) errx(1, "disconnected");
 		len += n;
 
 		char *ptr = buf;

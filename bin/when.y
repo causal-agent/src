@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
-#include <sysexits.h>
 #include <time.h>
 
 static void yyerror(const char *str);
@@ -47,14 +46,14 @@ static const struct tm Week = { .tm_mday = 7 };
 static struct tm normalize(struct tm date) {
 	time_t time = timegm(&date);
 	struct tm *norm = gmtime(&time);
-	if (!norm) err(EX_OSERR, "gmtime");
+	if (!norm) err(1, "gmtime");
 	return *norm;
 }
 
 static struct tm today(void) {
 	time_t now = time(NULL);
 	struct tm *local = localtime(&now);
-	if (!local) err(EX_OSERR, "localtime");
+	if (!local) err(1, "localtime");
 	struct tm date = {
 		.tm_year = local->tm_year,
 		.tm_mon = local->tm_mon,
@@ -160,11 +159,11 @@ static void setDate(const char *name, struct tm date) {
 	if (dates.len == dates.cap) {
 		dates.cap = (dates.cap ? dates.cap * 2 : 8);
 		dates.ptr = realloc(dates.ptr, sizeof(*dates.ptr) * dates.cap);
-		if (!dates.ptr) err(EX_OSERR, "realloc");
+		if (!dates.ptr) err(1, "realloc");
 	}
 	dates.ptr[dates.len] = date;
 	dates.ptr[dates.len].tm_zone = strdup(name);
-	if (!dates.ptr[dates.len].tm_zone) err(EX_OSERR, "strdup");
+	if (!dates.ptr[dates.len].tm_zone) err(1, "strdup");
 	dates.len++;
 }
 
@@ -289,7 +288,7 @@ static int yylex(void) {
 
 	if (len && (len != 1 || !strchr("dwmy", *input))) {
 		yylval.tm_zone = strndup(input, len);
-		if (!yylval.tm_zone) err(EX_OSERR, "strndup");
+		if (!yylval.tm_zone) err(1, "strndup");
 		input += len;
 		return Name;
 	}
@@ -319,7 +318,7 @@ int main(int argc, char *argv[]) {
 		fclose(file);
 		silent = false;
 	} else if (errno != ENOENT) {
-		err(EX_CONFIG, "%s", path);
+		err(1, "%s", path);
 	}
 
 	if (argc > 1) {
@@ -331,7 +330,7 @@ int main(int argc, char *argv[]) {
 				printf("%s: ", dates.ptr[i].tm_zone);
 				printScalar(dateDiff(today(), dates.ptr[i]));
 			}
-			return EX_OK;
+			return 0;
 		}
 	}
 

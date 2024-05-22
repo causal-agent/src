@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 #include "png.h"
@@ -37,17 +36,17 @@ int main(int argc, char *argv[]) {
 			break; case 'c': cols = strtoul(optarg, NULL, 0);
 			break; case 'f': fg = strtoul(optarg, NULL, 16);
 			break; case 's': str = optarg;
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
 	if (!cols && str) cols = strlen(str);
-	if (!cols) return EX_USAGE;
+	if (!cols) return 1;
 
 	const char *path = NULL;
 	if (optind < argc) path = argv[optind];
 	
 	FILE *file = path ? fopen(path, "r") : stdin;
-	if (!file) err(EX_NOINPUT, "%s", path);
+	if (!file) err(1, "%s", path);
 	if (!path) path = "(stdin)";
 
 	struct {
@@ -63,15 +62,15 @@ int main(int argc, char *argv[]) {
 		} glyph;
 	} header;
 	size_t len = fread(&header, sizeof(header), 1, file);
-	if (ferror(file)) err(EX_IOERR, "%s", path);
-	if (len < 1) errx(EX_DATAERR, "%s: truncated header", path);
+	if (ferror(file)) err(1, "%s", path);
+	if (len < 1) errx(1, "%s: truncated header", path);
 
 	uint32_t widthBytes = (header.glyph.width + 7) / 8;
 	uint8_t glyphs[header.glyph.len][header.glyph.height][widthBytes];
 	len = fread(glyphs, header.glyph.size, header.glyph.len, file);
-	if (ferror(file)) err(EX_IOERR, "%s", path);
+	if (ferror(file)) err(1, "%s", path);
 	if (len < header.glyph.len) {
-		errx(EX_DATAERR, "%s: truncated glyphs", path);
+		errx(1, "%s: truncated glyphs", path);
 	}
 	fclose(file);
 

@@ -19,7 +19,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 typedef unsigned char byte;
@@ -105,7 +104,7 @@ static void undump(FILE *file) {
 	while (0 < (match = fscanf(file, " %hhx", &c))) {
 		printf("%c", c);
 	}
-	if (!match) errx(EX_DATAERR, "invalid input");
+	if (!match) errx(1, "invalid input");
 }
 
 int main(int argc, char *argv[]) {
@@ -122,21 +121,21 @@ int main(int argc, char *argv[]) {
 			break; case 'r': reverse = true;
 			break; case 's': options.offset ^= true;
 			break; case 'z': options.skip ^= true;
-			break; default: return EX_USAGE;
+			break; default: return 1;
 		}
 	}
 	if (argc > optind) path = argv[optind];
-	if (!options.cols) return EX_USAGE;
+	if (!options.cols) return 1;
 
 	FILE *file = path ? fopen(path, "r") : stdin;
-	if (!file) err(EX_NOINPUT, "%s", path);
+	if (!file) err(1, "%s", path);
 
 	if (reverse) {
 		undump(file);
 	} else {
 		dump(file);
 	}
-	if (ferror(file)) err(EX_IOERR, "%s", path);
+	if (ferror(file)) err(1, "%s", path);
 
-	return EX_OK;
+	return 0;
 }

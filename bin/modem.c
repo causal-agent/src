@@ -19,7 +19,6 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
-#include <sysexits.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -46,31 +45,31 @@ int main(int argc, char *argv[]) {
 	for (int opt; 0 < (opt = getopt(argc, argv, "r:"));) {
 		switch (opt) {
 			break; case 'r': baudRate = strtoul(optarg, NULL, 10);
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
-	if (argc - optind < 1) return EX_USAGE;
+	if (argc - optind < 1) return 1;
 
 	error = tcgetattr(STDIN_FILENO, &saveTerm);
-	if (error) err(EX_IOERR, "tcgetattr");
+	if (error) err(1, "tcgetattr");
 	atexit(restoreTerm);
 
 	struct termios raw = saveTerm;
 	cfmakeraw(&raw);
 	error = tcsetattr(STDIN_FILENO, TCSADRAIN, &raw);
-	if (error) err(EX_IOERR, "tcsetattr");
+	if (error) err(1, "tcsetattr");
 
 	struct winsize window;
 	error = ioctl(STDIN_FILENO, TIOCGWINSZ, &window);
-	if (error) err(EX_IOERR, "TIOCGWINSZ");
+	if (error) err(1, "TIOCGWINSZ");
 
 	int pty;
 	pid_t pid = forkpty(&pty, NULL, NULL, &window);
-	if (pid < 0) err(EX_OSERR, "forkpty");
+	if (pid < 0) err(1, "forkpty");
 
 	if (!pid) {
 		execvp(argv[optind], &argv[optind]);
-		err(EX_NOINPUT, "%s", argv[optind]);
+		err(1, "%s", argv[optind]);
 	}
 
 	byte c;
@@ -81,22 +80,22 @@ int main(int argc, char *argv[]) {
 	while (usleep(8 * 1000000 / baudRate), 0 < poll(fds, 2, -1)) {
 		if (fds[0].revents) {
 			ssize_t size = read(STDIN_FILENO, &c, 1);
-			if (size < 0) err(EX_IOERR, "read(%d)", STDIN_FILENO);
+			if (size < 0) err(1, "read(%d)", STDIN_FILENO);
 			size = write(pty, &c, 1);
-			if (size < 0) err(EX_IOERR, "write(%d)", pty);
+			if (size < 0) err(1, "write(%d)", pty);
 		}
 
 		if (fds[1].revents) {
 			ssize_t size = read(pty, &c, 1);
-			if (size < 0) err(EX_IOERR, "read(%d)", pty);
+			if (size < 0) err(1, "read(%d)", pty);
 			if (!size) break;
 			size = write(STDOUT_FILENO, &c, 1);
-			if (size < 0) err(EX_IOERR, "write(%d)", STDOUT_FILENO);
+			if (size < 0) err(1, "write(%d)", STDOUT_FILENO);
 		}
 	}
 
 	int status;
 	pid_t dead = waitpid(pid, &status, 0);
-	if (dead < 0) err(EX_OSERR, "waitpid");
-	return WIFEXITED(status) ? WEXITSTATUS(status) : EX_SOFTWARE;
+	if (dead < 0) err(1, "waitpid");
+	return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 }

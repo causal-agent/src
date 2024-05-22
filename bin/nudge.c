@@ -18,7 +18,6 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sysexits.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -39,21 +38,21 @@ int main(int argc, char *argv[]) {
 			break; case 'n': count = atoi(optarg);
 			break; case 's': shake = atoi(optarg);
 			break; case 't': delay = atoi(optarg) * 1000;
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
 
 	int tty = open(path, O_RDWR);
-	if (tty < 0) err(EX_OSFILE, "%s", path);
+	if (tty < 0) err(1, "%s", path);
 
 	struct termios save;
 	int error = tcgetattr(tty, &save);
-	if (error) err(EX_IOERR, "tcgetattr");
+	if (error) err(1, "tcgetattr");
 
 	struct termios raw = save;
 	cfmakeraw(&raw);
 	error = tcsetattr(tty, TCSAFLUSH, &raw);
-	if (error) err(EX_IOERR, "tcsetattr");
+	if (error) err(1, "tcsetattr");
 
 	char buf[256];
 	dprintf(tty, "\33[13t");
@@ -64,8 +63,8 @@ int main(int argc, char *argv[]) {
 	int n = sscanf(buf, "\33[3;%d;%dt", &x, &y);
 
 	error = tcsetattr(tty, TCSANOW, &save);
-	if (error) err(EX_IOERR, "tcsetattr");
-	if (n < 2) return EX_CONFIG;
+	if (error) err(1, "tcsetattr");
+	if (n < 2) return 1;
 
 	dprintf(tty, "\33[5t");
 	for (int i = 0; i < count; ++i) {

@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
-#include <sysexits.h>
 #include <unistd.h>
 #include <wchar.h>
 
@@ -554,25 +553,25 @@ int main(int argc, char *argv[]) {
 			break; case 'n': hide = true;
 			break; case 's': size = true;
 			break; case 'w': cols = atoi(optarg);
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
 	if (optind < argc) {
 		yyin = fopen(argv[optind], "r");
-		if (!yyin) err(EX_NOINPUT, "%s", argv[optind]);
+		if (!yyin) err(1, "%s", argv[optind]);
 	}
 
 	if (size) {
 		struct winsize win;
 		int error = ioctl(STDERR_FILENO, TIOCGWINSZ, &win);
-		if (error) err(EX_IOERR, "ioctl");
+		if (error) err(1, "ioctl");
 		cols = win.ws_col;
 		rows = win.ws_row;
 	}
 	scr.bot = rows;
 
 	cells = calloc(cols * rows, sizeof(*cells));
-	if (!cells) err(EX_OSERR, "calloc");
+	if (!cells) err(1, "calloc");
 	erase(cell(0, 0), cell(rows-1, cols));
 
 	bool mc = false;

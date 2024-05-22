@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sysexits.h>
 
 #define YYSTYPE char *
 
@@ -32,7 +31,7 @@ static char *fmt(const char *format, ...) {
 	va_start(ap, format);
 	vasprintf(&str, format, ap);
 	va_end(ap);
-	if (!str) err(EX_OSERR, "vasprintf");
+	if (!str) err(1, "vasprintf");
 	return str;
 }
 
@@ -179,17 +178,17 @@ static int yylex(void) {
 }
 
 static void yyerror(const char *str) {
-	errx(EX_DATAERR, "%s", str);
+	errx(1, "%s", str);
 }
 
 int main(int argc, char *argv[]) {
 	for (int i = 1; i < argc; ++i) {
 		in = fmemopen(argv[i], strlen(argv[i]), "r");
-		if (!in) err(EX_OSERR, "fmemopen");
+		if (!in) err(1, "fmemopen");
 		yyparse();
 		fclose(in);
 	}
-	if (argc > 1) return EX_OK;
+	if (argc > 1) return 0;
 	in = stdin;
 	yyparse();
 }

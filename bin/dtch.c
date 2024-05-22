@@ -28,7 +28,6 @@
 #include <sys/stat.h>
 #include <sys/un.h>
 #include <sys/wait.h>
-#include <sysexits.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -91,18 +90,18 @@ static void handler(int sig) {
 static void detach(int server, bool sink, char *argv[]) {
 	int pty;
 	pid_t pid = forkpty(&pty, NULL, NULL, NULL);
-	if (pid < 0) err(EX_OSERR, "forkpty");
+	if (pid < 0) err(1, "forkpty");
 
 	if (!pid) {
 		execvp(argv[0], argv);
-		err(EX_NOINPUT, "%s", argv[0]);
+		err(127, "%s", argv[0]);
 	}
 
 	signal(SIGINT, handler);
 	signal(SIGTERM, handler);
 
 	int error = listen(server, 0);
-	if (error) err(EX_OSERR, "listen");
+	if (error) err(1, "listen");
 
 	struct pollfd fds[] = {
 		{ .events = POLLIN, .fd = server },
@@ -111,7 +110,7 @@ static void detach(int server, bool sink, char *argv[]) {
 	while (0 < poll(fds, (sink ? 2 : 1), -1)) {
 		if (fds[0].revents) {
 			int client = accept(server, NULL, NULL);
-			if (client < 0) err(EX_IOERR, "accept");
+			if (client < 0) err(1, "accept");
 
 			ssize_t len = sendfd(client, pty);
 			if (len < 0) warn("sendfd");
@@ -125,18 +124,18 @@ static void detach(int server, bool sink, char *argv[]) {
 		if (fds[1].revents) {
 			char buf[4096];
 			ssize_t len = read(pty, buf, sizeof(buf));
-			if (len < 0) err(EX_IOERR, "read");
+			if (len < 0) err(1, "read");
 		}
 
 		int status;
 		pid_t dead = waitpid(pid, &status, WNOHANG);
-		if (dead < 0) err(EX_OSERR, "waitpid");
+		if (dead < 0) err(1, "waitpid");
 		if (dead) {
 			unlink(addr.sun_path);
 			exit(WIFEXITED(status) ? WEXITSTATUS(status) : -WTERMSIG(status));
 		}
 	}
-	err(EX_IOERR, "poll");
+	err(1, "poll");
 }
 
 static struct termios saveTerm;
@@ -154,28 +153,28 @@ static void attach(int client) {
 	int error;
 
 	int pty = recvfd(client);
-	if (pty < 0) err(EX_IOERR, "recvfd");
+	if (pty < 0) err(1, "recvfd");
 	warnx("attached");
 
 	struct winsize window;
 	error = ioctl(STDIN_FILENO, TIOCGWINSZ, &window);
-	if (error) err(EX_IOERR, "ioctl");
+	if (error) err(1, "ioctl");
 
 	struct winsize redraw = { .ws_row = 1, .ws_col = 1 };
 	error = ioctl(pty, TIOCSWINSZ, &redraw);
-	if (error) err(EX_IOERR, "ioctl");
+	if (error) err(1, "ioctl");
 
 	error = ioctl(pty, TIOCSWINSZ, &window);
-	if (error) err(EX_IOERR, "ioctl");
+	if (error) err(1, "ioctl");
 
 	error = tcgetattr(STDIN_FILENO, &saveTerm);
-	if (error) err(EX_IOERR, "tcgetattr");
+	if (error) err(1, "tcgetattr");
 	atexit(restoreTerm);
 
 	struct termios raw = saveTerm;
 	cfmakeraw(&raw);
 	error = tcsetattr(STDIN_FILENO, TCSADRAIN, &raw);
-	if (error) err(EX_IOERR, "tcsetattr");
+	if (error) err(1, "tcsetattr");
 
 	signal(SIGWINCH, nop);
 
@@ -187,35 +186,35 @@ static void attach(int client) {
 	for (;;) {
 		int nfds = poll(fds, 2, -1);
 		if (nfds < 0) {
-			if (errno != EINTR) err(EX_IOERR, "poll");
+			if (errno != EINTR) err(1, "poll");
 
 			error = ioctl(STDIN_FILENO, TIOCGWINSZ, &window);
-			if (error) err(EX_IOERR, "ioctl");
+			if (error) err(1, "ioctl");
 
 			error = ioctl(pty, TIOCSWINSZ, &window);
-			if (error) err(EX_IOERR, "ioctl");
+			if (error) err(1, "ioctl");
 
 			continue;
 		}
 
 		if (fds[0].revents) {
 			ssize_t len = read(STDIN_FILENO, buf, sizeof(buf));
-			if (len < 0) err(EX_IOERR, "read");
+			if (len < 0) err(1, "read");
 			if (!len) break;
 
 			if (len == 1 && buf[0] == CTRL('Q')) break;
 
 			len = write(pty, buf, len);
-			if (len < 0) err(EX_IOERR, "write");
+			if (len < 0) err(1, "write");
 		}
 
 		if (fds[1].revents) {
 			ssize_t len = read(pty, buf, sizeof(buf));
-			if (len < 0) err(EX_IOERR, "read");
+			if (len < 0) err(1, "read");
 			if (!len) break;
 
 			len = write(STDOUT_FILENO, buf, len);
-			if (len < 0) err(EX_IOERR, "write");
+			if (len < 0) err(1, "write");
 		}
 	}
 }
@@ -231,41 +230,41 @@ int main(int argc, char *argv[]) {
 		switch (opt) {
 			break; case 'a': atch = true;
 			break; case 's': sink = true;
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
-	if (optind == argc) errx(EX_USAGE, "no session name");
+	if (optind == argc) errx(1, "no session name");
 	const char *name = argv[optind++];
 
 	if (optind == argc) {
 		argv[--optind] = getenv("SHELL");
-		if (!argv[optind]) errx(EX_CONFIG, "SHELL unset");
+		if (!argv[optind]) errx(1, "SHELL unset");
 	}
 
 	const char *home = getenv("HOME");
-	if (!home) errx(EX_CONFIG, "HOME unset");
+	if (!home) errx(1, "HOME unset");
 
 	int fd = open(home, 0);
-	if (fd < 0) err(EX_CANTCREAT, "%s", home);
+	if (fd < 0) err(1, "%s", home);
 
 	error = mkdirat(fd, ".dtch", 0700);
-	if (error && errno != EEXIST) err(EX_CANTCREAT, "%s/.dtch", home);
+	if (error && errno != EEXIST) err(1, "%s/.dtch", home);
 
 	close(fd);
 
 	int sock = socket(PF_UNIX, SOCK_STREAM, 0);
-	if (sock < 0) err(EX_OSERR, "socket");
+	if (sock < 0) err(1, "socket");
 	fcntl(sock, F_SETFD, FD_CLOEXEC);
 
 	snprintf(addr.sun_path, sizeof(addr.sun_path), "%s/.dtch/%s", home, name);
 
 	if (atch) {
 		error = connect(sock, (struct sockaddr *)&addr, SUN_LEN(&addr));
-		if (error) err(EX_NOINPUT, "%s", addr.sun_path);
+		if (error) err(1, "%s", addr.sun_path);
 		attach(sock);
 	} else {
 		error = bind(sock, (struct sockaddr *)&addr, SUN_LEN(&addr));
-		if (error) err(EX_CANTCREAT, "%s", addr.sun_path);
+		if (error) err(1, "%s", addr.sun_path);
 		detach(sock, sink, &argv[optind]);
 	}
 }

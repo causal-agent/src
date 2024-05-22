@@ -47,7 +47,6 @@ enum Token {
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <sysexits.h>
 #include <unistd.h>
 #include <wchar.h>
 
@@ -107,7 +106,7 @@ int main(int argc, char *argv[]) {
 	for (int opt; 0 < (opt = getopt(argc, argv, "s"));) {
 		switch (opt) {
 			break; case 's': collapse = true;
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
 	argc -= optind;
@@ -116,7 +115,7 @@ int main(int argc, char *argv[]) {
 	if (!argc) argc++;
 	for (int i = 0; i < argc; ++i) {
 		yyin = (argv[i] ? fopen(argv[i], "r") : stdin);
-		if (!yyin) err(EX_NOINPUT, "%s", argv[i]);
+		if (!yyin) err(1, "%s", argv[i]);
 
 		bool space = true;
 		bool discard = false;

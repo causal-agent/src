@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sysexits.h>
 #include <unistd.h>
 #include <wchar.h>
 
@@ -33,7 +32,7 @@ static regex_t regex(const char *pattern, int flags) {
 
 	char buf[256];
 	regerror(error, &regex, buf, sizeof(buf));
-	errx(EX_SOFTWARE, "regcomp: %s: %s", buf, pattern);
+	errx(1, "regcomp: %s: %s", buf, pattern);
 }
 
 static const struct Entity {
@@ -128,7 +127,7 @@ static CURLcode fetchTitle(const char *url) {
 	char *dest;
 	curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &dest);
 	dest = strdup(dest);
-	if (!dest) err(EX_OSERR, "strdup");
+	if (!dest) err(1, "strdup");
 
 	code = curl_easy_setopt(curl, CURLOPT_URL, dest);
 	if (code) return code;
@@ -149,10 +148,10 @@ int main(int argc, char *argv[]) {
 	setlinebuf(stdout);
 
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
-	if (code) errx(EX_OSERR, "curl_global_init: %s", curl_easy_strerror(code));
+	if (code) errx(1, "curl_global_init: %s", curl_easy_strerror(code));
 
 	curl = curl_easy_init();
-	if (!curl) errx(EX_SOFTWARE, "curl_easy_init");
+	if (!curl) errx(1, "curl_easy_init");
 
 	static char error[CURL_ERROR_SIZE];
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, error);
@@ -180,14 +179,14 @@ int main(int argc, char *argv[]) {
 				excludeRegex = regex(optarg, REG_NOSUB);
 			}
 			break; case 'v': curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
 
 	if (optind < argc) {
 		code = fetchTitle(argv[optind]);
-		if (!code) return EX_OK;
-		errx(EX_DATAERR, "curl_easy_perform: %s", error);
+		if (!code) return 0;
+		errx(1, "curl_easy_perform: %s", error);
 	}
 
 	char *buf = NULL;
@@ -207,5 +206,5 @@ int main(int argc, char *argv[]) {
 			ptr[match.rm_eo] = ' ';
 		}
 	}
-	if (ferror(stdin)) err(EX_IOERR, "getline");
+	if (ferror(stdin)) err(1, "getline");
 }

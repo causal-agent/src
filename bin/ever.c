@@ -22,12 +22,11 @@
 #include <stdlib.h>
 #include <sys/event.h>
 #include <sys/wait.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 static int watch(int kq, char *path) {
 	int fd = open(path, O_CLOEXEC);
-	if (fd < 0) err(EX_NOINPUT, "%s", path);
+	if (fd < 0) err(1, "%s", path);
 
 	struct kevent event;
 	EV_SET(
@@ -40,7 +39,7 @@ static int watch(int kq, char *path) {
 		path
 	);
 	int nevents = kevent(kq, &event, 1, NULL, 0, NULL);
-	if (nevents < 0) err(EX_OSERR, "kevent");
+	if (nevents < 0) err(1, "kevent");
 
 	return fd;
 }
@@ -48,17 +47,17 @@ static int watch(int kq, char *path) {
 static bool quiet;
 static void exec(int fd, char *const argv[]) {
 	pid_t pid = fork();
-	if (pid < 0) err(EX_OSERR, "fork");
+	if (pid < 0) err(1, "fork");
 
 	if (!pid) {
 		dup2(fd, STDIN_FILENO);
 		execvp(*argv, argv);
-		err(EX_NOINPUT, "%s", *argv);
+		err(127, "%s", *argv);
 	}
 
 	int status;
 	pid = wait(&status);
-	if (pid < 0) err(EX_OSERR, "wait");
+	if (pid < 0) err(1, "wait");
 
 	if (quiet) return;
 	if (WIFEXITED(status)) {
@@ -77,15 +76,15 @@ int main(int argc, char *argv[]) {
 		switch (opt) {
 			break; case 'i': input = true;
 			break; case 'q': quiet = true;
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
 	argc -= optind;
 	argv += optind;
-	if (argc < 2) return EX_USAGE;
+	if (argc < 2) return 1;
 
 	int kq = kqueue();
-	if (kq < 0) err(EX_OSERR, "kqueue");
+	if (kq < 0) err(1, "kqueue");
 
 	int i;
 	for (i = 0; i < argc - 1; ++i) {
@@ -103,7 +102,7 @@ int main(int argc, char *argv[]) {
 	for (;;) {
 		struct kevent event;
 		int nevents = kevent(kq, NULL, 0, &event, 1, NULL);
-		if (nevents < 0) err(EX_OSERR, "kevent");
+		if (nevents < 0) err(1, "kevent");
 
 		if (event.fflags & NOTE_DELETE) {
 			close(event.ident);
@@ -111,7 +110,7 @@ int main(int argc, char *argv[]) {
 			event.ident = watch(kq, (char *)event.udata);
 		} else if (input) {
 			off_t off = lseek(event.ident, 0, SEEK_SET);
-			if (off < 0) err(EX_IOERR, "lseek");
+			if (off < 0) err(1, "lseek");
 		}
 
 		exec((input ? event.ident : STDIN_FILENO), &argv[i]);

@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <sysexits.h>
 #include <tls.h>
 #include <unistd.h>
 
@@ -47,7 +46,7 @@ static void clientWrite(struct tls *client, const char *ptr, size_t len) {
 	while (len) {
 		ssize_t ret = tls_write(client, ptr, len);
 		if (ret == TLS_WANT_POLLIN || ret == TLS_WANT_POLLOUT) continue;
-		if (ret < 0) errx(EX_IOERR, "tls_write: %s", tls_error(client));
+		if (ret < 0) errx(1, "tls_write: %s", tls_error(client));
 		ptr += ret;
 		len -= ret;
 	}
@@ -59,7 +58,7 @@ static void clientFormat(struct tls *client, const char *format, ...) {
 	va_start(ap, format);
 	int len = vsnprintf(buf, sizeof(buf), format, ap);
 	va_end(ap);
-	if ((size_t)len > sizeof(buf) - 1) errx(EX_DATAERR, "message too large");
+	if ((size_t)len > sizeof(buf) - 1) errx(1, "message too large");
 	clientWrite(client, buf, len);
 }
 
@@ -67,7 +66,7 @@ static void clientHandle(struct tls *client, const char *chan, char *line) {
 	char *prefix = NULL;
 	if (line[0] == ':') {
 		prefix = strsep(&line, " ") + 1;
-		if (!line) errx(EX_PROTOCOL, "unexpected eol");
+		if (!line) errx(1, "unexpected eol");
 	}
 
 	char *command = strsep(&line, " ");
@@ -78,14 +77,14 @@ static void clientHandle(struct tls *client, const char *chan, char *line) {
 	}
 	if (strcmp(command, "PRIVMSG") && strcmp(command, "NOTICE")) return;
 
-	if (!prefix) errx(EX_PROTOCOL, "message without prefix");
+	if (!prefix) errx(1, "message without prefix");
 	char *nick = strsep(&prefix, "!");
 
-	if (!line) errx(EX_PROTOCOL, "message without destination");
+	if (!line) errx(1, "message without destination");
 	char *dest = strsep(&line, " ");
 	if (strcmp(dest, chan)) return;
 
-	if (!line || line[0] != ':') errx(EX_PROTOCOL, "message without message");
+	if (!line || line[0] != ':') errx(1, "message without message");
 	line = &line[1];
 
 	if (!strncmp(line, "\1ACTION ", 8)) {
@@ -102,14 +101,14 @@ static void clientHandle(struct tls *client, const char *chan, char *line) {
 #ifdef __FreeBSD__
 static void limit(int fd, const cap_rights_t *rights) {
 	int error = cap_rights_limit(fd, rights);
-	if (error) err(EX_OSERR, "cap_rights_limit");
+	if (error) err(1, "cap_rights_limit");
 }
 #endif
 
 int main(int argc, char *argv[]) {
 	int error;
 
-	if (argc < 5) return EX_USAGE;
+	if (argc < 5) return 1;
 	const char *host = argv[1];
 	const char *port = argv[2];
 	const char *nick = argv[3];
@@ -119,18 +118,18 @@ int main(int argc, char *argv[]) {
 	signal(SIGPIPE, SIG_IGN);
 
 	struct tls_config *config = tls_config_new();
-	if (!config) errx(EX_SOFTWARE, "tls_config_new");
+	if (!config) errx(1, "tls_config_new");
 
 	error = tls_config_set_ciphers(config, "compat");
 	if (error) {
-		errx(EX_SOFTWARE, "tls_config_set_ciphers: %s", tls_config_error(config));
+		errx(1, "tls_config_set_ciphers: %s", tls_config_error(config));
 	}
 
 	struct tls *client = tls_client();
-	if (!client) errx(EX_SOFTWARE, "tls_client");
+	if (!client) errx(1, "tls_client");
 
 	error = tls_configure(client, config);
-	if (error) errx(EX_SOFTWARE, "tls_configure: %s", tls_error(client));
+	if (error) errx(1, "tls_configure: %s", tls_error(client));
 	tls_config_free(config);
 
 	struct addrinfo *head;
@@ -140,12 +139,12 @@ int main(int argc, char *argv[]) {
 		.ai_protocol = IPPROTO_TCP,
 	};
 	error = getaddrinfo(host, port, &hints, &head);
-	if (error) errx(EX_NOHOST, "getaddrinfo: %s", gai_strerror(error));
+	if (error) errx(1, "getaddrinfo: %s", gai_strerror(error));
 
 	int sock = -1;
 	for (struct addrinfo *ai = head; ai; ai = ai->ai_next) {
 		sock = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
-		if (sock < 0) err(EX_OSERR, "socket");
+		if (sock < 0) err(1, "socket");
 
 		error = connect(sock, ai->ai_addr, ai->ai_addrlen);
 		if (!error) break;
@@ -153,15 +152,15 @@ int main(int argc, char *argv[]) {
 		close(sock);
 		sock = -1;
 	}
-	if (sock < 0) err(EX_UNAVAILABLE, "connect");
+	if (sock < 0) err(1, "connect");
 	freeaddrinfo(head);
 
 	error = tls_connect_socket(client, sock, host);
-	if (error) errx(EX_PROTOCOL, "tls_connect: %s", tls_error(client));
+	if (error) errx(1, "tls_connect: %s", tls_error(client));
 
 #ifdef __FreeBSD__
 	error = cap_enter();
-	if (error) err(EX_OSERR, "cap_enter");
+	if (error) err(1, "cap_enter");
 
 	cap_rights_t rights;
 	cap_rights_init(&rights, CAP_WRITE);
@@ -190,7 +189,7 @@ int main(int argc, char *argv[]) {
 	while (0 < poll(fds, 2, -1)) {
 		if (fds[0].revents) {
 			ssize_t len = getline(&input, &cap, stdin);
-			if (len < 0) err(EX_IOERR, "getline");
+			if (len < 0) err(1, "getline");
 			input[len - 1] = '\0';
 			clientFormat(client, "NOTICE %s :%s\r\n", chan, input);
 		}
@@ -198,8 +197,8 @@ int main(int argc, char *argv[]) {
 
 		ssize_t read = tls_read(client, &buf[len], sizeof(buf) - len);
 		if (read == TLS_WANT_POLLIN || read == TLS_WANT_POLLOUT) continue;
-		if (read < 0) errx(EX_IOERR, "tls_read: %s", tls_error(client));
-		if (!read) return EX_UNAVAILABLE;
+		if (read < 0) errx(1, "tls_read: %s", tls_error(client));
+		if (!read) return 1;
 		len += read;
 
 		char *crlf;
@@ -214,5 +213,5 @@ int main(int argc, char *argv[]) {
 		len -= line - buf;
 		memmove(buf, line, len);
 	}
-	err(EX_IOERR, "poll");
+	err(1, "poll");
 }

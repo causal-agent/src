@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 #include "png.h"
@@ -263,14 +262,14 @@ int main(int argc, char *argv[]) {
 			break; case 'm': output = outputMintty;
 			break; case 'p': {
 				uint p = strtoul(optarg, NULL, 0);
-				if (p >= SchemeLen) return EX_USAGE;
+				if (p >= SchemeLen) return 1;
 				hsv = &scheme[p];
 				len = 1;
 			}
 			break; case 's': output = outputCSS;
 			break; case 't': len = SchemeLen;
 			break; case 'x': output = outputRGB;
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
 

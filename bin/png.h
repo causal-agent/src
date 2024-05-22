@@ -18,7 +18,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sysexits.h>
 
 static inline uint32_t pngCRCTable(uint8_t n) {
 	static uint32_t table[256];
@@ -35,7 +34,7 @@ static inline uint32_t pngCRCTable(uint8_t n) {
 static uint32_t pngCRC;
 
 static inline void pngWrite(FILE *file, const uint8_t *ptr, uint32_t len) {
-	if (!fwrite(ptr, len, 1, file)) err(EX_IOERR, "pngWrite");
+	if (!fwrite(ptr, len, 1, file)) err(1, "pngWrite");
 	for (uint32_t i = 0; i < len; ++i) {
 		pngCRC = pngCRCTable(pngCRC ^ ptr[i]) ^ (pngCRC >> 8);
 	}

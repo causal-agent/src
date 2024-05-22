@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sysexits.h>
 #include <time.h>
 
 enum {
@@ -44,7 +43,7 @@ static long stack[StackLen];
 static size_t top = StackLen;
 
 static void push(long val) {
-	if (!top) errx(EX_SOFTWARE, "stack overflow");
+	if (!top) errx(1, "stack overflow");
 	stack[--top] = val;
 }
 static long pop(void) {
@@ -121,7 +120,7 @@ int main(int argc, char *argv[]) {
 	FILE *file = stdin;
 	if (argc > 1) {
 		file = fopen(argv[1], "r");
-		if (!file) err(EX_NOINPUT, "%s", argv[1]);
+		if (!file) err(1, "%s", argv[1]);
 	}
 
 	int y = 0;

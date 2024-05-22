@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sysexits.h>
 #include <unistd.h>
 #include <zlib.h>
 
@@ -34,14 +33,14 @@ static uint32_t crc;
 
 static void pngRead(void *ptr, size_t len, const char *desc) {
 	size_t n = fread(ptr, len, 1, file);
-	if (!n && ferror(file)) err(EX_IOERR, "%s", path);
-	if (!n) errx(EX_DATAERR, "%s: missing %s", path, desc);
+	if (!n && ferror(file)) err(1, "%s", path);
+	if (!n) errx(1, "%s: missing %s", path, desc);
 	crc = crc32(crc, ptr, len);
 }
 
 static void pngWrite(const void *ptr, size_t len) {
 	size_t n = fwrite(ptr, len, 1, file);
-	if (!n) err(EX_IOERR, "%s", path);
+	if (!n) err(1, "%s", path);
 	crc = crc32(crc, ptr, len);
 }
 
@@ -51,7 +50,7 @@ static void sigRead(void) {
 	uint8_t sig[sizeof(Sig)];
 	pngRead(sig, sizeof(sig), "signature");
 	if (memcmp(sig, Sig, sizeof(sig))) {
-		errx(EX_DATAERR, "%s: invalid signature", path);
+		errx(1, "%s: invalid signature", path);
 	}
 }
 
@@ -96,7 +95,7 @@ static void crcRead(void) {
 	uint32_t actual = u32Read("CRC32");
 	if (actual == expect) return;
 	errx(
-		EX_DATAERR, "%s: expected CRC32 %08X, found %08X",
+		1, "%s: expected CRC32 %08X, found %08X",
 		path, expect, actual
 	);
 }
@@ -107,7 +106,7 @@ static void crcWrite(void) {
 
 static void chunkSkip(struct Chunk chunk) {
 	if (!(chunk.type[0] & 0x20)) {
-		errx(EX_CONFIG, "%s: unsupported critical chunk %s", path, chunk.type);
+		errx(1, "%s: unsupported critical chunk %s", path, chunk.type);
 	}
 	uint8_t buf[4096];
 	while (chunk.len > sizeof(buf)) {
@@ -166,7 +165,7 @@ static void recalc(void) {
 static void headerRead(struct Chunk chunk) {
 	if (chunk.len != HeaderLen) {
 		errx(
-			EX_DATAERR, "%s: expected %s length %" PRIu32 ", found %" PRIu32,
+			1, "%s: expected %s length %" PRIu32 ", found %" PRIu32,
 			path, chunk.type, (uint32_t)HeaderLen, chunk.len
 		);
 	}
@@ -212,14 +211,14 @@ static void palClear(void) {
 static void palRead(struct Chunk chunk) {
 	if (chunk.len % 3) {
 		errx(
-			EX_DATAERR, "%s: %s length %" PRIu32 " not divisible by 3",
+			1, "%s: %s length %" PRIu32 " not divisible by 3",
 			path, chunk.type, chunk.len
 		);
 	}
 	pal.len = chunk.len / 3;
 	if (pal.len > 256) {
 		errx(
-			EX_DATAERR, "%s: %s length %" PRIu32 " > 256",
+			1, "%s: %s length %" PRIu32 " > 256",
 			path, chunk.type, pal.len
 		);
 	}
@@ -238,7 +237,7 @@ static void transRead(struct Chunk chunk) {
 	trans.len = chunk.len;
 	if (trans.len > 256) {
 		errx(
-			EX_DATAERR, "%s: %s length %" PRIu32 " > 256",
+			1, "%s: %s length %" PRIu32 " > 256",
 			path, chunk.type, trans.len
 		);
 	}
@@ -257,21 +256,21 @@ static uint8_t *data;
 
 static void dataAlloc(void) {
 	data = malloc(dataLen);
-	if (!data) err(EX_OSERR, "malloc");
+	if (!data) err(1, "malloc");
 }
 
 static void dataRead(struct Chunk chunk) {
 	z_stream stream = { .next_out = data, .avail_out = dataLen };
 	int error = inflateInit(&stream);
-	if (error != Z_OK) errx(EX_SOFTWARE, "inflateInit: %s", stream.msg);
+	if (error != Z_OK) errx(1, "inflateInit: %s", stream.msg);
 
 	for (;;) {
 		if (strcmp(chunk.type, "IDAT")) {
-			errx(EX_DATAERR, "%s: missing IDAT chunk", path);
+			errx(1, "%s: missing IDAT chunk", path);
 		}
 
 		uint8_t *idat = malloc(chunk.len);
-		if (!idat) err(EX_OSERR, "malloc");
+		if (!idat) err(1, "malloc");
 
 		pngRead(idat, chunk.len, "image data");
 		crcRead();
@@ -283,7 +282,7 @@ static void dataRead(struct Chunk chunk) {
 
 		if (error == Z_STREAM_END) break;
 		if (error != Z_OK) {
-			errx(EX_DATAERR, "%s: inflate: %s", path, stream.msg);
+			errx(1, "%s: inflate: %s", path, stream.msg);
 		}
 
 		chunk = chunkRead();
@@ -291,7 +290,7 @@ static void dataRead(struct Chunk chunk) {
 	inflateEnd(&stream);
 	if ((size_t)stream.total_out != dataLen) {
 		errx(
-			EX_DATAERR, "%s: expected data length %zu, found %zu",
+			1, "%s: expected data length %zu, found %zu",
 			path, dataLen, (size_t)stream.total_out
 		);
 	}
@@ -305,11 +304,11 @@ static void dataWrite(void) {
 	int error = deflateInit2(
 		&stream, Z_BEST_COMPRESSION, Z_DEFLATED, 15, 8, Z_FILTERED
 	);
-	if (error != Z_OK) errx(EX_SOFTWARE, "deflateInit2: %s", stream.msg);
+	if (error != Z_OK) errx(1, "deflateInit2: %s", stream.msg);
 
 	uLong bound = deflateBound(&stream, dataLen);
 	uint8_t *buf = malloc(bound);
-	if (!buf) err(EX_OSERR, "malloc");
+	if (!buf) err(1, "malloc");
 
 	stream.next_out = buf;
 	stream.avail_out = bound;
@@ -418,7 +417,7 @@ static void dataFilter(void) {
 	uint8_t *filter[FilterCap];
 	for (enum Filter i = None; i < FilterCap; ++i) {
 		filter[i] = malloc(lineLen);
-		if (!filter[i]) err(EX_OSERR, "malloc");
+		if (!filter[i]) err(1, "malloc");
 	}
 	for (uint32_t y = header.height-1; y < header.height; --y) {
 		uint32_t heuristic[FilterCap] = {0};
@@ -459,7 +458,7 @@ static void glitch(const char *inPath, const char *outPath) {
 	if (inPath) {
 		path = inPath;
 		file = fopen(path, "r");
-		if (!file) err(EX_NOINPUT, "%s", path);
+		if (!file) err(1, "%s", path);
 	} else {
 		path = "stdin";
 		file = stdin;
@@ -468,11 +467,11 @@ static void glitch(const char *inPath, const char *outPath) {
 	sigRead();
 	struct Chunk ihdr = chunkRead();
 	if (strcmp(ihdr.type, "IHDR")) {
-		errx(EX_DATAERR, "%s: expected IHDR, found %s", path, ihdr.type);
+		errx(1, "%s: expected IHDR, found %s", path, ihdr.type);
 	}
 	headerRead(ihdr);
 	if (header.interlace != Progressive) {
-		errx(EX_CONFIG, "%s: unsupported interlacing", path);
+		errx(1, "%s: unsupported interlacing", path);
 	}
 
 	palClear();
@@ -527,10 +526,10 @@ static void glitch(const char *inPath, const char *outPath) {
 		if (outPath == inPath) {
 			snprintf(buf, sizeof(buf), "%sg", outPath);
 			file = fopen(buf, "wx");
-			if (!file) err(EX_CANTCREAT, "%s", buf);
+			if (!file) err(1, "%s", buf);
 		} else {
 			file = fopen(path, "w");
-			if (!file) err(EX_CANTCREAT, "%s", outPath);
+			if (!file) err(1, "%s", outPath);
 		}
 	} else {
 		path = "stdout";
@@ -546,11 +545,11 @@ static void glitch(const char *inPath, const char *outPath) {
 	dataWrite();
 	free(data);
 	int error = fclose(file);
-	if (error) err(EX_IOERR, "%s", path);
+	if (error) err(1, "%s", path);
 
 	if (outPath && outPath == inPath) {
 		error = rename(buf, outPath);
-		if (error) err(EX_CANTCREAT, "%s", outPath);
+		if (error) err(1, "%s", outPath);
 	}
 }
 
@@ -561,7 +560,7 @@ static enum Filter parseFilter(const char *str) {
 		case 'U': case 'u': return Up;
 		case 'A': case 'a': return Average;
 		case 'P': case 'p': return Paeth;
-		default: errx(EX_USAGE, "invalid filter type %s", str);
+		default: errx(1, "invalid filter type %s", str);
 	}
 }
 
@@ -591,7 +590,7 @@ int main(int argc, char *argv[]) {
 			break; case 'r': filterRecon = true;
 			break; case 'x': zeroX = true;
 			break; case 'y': zeroY = true;
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
 

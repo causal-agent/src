@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 static void escape(FILE *file, const char *str, size_t len) {
@@ -41,16 +40,16 @@ int main(int argc, char *argv[]) {
 		switch (opt) {
 			break; case 'a': append = true;
 			break; case 'f': path = optarg;
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
 
 	FILE *tags = fopen(path, (append ? "a" : "w"));
-	if (!tags) err(EX_CANTCREAT, "%s", path);
+	if (!tags) err(1, "%s", path);
 
 #ifdef __OpenBSD__
 	error = pledge("stdio rpath", NULL);
-	if (error) err(EX_OSERR, "pledge");
+	if (error) err(1, "pledge");
 #endif
 
 	regex_t makeFile, makeLine;
@@ -87,7 +86,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		FILE *file = fopen(argv[i], "r");
-		if (!file) err(EX_NOINPUT, "%s", argv[i]);
+		if (!file) err(1, "%s", argv[i]);
 
 		while (0 < getline(&buf, &cap, file)) {
 			regmatch_t match[2];

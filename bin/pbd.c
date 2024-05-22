@@ -24,27 +24,26 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 typedef unsigned char byte;
 
 static void spawn(const char *cmd, const char *arg, int dest, int src) {
 	pid_t pid = fork();
-	if (pid < 0) err(EX_OSERR, "fork");
+	if (pid < 0) err(1, "fork");
 
 	if (pid) {
 		int status;
 		pid_t dead = waitpid(pid, &status, 0);
-		if (dead < 0) err(EX_OSERR, "waitpid(%d)", pid);
+		if (dead < 0) err(1, "waitpid(%d)", pid);
 		if (status) warnx("%s: status %d", cmd, status);
 
 	} else {
 		int fd = dup2(src, dest);
-		if (fd < 0) err(EX_OSERR, "dup2");
+		if (fd < 0) err(1, "dup2");
 
 		execlp(cmd, cmd, arg, NULL);
-		err(EX_UNAVAILABLE, "%s", cmd);
+		err(127, "%s", cmd);
 	}
 }
 
@@ -52,10 +51,10 @@ static int pbd(void) {
 	int error;
 
 	int server = socket(PF_INET, SOCK_STREAM, 0);
-	if (server < 0) err(EX_OSERR, "socket");
+	if (server < 0) err(1, "socket");
 
 	error = fcntl(server, F_SETFD, FD_CLOEXEC);
-	if (error) err(EX_IOERR, "fcntl");
+	if (error) err(1, "fcntl");
 
 	struct sockaddr_in addr = {
 		.sin_family = AF_INET,
@@ -63,17 +62,17 @@ static int pbd(void) {
 		.sin_addr = { .s_addr = htonl(0x7F000001) },
 	};
 	error = bind(server, (struct sockaddr *)&addr, sizeof(addr));
-	if (error) err(EX_UNAVAILABLE, "bind");
+	if (error) err(1, "bind");
 
 	error = listen(server, 0);
-	if (error) err(EX_UNAVAILABLE, "listen");
+	if (error) err(1, "listen");
 
 	for (;;) {
 		int client = accept(server, NULL, NULL);
-		if (client < 0) err(EX_IOERR, "accept");
+		if (client < 0) err(1, "accept");
 
 		error = fcntl(client, F_SETFD, FD_CLOEXEC);
-		if (error) err(EX_IOERR, "fcntl");
+		if (error) err(1, "fcntl");
 
 		char c = 0;
 		ssize_t size = read(client, &c, 1);
@@ -91,7 +90,7 @@ static int pbd(void) {
 
 static int pbdClient(char c) {
 	int client = socket(PF_INET, SOCK_STREAM, 0);
-	if (client < 0) err(EX_OSERR, "socket");
+	if (client < 0) err(1, "socket");
 
 	struct sockaddr_in addr = {
 		.sin_family = AF_INET,
@@ -99,10 +98,10 @@ static int pbdClient(char c) {
 		.sin_addr = { .s_addr = htonl(0x7F000001) },
 	};
 	int error = connect(client, (struct sockaddr *)&addr, sizeof(addr));
-	if (error) err(EX_UNAVAILABLE, "connect");
+	if (error) err(1, "connect");
 
 	ssize_t size = write(client, &c, 1);
-	if (size < 0) err(EX_IOERR, "write");
+	if (size < 0) err(1, "write");
 
 	return client;
 }
@@ -112,29 +111,29 @@ static void copy(int out, int in) {
 	ssize_t readSize;
 	while (0 < (readSize = read(in, buf, sizeof(buf)))) {
 		ssize_t writeSize = write(out, buf, readSize);
-		if (writeSize < 0) err(EX_IOERR, "write(%d)", out);
+		if (writeSize < 0) err(1, "write(%d)", out);
 	}
-	if (readSize < 0) err(EX_IOERR, "read(%d)", in);
+	if (readSize < 0) err(1, "read(%d)", in);
 }
 
 static int pbcopy(void) {
 	int client = pbdClient('c');
 	copy(client, STDIN_FILENO);
-	return EX_OK;
+	return 0;
 }
 
 static int pbpaste(void) {
 	int client = pbdClient('p');
 	copy(STDOUT_FILENO, client);
-	return EX_OK;
+	return 0;
 }
 
 static int open1(const char *url) {
-	if (!url) return EX_USAGE;
+	if (!url) return 1;
 	int client = pbdClient('o');
 	ssize_t size = write(client, url, strlen(url));
-	if (size < 0) err(EX_IOERR, "write");
-	return EX_OK;
+	if (size < 0) err(1, "write");
+	return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -144,7 +143,7 @@ int main(int argc, char *argv[]) {
 			case 'o': return open1(optarg);
 			case 'p': return pbpaste();
 			case 's': return pbd();
-			default:  return EX_USAGE;
+			default:  return 1;
 		}
 	}
 	return pbd();

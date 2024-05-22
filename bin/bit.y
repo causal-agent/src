@@ -22,7 +22,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sysexits.h>
 
 #define MASK(b) ((1ULL << (b)) - 1)
 

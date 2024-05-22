@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 #include "hilex.h"
@@ -61,14 +60,14 @@ static const struct Lexer *parseLexer(const char *name) {
 	for (size_t i = 0; i < ARRAY_LEN(Lexers); ++i) {
 		if (!strcmp(name, Lexers[i].name)) return Lexers[i].lexer;
 	}
-	errx(EX_USAGE, "unknown lexer %s", name);
+	errx(1, "unknown lexer %s", name);
 }
 
 static void ungets(const char *str, FILE *file) {
 	size_t len = strlen(str);
 	for (size_t i = len-1; i < len; --i) {
 		int ch = ungetc(str[i], file);
-		if (ch == EOF) errx(EX_IOERR, "cannot push back string");
+		if (ch == EOF) errx(1, "cannot push back string");
 	}
 }
 
@@ -134,16 +133,16 @@ static void ansiHeader(const char *opts[]) {
 
 	int rw[2];
 	int error = pipe(rw);
-	if (error) err(EX_OSERR, "pipe");
+	if (error) err(1, "pipe");
 
 	pid_t pid = fork();
-	if (pid < 0) err(EX_OSERR, "fork");
+	if (pid < 0) err(1, "fork");
 	if (!pid) {
 		dup2(rw[0], STDIN_FILENO);
 		close(rw[0]);
 		close(rw[1]);
 		execl(shell, shell, "-c", pager, NULL);
-		err(EX_CONFIG, "%s", shell);
+		err(127, "%s", shell);
 	}
 	dup2(rw[1], STDOUT_FILENO);
 	close(rw[0]);
@@ -152,7 +151,7 @@ static void ansiHeader(const char *opts[]) {
 
 #ifdef __OpenBSD__
 	error = pledge("stdio", NULL);
-	if (error) err(EX_OSERR, "pledge");
+	if (error) err(1, "pledge");
 #endif
 }
 
@@ -330,7 +329,7 @@ static const struct Formatter *parseFormatter(const char *name) {
 	for (size_t i = 0; i < ARRAY_LEN(Formatters); ++i) {
 		if (!strcmp(name, Formatters[i].name)) return &Formatters[i];
 	}
-	errx(EX_USAGE, "unknown formatter %s", name);
+	errx(1, "unknown formatter %s", name);
 }
 
 static char *const OptionKeys[OptionCap + 1] = {
@@ -356,12 +355,12 @@ int main(int argc, char *argv[]) {
 				while (*optarg) {
 					char *val;
 					int key = getsubopt(&optarg, OptionKeys, &val);
-					if (key < 0) errx(EX_USAGE, "no such option %s", val);
+					if (key < 0) errx(1, "no such option %s", val);
 					opts[key] = (val ? val : "");
 				}
 			}
 			break; case 't': text = true;
-			break; default:  return EX_USAGE;
+			break; default:  return 1;
 		}
 	}
 
@@ -370,7 +369,7 @@ int main(int argc, char *argv[]) {
 	if (optind < argc) {
 		path = argv[optind];
 		file = fopen(path, "r");
-		if (!file) err(EX_NOINPUT, "%s", path);
+		if (!file) err(1, "%s", path);
 		pager = isatty(STDOUT_FILENO);
 	}
 
@@ -381,7 +380,7 @@ int main(int argc, char *argv[]) {
 	} else {
 		error = pledge("stdio", NULL);
 	}
-	if (error) err(EX_OSERR, "pledge");
+	if (error) err(1, "pledge");
 #endif
 
 	if (!name) {
@@ -394,7 +393,7 @@ int main(int argc, char *argv[]) {
 	if (!opts[Title]) opts[Title] = name;
 	if (!lexer) lexer = matchLexer(name, file);
 	if (!lexer && text) lexer = &LexText;
-	if (!lexer) errx(EX_USAGE, "cannot infer lexer for %s", name);
+	if (!lexer) errx(1, "cannot infer lexer for %s", name);
 
 	*lexer->in = file;
 	if (formatter->header) formatter->header(opts);
