@@ -41,6 +41,26 @@ page_title() {
 page_head() {
 	local date=$1
 	local title=$(page_title $date)
+	local lens film
+
+	if test -f $date/lens; then
+		lens=$(encode $date/lens)
+	else
+		lens=$(
+			identify -format '%[EXIF:LensModel]' \
+				$date/$(ls -1 $date | head -n 1) 2>/dev/null |
+			sed '
+				s/\([A-Z]\)\([0-9]\)/\1 \2/
+				s,f/,ƒ/,
+				s/\([0-9]\)-\([0-9]\)/\1–\2/g
+			' |
+			encode
+		)
+	fi
+	if test -f $date/film; then
+		film=$(encode $date/film)
+	fi
+
 	cat <<-EOF
 	<!DOCTYPE html>
 	<meta charset="utf-8">
@@ -49,11 +69,13 @@ page_head() {
 	<title>${title}</title>
 	<style>
 	html { color: #bbb; background-color: black; font-family: sans-serif; }
+	p { text-align: center; }
 	figure { margin: 1em; padding-top: 0.5em; text-align: center; }
 	img { max-width: calc(100vw - 2.5em); max-height: calc(100vh - 2.5em); }
 	details { max-width: 78ch; margin: 0.5em auto; }
 	</style>
 	<h1>${title}</h1>
+	<p>📷 ${lens}${film:+ 🎞️ }${film:-}</p>
 	EOF
 }
 
