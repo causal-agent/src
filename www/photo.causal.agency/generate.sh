@@ -68,7 +68,7 @@ page_head() {
 	<link rel="alternate" type="application/atom+xml" href="../feed.atom">
 	<title>${title}</title>
 	<style>
-	html { color: #bbb; background-color: black; font-family: sans-serif; }
+	html { color: #bbb; background-color: black; font-family: monospace; }
 	p { text-align: center; }
 	figure { margin: 1em; padding-top: 0.5em; text-align: center; }
 	img { max-width: calc(100vw - 2.5em); max-height: calc(100vh - 2.5em); }
