@@ -15,14 +15,14 @@ resize() {
 preview() {
 	local photo=$1
 	local preview=preview/${photo##*/}
-	resize $photo 25% static/$preview
+	resize $photo 1500000@ static/$preview
 	echo $preview
 }
 
 thumbnail() {
 	local photo=$1
 	local thumbnail=thumbnail/${photo##*/}
-	resize $photo 5% static/$thumbnail
+	resize $photo 60000@ static/$thumbnail
 	echo $thumbnail
 }
 
