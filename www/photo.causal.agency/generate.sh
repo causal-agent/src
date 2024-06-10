@@ -111,10 +111,16 @@ page_photo() {
 			<img src="../${preview}" alt="$(encode $description)">
 		</a>
 		<figcaption>
+	EOF
+	if test -n "${ExposureTime}"; then
+		cat <<-EOF
 			${ExposureTime} ·
 			ƒ/$(bc -S 1 -e ${FNumber}) ·
 			$(bc -e ${FocalLength}) mm ·
 			${PhotographicSensitivity} ISO
+		EOF
+	fi
+	cat <<-EOF
 			<details>
 				<summary>description</summary>
 				$(encode $description)
