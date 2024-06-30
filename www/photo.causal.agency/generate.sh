@@ -211,12 +211,12 @@ for date in 20*; do
 	if ! test -f $page; then
 		echo $page >&2
 		page_head $date >$page
-		for photo in ${date}/*.JPG; do
+		for photo in ${date}/*.[Jj][Pp][Gg]; do
 			preview=$(preview $photo)
 			if ! test -f static/${photo}; then
 				ln $photo static/${photo}
 			fi
-			page_photo $photo $preview ${photo%.JPG}.txt >>$page
+			page_photo $photo $preview ${photo%.[Jj][Pp][Gg]}.txt >>$page
 		done
 	fi
 	set -- $date "$@"
@@ -229,7 +229,7 @@ atom_head >static/feed.atom
 for date; do
 	index_page $date >>static/index.html
 	atom_entry_head $date >>static/feed.atom
-	for photo in ${date}/*.JPG; do
+	for photo in ${date}/*.[Jj][Pp][Gg]; do
 		thumbnail=$(thumbnail $photo)
 		index_photo $date $photo $thumbnail >>static/index.html
 		index_photo $date $photo $thumbnail $Root | encode >>static/feed.atom
