@@ -41,8 +41,11 @@ page_title() {
 page_head() {
 	local date=$1
 	local title=$(page_title $date)
-	local lens film
+	local body lens film
 
+	if test -f $date/body; then
+		body=$(encode $date/body)
+	fi
 	if test -f $date/lens; then
 		lens=$(encode $date/lens)
 	else
@@ -75,7 +78,7 @@ page_head() {
 	details { max-width: 78ch; margin: 0.5em auto; }
 	</style>
 	<h1>${title}</h1>
-	<p>📷 ${lens}${film:+ 🎞️ }${film:-}</p>
+	<p>📷 ${body:-}${body:+ · }${lens}${film:+ 🎞️ }${film:-}</p>
 	EOF
 }
 
