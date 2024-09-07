@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<title>Camera Trips</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body { font-family: sans-serif; }
+input, button, select { font-size: 100%; }
+form {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 0.5em 1ch;
+}
+input[type="number"] { width: 5ch; }
+#trip-lens { width: 100%; }
+#lens-length { width: 7ch; }
+#lens-aperture { width: 8ch; }
+</style>
+
+<section id="rolls">
+<h1>Rolls</h1>
+<ul>
+</ul>
+
+<form>
+<label for="roll-body">Camera:</label>
+<select id="roll-body" class="body" required>
+</select>
+<label for="roll-film">Film:</label>
+<input id="roll-film" list="films" required>
+<button type="button" onclick="loadRoll()">Load</button>
+</form>
+
+<datalist id="films">
+	<option>Harman Phoenix 200</option>
+	<option>Ilford HP5 Plus 400</option>
+	<option>Shanghai Color 400</option>
+	<option>Fomapan Action 400</option>
+</datalist>
+</section>
+
+<section id="trips">
+<h1>Trips</h1>
+
+<form>
+<label for="trip-date">Date:</label>
+<input id="trip-date" type="date" required>
+<label for="trip-body">Camera:</label>
+<select id="trip-body" class="body" onchange="setTripBody()" required>
+</select>
+<label for="trip-lens">Lens:</label>
+<select id="trip-lens" required>
+</select>
+<label for="trip-film">Film:</label>
+<input id="trip-film" readonly required>
+<label for="trip-first">Exposures:</label>
+<span>
+<input id="trip-first" type="number" required min="0" max="36">
+-
+<input id="trip-last" type="number" required min="0" max="36">
+</span>
+<label for="trip-note">Note:</label>
+<input id="trip-note">
+<button type="button" onclick="addTrip()">Record</button>
+</form>
+
+<ul>
+</ul>
+</section>
+
+<section id="bodies">
+<h1>Cameras</h1>
+<ul>
+</ul>
+
+<form>
+	<label for="body-name">Name:</label>
+	<input id="body-name" required>
+	<label for="body-mount">Mount:</label>
+	<input id="body-mount" list="mounts" required>
+	<button type="button" onclick="addBody()">Add</button>
+</form>
+
+<datalist id="mounts">
+	<option>Contax/Yashica</option>
+	<option>M42</option>
+</datalist>
+</section>
+
+<section id="lenses">
+<h1>Lenses</h1>
+<ul>
+</ul>
+
+<form>
+	<label for="lens-name">Name:</label>
+	<input id="lens-name" required>
+	<label for="lens-length">Focal length:</label>
+	<span><input id="lens-length" required pattern="[0-9-]+">mm</span>
+	<label for="lens-aperture">Aperture:</label>
+	<span>f/<input id="lens-aperture" required pattern="[0-9.-]+"></span>
+	<label for="lens-mount">Mount:</label>
+	<input id="lens-mount" list="mounts" required>
+	<button type="button" onclick="addLens()">Add</button>
+</form>
+</section>
+
+<script>
+let bodies = JSON.parse(localStorage.getItem("bodies")) || [];
+let lenses = JSON.parse(localStorage.getItem("lenses")) || [];
+let rolls = JSON.parse(localStorage.getItem("rolls")) || {};
+let trips = JSON.parse(localStorage.getItem("trips")) || [];
+let nextId = +localStorage.getItem("nextId") || 1;
+
+document.getElementById("trip-date").valueAsDate = new Date();
+
+function setBodies() {
+	localStorage.setItem("bodies", JSON.stringify(bodies));
+	let ul = document.querySelector("#bodies > ul");
+	let selects = document.querySelectorAll("select.body");
+	ul.innerHTML = "";
+	selects.forEach(select => select.innerHTML = "");
+	for (body of bodies) {
+		let li = document.createElement("li");
+		li.appendChild(document.createTextNode(`${body.name} (${body.mount})`));
+		ul.appendChild(li);
+		for (select of selects) {
+			let option = document.createElement("option");
+			option.appendChild(document.createTextNode(body.name));
+			select.appendChild(option);
+		}
+	}
+}
+setBodies();
+
+function setLenses() {
+	localStorage.setItem("lenses", JSON.stringify(lenses));
+	let ul = document.querySelector("#lenses > ul");
+	ul.innerHTML = "";
+	for (lens of lenses) {
+		let li = document.createElement("li");
+		li.appendChild(document.createTextNode(`
+			${lens.name} ${lens.focalLength}mm f/${lens.aperture}
+			(${lens.mount})
+		`));
+		ul.appendChild(li);
+	}
+}
+setLenses();
+
+function setRolls() {
+	localStorage.setItem("rolls", JSON.stringify(rolls));
+	let ul = document.querySelector("#rolls > ul");
+	ul.innerHTML = "";
+	for (body in rolls) {
+		let roll = rolls[body];
+		let li = document.createElement("li");
+		li.appendChild(document.createTextNode(`
+			${body}: ${roll.film} (${roll.used}/${roll.exposures})
+		`));
+		if (roll.used == roll.exposures) {
+			li.style.textDecoration = "line-through";
+		}
+		ul.appendChild(li);
+	}
+}
+setRolls();
+
+function setTrips() {
+	localStorage.setItem("trips", JSON.stringify(trips));
+	let ul = document.querySelector("#trips > ul");
+	ul.innerHTML = "";
+	for (let rollId = nextId - 1; rollId > 0; --rollId) {
+		let rollTrips = trips.filter(trip => trip.rollId == rollId);
+		if (rollTrips.length == 0) continue;
+		let rollLi = document.createElement("li");
+		rollLi.appendChild(document.createTextNode(`
+			${rollTrips[0].film} (${rollTrips[0].body})
+		`));
+		let rollUl = document.createElement("ul");
+		for (trip of rollTrips) {
+			let li = document.createElement("li");
+			li.appendChild(document.createTextNode(`
+				${trip.date}:
+				${trip.firstExposure}-${trip.lastExposure}
+				(${trip.lens})
+			`));
+			if (trip.note) {
+				li.appendChild(document.createTextNode(`"${trip.note}"`));
+			}
+			rollUl.appendChild(li);
+		}
+		rollLi.appendChild(rollUl);
+		ul.appendChild(rollLi);
+	}
+}
+setTrips();
+
+function setTripBody() {
+	let bodyName = document.getElementById("trip-body").value;
+	let body = bodies.find(body => body.name == bodyName);
+	let select = document.getElementById("trip-lens");
+	select.innerHTML = "";
+	for (lens of lenses.filter(lens => lens.mount == body.mount)) {
+		let option = document.createElement("option");
+		option.appendChild(document.createTextNode(`
+			${lens.name} ${lens.focalLength}mm f/${lens.aperture}
+		`));
+		select.appendChild(option);
+	}
+	let roll = rolls[body.name];
+	document.getElementById("trip-film").value = roll.film;
+	let next = (roll.used > 0 ? roll.used + 1 : roll.used);
+	document.getElementById("trip-first").value = next;
+	document.getElementById("trip-last").value = next;
+}
+setTripBody();
+
+function clearForm(form) {
+	let inputs = form.querySelectorAll("input");
+	for (input of inputs) {
+		input.value = null;
+	}
+}
+
+function addBody() {
+	let form = document.querySelector("#bodies > form");
+	if (!form.checkValidity()) return;
+	let name = document.getElementById("body-name").value;
+	let mount = document.getElementById("body-mount").value;
+	bodies.push({ name, mount });
+	setBodies();
+	clearForm(form);
+}
+
+function addLens() {
+	let form = document.querySelector("#lenses > form");
+	if (!form.checkValidity()) return;
+	let name = document.getElementById("lens-name").value;
+	let focalLength = document.getElementById("lens-length").value;
+	let aperture = document.getElementById("lens-aperture").value;
+	let mount = document.getElementById("lens-mount").value;
+	lenses.push({ name, focalLength, aperture, mount });
+	setLenses();
+	clearForm(form);
+}
+
+function loadRoll() {
+	let form = document.querySelector("#rolls > form");
+	if (!form.checkValidity()) return;
+	let body = document.getElementById("roll-body").value;
+	let film = document.getElementById("roll-film").value;
+	rolls[body] = { id: nextId++, film, used: 0, exposures: 36 };
+	localStorage.setItem("nextId", nextId);
+	setRolls();
+	clearForm(form);
+	setTripBody();
+}
+
+function addTrip() {
+	let form = document.querySelector("#trips > form");
+	if (!form.checkValidity()) return;
+	let date = document.getElementById("trip-date").value;
+	let body = document.getElementById("trip-body").value;
+	let lens = document.getElementById("trip-lens").value;
+	let film = document.getElementById("trip-film").value;
+	let firstExposure = +document.getElementById("trip-first").value;
+	let lastExposure = +document.getElementById("trip-last").value;
+	let note = document.getElementById("trip-note").value;
+	let trip = {
+		date, body, lens, film, rollId: rolls[body].id,
+		firstExposure, lastExposure, note
+	};
+	trips.push(trip);
+	rolls[body].used = lastExposure;
+	setTrips();
+	setRolls();
+	document.getElementById("trip-date").valueAsDate = new Date();
+	document.getElementById("trip-note").value = "";
+	setTripBody();
+}
+
+</script>
