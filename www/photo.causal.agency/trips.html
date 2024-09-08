@@ -195,15 +195,16 @@ function setTrips() {
 	localStorage.setItem("trips", JSON.stringify(trips));
 	let ul = document.querySelector("#trips > ul");
 	ul.innerHTML = "";
+	let tripsByRoll = Object.groupBy(trips, trip => trip.rollId);
 	for (let rollId = nextId - 1; rollId > 0; --rollId) {
-		let rollTrips = trips.filter(trip => trip.rollId == rollId);
-		if (rollTrips.length == 0) continue;
+		let rollTrips = tripsByRoll[rollId];
+		if (!rollTrips) continue;
 		let rollLi = document.createElement("li");
 		rollLi.appendChild(document.createTextNode(`
 			${rollTrips[0].film} (${rollTrips[0].body})
 		`));
 		let rollUl = document.createElement("ul");
-		for (trip of rollTrips) {
+		for (let trip of rollTrips) {
 			let li = document.createElement("li");
 			li.appendChild(document.createTextNode(`
 				${trip.date}:
