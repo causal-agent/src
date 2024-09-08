@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body { font-family: sans-serif; }
+body { font-family: sans-serif; line-height: 1.5em; }
 input, button, select { font-size: 100%; }
 form {
 	display: grid;
@@ -56,7 +56,7 @@ input[type="number"] { width: 5ch; }
 <label for="trip-first">Exposures:</label>
 <span>
 <input id="trip-first" type="number" required min="0" max="36">
--
+–
 <input id="trip-last" type="number" required min="0" max="36">
 </span>
 <label for="trip-note">Note:</label>
@@ -98,7 +98,7 @@ input[type="number"] { width: 5ch; }
 	<label for="lens-length">Focal length:</label>
 	<span><input id="lens-length" required pattern="[0-9-]+">mm</span>
 	<label for="lens-aperture">Aperture:</label>
-	<span>f/<input id="lens-aperture" required pattern="[0-9.-]+"></span>
+	<span>ƒ/<input id="lens-aperture" required pattern="[0-9.-]+"></span>
 	<label for="lens-mount">Mount:</label>
 	<input id="lens-mount" list="mounts" required>
 	<button type="button" onclick="addLens()">Add</button>
@@ -133,6 +133,17 @@ function setBodies() {
 }
 setBodies();
 
+function endashify(str) {
+	return str.replaceAll("-", "–");
+}
+function lensString(lens) {
+	return `
+		${lens.name}
+		${endashify(lens.focalLength)}mm
+		ƒ/${endashify(lens.aperture)}
+	`;
+}
+
 function setLenses() {
 	localStorage.setItem("lenses", JSON.stringify(lenses));
 	let ul = document.querySelector("#lenses > ul");
@@ -140,8 +151,7 @@ function setLenses() {
 	for (lens of lenses) {
 		let li = document.createElement("li");
 		li.appendChild(document.createTextNode(`
-			${lens.name} ${lens.focalLength}mm f/${lens.aperture}
-			(${lens.mount})
+			${lensString(lens)} (${lens.mount})
 		`));
 		ul.appendChild(li);
 	}
@@ -182,11 +192,13 @@ function setTrips() {
 			let li = document.createElement("li");
 			li.appendChild(document.createTextNode(`
 				${trip.date}:
-				${trip.firstExposure}-${trip.lastExposure}
-				(${trip.lens})
+				${trip.firstExposure}–${trip.lastExposure}
 			`));
+			li.appendChild(document.createElement("br"));
+			li.appendChild(document.createTextNode(trip.lens));
 			if (trip.note) {
-				li.appendChild(document.createTextNode(`"${trip.note}"`));
+				li.appendChild(document.createElement("br"));
+				li.appendChild(document.createTextNode(`“${trip.note}”`));
 			}
 			rollUl.appendChild(li);
 		}
@@ -203,9 +215,7 @@ function setTripBody() {
 	select.innerHTML = "";
 	for (lens of lenses.filter(lens => lens.mount == body.mount)) {
 		let option = document.createElement("option");
-		option.appendChild(document.createTextNode(`
-			${lens.name} ${lens.focalLength}mm f/${lens.aperture}
-		`));
+		option.appendChild(document.createTextNode(lensString(lens)));
 		select.appendChild(option);
 	}
 	let roll = rolls[body.name];
