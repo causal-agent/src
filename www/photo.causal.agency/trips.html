@@ -219,10 +219,16 @@ function setTripBody() {
 		select.appendChild(option);
 	}
 	let roll = rolls[body.name];
-	document.getElementById("trip-film").value = roll.film;
-	let next = (roll.used > 0 ? roll.used + 1 : roll.used);
-	document.getElementById("trip-first").value = next;
-	document.getElementById("trip-last").value = next;
+	if (roll) {
+		document.getElementById("trip-film").value = roll.film;
+		let next = (roll.used > 0 ? roll.used + 1 : roll.used);
+		document.getElementById("trip-first").value = next;
+		document.getElementById("trip-last").value = next;
+	} else {
+		document.getElementById("trip-film").value = "";
+		document.getElementById("trip-first").value = "";
+		document.getElementById("trip-last").value = "";
+	}
 }
 setTripBody();
 
