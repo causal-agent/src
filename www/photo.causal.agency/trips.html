@@ -118,17 +118,27 @@ let nextId = +localStorage.getItem("nextId") || 1;
 
 document.getElementById("trip-date").valueAsDate = new Date();
 
+function removeButton(onclick) {
+	let remove = document.createElement("a");
+	remove.appendChild(document.createTextNode("⛔"));
+	remove.onclick = onclick;
+	return remove;
+}
+
 function setBodies() {
 	localStorage.setItem("bodies", JSON.stringify(bodies));
 	let ul = document.querySelector("#bodies > ul");
 	let selects = document.querySelectorAll("select.body");
 	ul.innerHTML = "";
 	selects.forEach(select => select.innerHTML = "");
-	for (body of bodies) {
+	for (let [index, body] of bodies.entries()) {
 		let li = document.createElement("li");
-		li.appendChild(document.createTextNode(`${body.name} (${body.mount})`));
+		li.appendChild(document.createTextNode(`
+			${body.name} (${body.mount})
+		`));
+		li.appendChild(removeButton(removeBody.bind(null, index)));
 		ul.appendChild(li);
-		for (select of selects) {
+		for (let select of selects) {
 			let option = document.createElement("option");
 			option.appendChild(document.createTextNode(body.name));
 			select.appendChild(option);
@@ -145,18 +155,19 @@ function lensString(lens) {
 		${lens.name}
 		${endashify(lens.focalLength)}mm
 		ƒ/${endashify(lens.aperture)}
-	`;
+	`.replace(/\s+/g, " ").trim();
 }
 
 function setLenses() {
 	localStorage.setItem("lenses", JSON.stringify(lenses));
 	let ul = document.querySelector("#lenses > ul");
 	ul.innerHTML = "";
-	for (lens of lenses) {
+	for (let [index, lens] of lenses.entries()) {
 		let li = document.createElement("li");
 		li.appendChild(document.createTextNode(`
 			${lensString(lens)} (${lens.mount})
 		`));
+		li.appendChild(removeButton(removeLens.bind(null, index)));
 		ul.appendChild(li);
 	}
 }
@@ -253,6 +264,17 @@ function addBody() {
 	clearForm(form);
 }
 
+function removeBody(index) {
+	let body = bodies[index];
+	if (!confirm(`Are you sure you want to remove ${body.name}?`)) {
+		return;
+	}
+	bodies.splice(index, 1);
+	delete rolls[body.name];
+	setBodies();
+	setRolls();
+}
+
 function addLens() {
 	let form = document.querySelector("#lenses > form");
 	if (!form.checkValidity()) return;
@@ -263,6 +285,16 @@ function addLens() {
 	lenses.push({ name, focalLength, aperture, mount });
 	setLenses();
 	clearForm(form);
+}
+
+function removeLens(index) {
+	let lens = lenses[index];
+	if (!confirm(`Are you sure you want to remove ${lensString(lens)}?`)) {
+		return;
+	}
+	lenses.splice(index, 1);
+	setLenses();
+	setTripBody();
 }
 
 function loadRoll() {
