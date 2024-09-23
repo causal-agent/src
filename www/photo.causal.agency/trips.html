@@ -241,6 +241,10 @@ function setTripBody() {
 		option.appendChild(document.createTextNode(lensString(lens)));
 		select.appendChild(option);
 	}
+	let lastTrip = trips.findLast(trip => trip.body == bodyName);
+	if (lastTrip) {
+		select.value = lastTrip.lens;
+	}
 	let roll = rolls[body.name];
 	if (roll) {
 		document.getElementById("trip-film").value = roll.film;
