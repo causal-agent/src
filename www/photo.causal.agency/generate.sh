@@ -104,14 +104,21 @@ photo_id() {
 
 page_photo() {
 	local photo=$1 preview=$2 description=$3
-	if ! test -f $description; then
-		description=/dev/null
-	fi
 	photo_info $photo
 	cat <<-EOF
 	<figure id="$(photo_id $photo)">
 		<a href="${photo##*/}">
+	EOF
+	if test -f $description; then
+		cat <<-EOF
 			<img src="../${preview}" alt="$(encode $description)">
+		EOF
+	else
+		cat <<-EOF
+			<img src="../${preview}">
+		EOF
+	fi
+	cat <<-EOF
 		</a>
 		<figcaption>
 	EOF
@@ -123,11 +130,15 @@ page_photo() {
 			${PhotographicSensitivity} ISO
 		EOF
 	fi
-	cat <<-EOF
+	if test -f $description; then
+		cat <<-EOF
 			<details>
 				<summary>description</summary>
 				$(encode $description)
 			</details>
+		EOF
+	fi
+	cat <<-EOF
 		</figcaption>
 	</figure>
 	EOF
