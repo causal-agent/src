@@ -43,6 +43,7 @@ TXTS += 040-sound-memory.txt
 TXTS += 041-albums-2022.txt
 TXTS += 042-comfort-music.txt
 TXTS += 043-little-blessings.txt
+TXTS += 044-film-review.txt
 
 all: colb ${TXTS}
 
