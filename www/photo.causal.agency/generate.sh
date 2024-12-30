@@ -47,7 +47,13 @@ page_head() {
 		body=$(encode $date/body)
 	fi
 	if test -f $date/lens; then
-		lens=$(encode $date/lens)
+		lens=$(
+			sed '
+				s,f/,ƒ/,
+				s/\([0-9]\)-\([0-9]\)/\1-\2/g
+			' $date/lens |
+			encode
+		)
 	else
 		lens=$(
 			identify -format '%[EXIF:LensModel]' \
