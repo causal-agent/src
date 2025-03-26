@@ -49,7 +49,7 @@ page_head() {
 	if test -f $date/lens; then
 		lens=$(
 			sed '
-				s,f/,ƒ/,
+				s,f/,ƒ/,g
 				s/\([0-9]\)-\([0-9]\)/\1-\2/g
 			' $date/lens |
 			encode
@@ -84,7 +84,7 @@ page_head() {
 	details { max-width: 78ch; margin: 0.5em auto; }
 	</style>
 	<h1>${title}</h1>
-	<p>📷 ${body:-}${body:+ · }${lens}${film:+ 🎞️ }${film:-}</p>
+	<p>📷 ${body:-}${body:+ 🔘 }${lens}${film:+ 🎞️ }${film:-}</p>
 	EOF
 }
 
