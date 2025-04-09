@@ -35,29 +35,35 @@ encode() {
 }
 
 page_title() {
-	date -j -f '%F' $1 '+%B %e, %Y'
+	case $1 in
+		(20*) date -j -f '%F' $1 '+%B %e, %Y';;
+		(0*) echo Roll $(dc -e "${1}p");;
+	esac
 }
 
 page_head() {
-	local date=$1
-	local title=$(page_title $date)
-	local body lens film
+	local page=$1
+	local title=$(page_title $page)
+	local date body lens film
 
-	if test -f $date/body; then
-		body=$(encode $date/body)
+	if test -f $page/date; then
+		date=$(sed 's/\([0-9]\)-\([0-9]\)/\1-\2/g' $page/date | encode)
 	fi
-	if test -f $date/lens; then
+	if test -f $page/body; then
+		body=$(encode $page/body)
+	fi
+	if test -f $page/lens; then
 		lens=$(
 			sed '
 				s,f/,ƒ/,g
 				s/\([0-9]\)-\([0-9]\)/\1-\2/g
-			' $date/lens |
+			' $page/lens |
 			encode
 		)
 	else
 		lens=$(
 			identify -format '%[EXIF:LensModel]' \
-				$date/$(ls -1 $date | head -n 1) 2>/dev/null |
+				$page/$(ls -1 $page | head -n 1) 2>/dev/null |
 			sed '
 				s/\([A-Z]\)\([0-9]\)/\1 \2/
 				s,f/,ƒ/,
@@ -66,8 +72,8 @@ page_head() {
 			encode
 		)
 	fi
-	if test -f $date/film; then
-		film=$(encode $date/film)
+	if test -f $page/film; then
+		film=$(encode $page/film)
 	fi
 
 	cat <<-EOF
@@ -84,7 +90,7 @@ page_head() {
 	details { max-width: 78ch; margin: 0.5em auto; }
 	</style>
 	<h1>${title}</h1>
-	<p>📷 ${body:-}${body:+ 🔘 }${lens}${film:+ 🎞️ }${film:-}</p>
+	<p>${date:+📆 }${date:-} 📷 ${body:-}${body:+ 🔘 }${lens}${film:+ 🎞️ }${film:-}</p>
 	EOF
 }
 
@@ -225,13 +231,13 @@ atom_tail() {
 }
 
 set --
-for date in 20*; do
-	mkdir -p static/${date}
-	page=static/${date}/index.html
+for entry in 20* 0*; do
+	mkdir -p static/${entry}
+	page=static/${entry}/index.html
 	if ! test -f $page; then
 		echo $page >&2
-		page_head $date >$page
-		for photo in ${date}/*.[Jj][Pp][Gg]; do
+		page_head $entry >$page
+		for photo in ${entry}/*.[Jj][Pp][Gg]; do
 			preview=$(preview $photo)
 			if ! test -f static/${photo}; then
 				ln $photo static/${photo}
@@ -239,7 +245,7 @@ for date in 20*; do
 			page_photo $photo $preview ${photo%.[Jj][Pp][Gg]}.txt >>$page
 		done
 	fi
-	set -- $date "$@"
+	set -- $entry "$@"
 done
 
 echo static/index.html >&2
