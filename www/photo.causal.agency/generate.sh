@@ -47,7 +47,7 @@ page_head() {
 	local date body lens film
 
 	if test -f $page/date; then
-		date=$(sed 's/\([0-9]\)-\([0-9]\)/\1-\2/g' $page/date | encode)
+		date=$(sed 's/\([0-9]\)-\([0-9]\)/\1–\2/g' $page/date | encode)
 	fi
 	if test -f $page/body; then
 		body=$(encode $page/body)
@@ -56,7 +56,7 @@ page_head() {
 		lens=$(
 			sed '
 				s,f/,ƒ/,g
-				s/\([0-9]\)-\([0-9]\)/\1-\2/g
+				s/\([0-9]\)-\([0-9]\)/\1–\2/g
 			' $page/lens |
 			encode
 		)
