@@ -218,6 +218,7 @@ function setTrips() {
 		rollB.appendChild(document.createTextNode(rollTrips[0].film));
 		rollLi.appendChild(rollB);
 		rollLi.appendChild(document.createTextNode(` (${rollTrips[0].body})`));
+		let body = bodies.find(body => body.name == rollTrips[0].body);
 		let rollUl = document.createElement("ul");
 		for (let trip of rollTrips) {
 			let li = document.createElement("li");
@@ -227,8 +228,10 @@ function setTrips() {
 			li.appendChild(document.createTextNode(
 				`: ${trip.firstExposure}–${trip.lastExposure}`
 			));
-			li.appendChild(document.createElement("br"));
-			li.appendChild(document.createTextNode(trip.lens));
+			if (body.mount != body.name) {
+				li.appendChild(document.createElement("br"));
+				li.appendChild(document.createTextNode(trip.lens));
+			}
 			if (trip.note) {
 				li.appendChild(document.createElement("br"));
 				li.appendChild(document.createTextNode(`“${trip.note}”`));
