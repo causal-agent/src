@@ -32,6 +32,17 @@ input[type="number"] { width: 5ch; }
 </select>
 <label for="roll-film">Film:</label>
 <input id="roll-film" list="films" required>
+<span>Exposures:</span>
+<span>
+<input id="roll-36" type="radio" name="roll-exposures" value="36" checked>
+<label for="roll-36">36</label>
+<input id="roll-27" type="radio" name="roll-exposures" value="27">
+<label for="roll-27">27</label>
+<input id="roll-24" type="radio" name="roll-exposures" value="24">
+<label for="roll-24">24</label>
+<input id="roll-12" type="radio" name="roll-exposures" value="12">
+<label for="roll-12">12</label>
+</span>
 <button type="button" onclick="loadRoll()">Load</button>
 </form>
 
@@ -261,6 +272,7 @@ setTripBody();
 function clearForm(form) {
 	let inputs = form.querySelectorAll("input");
 	for (input of inputs) {
+		if (input.type == "radio") continue;
 		input.value = null;
 	}
 }
@@ -313,7 +325,8 @@ function loadRoll() {
 	if (!form.checkValidity()) return;
 	let body = document.getElementById("roll-body").value;
 	let film = document.getElementById("roll-film").value;
-	rolls[body] = { id: nextId++, film, used: 0, exposures: 36 };
+	let exposures = +new FormData(form).get("roll-exposures");
+	rolls[body] = { id: nextId++, film, exposures, used: 0 };
 	localStorage.setItem("nextId", nextId);
 	setRolls();
 	clearForm(form);
