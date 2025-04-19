@@ -36,6 +36,7 @@ encode() {
 
 page_title() {
 	case $1 in
+		(leader) echo 'Film Leader';;
 		(20*) date -j -f '%F' $1 '+%B %e, %Y';;
 		(0*) echo Roll $(dc -e "${1}p");;
 	esac
@@ -90,7 +91,7 @@ page_head() {
 	details { max-width: 78ch; margin: 0.5em auto; }
 	</style>
 	<h1>${title}</h1>
-	<p>${date:+📆 }${date:-} 📷 ${body:-}${body:+ 🔘 }${lens}${film:+ 🎞️ }${film:-}</p>
+	<p>${date:+📆 }${date:-} 📷 ${body:-}${body:+ 🔘 }${lens:-}${film:+ 🎞️ }${film:-}</p>
 	EOF
 }
 
@@ -247,6 +248,20 @@ for entry in 20* 0*; do
 	fi
 	set -- $entry "$@"
 done
+
+mkdir -p static/leader
+page=static/leader/index.html
+if [ leader -nt $page ]; then
+	echo $page >&2
+	page_head leader >$page
+	for photo in leader/*.[Jj][Pp][Gg]; do
+		preview=$(preview $photo)
+		if ! test -f static/${photo}; then
+			ln $photo static/${photo}
+		fi
+		page_photo $photo $preview xxx >>$page
+	done
+fi
 
 echo static/index.html >&2
 index_head >static/index.html
