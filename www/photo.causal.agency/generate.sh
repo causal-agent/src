@@ -45,7 +45,7 @@ page_title() {
 page_head() {
 	local page=$1
 	local title=$(page_title $page)
-	local date body lens film
+	local date body lens film note
 
 	if test -f $page/date; then
 		date=$(sed 's/\([0-9]\)-\([0-9]\)/\1–\2/g' $page/date | encode)
@@ -76,6 +76,9 @@ page_head() {
 	if test -f $page/film; then
 		film=$(encode $page/film)
 	fi
+	if test -f $page/note; then
+		note=$(encode $page/note)
+	fi
 
 	cat <<-EOF
 	<!DOCTYPE html>
@@ -92,6 +95,7 @@ page_head() {
 	</style>
 	<h1>${title}</h1>
 	<p>${date:+📆 }${date:-} 📷 ${body:-}${body:+ 🔘 }${lens:-}${film:+ 🎞️ }${film:-}</p>
+	${note:+<p>}${note:-}${note:+</p>}
 	EOF
 }
 
