@@ -1,3 +1,6 @@
-*.JPG
 *.jpg
+*.JPG
+app.json
+posted.txt
 static/
+token.json
